@@ -15,7 +15,8 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Inbox/** — Fleeting notes capture. Quick thoughts from any source (reading, work, life). Processed weekly into Zettelkasten or deleted.
 - **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `topics` (list of keywords for filtering).
 - **Thoughts/** — Personal reflections and ideas
-- **Training/** — Learning resources and course notes
+- **Learning/** — Structured learning plans. Each plan has its own subfolder with `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, and `Projects/`. Managed via `/learning-init`, `/learning-log`, `/learning-review`.
+- **Training/** — Legacy learning resources (being migrated to `Learning/`)
 - **WeRead/** — Book highlights synced from WeRead (微信读书). **DO NOT MODIFY** — this folder is auto-synced and must remain untouched.
 - **Work/** — Work documentation, organized by year and project
   - `archive/` — Past years and completed projects
@@ -29,6 +30,8 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Work/Work Dashboard.md** — Work dashboard with task views and project summary.
 - **Templates/Work Daily.md** — Template for daily work notes.
 - **Templates/Work Project.md** — Template for project pages.
+- **Templates/Learning Plan.md** — Template for `00_plan.md` (learning plan goals and phases).
+- **Templates/Learning Week.md** — Template for weekly learning logs (`Weeks/YYYY-WXX.md`).
 
 ## Conventions
 
@@ -45,7 +48,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 
 ## Installed Plugins
 
-Dataview, Kanban, Calendar, Excalidraw, Tag Wrangler, Table Editor, Footnotes, Mind Map, Homepage, Hider, Style Settings, URL into Selection, WeRead, Plugin Update Tracker, Custom File Explorer Sorting
+Dataview, Kanban, Calendar, Excalidraw, Tag Wrangler, Table Editor, Footnotes, Mind Map, Homepage, Hider, Style Settings, URL into Selection, WeRead, Plugin Update Tracker, Custom File Explorer Sorting, Spaced Repetition
 
 ## Rules
 

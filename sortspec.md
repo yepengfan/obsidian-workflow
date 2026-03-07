@@ -7,6 +7,7 @@ sorting-spec: |
   Thoughts
   Work
   Books
+  Learning
   Training
   Matter
   Instapaper Notes
