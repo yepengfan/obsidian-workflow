@@ -1,15 +1,2 @@
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/scripts/auto-sync.sh\""
-          }
-        ]
-      }
-    ]
-  }
 }
