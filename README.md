@@ -32,6 +32,7 @@ Zettelkasten/     # Permanent notes — one atomic idea per note, interlinked
 Templates/        # Inbox, Zettel, Work Daily, Work Project templates
 CLAUDE.md         # Vault-level Claude Code instructions
 Home.md           # Obsidian dashboard with Dataview queries
+sortspec.md       # Custom file explorer sort order (Custom File Explorer Sorting plugin)
 ```
 
 ## Architecture
@@ -321,7 +322,7 @@ cp Books/.bookrc.example .bookrc
 
 ### 6. Obsidian plugins
 
-Install via Community Plugins: Dataview, Spaced Repetition, Kanban, Calendar, Excalidraw, Tag Wrangler, Remotely Save
+Install via Community Plugins: Dataview, Spaced Repetition, Kanban, Calendar, Excalidraw, Tag Wrangler, Remotely Save, Custom File Explorer Sorting
 
 ### 7. NAS backup (optional)
 
