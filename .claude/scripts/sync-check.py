@@ -16,7 +16,7 @@ import re
 import glob
 import sys
 
-VAULT_ROOT = "/Users/tedfan/Library/Mobile Documents/iCloud~md~obsidian/Documents/General Notes"
+VAULT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SUMMARIES_DIR = os.path.join(VAULT_ROOT, "Book Summaries")
 WEREAD_DIR = os.path.join(VAULT_ROOT, "WeRead")
 
