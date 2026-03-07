@@ -208,31 +208,39 @@ function render() {
       }
     }
 
-    // Bottom row: status + source (truncated) + links + date + evergreen button
-    const bottom = card.createEl("div", {
-      attr: { style: "display:flex;align-items:center;gap:6px;font-size:0.73em;color:var(--text-faint);" }
-    });
-    const si = statusIcon[p.status] || "";
-    if (si) bottom.createEl("span", { text: si, attr: { style: "font-size:1.1em;flex-shrink:0;" } });
+    // Bottom: two rows — source on top, meta on bottom
+    const cardBottom = card.createEl("div", { attr: { style: "margin-top:auto;padding-top:8px;font-size:0.73em;color:var(--text-faint);" } });
+
+    // Row 1: source
     if (src) {
-      const srcEl = bottom.createEl("span", { attr: { style: "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;" } });
+      const srcRow = cardBottom.createEl("div", { attr: { style: "margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+      const si = statusIcon[p.status] || "";
+      if (si) srcRow.createEl("span", { text: si + " ", attr: { style: "font-size:1.1em;" } });
+      const srcEl = srcRow.createEl("span");
       srcEl.innerHTML = `<a class="internal-link" data-href="${String(p.source || "").replace(/\[\[|\]\]/g, "")}" style="color:var(--text-faint);">${src}</a>`;
     }
+
+    // Row 2: link count + date + evergreen button
+    const metaRow = cardBottom.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;" } });
+    if (!src) {
+      const si = statusIcon[p.status] || "";
+      if (si) metaRow.createEl("span", { text: si, attr: { style: "font-size:1.1em;" } });
+    }
     if (linkCount > 0) {
-      bottom.createEl("span", { text: `\u00b7 ${linkCount}`, attr: { style: "flex-shrink:0;" } });
+      metaRow.createEl("span", { text: `\u00b7 ${linkCount} links` });
     }
     const created = p.created ? String(p.created).slice(0, 10) : "";
     if (created) {
-      bottom.createEl("span", { text: created, attr: { style: "margin-left:auto;flex-shrink:0;" } });
+      metaRow.createEl("span", { text: created, attr: { style: "margin-left:auto;" } });
     }
 
     // Evergreen promote button — only shown on growing notes
     if (p.status === "growing") {
-      const evBtn = bottom.createEl("button", {
+      const evBtn = metaRow.createEl("button", {
         text: "\ud83c\udf33",
         attr: {
           title: "Mark as evergreen",
-          style: "margin-left:4px;border:none;background:none;cursor:pointer;font-size:1em;padding:0 2px;opacity:0.35;transition:opacity 0.15s;flex-shrink:0;"
+          style: "border:none;background:none;cursor:pointer;font-size:1em;padding:0 2px;opacity:0.35;transition:opacity 0.15s;flex-shrink:0;"
         }
       });
       evBtn.addEventListener("mouseenter", () => { evBtn.style.opacity = "1"; });
