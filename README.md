@@ -2,6 +2,16 @@
 
 System files for my Obsidian knowledge management vault. Content (notes, highlights, attachments) is synced separately — this repo only tracks the **workflow infrastructure**.
 
+## Philosophy
+
+This system is built on two complementary frameworks: **Second Brain** and **Zettelkasten**.
+
+**Second Brain** (Tiago Forte) treats external tools as an extension of your mind — offloading capture, organization, and retrieval so that cognitive load is reserved for thinking and creating, not remembering. The Inbox, templates, and automated sync pipelines in this vault reflect that principle: capture should be frictionless, and information should flow toward use.
+
+**Zettelkasten** (Niklas Luhmann) is a method for building a personal knowledge network from atomic, self-contained notes written in your own words. Unlike a filing cabinet organized by topic, a Zettelkasten grows through links — ideas accumulate meaning by connecting to other ideas, not by sitting in folders. Each zettel here is one thought, linked forward and backward, gradually forming a web that surfaces unexpected connections.
+
+The combination produces a two-layer system: a **capture layer** (Inbox) where nothing is precious and everything is temporary, and a **knowledge layer** (Zettelkasten) where only distilled, original insights live permanently. Claude Code bridges the two — automating the extraction and linking work that would otherwise create friction and keep raw notes from ever becoming permanent knowledge.
+
 ## What's in here
 
 ```
@@ -111,55 +121,45 @@ A structured reading workflow: **scaffold first → directed reading → active 
 ## Knowledge Flow (Zettelkasten)
 
 ```mermaid
-graph LR
-    subgraph Input["Knowledge Sources"]
-        B["Books<br/>/zettel"]
-        W["Work<br/>/retro"]
-        L["Life & Skills<br/>+ Inbox button"]
-        A["Articles<br/>/zettel /research"]
-    end
+flowchart TD
+    classDef cmd fill:#4a9eff,color:#fff,font-weight:bold
+    classDef store fill:#20c997,color:#fff
+    classDef inbox fill:#ffd43b,color:#000
+    classDef source fill:#f8f9fa,color:#333,stroke:#ccc
 
-    subgraph Process["Processing"]
-        INBOX["Inbox/<br/>Fleeting Notes"]
-        EXTRACT["Extract &<br/>Atomize"]
-    end
+    THOUGHT["💡 Fleeting thought"]:::source
+    BOOK["📚 Book / article highlights"]:::source
+    WORK_EXP["💼 Project / work experience"]:::source
 
-    subgraph Output["Knowledge Network"]
-        ZK["Zettelkasten/<br/>Permanent Notes<br/>🌱 → 🌿 → 🌳"]
-    end
+    BTN["Zettel capture button"]:::cmd
+    INBOX["Inbox/"]:::inbox
+    IR["/inbox-review (weekly)"]:::cmd
+    ZT["/zettel [source]"]:::cmd
+    RT["/retro [source]"]:::cmd
 
-    B --> EXTRACT
-    W --> EXTRACT
-    A --> EXTRACT
-    L --> INBOX
-    INBOX -->|"/inbox-review"| EXTRACT
-    EXTRACT -->|one idea per note| ZK
-    ZK ---|"[[wikilinks]]"| ZK
+    ZK["Zettelkasten/ — permanent notes"]:::store
 
-    style INBOX fill:#ffd43b,color:#000
-    style ZK fill:#20c997,color:#fff
-    style EXTRACT fill:#748ffc,color:#fff
+    THOUGHT --> BTN --> INBOX --> IR
+    BOOK --> ZT
+    WORK_EXP --> RT
+
+    IR -->|"[z] convert to zettel"| ZK
+    ZT -->|"confirm draft"| ZK
+    RT -->|"confirm draft"| ZK
 ```
 
-Three input pipelines feed the same knowledge network:
-- **Reading** — `/zettel` extracts atomic insights from book highlights and articles
-- **Work** — `/retro` extracts reusable lessons from daily notes and project pages
-- **Life & Skills** — Capture to Inbox via `+ Inbox` button (mobile-friendly), process weekly with `/inbox-review`
-
-Each zettel is one atomic idea, written in your own words, linked to related zettel via `Related::` field. The `topics` frontmatter field (free-form keywords) enables filtering in the Zettelkasten Index. **Zettel status lifecycle:**
-
 ```mermaid
-graph LR
-    S["🌱 seedling<br/>newly created<br/>0–1 Related links"]
-    G["🌿 growing<br/>connected to network<br/>2+ Related links"]
-    E["🌳 evergreen<br/>deeply internalized<br/>cross-domain insight"]
+flowchart LR
+    classDef seedling fill:#d3f9d8,color:#2b8a3e,stroke:#2b8a3e
+    classDef growing fill:#b2f2bb,color:#2b8a3e,stroke:#2b8a3e
+    classDef evergreen fill:#69db7c,color:#1a4731,stroke:#1a4731
+
+    S["🌱 seedling — 0–1 Related links"]:::seedling
+    G["🌿 growing — 2+ Related links"]:::growing
+    E["🌳 evergreen — cross-domain insight"]:::evergreen
 
     S -->|"auto — on save"| G
     G -->|"manual judgment"| E
-
-    style S fill:#d3f9d8,color:#2b8a3e
-    style G fill:#b2f2bb,color:#2b8a3e
-    style E fill:#69db7c,color:#1a4731
 ```
 
 ### Commands
@@ -173,7 +173,6 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 | `/zettel <source>` | Extract permanent zettel from a book, article, or note |
 | `/inbox-review` | Weekly — process all Inbox notes into zettel or archive |
 | `/retro <source>` | Extract reusable lessons from work daily notes or project pages |
-| `/connections <topic>` | Find thematic connections across Book Summaries |
 
 #### Research & Notes
 
@@ -198,8 +197,6 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 |---------|------------|
 | `/organize [folder]` | Review and sort notes in a folder |
 | `/tag-audit` | Audit and clean up tags across the vault |
-| `/sync-summaries` | Sync Book Summaries with the latest WeRead highlights |
-
 ### Zettelkasten Workflow
 
 **Capture (mobile):** Use the `+ Zettel` button on Home.md to create a timestamped note in `Inbox/` — no format required, just the thought.
