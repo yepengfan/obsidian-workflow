@@ -7,7 +7,6 @@ Workflow:
    - **Title**: a descriptive statement (not a topic word — e.g., "Caching trades consistency for latency" not "Caching")
    - **Content**: 3-8 sentences in the user's own words, not copy-paste from source
    - **source**: wikilink to the original note
-   - **domain**: one of `reading`, `work`, `skill`, `meta`
    - **Related**: search existing `Zettelkasten/` notes for thematic connections, add wikilinks
    - **Original quote**: use a `> [!quote]` callout with an `![[source#^block-id]]` embed linking to the exact highlight in the source file. Include the chapter/section name in the callout title (e.g., `> [!quote] 原文 — 第三章 学习幸福`). If the source has block IDs (like WeRead highlights), always use block embeds instead of copying text.
 4. Present all drafted zettel to the user for review

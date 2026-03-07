@@ -8,7 +8,32 @@ banner_y: 0
 
 ## Work
 
-[[Work Dashboard|Open Work Dashboard]] · `$= "[[Work/" + dv.date("today").toFormat("yyyy/yyyy-MM-dd") + "|Today's Note]]"`
+```dataviewjs
+const row = dv.el("div", "", { attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
+
+// Navigation links
+const nav = row.createEl("div", { attr: { style: "font-size:0.9em;" } });
+nav.innerHTML = `<a class="internal-link" data-href="Work/Work Dashboard">Open Work Dashboard</a> · ` +
+  `<a class="internal-link" data-href="Work/${dv.date("today").toFormat("yyyy/yyyy-MM-dd")}">${dv.date("today").toFormat("yyyy-MM-dd")}</a>`;
+
+// Inbox button — creates a new note in Inbox/ and opens it
+const btn = row.createEl("button", {
+  text: "+ Inbox",
+  attr: {
+    style: "margin-left:auto;padding:8px 18px;background:var(--interactive-accent);color:var(--text-on-accent);border-radius:8px;font-weight:600;font-size:0.88em;border:none;cursor:pointer;white-space:nowrap;"
+  }
+});
+btn.addEventListener("click", async () => {
+  if (!app.vault.getAbstractFileByPath("Inbox")) {
+    await app.vault.createFolder("Inbox");
+  }
+  const ts = dv.date("now").toFormat("yyyy-MM-dd-HHmmss");
+  const path = `Inbox/${ts}.md`;
+  if (app.vault.getAbstractFileByPath(path)) return;
+  await app.vault.create(path, "");
+  await app.workspace.openLinkText(path, "", false);
+});
+```
 
 **Today's open tasks:**
 
@@ -73,31 +98,26 @@ const recent = zk.sort(p => p.file.ctime, "desc").limit(6);
 const grid = container.createEl("div", {
   attr: { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;" }
 });
-const domainColors = { reading: "background:#d0ebff;color:#1864ab", work: "background:#fff3bf;color:#e67700", skill: "background:#d3f9d8;color:#2b8a3e", meta: "background:#f3f0ff;color:#7048e8" };
 const statusIcon = { seedling: "🌱", growing: "🌿", evergreen: "🌳" };
 for (const p of recent) {
   const card = grid.createEl("div", {
     attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;padding:12px;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);" }
   });
-  const titleEl = card.createEl("div", { attr: { style: "font-weight:600;font-size:0.85em;margin-bottom:4px;line-height:1.3;" } });
+  const titleEl = card.createEl("div", { attr: { style: "font-weight:700;font-size:0.88em;margin-bottom:6px;line-height:1.4;" } });
   titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${p.file.name}</a>`;
-  const src = String(p.source || "").replace(/\[\[|\]\]/g, "");
-  if (src) {
-    card.createEl("div", { attr: { style: "font-size:0.72em;color:var(--text-muted);margin-bottom:6px;" } }).innerHTML =
-      `<a class="internal-link" data-href="${src}">${src}</a>`;
-  }
   const topics = p.topics || [];
   if (topics.length > 0) {
-    const topicRow = card.createEl("div", { attr: { style: "display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;" } });
+    const topicRow = card.createEl("div", { attr: { style: "display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;" } });
     for (const t of topics) {
       topicRow.createEl("span", { text: String(t), attr: { style: "font-size:0.65em;padding:1px 6px;border-radius:6px;background:var(--background-primary);color:var(--text-muted);border:1px solid var(--background-modifier-border);" } });
     }
   }
-  const bottom = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;" } });
-  bottom.createEl("span", { text: statusIcon[p.status] || "🌱", attr: { style: "font-size:0.8em;" } });
-  if (p.domain) {
-    const dc = domainColors[p.domain] || "background:var(--background-secondary);color:var(--text-muted)";
-    bottom.createEl("span", { text: p.domain, attr: { style: `${dc};font-size:0.68em;padding:1px 7px;border-radius:8px;font-weight:500;` } });
+  const src = String(p.source || "").replace(/\[\[|\]\]/g, "").replace(/-\d+$/, "").replace(/-CB_.*$/, "");
+  const bottom = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;font-size:0.7em;color:var(--text-faint);" } });
+  bottom.createEl("span", { text: statusIcon[p.status] || "🌱", attr: { style: "font-size:1.1em;" } });
+  if (src) {
+    const srcEl = bottom.createEl("span", { attr: { style: "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;" } });
+    srcEl.innerHTML = `<a class="internal-link" data-href="${String(p.source || "").replace(/\[\[|\]\]/g, "")}" style="color:var(--text-faint);">${src}</a>`;
   }
 }
 
@@ -161,16 +181,6 @@ if (pages.length === 0) {
 
 readContainer.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
   `<a class="internal-link" data-href="Books/Books Index">Open Books Index →</a>`;
-```
-
-### Recent Reading Activity
-
-```dataview
-TABLE author AS "Author", readingStatus AS "Status", progress AS "Progress", lastReadDate AS "Last Read"
-FROM "WeRead"
-WHERE lastReadDate
-SORT lastReadDate DESC
-LIMIT 10
 ```
 
 ### Articles

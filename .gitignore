@@ -13,6 +13,9 @@ Training/
 WeRead/
 Work/
 Book Summaries/
+Inbox/
+Zettelkasten/*
+!Zettelkasten/Zettelkasten Index.md
 
 # ── Local config (machine-specific paths) ──
 .bookrc
