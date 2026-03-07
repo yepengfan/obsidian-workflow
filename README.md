@@ -48,12 +48,18 @@ graph LR
         S3E[obsidian-ebook-library<br/>launchd auto-sync]
     end
 
+    subgraph NAS["Synology NAS"]
+        BACKUP[Cloud Sync<br/>download-only backup]
+    end
+
     EBOOKS[~/Library/ebooks] -->|launchd WatchPaths| S3E
     S3E -->|aws s3 sync| EBOOKS
     EPUB -->|book_init.py| BOOKS
     WR -->|auto-sync plugin| Vault
     SYS -->|git clone| Vault
     Vault <-->|Remotely Save plugin| S3V
+    S3V -->|Cloud Sync| BACKUP
+    S3E -->|Cloud Sync| BACKUP
 ```
 
 ## Book Learning System
