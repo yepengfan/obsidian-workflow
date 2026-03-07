@@ -1,5 +1,4 @@
 # Book Learning System — Claude Code Instructions
-<!-- auto-sync hook test -->
 
 > Also inherit vault conventions from the parent `CLAUDE.md` at vault root.
 
