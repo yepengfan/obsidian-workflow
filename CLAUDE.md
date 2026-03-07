@@ -1,4 +1,4 @@
-# Obsidian Vault: General Notes
+# Obsidian Vault: Workspace
 
 ## Vault Overview
 
@@ -12,6 +12,8 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Instapaper Notes/** — Saved article highlights from Instapaper
 - **Kanban/** — Kanban boards (uses obsidian-kanban plugin)
 - **Matter/** — Article notes from Matter app
+- **Inbox/** — Fleeting notes capture. Quick thoughts from any source (reading, work, life). Processed weekly into Zettelkasten or deleted.
+- **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `domain` (reading/work/skill/meta).
 - **Thoughts/** — Personal reflections and ideas
 - **Training/** — Learning resources and course notes
 - **Book Summaries/** — AI-generated thematic summaries of WeRead books (in English). Each summary links back to its WeRead source.
@@ -36,6 +38,8 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Formatting**: Use headers (##), callouts (`> [!tip]`), blockquotes, and lists. Follow existing patterns in the vault.
 - **Attachments**: Place images/media in `Attachments/`
 - **New notes**: Place in the appropriate existing folder. If unsure, use `Thoughts/`
+- **Zettel notes**: One idea per note, written in your own words (not copy-paste). Use `[[wikilinks]]` in the `Related::` field to connect to other zettel. Domain field: `reading`, `work`, `skill`, or `meta`. Title should be a descriptive statement (e.g., "Distributed systems trade consistency for availability").
+- **Inbox notes**: No format required. Just capture the thought. Will be processed into zettel or deleted during weekly review.
 - **Project tasks**: Group tasks under `### ProjectName` headings in daily notes (e.g., `### IS2`, `### IFM`). The heading name must match the filename in `Work/Projects/`. Dataview queries use `t.section.subpath` to filter tasks by project.
 - **Dataview tag filtering**: Use `p.file.tags.includes("#tag")` (not `p.tags`) in dataviewjs queries for reliable tag matching.
 

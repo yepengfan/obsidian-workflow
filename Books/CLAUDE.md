@@ -148,6 +148,14 @@ Interrogation rules:
     ⚠️  Where the gaps were
     📝 Suggested additions to the chapter notes (offer to write them in)
     🃏 New flashcards generated from the test (offer to add to ## Flashcards)
+
+6. Extract permanent notes (Zettelkasten):
+   - From the Feynman test, identify 1-3 standalone insights worth keeping long-term
+   - Each insight should be an atomic idea that makes sense outside this book's context
+   - Draft each as a zettel: descriptive title, 3-8 sentences in user's own words, domain: reading
+   - Add source link back to chapter file, and Related:: links to any existing zettel
+   - Ask user: "要把这些洞察写成永久笔记吗？" — only create if confirmed
+   - Save to Zettelkasten/ folder using Templates/Zettel.md format
 ```
 
 ---
@@ -176,12 +184,16 @@ Interrogation rules:
 ```
 1. Read all chapter files + 00_map.md + 00_meta.md + WeRead notes
 2. Gap check: which chapters still have empty "费曼测试"? Flag them.
-3. Generate Book Synthesis — offer to write into 00_meta.md:
+3. Zettel review:
+   - List all zettel already extracted from this book (search Zettelkasten/ for source links)
+   - Identify cross-chapter insights not yet captured as zettel
+   - Suggest new zettel to create — ask user to confirm
+4. Generate Book Synthesis — offer to write into 00_meta.md:
    - Core argument in 1 paragraph
    - Top 5 concepts with one-line definitions
    - Connections to user's other domains (AWS, system design, AI engineering)
    - What shifted in how you think
-4. Update 00_meta.md: fill `finished` date, change `status` to `finished`
+5. Update 00_meta.md: fill `finished` date, change `status` to `finished`
 ```
 
 ---

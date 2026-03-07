@@ -6,7 +6,7 @@ System files for my Obsidian knowledge management vault. Content (notes, highlig
 
 ```
 .claude/
-  commands/       # Claude Code slash commands (/backup, /daily, /research, etc.)
+  commands/       # Claude Code slash commands (/zettel, /retro, /daily, /research, etc.)
   scripts/        # Auto-sync hooks
   skills/         # Claude Code skills (Obsidian markdown, Bases, Canvas, etc.)
   settings.json   # Hook configuration
@@ -14,10 +14,12 @@ System files for my Obsidian knowledge management vault. Content (notes, highlig
 Books/
   book_init.py    # EPUB/PDF parser → Obsidian note generator
   CLAUDE.md       # Book learning system instructions
-  Books Index.md  # Dataview-powered book directory
+  Books Index.md  # Dataview-powered book directory + WeRead Library card view
   .bookrc.example # Config template for local paths
 
-Templates/        # Work daily notes and project page templates
+Inbox/            # Fleeting notes — quick capture, processed weekly
+Zettelkasten/     # Permanent notes — one atomic idea per note, interlinked
+Templates/        # Inbox, Zettel, Work Daily, Work Project templates
 CLAUDE.md         # Vault-level Claude Code instructions
 Home.md           # Obsidian dashboard with Dataview queries
 ```
@@ -40,6 +42,8 @@ graph LR
         IDX[Books Index]
         BOOKS[Book Notes]
         WORK[Work Notes]
+        INBOX[Inbox<br/>Fleeting Notes]
+        ZK[Zettelkasten<br/>Permanent Notes]
         OTHER[Thoughts, Articles, ...]
     end
 
@@ -79,6 +83,7 @@ graph TD
     FEYNMAN["<b>FEYNMAN</b><br/>帮我费曼测试第 X 章"]
     FILL --> FEYNMAN
     FEYNMAN -->|Claude interrogates| CARDS[Generate flashcards]
+    FEYNMAN -->|extract insights| ZK[Zettelkasten<br/>Permanent Notes]
 
     REVIEW["<b>REVIEW</b><br/>review 第 X 部分"]
     CARDS --> REVIEW
@@ -87,6 +92,7 @@ graph TD
     FINAL["<b>FINAL</b><br/>我读完了这本书"]
     SUMMARY --> FINAL
     FINAL --> SYNTH[Book synthesis +<br/>Gap check]
+    FINAL -->|cross-chapter insights| ZK
 
     SR["<b>SPACED REVIEW</b><br/>Obsidian SR plugin"]
     CARDS -.->|#flashcards/BookName| SR
@@ -97,9 +103,50 @@ graph TD
     style REVIEW fill:#ffa94d,color:#fff
     style FINAL fill:#51cf66,color:#fff
     style SR fill:#be4bdb,color:#fff
+    style ZK fill:#20c997,color:#fff
 ```
 
-A structured reading workflow: **scaffold first → directed reading → active construction → spaced review**.
+A structured reading workflow: **scaffold first → directed reading → active construction → spaced review → permanent knowledge**.
+
+## Knowledge Flow (Zettelkasten)
+
+```mermaid
+graph LR
+    subgraph Input["Knowledge Sources"]
+        B["Books<br/>/zettel"]
+        W["Work<br/>/retro"]
+        L["Life & Skills<br/>manual"]
+        A["Articles<br/>/zettel"]
+    end
+
+    subgraph Process["Processing"]
+        INBOX["Inbox/<br/>Fleeting Notes"]
+        EXTRACT["Extract &<br/>Atomize"]
+    end
+
+    subgraph Output["Knowledge Network"]
+        ZK["Zettelkasten/<br/>Permanent Notes"]
+    end
+
+    B --> EXTRACT
+    W --> EXTRACT
+    A --> EXTRACT
+    L --> INBOX
+    INBOX -->|weekly review| EXTRACT
+    EXTRACT -->|one idea per note| ZK
+    ZK ---|"[[wikilinks]]"| ZK
+
+    style INBOX fill:#ffd43b,color:#000
+    style ZK fill:#20c997,color:#fff
+    style EXTRACT fill:#748ffc,color:#fff
+```
+
+Three input pipelines feed the same knowledge network:
+- **Reading** — Feynman tests and book reviews automatically suggest zettel extraction
+- **Work** — `/retro` command extracts reusable lessons from daily notes and project pages
+- **Life & Skills** — Capture to Inbox, process weekly into permanent notes
+
+Each zettel is one atomic idea, written in your own words, linked to related zettel via `Related::` field. The `domain` frontmatter field (reading/work/skill/meta) enables filtering without folder separation.
 
 ```
 python3 Books/book_init.py --file "path/to/book.epub" --output "path/to/vault/Books"
@@ -204,7 +251,7 @@ Any changes to `~/Library/ebooks/` are automatically synced to S3.
 cp Books/.bookrc.example .bookrc
 # Edit .bookrc:
 #   books_dir = "~/Library/ebooks"
-#   vault_dir = "~/Library/Mobile Documents/iCloud~md~obsidian/Documents/General Notes"
+#   vault_dir = "~/Vaults/Workspace"
 ```
 
 ### 6. Obsidian plugins
