@@ -134,8 +134,8 @@ flowchart TD
     BTN["Zettel capture button"]:::cmd
     INBOX["Inbox/"]:::inbox
     IR["/inbox-review (weekly)"]:::cmd
-    ZT["/zettel source"]:::cmd
-    RT["/retro source"]:::cmd
+    ZT["/zettel [source]"]:::cmd
+    RT["/retro [source]"]:::cmd
 
     ZK["Zettelkasten/ — permanent notes"]:::store
 
@@ -197,7 +197,6 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 |---------|------------|
 | `/organize [folder]` | Review and sort notes in a folder |
 | `/tag-audit` | Audit and clean up tags across the vault |
-
 ### Zettelkasten Workflow
 
 **Capture (mobile):** Use the `+ Zettel` button on Home.md to create a timestamped note in `Inbox/` — no format required, just the thought.
