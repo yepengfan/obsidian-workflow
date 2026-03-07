@@ -8,7 +8,28 @@ banner_y: 0
 
 ## Work
 
-[[Work Dashboard|Open Work Dashboard]] · `$= "[[Work/" + dv.date("today").toFormat("yyyy/yyyy-MM-dd") + "|Today's Note]]"`
+```dataviewjs
+const row = dv.el("div", "", { attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
+
+// Navigation links
+const nav = row.createEl("div", { attr: { style: "font-size:0.9em;" } });
+nav.innerHTML = `<a class="internal-link" data-href="Work/Work Dashboard">Open Work Dashboard</a> · ` +
+  `<a class="internal-link" data-href="Work/${dv.date("today").toFormat("yyyy/yyyy-MM-dd")}">${dv.date("today").toFormat("yyyy-MM-dd")}</a>`;
+
+// Inbox button — creates a new note in Inbox/ and opens it
+const btn = row.createEl("button", {
+  text: "+ Inbox",
+  attr: {
+    style: "margin-left:auto;padding:8px 18px;background:var(--interactive-accent);color:var(--text-on-accent);border-radius:8px;font-weight:600;font-size:0.88em;border:none;cursor:pointer;white-space:nowrap;"
+  }
+});
+btn.addEventListener("click", async () => {
+  const ts = dv.date("now").toFormat("yyyy-MM-dd-HHmmss");
+  const path = `Inbox/${ts}.md`;
+  await app.vault.create(path, "");
+  await app.workspace.openLinkText(path, "", false);
+});
+```
 
 **Today's open tasks:**
 
@@ -97,10 +118,8 @@ for (const p of recent) {
 }
 
 // Link to full dashboard
-const footer = container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.85em;display:flex;gap:16px;" } });
-footer.innerHTML =
-  `<a class="internal-link" data-href="Zettelkasten/Zettelkasten Index">Open Zettelkasten Dashboard →</a>` +
-  `<a class="internal-link" data-href="Inbox" style="color:var(--text-muted);">+ New Inbox Note</a>`;
+container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.85em;" } }).innerHTML =
+  `<a class="internal-link" data-href="Zettelkasten/Zettelkasten Index">Open Zettelkasten Dashboard →</a>`;
 ```
 
 ---
