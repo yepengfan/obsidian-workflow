@@ -115,8 +115,8 @@ graph LR
     subgraph Input["Knowledge Sources"]
         B["Books<br/>/zettel"]
         W["Work<br/>/retro"]
-        L["Life & Skills<br/>manual"]
-        A["Articles<br/>/zettel"]
+        L["Life & Skills<br/>+ Inbox button"]
+        A["Articles<br/>/zettel /research"]
     end
 
     subgraph Process["Processing"]
@@ -125,14 +125,14 @@ graph LR
     end
 
     subgraph Output["Knowledge Network"]
-        ZK["Zettelkasten/<br/>Permanent Notes"]
+        ZK["Zettelkasten/<br/>Permanent Notes<br/>🌱 → 🌿 → 🌳"]
     end
 
     B --> EXTRACT
     W --> EXTRACT
     A --> EXTRACT
     L --> INBOX
-    INBOX -->|weekly review| EXTRACT
+    INBOX -->|"/inbox-review"| EXTRACT
     EXTRACT -->|one idea per note| ZK
     ZK ---|"[[wikilinks]]"| ZK
 
@@ -142,11 +142,11 @@ graph LR
 ```
 
 Three input pipelines feed the same knowledge network:
-- **Reading** — Feynman tests and book reviews automatically suggest zettel extraction
-- **Work** — `/retro` command extracts reusable lessons from daily notes and project pages
-- **Life & Skills** — Capture to Inbox, process weekly into permanent notes
+- **Reading** — `/zettel` extracts atomic insights from book highlights and articles
+- **Work** — `/retro` extracts reusable lessons from daily notes and project pages
+- **Life & Skills** — Capture to Inbox via `+ Inbox` button (mobile-friendly), process weekly with `/inbox-review`
 
-Each zettel is one atomic idea, written in your own words, linked to related zettel via `Related::` field. The `topics` frontmatter field (free-form keywords) enables filtering in the Zettelkasten Index.
+Each zettel is one atomic idea, written in your own words, linked to related zettel via `Related::` field. The `topics` frontmatter field (free-form keywords) enables filtering in the Zettelkasten Index. Status progresses from 🌱 `seedling` → 🌿 `growing` (2+ links) → 🌳 `evergreen` (manually marked, deeply internalized).
 
 ### Commands
 
