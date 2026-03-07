@@ -103,6 +103,7 @@ Create a new Learning Plan for: $ARGUMENTS
    ```markdown
    ---
    plan: <CODE>
+   code: <CODE>
    tags: [learning/<CODE>]
    ---
 

@@ -285,7 +285,7 @@ if (plans.length === 0) {
     const dotsWrap = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:3px;padding:0 12px;flex-shrink:0;" } });
     for (const w of [...WEEKS].reverse()) {
       if (logMap[w]) {
-        const sq = dotsWrap.createEl("a", {
+        dotsWrap.createEl("a", {
           attr: { class: "internal-link", "data-href": logMap[w].file.path, title: w, style: "width:10px;height:10px;border-radius:2px;background:var(--color-accent);display:inline-block;opacity:0.85;" }
         });
       } else {
