@@ -115,8 +115,8 @@ graph LR
     subgraph Input["Knowledge Sources"]
         B["Books<br/>/zettel"]
         W["Work<br/>/retro"]
-        L["Life & Skills<br/>manual"]
-        A["Articles<br/>/zettel"]
+        L["Life & Skills<br/>+ Inbox button"]
+        A["Articles<br/>/zettel /research"]
     end
 
     subgraph Process["Processing"]
@@ -125,14 +125,14 @@ graph LR
     end
 
     subgraph Output["Knowledge Network"]
-        ZK["Zettelkasten/<br/>Permanent Notes"]
+        ZK["Zettelkasten/<br/>Permanent Notes<br/>🌱 → 🌿 → 🌳"]
     end
 
     B --> EXTRACT
     W --> EXTRACT
     A --> EXTRACT
     L --> INBOX
-    INBOX -->|weekly review| EXTRACT
+    INBOX -->|"/inbox-review"| EXTRACT
     EXTRACT -->|one idea per note| ZK
     ZK ---|"[[wikilinks]]"| ZK
 
@@ -142,11 +142,79 @@ graph LR
 ```
 
 Three input pipelines feed the same knowledge network:
-- **Reading** — Feynman tests and book reviews automatically suggest zettel extraction
-- **Work** — `/retro` command extracts reusable lessons from daily notes and project pages
-- **Life & Skills** — Capture to Inbox, process weekly into permanent notes
+- **Reading** — `/zettel` extracts atomic insights from book highlights and articles
+- **Work** — `/retro` extracts reusable lessons from daily notes and project pages
+- **Life & Skills** — Capture to Inbox via `+ Inbox` button (mobile-friendly), process weekly with `/inbox-review`
 
-Each zettel is one atomic idea, written in your own words, linked to related zettel via `Related::` field. The `domain` frontmatter field (reading/work/skill/meta) enables filtering without folder separation.
+Each zettel is one atomic idea, written in your own words, linked to related zettel via `Related::` field. The `topics` frontmatter field (free-form keywords) enables filtering in the Zettelkasten Index. **Zettel status lifecycle:**
+
+```mermaid
+graph LR
+    S["🌱 seedling<br/>newly created<br/>0–1 Related links"]
+    G["🌿 growing<br/>connected to network<br/>2+ Related links"]
+    E["🌳 evergreen<br/>deeply internalized<br/>cross-domain insight"]
+
+    S -->|"auto — on save"| G
+    G -->|"manual judgment"| E
+
+    style S fill:#d3f9d8,color:#2b8a3e
+    style G fill:#b2f2bb,color:#2b8a3e
+    style E fill:#69db7c,color:#1a4731
+```
+
+### Commands
+
+All commands run inside Claude Code (type `/command-name` in the chat).
+
+#### Knowledge Building
+
+| Command | When to use |
+|---------|------------|
+| `/zettel <source>` | Extract permanent zettel from a book, article, or note |
+| `/inbox-review` | Weekly — process all Inbox notes into zettel or archive |
+| `/retro <source>` | Extract reusable lessons from work daily notes or project pages |
+| `/connections <topic>` | Find thematic connections across Book Summaries |
+
+#### Research & Notes
+
+| Command | When to use |
+|---------|------------|
+| `/research <topic>` | Web research → structured note saved to `Thoughts/` |
+| `/summarize <note>` | Summarize a note or folder into key points |
+| `/backlink [note]` | Scan a note and add `[[wikilinks]]` to referenced concepts |
+
+#### Work
+
+| Command | When to use |
+|---------|------------|
+| `/daily` | Create today's daily note in `Thoughts/` |
+| `/meeting <title>` | Create a meeting note |
+| `/decision-log <decision>` | Record a decision with context and rationale |
+| `/project <name>` | Create a new project page in `Work/Projects/` |
+
+#### Vault Maintenance
+
+| Command | When to use |
+|---------|------------|
+| `/organize [folder]` | Review and sort notes in a folder |
+| `/tag-audit` | Audit and clean up tags across the vault |
+| `/sync-summaries` | Sync Book Summaries with the latest WeRead highlights |
+
+### Zettelkasten Workflow
+
+**Capture (mobile):** Use the `+ Zettel` button on Home.md to create a timestamped note in `Inbox/` — no format required, just the thought.
+
+**Inbox → Zettel flow** (run `/inbox-review` in Claude Code):
+1. Each inbox note is shown one at a time
+2. Choose: **convert to zettel** / **archive** / **skip**
+3. Converted notes become permanent zettel in `Zettelkasten/`
+4. Processed notes are archived to `Inbox/archive/YYYY-MM/` (never deleted)
+5. Skipped notes remain in `Inbox/` for the next review
+
+**Zettel status lifecycle:**
+- 🌱 `seedling` — newly created, 0–1 Related links
+- 🌿 `growing` — 2+ Related links, idea connected to the network
+- 🌳 `evergreen` — manually marked; deeply internalized, cross-domain connections
 
 ```
 python3 Books/book_init.py --file "path/to/book.epub" --output "path/to/vault/Books"

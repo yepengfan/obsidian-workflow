@@ -11,14 +11,22 @@ banner_y: 0
 ```dataviewjs
 const row = dv.el("div", "", { attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
 
-// Navigation links
-const nav = row.createEl("div", { attr: { style: "font-size:0.9em;" } });
-nav.innerHTML = `<a class="internal-link" data-href="Work/Work Dashboard">Open Work Dashboard</a> · ` +
-  `<a class="internal-link" data-href="Work/${dv.date("today").toFormat("yyyy/yyyy-MM-dd")}">${dv.date("today").toFormat("yyyy-MM-dd")}</a>`;
+// Navigation buttons
+const navDash = row.createEl("button", {
+  text: "Work Dashboard",
+  attr: { style: "padding:6px 14px;border:1px solid var(--background-modifier-border);border-radius:7px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.85em;" }
+});
+navDash.addEventListener("click", () => app.workspace.openLinkText("Work/Work Dashboard", "", false));
 
-// Inbox button — creates a new note in Inbox/ and opens it
+const navToday = row.createEl("button", {
+  text: dv.date("today").toFormat("yyyy-MM-dd"),
+  attr: { style: "padding:6px 14px;border:1px solid var(--background-modifier-border);border-radius:7px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.85em;" }
+});
+navToday.addEventListener("click", () => app.workspace.openLinkText("Work/" + dv.date("today").toFormat("yyyy/yyyy-MM-dd"), "", false));
+
+// Zettel capture button — creates a new timestamped note in Inbox/
 const btn = row.createEl("button", {
-  text: "+ Inbox",
+  text: "+ Zettel",
   attr: {
     style: "margin-left:auto;padding:8px 18px;background:var(--interactive-accent);color:var(--text-on-accent);border-radius:8px;font-weight:600;font-size:0.88em;border:none;cursor:pointer;white-space:nowrap;"
   }
@@ -101,7 +109,7 @@ const grid = container.createEl("div", {
 const statusIcon = { seedling: "🌱", growing: "🌿", evergreen: "🌳" };
 for (const p of recent) {
   const card = grid.createEl("div", {
-    attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;padding:12px;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);" }
+    attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;padding:12px;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;flex-direction:column;" }
   });
   const titleEl = card.createEl("div", { attr: { style: "font-weight:700;font-size:0.88em;margin-bottom:6px;line-height:1.4;" } });
   titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${p.file.name}</a>`;
@@ -113,11 +121,15 @@ for (const p of recent) {
     }
   }
   const src = String(p.source || "").replace(/\[\[|\]\]/g, "").replace(/-\d+$/, "").replace(/-CB_.*$/, "");
-  const bottom = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;font-size:0.7em;color:var(--text-faint);" } });
-  bottom.createEl("span", { text: statusIcon[p.status] || "🌱", attr: { style: "font-size:1.1em;" } });
+  const cardBottom = card.createEl("div", { attr: { style: "margin-top:auto;padding-top:8px;font-size:0.7em;color:var(--text-faint);" } });
   if (src) {
-    const srcEl = bottom.createEl("span", { attr: { style: "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;" } });
+    const srcRow = cardBottom.createEl("div", { attr: { style: "margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+    const si = statusIcon[p.status] || "🌱";
+    srcRow.createEl("span", { text: si + " ", attr: { style: "font-size:1.1em;" } });
+    const srcEl = srcRow.createEl("span");
     srcEl.innerHTML = `<a class="internal-link" data-href="${String(p.source || "").replace(/\[\[|\]\]/g, "")}" style="color:var(--text-faint);">${src}</a>`;
+  } else {
+    cardBottom.createEl("span", { text: statusIcon[p.status] || "🌱", attr: { style: "font-size:1.1em;" } });
   }
 }
 

@@ -70,6 +70,27 @@ function updateSortStyles() {
 }
 updateSortStyles();
 
+// Row 1b: Status filter
+let activeStatus = null;
+const statusRow = container.createEl("div", {
+  attr: { style: "display:flex;gap:6px;align-items:center;margin-bottom:10px;" }
+});
+statusRow.createEl("span", { text: "Status:", attr: { style: "font-size:0.78em;color:var(--text-faint);flex-shrink:0;" } });
+const statusOpts = [
+  { label: "All", value: null },
+  { label: "\ud83c\udf31 Seedling", value: "seedling" },
+  { label: "\ud83c\udf3f Growing", value: "growing" },
+  { label: "\ud83c\udf33 Evergreen", value: "evergreen" },
+];
+const statusEls = statusOpts.map(s => {
+  const btn = statusRow.createEl("button", { text: s.label, attr: { style: s.value === activeStatus ? btnOn : btnOff } });
+  btn.addEventListener("click", () => { activeStatus = s.value; updateStatusStyles(); render(); });
+  return { el: btn, value: s.value };
+});
+function updateStatusStyles() {
+  statusEls.forEach(s => { s.el.setAttribute("style", s.value === activeStatus ? btnOn : btnOff); });
+}
+
 // Row 2: Popular topics — clean horizontal bar
 const topicBar = container.createEl("div", {
   attr: { style: "display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" }
@@ -127,6 +148,11 @@ function render() {
   const q = searchBox.value.toLowerCase();
   let filtered = allZk;
 
+  // Status filter
+  if (activeStatus) {
+    filtered = filtered.where(p => p.status === activeStatus);
+  }
+
   // Topic filter: must match ALL active topics
   if (activeTopics.size > 0) {
     filtered = filtered.where(p => {
@@ -164,7 +190,7 @@ function render() {
     const src = String(p.source || "").replace(/\[\[|\]\]/g, "").replace(/-\d+$/, "").replace(/-CB_.*$/, "");
 
     const card = grid.createEl("div", {
-      attr: { style: "border:1px solid var(--background-modifier-border);border-radius:12px;padding:14px 16px;background:var(--background-secondary);transition:box-shadow 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.06);" }
+      attr: { style: "border:1px solid var(--background-modifier-border);border-radius:12px;padding:14px 16px;background:var(--background-secondary);transition:box-shadow 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;flex-direction:column;" }
     });
 
     // Title — hero element
@@ -182,22 +208,56 @@ function render() {
       }
     }
 
-    // Bottom row: status + source (truncated) + links + date
-    const bottom = card.createEl("div", {
-      attr: { style: "display:flex;align-items:center;gap:6px;font-size:0.73em;color:var(--text-faint);" }
-    });
-    const si = statusIcon[p.status] || "";
-    if (si) bottom.createEl("span", { text: si, attr: { style: "font-size:1.1em;flex-shrink:0;" } });
+    // Bottom: two rows — source on top, meta on bottom (pushed to card bottom)
+    const cardBottom = card.createEl("div", { attr: { style: "margin-top:auto;padding-top:10px;font-size:0.73em;color:var(--text-faint);" } });
+
+    // Row 1: source
     if (src) {
-      const srcEl = bottom.createEl("span", { attr: { style: "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;" } });
+      const srcRow = cardBottom.createEl("div", { attr: { style: "margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+      const si = statusIcon[p.status] || "";
+      if (si) srcRow.createEl("span", { text: si + " ", attr: { style: "font-size:1.1em;" } });
+      const srcEl = srcRow.createEl("span");
       srcEl.innerHTML = `<a class="internal-link" data-href="${String(p.source || "").replace(/\[\[|\]\]/g, "")}" style="color:var(--text-faint);">${src}</a>`;
     }
-    if (linkCount > 0) {
-      bottom.createEl("span", { text: `\u00b7 ${linkCount}`, attr: { style: "flex-shrink:0;" } });
+
+    // Row 2: link count + date + evergreen button
+    const metaRow = cardBottom.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;" } });
+    if (!src) {
+      const si = statusIcon[p.status] || "";
+      if (si) metaRow.createEl("span", { text: si, attr: { style: "font-size:1.1em;" } });
     }
+    if (linkCount > 0) {
+      metaRow.createEl("span", { text: `\u00b7 ${linkCount} links` });
+    }
+
+    // Right-aligned group: date + evergreen button
+    const metaRight = metaRow.createEl("div", { attr: { style: "display:flex;align-items:center;gap:8px;margin-left:auto;" } });
     const created = p.created ? String(p.created).slice(0, 10) : "";
     if (created) {
-      bottom.createEl("span", { text: created, attr: { style: "margin-left:auto;flex-shrink:0;" } });
+      metaRight.createEl("span", { text: created });
+    }
+
+    // Evergreen promote button — only shown on growing notes
+    if (p.status === "growing") {
+      const evBtn = metaRight.createEl("button", {
+        text: "\ud83c\udf33 Evergreen",
+        attr: {
+          title: "Mark as evergreen",
+          style: "border:1px solid var(--color-green);border-radius:6px;background:none;color:var(--color-green);cursor:pointer;font-size:0.8em;padding:3px 10px;opacity:0.5;transition:opacity 0.15s;flex-shrink:0;"
+        }
+      });
+      evBtn.addEventListener("mouseenter", () => { evBtn.style.opacity = "1"; });
+      evBtn.addEventListener("mouseleave", () => { evBtn.style.opacity = "0.5"; });
+      evBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const tFile = app.vault.getAbstractFileByPath(p.file.path);
+        if (!tFile) return;
+        await app.fileManager.processFrontMatter(tFile, fm => { fm.status = "evergreen"; });
+        evBtn.style.opacity = "1";
+        evBtn.style.cursor = "default";
+        evBtn.title = "Marked as evergreen \u2713";
+        card.style.borderColor = "var(--color-green)";
+      });
     }
   }
 
