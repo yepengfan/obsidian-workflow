@@ -29,8 +29,8 @@ Books/
 
 Inbox/            # Fleeting notes — quick capture, processed weekly
 Zettelkasten/     # Permanent notes — one atomic idea per note, interlinked
-Learning/         # Structured learning plans (one subfolder per plan)
-  <plan>/
+Learning/         # Structured learning plans (folder name = plan code)
+  AISA/           # e.g. AI Solutions Architect
     00_plan.md    # Goals, phases, timeline, completion criteria
     00_map.md     # Concept map + technology radar
     Weeks/        # Weekly logs (YYYY-WXX.md)
@@ -212,10 +212,10 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 
 | Command | When to use |
 |---------|------------|
-| `/learning-init <plan>` | Create a new learning plan with folder structure and templates |
-| `/learning-log [plan]` | Create or open this week's learning log for a plan |
-| `/learning-review [plan] [week]` | Review a week's log — produce zettel candidates and plan adjustments |
-| `/project-retro [folder]` | Technical project retro — decisions, pitfalls, reusable patterns |
+| `/learning-init <plan>` | Create a new learning plan — assigns a short code (e.g. `AISA`) |
+| `/learning-log [code\|plan]` | Create or open this week's learning log — accepts code shorthand |
+| `/learning-review [code\|plan] [week]` | Review a week's log — produce zettel candidates and plan adjustments |
+| `/project-retro [code\|folder]` | Technical project retro — decisions, pitfalls, reusable patterns |
 
 #### Vault Maintenance
 

@@ -2,6 +2,7 @@
 date: {{date}}
 week: {{week}}
 plan:
+code:
 tags: [learning, weekly]
 ---
 

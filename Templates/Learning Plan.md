@@ -1,6 +1,8 @@
 ---
 plan: {{title}}
+code:
 status: active
+phase: 1
 started: {{date}}
 target:
 tags: [learning/{{title}}]

@@ -1,17 +1,17 @@
 Review learning progress for: $ARGUMENTS
 
-Format: "[plan]" or "[plan] [week]" (e.g. "AI-SA" or "AI-SA 2026-W10")
+Format: "[plan-or-code]" or "[plan-or-code] [week]" (e.g. "AISA" or "AISA 2026-W10")
 
 ## Steps
 
 1. **Parse arguments**:
-   - `[plan]` only → review most recent week's log for that plan
-   - `[plan] [week]` → review specific week
-   - No args → list active plans and ask the user to choose
+   - `[plan]` only → review most recent week's log; match by code first (e.g. `AISA`), then by plan name
+   - `[plan] [week]` → review specific week (e.g. `AISA 2026-W10`)
+   - No args → list active plans (showing `[CODE] plan-name`) and ask the user to choose
 
-2. **Read the week log** at `Learning/<plan>/Weeks/<YYYY-WXX>.md`
+2. **Read the week log** at `Learning/<CODE>/Weeks/<YYYY-WXX>.md`
 
-3. **Read `Learning/<plan>/00_plan.md`** to understand goals and current phase
+3. **Read `Learning/<CODE>/00_plan.md`** to understand goals and current phase
 
 4. **Produce a structured review**:
 

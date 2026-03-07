@@ -4,22 +4,26 @@ Create a new Learning Plan for: $ARGUMENTS
 
 1. **Parse the plan name** from $ARGUMENTS (e.g. "AI-SA", "System-Design"). If no argument provided, ask the user.
 
-2. **Create the folder structure** in `Learning/<plan-name>/`:
+2. **Assign a short code**: Suggest a 4-5 letter uppercase code derived from the plan name (e.g. "AI-SA" → "AISA", "System-Design" → "SYSD"). Confirm with the user before proceeding.
+
+3. **Create the folder structure** in `Learning/<CODE>/`:
    ```
-   Learning/<plan-name>/
+   Learning/<CODE>/
      Weeks/
      Courses/
      Projects/
    ```
 
-3. **Create `Learning/<plan-name>/00_plan.md`**:
+4. **Create `Learning/<CODE>/00_plan.md`**:
    ```markdown
    ---
-   plan: <plan-name>
+   plan: <CODE>
+   code: <CODE>
    status: active
+   phase: 1
    started: <today's date>
    target:
-   tags: [learning/<plan-name>]
+   tags: [learning/<CODE>]
    ---
 
    # <Plan Name> — Learning Plan
@@ -43,11 +47,11 @@ Create a new Learning Plan for: $ARGUMENTS
    - Projects:
    ```
 
-4. **Create `Learning/<plan-name>/00_map.md`**:
+5. **Create `Learning/<CODE>/00_map.md`**:
    ```markdown
    ---
-   plan: <plan-name>
-   tags: [learning/<plan-name>]
+   plan: <CODE>
+   tags: [learning/<CODE>]
    ---
 
    # <Plan Name> — Concept Map
@@ -66,10 +70,10 @@ Create a new Learning Plan for: $ARGUMENTS
    |------------------|----------|--------|-------|
    ```
 
-5. **Confirm** what was created and prompt the user to fill in `00_plan.md` (goals, phases, weekly budget, completion criteria).
+6. **Confirm** what was created and prompt the user to fill in `00_plan.md` (goals, phases, weekly budget, completion criteria).
 
 ## Rules
 
-- Use the exact plan name as the folder name
-- If `Learning/<plan-name>/` already exists, ask before overwriting any files
+- Use the confirmed code as the folder name (e.g. `Learning/AISA/`)
+- If `Learning/<CODE>/` already exists, ask before overwriting any files
 - Do not pre-create course or project subfolders — those are created on demand

@@ -210,40 +210,60 @@ SORT length(rows) DESC
 ## Learning
 
 ```dataviewjs
-function isoWeek(d) {
+function isoWeekLabel(d) {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const day = date.getUTCDay() || 7;
   date.setUTCDate(date.getUTCDate() + 4 - day);
   const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
 }
-const now = new Date();
-const currentWeek = `${now.getFullYear()}-W${String(isoWeek(now)).padStart(2, '0')}`;
+function lastNWeeks(n) {
+  const result = [];
+  const now = new Date();
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i * 7);
+    result.push(isoWeekLabel(d));
+  }
+  return result;
+}
 
+const WEEKS = lastNWeeks(4);
+const currentWeek = WEEKS[WEEKS.length - 1];
 const plans = dv.pages('"Learning"').where(p => p.file.name === "00_plan" && p.status === "active");
-const logs = dv.pages('"Learning"').where(p => p.week === currentWeek);
+const allLogs = dv.pages('"Learning"').where(p => p.week !== undefined);
 
 const container = dv.el("div", "");
 
 if (plans.length === 0) {
-  container.createEl("p", { text: "No active learning plans. Run /learning-init to start one.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
+  container.createEl("p", { text: "No active plans — run /learning-init to start one.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
 } else {
-  const grid = container.createEl("div", { attr: { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:8px;" } });
   for (const p of plans) {
-    const planName = p.plan || p.file.parent.name;
-    const log = logs.find(l => l.plan === planName);
-    const card = grid.createEl("div", { attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;padding:12px 14px;background:var(--background-secondary);" } });
-    const titleEl = card.createEl("div", { attr: { style: "font-weight:600;font-size:0.9em;margin-bottom:6px;" } });
-    titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${planName}</a>`;
-    const meta = card.createEl("div", { attr: { style: "font-size:0.75em;color:var(--text-muted);margin-bottom:6px;" } });
-    if (p.target) meta.createEl("span", { text: `Target: ${p.target}` });
-    const logEl = card.createEl("div", { attr: { style: "font-size:0.75em;" } });
-    if (log) {
-      logEl.innerHTML = `📋 <a class="internal-link" data-href="${log.file.path}" style="color:var(--text-accent);">Week log: ${currentWeek}</a>`;
-    } else {
-      logEl.createEl("span", { text: `No log for ${currentWeek} — run /learning-log`, attr: { style: "color:var(--text-faint);" } });
+    const code = p.file.folder.split("/").pop();
+    const planLogs = allLogs.filter(l => l.code === code);
+    const logMap = {};
+    for (const l of planLogs) logMap[l.week] = l;
+
+    const row = container.createEl("div", { attr: { style: "display:flex;align-items:center;gap:8px;margin-bottom:8px;" } });
+
+    row.innerHTML += `<a class="internal-link" data-href="${p.file.path}" style="font-weight:700;font-size:0.8em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;text-decoration:none;white-space:nowrap;">${code}</a>`;
+
+    if (p.target) {
+      row.createEl("span", { text: p.target, attr: { style: "font-size:0.8em;color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+    }
+
+    const dots = row.createEl("span", { attr: { style: "display:flex;gap:4px;align-items:center;flex-shrink:0;" } });
+    for (const w of WEEKS) {
+      if (logMap[w]) {
+        dots.innerHTML += `<a class="internal-link" data-href="${logMap[w].file.path}" title="${w}" style="color:var(--color-accent);font-size:1.1em;text-decoration:none;">■</a>`;
+      } else {
+        const isCurrent = w === currentWeek;
+        dots.createEl("span", { text: isCurrent ? "□" : "·", attr: { title: w, style: `color:${isCurrent ? "var(--text-normal)" : "var(--background-modifier-border)"};font-size:1.1em;` } });
+      }
     }
   }
+  container.innerHTML += `<div style="margin-top:6px;font-size:0.75em;color:var(--text-muted);"><a class="internal-link" data-href="Learning/Dashboard.md">→ Full dashboard</a></div>`;
 }
 ```
 

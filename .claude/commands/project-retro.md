@@ -5,6 +5,7 @@ A project retro goes deeper than `/retro` — it focuses on technical decisions,
 ## Steps
 
 1. **Read the project** specified in $ARGUMENTS:
+   - If a plan code (e.g. `AISA`): resolve to `Learning/<plan>/Projects/` and list available projects, ask the user to choose
    - If a folder path (e.g. `Learning/AI-SA/Projects/my-poc`): read all files in that folder
    - If a note path: read that note
    - If unclear: ask the user
