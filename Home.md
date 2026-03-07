@@ -101,7 +101,7 @@ const grid = container.createEl("div", {
 const statusIcon = { seedling: "🌱", growing: "🌿", evergreen: "🌳" };
 for (const p of recent) {
   const card = grid.createEl("div", {
-    attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;padding:12px;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);" }
+    attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;padding:12px;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;flex-direction:column;" }
   });
   const titleEl = card.createEl("div", { attr: { style: "font-weight:700;font-size:0.88em;margin-bottom:6px;line-height:1.4;" } });
   titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${p.file.name}</a>`;
@@ -113,11 +113,15 @@ for (const p of recent) {
     }
   }
   const src = String(p.source || "").replace(/\[\[|\]\]/g, "").replace(/-\d+$/, "").replace(/-CB_.*$/, "");
-  const bottom = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;font-size:0.7em;color:var(--text-faint);" } });
-  bottom.createEl("span", { text: statusIcon[p.status] || "🌱", attr: { style: "font-size:1.1em;" } });
+  const cardBottom = card.createEl("div", { attr: { style: "margin-top:auto;padding-top:8px;font-size:0.7em;color:var(--text-faint);" } });
   if (src) {
-    const srcEl = bottom.createEl("span", { attr: { style: "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;" } });
+    const srcRow = cardBottom.createEl("div", { attr: { style: "margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+    const si = statusIcon[p.status] || "🌱";
+    srcRow.createEl("span", { text: si + " ", attr: { style: "font-size:1.1em;" } });
+    const srcEl = srcRow.createEl("span");
     srcEl.innerHTML = `<a class="internal-link" data-href="${String(p.source || "").replace(/\[\[|\]\]/g, "")}" style="color:var(--text-faint);">${src}</a>`;
+  } else {
+    cardBottom.createEl("span", { text: statusIcon[p.status] || "🌱", attr: { style: "font-size:1.1em;" } });
   }
 }
 
