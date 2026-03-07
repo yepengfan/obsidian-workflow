@@ -1,0 +1,1 @@
+Create a new project page at `Work/Projects/$ARGUMENTS.md` using the `Templates/Work Project.md` template. Replace `{{title}}` with the project name provided. If the project page already exists, tell me instead of overwriting it.

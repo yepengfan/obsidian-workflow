@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/tedfan/Library/Mobile\\ Documents/iCloud~md~obsidian/Documents/General\\ Notes/.claude/scripts/auto-sync.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

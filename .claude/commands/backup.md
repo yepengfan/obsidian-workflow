@@ -1,0 +1,1 @@
+Run the backup sync script at `~/obsidian-config/sync.sh`, then commit and push any changes to the GitHub repo. Use a concise commit message describing what changed. If there are no changes, just tell me everything is up to date.

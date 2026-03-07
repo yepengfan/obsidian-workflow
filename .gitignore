@@ -1,0 +1,27 @@
+# ── Content (synced via S3/iCloud, not git) ──
+Attachments/
+Books/思考，快与慢（第二版）/
+Books/AI Engineering/
+Books/Designing Data-Intensive Applications (2nd Edition)/
+Entertainment/
+Excalidraw/
+Instapaper Notes/
+Kanban/
+Matter/
+Thoughts/
+Training/
+WeRead/
+Work/
+Book Summaries/
+
+# ── Local config (machine-specific paths) ──
+.bookrc
+.claude/settings.local.json
+
+# ── Obsidian internals ──
+.obsidian/
+
+# ── System ──
+.DS_Store
+__pycache__/
+*.pyc
