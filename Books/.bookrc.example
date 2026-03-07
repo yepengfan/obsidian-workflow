@@ -1,6 +1,8 @@
 # .bookrc — Book Learning System Config
 # Copy this to the parent directory as .bookrc and edit paths for your machine.
+# Ebooks are stored in S3 (obsidian-ebook-library-391824190072) and synced
+# to ~/Library/ebooks/ via launchd. See README.md for setup.
 
-books_dir = "~/path/to/your/ebooks"
-vault_dir = "~/path/to/your/obsidian/vault"
+books_dir = "~/Library/ebooks"
+vault_dir = "~/Library/Mobile Documents/iCloud~md~obsidian/Documents/General Notes"
 notes_subdir = "Books"

@@ -43,14 +43,17 @@ graph LR
         OTHER[Thoughts, Articles, ...]
     end
 
-    subgraph Sync
-        IC[iCloud / S3]
+    subgraph AWS["AWS S3 (ap-southeast-2)"]
+        S3V[obsidian-vault-sync<br/>Remotely Save]
+        S3E[obsidian-ebook-library<br/>launchd auto-sync]
     end
 
+    EBOOKS[~/Library/ebooks] -->|launchd WatchPaths| S3E
+    S3E -->|aws s3 sync| EBOOKS
     EPUB -->|book_init.py| BOOKS
     WR -->|auto-sync plugin| Vault
     SYS -->|git clone| Vault
-    Vault <-->|content sync| IC
+    Vault <-->|Remotely Save plugin| S3V
 ```
 
 ## Book Learning System
@@ -107,15 +110,106 @@ Features:
 - Spaced repetition flashcards via [obsidian-spaced-repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition)
 - Interactive workflows: Feynman testing, Part Review, Final synthesis (via Claude Code)
 
-## Setup
+## Setup (new machine)
 
-1. Clone into your Obsidian vault root
-2. Copy `Books/.bookrc.example` to `.bookrc` in the vault root and edit paths
-3. Install dependencies: `pip install ebooklib beautifulsoup4 pdfplumber`
-4. Install Obsidian plugins: Dataview, Spaced Repetition
+### Prerequisites
 
-## Dependencies
+- [Obsidian](https://obsidian.md)
+- [Claude Code](https://claude.ai/claude-code)
+- Python 3 with `pip install ebooklib beautifulsoup4 pdfplumber`
+- AWS CLI (`brew install awscli`)
 
-- [Obsidian](https://obsidian.md) with Dataview plugin
-- [Claude Code](https://claude.ai/claude-code) for interactive workflows
-- Python 3 with `ebooklib`, `beautifulsoup4`, `pdfplumber`
+### 1. AWS credentials
+
+Configure the `obsidian-sync` IAM user (least-privilege access to S3 only):
+
+```bash
+aws configure --profile obsidian-sync
+# Access Key ID and Secret Access Key are stored in password manager
+# Region: ap-southeast-2
+```
+
+### 2. Vault sync (Remotely Save)
+
+1. Open Obsidian → Settings → Community Plugins → Install **Remotely Save**
+2. Configure S3 backend:
+   - **Endpoint**: `s3.ap-southeast-2.amazonaws.com`
+   - **Region**: `ap-southeast-2`
+   - **Bucket**: `obsidian-vault-sync-391824190072`
+   - **Access Key / Secret**: from `obsidian-sync` IAM user
+3. Trigger first sync — this downloads the full vault
+
+### 3. Ebook library
+
+```bash
+# Create local ebook directory
+mkdir -p ~/Library/ebooks
+
+# Download ebooks from S3
+aws s3 sync s3://obsidian-ebook-library-391824190072 ~/Library/ebooks --profile obsidian-sync
+```
+
+### 4. Ebook auto-sync (launchd)
+
+Create `~/Library/LaunchAgents/com.tedfan.ebook-s3-sync.plist` (replace `/Users/tedfan` with your home directory):
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.tedfan.ebook-s3-sync</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/aws</string>
+        <string>s3</string>
+        <string>sync</string>
+        <string>/Users/tedfan/Library/ebooks</string>
+        <string>s3://obsidian-ebook-library-391824190072</string>
+        <string>--region</string>
+        <string>ap-southeast-2</string>
+        <string>--exclude</string>
+        <string>.DS_Store</string>
+        <string>--profile</string>
+        <string>obsidian-sync</string>
+    </array>
+    <key>WatchPaths</key>
+    <array>
+        <string>/Users/tedfan/Library/ebooks</string>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/tmp/ebook-s3-sync.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/ebook-s3-sync.log</string>
+</dict>
+</plist>
+```
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.tedfan.ebook-s3-sync.plist
+```
+
+Any changes to `~/Library/ebooks/` are automatically synced to S3.
+
+### 5. Book system config
+
+```bash
+cp Books/.bookrc.example .bookrc
+# Edit .bookrc:
+#   books_dir = "~/Library/ebooks"
+#   vault_dir = "~/Library/Mobile Documents/iCloud~md~obsidian/Documents/General Notes"
+```
+
+### 6. Obsidian plugins
+
+Install via Community Plugins: Dataview, Spaced Repetition, Kanban, Calendar, Excalidraw, Tag Wrangler, Remotely Save
+
+## AWS resources
+
+| Resource | Value |
+|----------|-------|
+| IAM user | `obsidian-sync` |
+| Vault bucket | `obsidian-vault-sync-391824190072` |
+| Ebook bucket | `obsidian-ebook-library-391824190072` |
+| Region | `ap-southeast-2` (Sydney) |
