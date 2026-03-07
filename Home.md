@@ -154,7 +154,7 @@ const pages = dv.pages('"WeRead"')
     return (s === "在读" || (num > 0 && num < 100 && prog !== "-1")) && s !== "读完";
   })
   .sort(p => p.lastReadDate, "desc")
-  .limit(6);
+  .limit(8);
 
 const readContainer = dv.el("div", "");
 const grid = readContainer.createEl("div", {
