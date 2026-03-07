@@ -38,8 +38,8 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Formatting**: Use headers (##), callouts (`> [!tip]`), blockquotes, and lists. Follow existing patterns in the vault.
 - **Attachments**: Place images/media in `Attachments/`
 - **New notes**: Place in the appropriate existing folder. If unsure, use `Thoughts/`
-- **Zettel notes**: One idea per note, written in your own words (not copy-paste). Use `[[wikilinks]]` in the `Related::` field to connect to other zettel. Domain field: `reading`, `work`, `skill`, or `meta`. Title should be a descriptive statement (e.g., "Distributed systems trade consistency for availability").
-- **Inbox notes**: No format required. Just capture the thought. Will be processed into zettel or deleted during weekly review.
+- **Zettel notes**: One idea per note, written in your own words (not copy-paste). Use `[[wikilinks]]` in the `Related::` field to connect to other zettel. Title should be a descriptive statement (e.g., "Distributed systems trade consistency for availability").
+- **Inbox notes**: No format required. Just capture the thought. Run `/inbox-review` weekly to process: convert to zettel or archive to `Inbox/archive/YYYY-MM/`.
 - **Project tasks**: Group tasks under `### ProjectName` headings in daily notes (e.g., `### IS2`, `### IFM`). The heading name must match the filename in `Work/Projects/`. Dataview queries use `t.section.subpath` to filter tasks by project.
 - **Dataview tag filtering**: Use `p.file.tags.includes("#tag")` (not `p.tags`) in dataviewjs queries for reliable tag matching.
 

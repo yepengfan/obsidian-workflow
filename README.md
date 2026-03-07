@@ -146,7 +146,23 @@ Three input pipelines feed the same knowledge network:
 - **Work** — `/retro` command extracts reusable lessons from daily notes and project pages
 - **Life & Skills** — Capture to Inbox, process weekly into permanent notes
 
-Each zettel is one atomic idea, written in your own words, linked to related zettel via `Related::` field. The `domain` frontmatter field (reading/work/skill/meta) enables filtering without folder separation.
+Each zettel is one atomic idea, written in your own words, linked to related zettel via `Related::` field. The `topics` frontmatter field (free-form keywords) enables filtering in the Zettelkasten Index.
+
+### Zettelkasten Workflow
+
+| Command | When to use |
+|---------|------------|
+| `/zettel <source>` | Extract zettel from a specific book, article, or note |
+| `/inbox-review` | Weekly review — process all Inbox notes into zettel or archive |
+
+**Inbox → Zettel flow** (run `/inbox-review` in Claude Code):
+1. Each inbox note is shown one at a time
+2. Choose: **convert to zettel** / **archive** / **skip**
+3. Converted notes become permanent zettel in `Zettelkasten/`
+4. Processed notes are archived to `Inbox/archive/YYYY-MM/` (never deleted)
+5. Skipped notes remain in `Inbox/` for the next review
+
+**Capture (mobile):** Use the `+ Inbox` button on Home.md to create a timestamped note in `Inbox/` — no format required, just the thought.
 
 ```
 python3 Books/book_init.py --file "path/to/book.epub" --output "path/to/vault/Books"
