@@ -78,22 +78,22 @@ for (const p of recent) {
   const card = grid.createEl("div", {
     attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;padding:12px;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);" }
   });
-  const titleEl = card.createEl("div", { attr: { style: "font-weight:600;font-size:0.85em;margin-bottom:4px;line-height:1.3;" } });
+  const titleEl = card.createEl("div", { attr: { style: "font-weight:700;font-size:0.88em;margin-bottom:6px;line-height:1.4;" } });
   titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${p.file.name}</a>`;
-  const src = String(p.source || "").replace(/\[\[|\]\]/g, "");
-  if (src) {
-    card.createEl("div", { attr: { style: "font-size:0.72em;color:var(--text-muted);margin-bottom:6px;" } }).innerHTML =
-      `<a class="internal-link" data-href="${src}">${src}</a>`;
-  }
   const topics = p.topics || [];
   if (topics.length > 0) {
-    const topicRow = card.createEl("div", { attr: { style: "display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;" } });
+    const topicRow = card.createEl("div", { attr: { style: "display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;" } });
     for (const t of topics) {
       topicRow.createEl("span", { text: String(t), attr: { style: "font-size:0.65em;padding:1px 6px;border-radius:6px;background:var(--background-primary);color:var(--text-muted);border:1px solid var(--background-modifier-border);" } });
     }
   }
-  const bottom = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;" } });
-  bottom.createEl("span", { text: statusIcon[p.status] || "🌱", attr: { style: "font-size:0.8em;" } });
+  const src = String(p.source || "").replace(/\[\[|\]\]/g, "").replace(/-\d+$/, "").replace(/-CB_.*$/, "");
+  const bottom = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;font-size:0.7em;color:var(--text-faint);" } });
+  bottom.createEl("span", { text: statusIcon[p.status] || "🌱", attr: { style: "font-size:1.1em;" } });
+  if (src) {
+    const srcEl = bottom.createEl("span", { attr: { style: "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;" } });
+    srcEl.innerHTML = `<a class="internal-link" data-href="${String(p.source || "").replace(/\[\[|\]\]/g, "")}" style="color:var(--text-faint);">${src}</a>`;
+  }
 }
 
 // Link to full dashboard
