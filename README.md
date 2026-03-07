@@ -205,6 +205,21 @@ cp Books/.bookrc.example .bookrc
 
 Install via Community Plugins: Dataview, Spaced Repetition, Kanban, Calendar, Excalidraw, Tag Wrangler, Remotely Save
 
+### 7. NAS backup (optional)
+
+Synology NAS can pull from S3 as an offline backup via **Cloud Sync**:
+
+1. Open **Package Center** → Install **Cloud Sync**
+2. Create a new sync task:
+   - **Cloud Provider**: Amazon S3
+   - **Access Key / Secret Key**: from `obsidian-sync` IAM user
+   - **Bucket**: select the bucket to back up
+   - **Local path**: a folder on the NAS (e.g., `/volume1/Backup/obsidian-vault`)
+   - **Sync direction**: Download only (NAS as read-only backup)
+3. Repeat for the second bucket if desired
+
+This gives you a 3-2-1 backup: local Mac + S3 + NAS.
+
 ## AWS resources
 
 | Resource | Value |
