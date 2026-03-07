@@ -4,50 +4,107 @@ Create a new Learning Plan for: $ARGUMENTS
 
 1. **Parse the plan name** from $ARGUMENTS (e.g. "AI-SA", "System-Design"). If no argument provided, ask the user.
 
-2. **Create the folder structure** in `Learning/<plan-name>/`:
+2. **Assign a short code**: Suggest a 4-5 letter uppercase code derived from the plan name (e.g. "AI-SA" → "AISA", "System-Design" → "SYSD"). Confirm with the user before proceeding.
+
+3. **Create the folder structure** in `Learning/<CODE>/`:
    ```
-   Learning/<plan-name>/
+   Learning/<CODE>/
      Weeks/
      Courses/
      Projects/
    ```
 
-3. **Create `Learning/<plan-name>/00_plan.md`**:
+4. **Create `Learning/<CODE>/00_plan.md`**:
    ```markdown
    ---
-   plan: <plan-name>
+   plan: <CODE>
+   code: <CODE>
    status: active
+   phase: 1
    started: <today's date>
    target:
-   tags: [learning/<plan-name>]
+   tags: [learning/<CODE>]
    ---
 
    # <Plan Name> — Learning Plan
 
    ## 目标
 
+   成为 <role>，能够 <capability>。
+
+   **时间预算**: 每周 X 小时
+   **总时间线**: ~N 个月（YYYY.MM - YYYY.MM）
+   **原则**: 可行性第一 — 宁可多花 1 个月，不交半成品
+
+   ---
+
    ## 阶段划分
 
-   ### Phase 1
+   ### Phase 1 — <Focus>（Month 1-N，约 YYYY.MM - YYYY.MM）
+
+   **目标**: <What you can do by the end of this phase>
+
+   | 模块 | 内容 | 状态 |
+   |------|------|------|
+   | MOD-1 | <Description> | ⏳ 待开始 |
+
+   **阶段 1 关键产出**:
+   - [ ] <Deliverable 1>
+   - [ ] <Deliverable 2>
+
+   ---
+
+   ### Phase 2 — <Focus>（Month N-M，约 YYYY.MM - YYYY.MM）
+
+   **目标**: <What you can do by the end of this phase>
+
+   | 模块 | 内容 | 状态 |
+   |------|------|------|
+   | MOD-2 | <Description> | ⏳ 待开始 |
+
+   **阶段 2 关键产出**:
+   - [ ] <Deliverable 1>
+   - [ ] <Deliverable 2>
+
+   ---
 
    ## 每周时间预算
 
+   | 线路 | 周时间 | 说明 |
+   |------|--------|------|
+   | 主线 | Xh | <Description> |
+   | **合计** | **Xh** | |
+
+   ---
+
    ## 完成标准
 
-   - [ ]
+   - [ ] <Criterion 1>
+   - [ ] <Criterion 2>
+
+   ---
 
    ## 资源
 
-   - Courses:
-   - Books:
-   - Projects:
+   ### 认证
+   -
+
+   ### 课程
+   -
+
+   ### 书籍
+   -
+
+   ### 工具
+   -
    ```
 
-4. **Create `Learning/<plan-name>/00_map.md`**:
+5. **Create `Learning/<CODE>/00_map.md`**:
    ```markdown
    ---
-   plan: <plan-name>
-   tags: [learning/<plan-name>]
+   plan: <CODE>
+   code: <CODE>
+   tags: [learning/<CODE>]
    ---
 
    # <Plan Name> — Concept Map
@@ -66,10 +123,10 @@ Create a new Learning Plan for: $ARGUMENTS
    |------------------|----------|--------|-------|
    ```
 
-5. **Confirm** what was created and prompt the user to fill in `00_plan.md` (goals, phases, weekly budget, completion criteria).
+6. **Confirm** what was created and prompt the user to fill in `00_plan.md` (goals, phases, weekly budget, completion criteria).
 
 ## Rules
 
-- Use the exact plan name as the folder name
-- If `Learning/<plan-name>/` already exists, ask before overwriting any files
+- Use the confirmed code as the folder name (e.g. `Learning/AISA/`)
+- If `Learning/<CODE>/` already exists, ask before overwriting any files
 - Do not pre-create course or project subfolders — those are created on demand
