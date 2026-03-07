@@ -2,7 +2,9 @@
 # Auto-sync hook: runs after Edit/Write, only syncs if a config file changed
 # Called by Claude Code PostToolUse hook with JSON on stdin
 
-VAULT="/Users/tedfan/Library/Mobile Documents/iCloud~md~obsidian/Documents/General Notes"
+# Derive vault path from script location: .claude/scripts/ -> vault root
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+VAULT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BACKUP="$HOME/obsidian-config"
 
 # Read the edited file path from hook stdin
