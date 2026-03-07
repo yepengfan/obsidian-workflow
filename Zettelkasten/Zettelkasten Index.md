@@ -229,14 +229,17 @@ function render() {
     if (linkCount > 0) {
       metaRow.createEl("span", { text: `\u00b7 ${linkCount} links` });
     }
+
+    // Right-aligned group: date + evergreen button
+    const metaRight = metaRow.createEl("div", { attr: { style: "display:flex;align-items:center;gap:8px;margin-left:auto;" } });
     const created = p.created ? String(p.created).slice(0, 10) : "";
     if (created) {
-      metaRow.createEl("span", { text: created, attr: { style: "margin-left:auto;" } });
+      metaRight.createEl("span", { text: created });
     }
 
     // Evergreen promote button — only shown on growing notes
     if (p.status === "growing") {
-      const evBtn = metaRow.createEl("button", {
+      const evBtn = metaRight.createEl("button", {
         text: "\ud83c\udf33 Evergreen",
         attr: {
           title: "Mark as evergreen",
