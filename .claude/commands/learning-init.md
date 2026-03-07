@@ -57,6 +57,13 @@ Create a new Learning Plan for: $ARGUMENTS
    ## Core Concepts
 
    ## Connections to Existing Knowledge
+
+   ## Technology Radar
+
+   > Rate each tool/framework as you learn it. Consolidate into a full radar in Phase 4.
+
+   | Tool / Framework | Category | Rating | Notes |
+   |------------------|----------|--------|-------|
    ```
 
 5. **Confirm** what was created and prompt the user to fill in `00_plan.md` (goals, phases, weekly budget, completion criteria).

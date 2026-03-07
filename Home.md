@@ -231,7 +231,7 @@ if (plans.length === 0) {
   const grid = container.createEl("div", { attr: { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:8px;" } });
   for (const p of plans) {
     const planName = p.plan || p.file.parent.name;
-    const log = logs.find(l => l.plan === planName || l.plan === `"${planName}"`);
+    const log = logs.find(l => l.plan === planName);
     const card = grid.createEl("div", { attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;padding:12px 14px;background:var(--background-secondary);" } });
     const titleEl = card.createEl("div", { attr: { style: "font-weight:600;font-size:0.9em;margin-bottom:6px;" } });
     titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${planName}</a>`;

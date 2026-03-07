@@ -1,7 +1,7 @@
 ---
 date: {{date}}
 week: {{week}}
-plan: ""
+plan:
 tags: [learning, weekly]
 ---
 
