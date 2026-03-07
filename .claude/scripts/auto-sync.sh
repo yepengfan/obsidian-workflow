@@ -1,6 +1,7 @@
 #!/bin/bash
 # Auto-sync hook: runs after Edit/Write, commits tracked system files to git
-# Uses a persistent auto-sync branch + single open PR to avoid PR spam.
+# Uses a temporary worktree to avoid branch switching in the working directory.
+# Maintains a single open PR on the auto-sync branch.
 # Called by Claude Code PostToolUse hook with JSON on stdin
 
 BRANCH="auto-sync"
@@ -24,19 +25,11 @@ esac
 
 cd "$VAULT" || exit 0
 
-# Check for changes (staged, unstaged, or untracked)
+# Check for changes
 git diff --quiet HEAD 2>/dev/null && [ -z "$(git ls-files --others --exclude-standard)" ] && exit 0
 
-# Stage all changes while still on current branch
-git add -A
-
-# Stash the staged changes so branch switching is safe
-git stash -q
-
-# Update main from remote
-git fetch -q origin main 2>/dev/null
-git checkout -q main 2>/dev/null
-git merge -q --ff-only origin/main 2>/dev/null
+# Fetch latest remote state
+git fetch -q origin 2>/dev/null
 
 # Clean up stale local auto-sync branch if remote was deleted (PR merged)
 if git show-ref --verify --quiet "refs/heads/$BRANCH" && \
@@ -44,17 +37,33 @@ if git show-ref --verify --quiet "refs/heads/$BRANCH" && \
   git branch -q -D "$BRANCH" 2>/dev/null
 fi
 
-# Create or switch to auto-sync branch
-if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
-  git checkout -q "$BRANCH"
-  git merge -q main --no-edit 2>/dev/null
-else
-  git checkout -q -b "$BRANCH"
+# Create auto-sync branch from main if it doesn't exist
+if ! git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+  git branch "$BRANCH" origin/main 2>/dev/null
 fi
 
-# Apply stashed changes and commit
-git stash pop -q
+# Clean up any stale worktrees from previous runs
+git worktree prune 2>/dev/null
+
+# Set up temporary worktree for the auto-sync branch
+WORK_DIR=$(mktemp -d)
+trap 'git worktree remove --force "$WORK_DIR" 2>/dev/null; rm -rf "$WORK_DIR"' EXIT
+git worktree add -q "$WORK_DIR" "$BRANCH" 2>/dev/null || exit 0
+
+# Copy changed tracked files to worktree
+git diff --name-only HEAD 2>/dev/null | while read -r f; do
+  mkdir -p "$WORK_DIR/$(dirname "$f")"
+  cp "$VAULT/$f" "$WORK_DIR/$f"
+done
+git ls-files --others --exclude-standard 2>/dev/null | while read -r f; do
+  mkdir -p "$WORK_DIR/$(dirname "$f")"
+  cp "$VAULT/$f" "$WORK_DIR/$f"
+done
+
+# Commit in the worktree
+cd "$WORK_DIR"
 git add -A
+git diff --cached --quiet && exit 0
 git commit -q -m "Auto-sync: $(basename "$FILE") updated"
 git push -q origin "$BRANCH" 2>/dev/null
 
@@ -66,8 +75,5 @@ if [ -z "$OPEN_PR" ]; then
     --body "Automated PR from auto-sync hook. Merge when ready." \
     2>/dev/null
 fi
-
-# Switch back to main for normal work
-git checkout -q main 2>/dev/null
 
 exit 0
