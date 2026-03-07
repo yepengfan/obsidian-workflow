@@ -237,14 +237,14 @@ function render() {
     // Evergreen promote button — only shown on growing notes
     if (p.status === "growing") {
       const evBtn = metaRow.createEl("button", {
-        text: "\ud83c\udf33",
+        text: "\ud83c\udf33 Evergreen",
         attr: {
           title: "Mark as evergreen",
-          style: "border:none;background:none;cursor:pointer;font-size:1em;padding:0 2px;opacity:0.35;transition:opacity 0.15s;flex-shrink:0;"
+          style: "border:1px solid var(--color-green);border-radius:6px;background:none;color:var(--color-green);cursor:pointer;font-size:0.8em;padding:3px 10px;opacity:0.5;transition:opacity 0.15s;flex-shrink:0;"
         }
       });
       evBtn.addEventListener("mouseenter", () => { evBtn.style.opacity = "1"; });
-      evBtn.addEventListener("mouseleave", () => { evBtn.style.opacity = "0.35"; });
+      evBtn.addEventListener("mouseleave", () => { evBtn.style.opacity = "0.5"; });
       evBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
         const tFile = app.vault.getAbstractFileByPath(p.file.path);

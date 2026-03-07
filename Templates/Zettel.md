@@ -20,7 +20,7 @@ if (p.status === "growing") {
   const wrap = dv.el("div", "", { attr: { style: "margin-top:14px;" } });
   const btn = wrap.createEl("button", {
     text: "\ud83c\udf33 Mark as Evergreen",
-    attr: { style: "padding:5px 14px;border:1px solid var(--color-green);border-radius:6px;background:none;color:var(--color-green);cursor:pointer;font-size:0.82em;transition:all 0.15s;" }
+    attr: { style: "padding:7px 18px;border:1px solid var(--color-green);border-radius:8px;background:none;color:var(--color-green);cursor:pointer;font-size:0.9em;font-weight:500;transition:all 0.15s;" }
   });
   btn.addEventListener("click", async () => {
     const tFile = app.vault.getAbstractFileByPath(p.file.path);
