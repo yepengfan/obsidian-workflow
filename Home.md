@@ -24,8 +24,12 @@ const btn = row.createEl("button", {
   }
 });
 btn.addEventListener("click", async () => {
+  if (!app.vault.getAbstractFileByPath("Inbox")) {
+    await app.vault.createFolder("Inbox");
+  }
   const ts = dv.date("now").toFormat("yyyy-MM-dd-HHmmss");
   const path = `Inbox/${ts}.md`;
+  if (app.vault.getAbstractFileByPath(path)) return;
   await app.vault.create(path, "");
   await app.workspace.openLinkText(path, "", false);
 });
