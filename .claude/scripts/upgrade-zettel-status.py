@@ -29,7 +29,12 @@ def main():
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    status_match = re.search(r"^status:\s*(\w+)", content, re.MULTILINE)
+    fm_match = re.match(r"^---\n(.*?)\n---", content, re.DOTALL)
+    if not fm_match:
+        sys.exit(0)
+    frontmatter = fm_match.group(1)
+
+    status_match = re.search(r"^status:\s*(\w+)", frontmatter, re.MULTILINE)
     if not status_match or status_match.group(1) != "seedling":
         sys.exit(0)
 
