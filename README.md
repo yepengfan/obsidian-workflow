@@ -187,7 +187,7 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 
 | Command | When to use |
 |---------|------------|
-| `/daily` | Create today's daily note in `Thoughts/` |
+| `/daily` | Create today's personal daily note in `Thoughts/` (separate from work daily notes in `Work/2026/`) |
 | `/meeting <title>` | Create a meeting note |
 | `/decision-log <decision>` | Record a decision with context and rationale |
 | `/project <name>` | Create a new project page in `Work/Projects/` |

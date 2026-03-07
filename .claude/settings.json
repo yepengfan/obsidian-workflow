@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q 'Zettelkasten/'; then /Users/tedfan/Vaults/Workspace/.claude/scripts/upgrade-zettel-status.sh; fi"
+            "command": "echo \"$CLAUDE_TOOL_INPUT\" | python3 .claude/scripts/upgrade-zettel-status.py"
           }
         ]
       }
