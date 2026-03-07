@@ -24,27 +24,36 @@ esac
 
 cd "$VAULT" || exit 0
 
-# Check for changes
+# Check for changes (staged, unstaged, or untracked)
 git diff --quiet HEAD 2>/dev/null && [ -z "$(git ls-files --others --exclude-standard)" ] && exit 0
 
-# Ensure we're on main, then branch
-CURRENT=$(git branch --show-current)
-if [ "$CURRENT" != "$BRANCH" ]; then
-  # Update main and create/reset auto-sync branch from it
-  git fetch -q origin main 2>/dev/null
-  git checkout -q main 2>/dev/null
-  git reset -q --hard origin/main 2>/dev/null
+# Stage all changes while still on current branch
+git add -A
 
-  # Create or switch to auto-sync branch
-  if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
-    git checkout -q "$BRANCH"
-    git merge -q main --no-edit 2>/dev/null
-  else
-    git checkout -q -b "$BRANCH"
-  fi
+# Stash the staged changes so branch switching is safe
+git stash -q
+
+# Update main from remote
+git fetch -q origin main 2>/dev/null
+git checkout -q main 2>/dev/null
+git merge -q --ff-only origin/main 2>/dev/null
+
+# Clean up stale local auto-sync branch if remote was deleted (PR merged)
+if git show-ref --verify --quiet "refs/heads/$BRANCH" && \
+   ! git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+  git branch -q -D "$BRANCH" 2>/dev/null
 fi
 
-# Stage and commit
+# Create or switch to auto-sync branch
+if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+  git checkout -q "$BRANCH"
+  git merge -q main --no-edit 2>/dev/null
+else
+  git checkout -q -b "$BRANCH"
+fi
+
+# Apply stashed changes and commit
+git stash pop -q
 git add -A
 git commit -q -m "Auto-sync: $(basename "$FILE") updated"
 git push -q origin "$BRANCH" 2>/dev/null
