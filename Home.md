@@ -11,14 +11,22 @@ banner_y: 0
 ```dataviewjs
 const row = dv.el("div", "", { attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
 
-// Navigation links
-const nav = row.createEl("div", { attr: { style: "font-size:0.9em;" } });
-nav.innerHTML = `<a class="internal-link" data-href="Work/Work Dashboard">Open Work Dashboard</a> · ` +
-  `<a class="internal-link" data-href="Work/${dv.date("today").toFormat("yyyy/yyyy-MM-dd")}">${dv.date("today").toFormat("yyyy-MM-dd")}</a>`;
+// Navigation buttons
+const navDash = row.createEl("button", {
+  text: "Work Dashboard",
+  attr: { style: "padding:6px 14px;border:1px solid var(--background-modifier-border);border-radius:7px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.85em;" }
+});
+navDash.addEventListener("click", () => app.workspace.openLinkText("Work/Work Dashboard", "", false));
 
-// Inbox button — creates a new note in Inbox/ and opens it
+const navToday = row.createEl("button", {
+  text: dv.date("today").toFormat("yyyy-MM-dd"),
+  attr: { style: "padding:6px 14px;border:1px solid var(--background-modifier-border);border-radius:7px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.85em;" }
+});
+navToday.addEventListener("click", () => app.workspace.openLinkText("Work/" + dv.date("today").toFormat("yyyy/yyyy-MM-dd"), "", false));
+
+// Zettel capture button — creates a new timestamped note in Inbox/
 const btn = row.createEl("button", {
-  text: "+ Inbox",
+  text: "+ Zettel",
   attr: {
     style: "margin-left:auto;padding:8px 18px;background:var(--interactive-accent);color:var(--text-on-accent);border-radius:8px;font-weight:600;font-size:0.88em;border:none;cursor:pointer;white-space:nowrap;"
   }
