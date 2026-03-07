@@ -42,6 +42,9 @@ if ! git show-ref --verify --quiet "refs/heads/$BRANCH"; then
   git branch "$BRANCH" origin/main 2>/dev/null
 fi
 
+# Clean up any stale worktrees from previous runs
+git worktree prune 2>/dev/null
+
 # Set up temporary worktree for the auto-sync branch
 WORK_DIR=$(mktemp -d)
 trap 'git worktree remove --force "$WORK_DIR" 2>/dev/null; rm -rf "$WORK_DIR"' EXIT
