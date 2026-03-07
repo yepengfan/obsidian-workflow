@@ -148,12 +148,47 @@ Three input pipelines feed the same knowledge network:
 
 Each zettel is one atomic idea, written in your own words, linked to related zettel via `Related::` field. The `topics` frontmatter field (free-form keywords) enables filtering in the Zettelkasten Index.
 
-### Zettelkasten Workflow
+### Commands
+
+All commands run inside Claude Code (type `/command-name` in the chat).
+
+#### Knowledge Building
 
 | Command | When to use |
 |---------|------------|
-| `/zettel <source>` | Extract zettel from a specific book, article, or note |
-| `/inbox-review` | Weekly review — process all Inbox notes into zettel or archive |
+| `/zettel <source>` | Extract permanent zettel from a book, article, or note |
+| `/inbox-review` | Weekly — process all Inbox notes into zettel or archive |
+| `/retro <source>` | Extract reusable lessons from work daily notes or project pages |
+| `/connections <topic>` | Find thematic connections across Book Summaries |
+
+#### Research & Notes
+
+| Command | When to use |
+|---------|------------|
+| `/research <topic>` | Web research → structured note saved to `Thoughts/` |
+| `/summarize <note>` | Summarize a note or folder into key points |
+| `/backlink [note]` | Scan a note and add `[[wikilinks]]` to referenced concepts |
+
+#### Work
+
+| Command | When to use |
+|---------|------------|
+| `/daily` | Create today's daily note in `Thoughts/` |
+| `/meeting <title>` | Create a meeting note |
+| `/decision-log <decision>` | Record a decision with context and rationale |
+| `/project <name>` | Create a new project page in `Work/Projects/` |
+
+#### Vault Maintenance
+
+| Command | When to use |
+|---------|------------|
+| `/organize [folder]` | Review and sort notes in a folder |
+| `/tag-audit` | Audit and clean up tags across the vault |
+| `/sync-summaries` | Sync Book Summaries with the latest WeRead highlights |
+
+### Zettelkasten Workflow
+
+**Capture (mobile):** Use the `+ Inbox` button on Home.md to create a timestamped note in `Inbox/` — no format required, just the thought.
 
 **Inbox → Zettel flow** (run `/inbox-review` in Claude Code):
 1. Each inbox note is shown one at a time
@@ -162,7 +197,10 @@ Each zettel is one atomic idea, written in your own words, linked to related zet
 4. Processed notes are archived to `Inbox/archive/YYYY-MM/` (never deleted)
 5. Skipped notes remain in `Inbox/` for the next review
 
-**Capture (mobile):** Use the `+ Inbox` button on Home.md to create a timestamped note in `Inbox/` — no format required, just the thought.
+**Zettel status lifecycle:**
+- 🌱 `seedling` — newly created, 0–1 Related links
+- 🌿 `growing` — 2+ Related links, idea connected to the network
+- 🌳 `evergreen` — manually marked; deeply internalized, cross-domain connections
 
 ```
 python3 Books/book_init.py --file "path/to/book.epub" --output "path/to/vault/Books"

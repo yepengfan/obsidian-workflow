@@ -70,6 +70,27 @@ function updateSortStyles() {
 }
 updateSortStyles();
 
+// Row 1b: Status filter
+let activeStatus = null;
+const statusRow = container.createEl("div", {
+  attr: { style: "display:flex;gap:6px;align-items:center;margin-bottom:10px;" }
+});
+statusRow.createEl("span", { text: "Status:", attr: { style: "font-size:0.78em;color:var(--text-faint);flex-shrink:0;" } });
+const statusOpts = [
+  { label: "All", value: null },
+  { label: "\ud83c\udf31 Seedling", value: "seedling" },
+  { label: "\ud83c\udf3f Growing", value: "growing" },
+  { label: "\ud83c\udf33 Evergreen", value: "evergreen" },
+];
+const statusEls = statusOpts.map(s => {
+  const btn = statusRow.createEl("button", { text: s.label, attr: { style: s.value === activeStatus ? btnOn : btnOff } });
+  btn.addEventListener("click", () => { activeStatus = s.value; updateStatusStyles(); render(); });
+  return { el: btn, value: s.value };
+});
+function updateStatusStyles() {
+  statusEls.forEach(s => { s.el.setAttribute("style", s.value === activeStatus ? btnOn : btnOff); });
+}
+
 // Row 2: Popular topics — clean horizontal bar
 const topicBar = container.createEl("div", {
   attr: { style: "display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" }
@@ -126,6 +147,11 @@ function render() {
 
   const q = searchBox.value.toLowerCase();
   let filtered = allZk;
+
+  // Status filter
+  if (activeStatus) {
+    filtered = filtered.where(p => p.status === activeStatus);
+  }
 
   // Topic filter: must match ALL active topics
   if (activeTopics.size > 0) {
