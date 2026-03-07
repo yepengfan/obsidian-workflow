@@ -124,10 +124,9 @@ Features:
 Configure the `obsidian-sync` IAM user (least-privilege access to S3 only):
 
 ```bash
-aws configure
+aws configure --profile obsidian-sync
 # Access Key ID and Secret Access Key are stored in password manager
 # Region: ap-southeast-2
-# Output format: json
 ```
 
 ### 2. Vault sync (Remotely Save)
@@ -147,7 +146,7 @@ aws configure
 mkdir -p ~/Library/ebooks
 
 # Download ebooks from S3
-aws s3 sync s3://obsidian-ebook-library-391824190072 ~/Library/ebooks --region ap-southeast-2
+aws s3 sync s3://obsidian-ebook-library-391824190072 ~/Library/ebooks --profile obsidian-sync
 ```
 
 ### 4. Ebook auto-sync (launchd)
@@ -172,6 +171,8 @@ Create `~/Library/LaunchAgents/com.tedfan.ebook-s3-sync.plist` (replace `/Users/
         <string>ap-southeast-2</string>
         <string>--exclude</string>
         <string>.DS_Store</string>
+        <string>--profile</string>
+        <string>obsidian-sync</string>
     </array>
     <key>WatchPaths</key>
     <array>
