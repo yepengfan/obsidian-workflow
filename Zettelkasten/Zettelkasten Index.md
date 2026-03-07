@@ -7,7 +7,7 @@ cssclasses: [wide-page]
 
 ```dataviewjs
 const allZk = dv.pages('"Zettelkasten"').where(p => p.file.name !== "Zettelkasten Index");
-const inbox = dv.pages('"Inbox"');
+const inbox = dv.pages('"Inbox"').where(p => !p.file.path.includes("Inbox/archive"));
 const btnBase = "padding:5px 14px;border:none;border-radius:6px;cursor:pointer;font-size:0.82em;transition:all 0.15s;";
 const btnOff = btnBase + "background:transparent;color:var(--text-muted);";
 const btnOn = btnBase + "background:var(--interactive-accent);color:var(--text-on-accent);font-weight:500;";

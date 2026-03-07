@@ -77,7 +77,7 @@ LIMIT 5
 
 ```dataviewjs
 const zk = dv.pages('"Zettelkasten"').where(p => p.file.name !== "Zettelkasten Index");
-const inbox = dv.pages('"Inbox"');
+const inbox = dv.pages('"Inbox"').where(p => !p.file.path.includes("Inbox/archive"));
 let totalLinks = 0;
 try { totalLinks = zk.array().reduce((sum, p) => sum + p.file.outlinks.length + p.file.inlinks.length, 0); } catch(e) { totalLinks = 0; }
 
