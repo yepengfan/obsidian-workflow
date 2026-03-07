@@ -146,7 +146,21 @@ Three input pipelines feed the same knowledge network:
 - **Work** — `/retro` extracts reusable lessons from daily notes and project pages
 - **Life & Skills** — Capture to Inbox via `+ Inbox` button (mobile-friendly), process weekly with `/inbox-review`
 
-Each zettel is one atomic idea, written in your own words, linked to related zettel via `Related::` field. The `topics` frontmatter field (free-form keywords) enables filtering in the Zettelkasten Index. Status progresses from 🌱 `seedling` → 🌿 `growing` (2+ links) → 🌳 `evergreen` (manually marked, deeply internalized).
+Each zettel is one atomic idea, written in your own words, linked to related zettel via `Related::` field. The `topics` frontmatter field (free-form keywords) enables filtering in the Zettelkasten Index. **Zettel status lifecycle:**
+
+```mermaid
+graph LR
+    S["🌱 seedling<br/>newly created<br/>0–1 Related links"]
+    G["🌿 growing<br/>connected to network<br/>2+ Related links"]
+    E["🌳 evergreen<br/>deeply internalized<br/>cross-domain insight"]
+
+    S -->|"auto — on save"| G
+    G -->|"manual judgment"| E
+
+    style S fill:#d3f9d8,color:#2b8a3e
+    style G fill:#b2f2bb,color:#2b8a3e
+    style E fill:#69db7c,color:#1a4731
+```
 
 ### Commands
 
