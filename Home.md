@@ -40,7 +40,11 @@ LIMIT 5
 
 ---
 
-## Recent Reading Activity
+## Reading
+
+[[Books/Books Index|Books Index]]
+
+### Recent Reading Activity
 
 ```dataview
 TABLE author AS "Author", readingStatus AS "Status", progress AS "Progress", lastReadDate AS "Last Read"
