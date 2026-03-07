@@ -199,7 +199,7 @@ readContainer.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em
 
 ```dataview
 TABLE length(rows) AS "Notes"
-FROM "Matter" OR "Instapaper Notes" OR "Omnivore"
+FROM "Matter" OR "Instapaper Notes"
 FLATTEN file.folder AS source
 GROUP BY source
 SORT length(rows) DESC
