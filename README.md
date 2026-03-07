@@ -192,6 +192,15 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 | `/decision-log <decision>` | Record a decision with context and rationale |
 | `/project <name>` | Create a new project page in `Work/Projects/` |
 
+#### Learning
+
+| Command | When to use |
+|---------|------------|
+| `/learning-init <plan>` | Create a new learning plan with folder structure and templates |
+| `/learning-log [plan]` | Create or open this week's learning log for a plan |
+| `/learning-review [plan] [week]` | Review a week's log — produce zettel candidates and plan adjustments |
+| `/project-retro [folder]` | Technical project retro — decisions, pitfalls, reusable patterns |
+
 #### Vault Maintenance
 
 | Command | When to use |

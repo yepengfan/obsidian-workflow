@@ -207,6 +207,48 @@ SORT length(rows) DESC
 
 ---
 
+## Learning
+
+```dataviewjs
+function isoWeek(d) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+}
+const now = new Date();
+const currentWeek = `${now.getFullYear()}-W${String(isoWeek(now)).padStart(2, '0')}`;
+
+const plans = dv.pages('"Learning"').where(p => p.file.name === "00_plan" && p.status === "active");
+const logs = dv.pages('"Learning"').where(p => p.week === currentWeek);
+
+const container = dv.el("div", "");
+
+if (plans.length === 0) {
+  container.createEl("p", { text: "No active learning plans. Run /learning-init to start one.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
+} else {
+  const grid = container.createEl("div", { attr: { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:8px;" } });
+  for (const p of plans) {
+    const planName = p.plan || p.file.parent.name;
+    const log = logs.find(l => l.plan === planName || l.plan === `"${planName}"`);
+    const card = grid.createEl("div", { attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;padding:12px 14px;background:var(--background-secondary);" } });
+    const titleEl = card.createEl("div", { attr: { style: "font-weight:600;font-size:0.9em;margin-bottom:6px;" } });
+    titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${planName}</a>`;
+    const meta = card.createEl("div", { attr: { style: "font-size:0.75em;color:var(--text-muted);margin-bottom:6px;" } });
+    if (p.target) meta.createEl("span", { text: `Target: ${p.target}` });
+    const logEl = card.createEl("div", { attr: { style: "font-size:0.75em;" } });
+    if (log) {
+      logEl.innerHTML = `📋 <a class="internal-link" data-href="${log.file.path}" style="color:var(--text-accent);">Week log: ${currentWeek}</a>`;
+    } else {
+      logEl.createEl("span", { text: `No log for ${currentWeek} — run /learning-log`, attr: { style: "color:var(--text-faint);" } });
+    }
+  }
+}
+```
+
+---
+
 ## Entertainment
 
 ```dataview
