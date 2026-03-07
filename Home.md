@@ -40,9 +40,128 @@ LIMIT 5
 
 ---
 
+## Zettelkasten
+
+```dataviewjs
+const zk = dv.pages('"Zettelkasten"').where(p => p.file.name !== "Zettelkasten Index");
+const inbox = dv.pages('"Inbox"');
+let totalLinks = 0;
+try { totalLinks = zk.array().reduce((sum, p) => sum + p.file.outlinks.length + p.file.inlinks.length, 0); } catch(e) { totalLinks = 0; }
+
+const container = dv.el("div", "");
+
+// Stats row
+const stats = container.createEl("div", {
+  attr: { style: "display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;" }
+});
+const statItems = [
+  [zk.length, "Zettel"],
+  [inbox.length, "Inbox"],
+  [totalLinks, "Links"],
+];
+for (const [num, label] of statItems) {
+  const s = stats.createEl("div", {
+    attr: { style: "padding:8px 16px;background:var(--background-secondary);border-radius:8px;text-align:center;min-width:70px;" }
+  });
+  s.createEl("div", { text: String(num), attr: { style: "font-size:1.3em;font-weight:700;line-height:1.2;" } });
+  s.createEl("div", { text: label, attr: { style: "font-size:0.72em;color:var(--text-muted);" } });
+}
+
+// Recent zettel (card grid)
+container.createEl("div", { text: "Recent", attr: { style: "font-weight:600;font-size:0.85em;margin:10px 0 8px;color:var(--text-muted);" } });
+const recent = zk.sort(p => p.file.ctime, "desc").limit(6);
+const grid = container.createEl("div", {
+  attr: { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;" }
+});
+const domainColors = { reading: "background:#d0ebff;color:#1864ab", work: "background:#fff3bf;color:#e67700", skill: "background:#d3f9d8;color:#2b8a3e", meta: "background:#f3f0ff;color:#7048e8" };
+const statusIcon = { seedling: "🌱", growing: "🌿", evergreen: "🌳" };
+for (const p of recent) {
+  const card = grid.createEl("div", {
+    attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;padding:12px;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);" }
+  });
+  const titleEl = card.createEl("div", { attr: { style: "font-weight:600;font-size:0.85em;margin-bottom:4px;line-height:1.3;" } });
+  titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${p.file.name}</a>`;
+  const src = String(p.source || "").replace(/\[\[|\]\]/g, "");
+  if (src) {
+    card.createEl("div", { attr: { style: "font-size:0.72em;color:var(--text-muted);margin-bottom:6px;" } }).innerHTML =
+      `<a class="internal-link" data-href="${src}">${src}</a>`;
+  }
+  const topics = p.topics || [];
+  if (topics.length > 0) {
+    const topicRow = card.createEl("div", { attr: { style: "display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;" } });
+    for (const t of topics) {
+      topicRow.createEl("span", { text: String(t), attr: { style: "font-size:0.65em;padding:1px 6px;border-radius:6px;background:var(--background-primary);color:var(--text-muted);border:1px solid var(--background-modifier-border);" } });
+    }
+  }
+  const bottom = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;" } });
+  bottom.createEl("span", { text: statusIcon[p.status] || "🌱", attr: { style: "font-size:0.8em;" } });
+  if (p.domain) {
+    const dc = domainColors[p.domain] || "background:var(--background-secondary);color:var(--text-muted)";
+    bottom.createEl("span", { text: p.domain, attr: { style: `${dc};font-size:0.68em;padding:1px 7px;border-radius:8px;font-weight:500;` } });
+  }
+}
+
+// Link to full dashboard
+container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.85em;" } }).innerHTML =
+  `<a class="internal-link" data-href="Zettelkasten/Zettelkasten Index">Open Zettelkasten Dashboard →</a>`;
+```
+
+---
+
 ## Reading
 
-[[Books/Books Index|Books Index]]
+### Currently Reading
+
+```dataviewjs
+const pages = dv.pages('"WeRead"')
+  .where(p => p.author && p.doc_type === "weread-highlights-reviews")
+  .where(p => {
+    const s = p.readingStatus || "";
+    const prog = p.progress || "0%";
+    const num = parseInt(String(prog));
+    return (s === "在读" || (num > 0 && num < 100 && prog !== "-1")) && s !== "读完";
+  })
+  .sort(p => p.lastReadDate, "desc")
+  .limit(6);
+
+const readContainer = dv.el("div", "");
+const grid = readContainer.createEl("div", {
+  attr: { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:8px;" }
+});
+
+for (const p of pages) {
+  const title = p.file.name.replace(/-CB_.*$/, "").replace(/-\d+$/, "");
+  const cover = p.cover || "";
+  const progress = p.progress || "0%";
+
+  const card = grid.createEl("div", {
+    attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;overflow:hidden;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);" }
+  });
+
+  if (cover) {
+    card.createEl("img", { attr: { src: cover, style: "width:100%;height:130px;object-fit:cover;" } });
+  }
+
+  const body = card.createEl("div", { attr: { style: "padding:8px;" } });
+  const titleEl = body.createEl("div", { attr: { style: "font-weight:600;font-size:0.8em;margin-bottom:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;" } });
+  titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${title}</a>`;
+  if (p.author) {
+    body.createEl("div", { text: p.author, attr: { style: "font-size:0.7em;color:var(--text-muted);margin-bottom:4px;" } });
+  }
+  // Progress bar
+  const barBg = body.createEl("div", { attr: { style: "height:4px;background:var(--background-modifier-border);border-radius:2px;overflow:hidden;" } });
+  const num = parseInt(String(progress)) || 0;
+  barBg.createEl("div", { attr: { style: `height:100%;width:${num}%;background:var(--interactive-accent);border-radius:2px;` } });
+  body.createEl("div", { text: progress, attr: { style: "font-size:0.68em;color:var(--text-faint);margin-top:2px;" } });
+}
+
+if (pages.length === 0) {
+  readContainer.createEl("div", { text: "No books currently in progress.", attr: { style: "color:var(--text-muted);font-style:italic;" } });
+}
+
+readContainer.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
+  `<a class="internal-link" data-href="Books/Books Index">Open Books Index →</a>`;
+```
 
 ### Recent Reading Activity
 
@@ -64,49 +183,6 @@ GROUP BY source
 SORT length(rows) DESC
 ```
 
-### Book Summaries
-
-```dataview
-TABLE author AS "Author", title AS "Original Title"
-FROM "Book Summaries"
-SORT file.name ASC
-LIMIT 10
-```
-
----
-
-## Zettelkasten
-
-**Inbox:** `$= dv.pages('"Inbox"').length` notes to process
-
-### Recent Zettel
-
-```dataview
-TABLE source AS "Source", domain AS "Domain"
-FROM "Zettelkasten"
-SORT file.ctime DESC
-LIMIT 5
-```
-
-### Most Connected
-
-```dataviewjs
-const zettels = dv.pages('"Zettelkasten"')
-  .sort(p => p.file.outlinks.length + p.file.inlinks.length, "desc")
-  .limit(5);
-dv.table(["Zettel", "Links"], zettels.map(p => [p.file.link, p.file.outlinks.length + p.file.inlinks.length]));
-```
-
----
-
-## Thoughts
-
-```dataview
-LIST
-FROM "Thoughts"
-SORT file.mtime DESC
-```
-
 ---
 
 ## Entertainment
@@ -114,16 +190,6 @@ SORT file.mtime DESC
 ```dataview
 LIST
 FROM "Entertainment"
-SORT file.mtime DESC
-```
-
----
-
-## Learning
-
-```dataview
-LIST
-FROM "AWS Skill Builder"
 SORT file.mtime DESC
 ```
 
