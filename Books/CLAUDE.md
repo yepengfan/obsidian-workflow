@@ -154,6 +154,7 @@ Interrogation rules:
    - Each insight should be an atomic idea that makes sense outside this book's context
    - Draft each as a zettel: descriptive title, 3-8 sentences in user's own words, domain: reading
    - Add source link back to chapter file, and Related:: links to any existing zettel
+   - Include original quote via `> [!quote]` callout with `![[source#^block-id]]` embed (never copy-paste)
    - Ask user: "要把这些洞察写成永久笔记吗？" — only create if confirmed
    - Save to Zettelkasten/ folder using Templates/Zettel.md format
 ```
