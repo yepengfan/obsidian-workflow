@@ -75,6 +75,30 @@ LIMIT 10
 
 ---
 
+## Zettelkasten
+
+**Inbox:** `$= dv.pages('"Inbox"').length` notes to process
+
+### Recent Zettel
+
+```dataview
+TABLE source AS "Source", domain AS "Domain"
+FROM "Zettelkasten"
+SORT file.ctime DESC
+LIMIT 5
+```
+
+### Most Connected
+
+```dataviewjs
+const zettels = dv.pages('"Zettelkasten"')
+  .sort(p => p.file.outlinks.length + p.file.inlinks.length, "desc")
+  .limit(5);
+dv.table(["Zettel", "Links"], zettels.map(p => [p.file.link, p.file.outlinks.length + p.file.inlinks.length]));
+```
+
+---
+
 ## Thoughts
 
 ```dataview
