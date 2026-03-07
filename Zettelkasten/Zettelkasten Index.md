@@ -208,7 +208,7 @@ function render() {
       }
     }
 
-    // Bottom row: status + source (truncated) + links + date
+    // Bottom row: status + source (truncated) + links + date + evergreen button
     const bottom = card.createEl("div", {
       attr: { style: "display:flex;align-items:center;gap:6px;font-size:0.73em;color:var(--text-faint);" }
     });
@@ -224,6 +224,29 @@ function render() {
     const created = p.created ? String(p.created).slice(0, 10) : "";
     if (created) {
       bottom.createEl("span", { text: created, attr: { style: "margin-left:auto;flex-shrink:0;" } });
+    }
+
+    // Evergreen promote button — only shown on growing notes
+    if (p.status === "growing") {
+      const evBtn = bottom.createEl("button", {
+        text: "\ud83c\udf33",
+        attr: {
+          title: "Mark as evergreen",
+          style: "margin-left:4px;border:none;background:none;cursor:pointer;font-size:1em;padding:0 2px;opacity:0.35;transition:opacity 0.15s;flex-shrink:0;"
+        }
+      });
+      evBtn.addEventListener("mouseenter", () => { evBtn.style.opacity = "1"; });
+      evBtn.addEventListener("mouseleave", () => { evBtn.style.opacity = "0.35"; });
+      evBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const tFile = app.vault.getAbstractFileByPath(p.file.path);
+        if (!tFile) return;
+        await app.fileManager.processFrontMatter(tFile, fm => { fm.status = "evergreen"; });
+        evBtn.style.opacity = "1";
+        evBtn.style.cursor = "default";
+        evBtn.title = "Marked as evergreen \u2713";
+        card.style.borderColor = "var(--color-green)";
+      });
     }
   }
 
