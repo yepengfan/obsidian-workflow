@@ -97,8 +97,10 @@ for (const p of recent) {
 }
 
 // Link to full dashboard
-container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.85em;" } }).innerHTML =
-  `<a class="internal-link" data-href="Zettelkasten/Zettelkasten Index">Open Zettelkasten Dashboard →</a>`;
+const footer = container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.85em;display:flex;gap:16px;" } });
+footer.innerHTML =
+  `<a class="internal-link" data-href="Zettelkasten/Zettelkasten Index">Open Zettelkasten Dashboard →</a>` +
+  `<a class="internal-link" data-href="Inbox" style="color:var(--text-muted);">+ New Inbox Note</a>`;
 ```
 
 ---
@@ -156,16 +158,6 @@ if (pages.length === 0) {
 
 readContainer.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
   `<a class="internal-link" data-href="Books/Books Index">Open Books Index →</a>`;
-```
-
-### Recent Reading Activity
-
-```dataview
-TABLE author AS "Author", readingStatus AS "Status", progress AS "Progress", lastReadDate AS "Last Read"
-FROM "WeRead"
-WHERE lastReadDate
-SORT lastReadDate DESC
-LIMIT 10
 ```
 
 ### Articles
