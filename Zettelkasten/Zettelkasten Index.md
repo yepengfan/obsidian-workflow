@@ -190,7 +190,7 @@ function render() {
     const src = String(p.source || "").replace(/\[\[|\]\]/g, "").replace(/-\d+$/, "").replace(/-CB_.*$/, "");
 
     const card = grid.createEl("div", {
-      attr: { style: "border:1px solid var(--background-modifier-border);border-radius:12px;padding:14px 16px;background:var(--background-secondary);transition:box-shadow 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.06);" }
+      attr: { style: "border:1px solid var(--background-modifier-border);border-radius:12px;padding:14px 16px;background:var(--background-secondary);transition:box-shadow 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;flex-direction:column;" }
     });
 
     // Title — hero element
@@ -208,8 +208,8 @@ function render() {
       }
     }
 
-    // Bottom: two rows — source on top, meta on bottom
-    const cardBottom = card.createEl("div", { attr: { style: "margin-top:auto;padding-top:8px;font-size:0.73em;color:var(--text-faint);" } });
+    // Bottom: two rows — source on top, meta on bottom (pushed to card bottom)
+    const cardBottom = card.createEl("div", { attr: { style: "margin-top:auto;padding-top:10px;font-size:0.73em;color:var(--text-faint);" } });
 
     // Row 1: source
     if (src) {
