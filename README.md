@@ -29,7 +29,14 @@ Books/
 
 Inbox/            # Fleeting notes — quick capture, processed weekly
 Zettelkasten/     # Permanent notes — one atomic idea per note, interlinked
-Templates/        # Inbox, Zettel, Work Daily, Work Project templates
+Learning/         # Structured learning plans (one subfolder per plan)
+  <plan>/
+    00_plan.md    # Goals, phases, timeline, completion criteria
+    00_map.md     # Concept map + technology radar
+    Weeks/        # Weekly logs (YYYY-WXX.md)
+    Courses/      # Course notes
+    Projects/     # Project notes
+Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week
 CLAUDE.md         # Vault-level Claude Code instructions
 Home.md           # Obsidian dashboard with Dataview queries
 sortspec.md       # Custom file explorer sort order (Custom File Explorer Sorting plugin)
@@ -127,26 +134,35 @@ flowchart TD
     classDef store fill:#20c997,color:#fff
     classDef inbox fill:#ffd43b,color:#000
     classDef source fill:#f8f9fa,color:#333,stroke:#ccc
+    classDef plan fill:#e8d5ff,color:#5f3dc4,stroke:#5f3dc4
 
     THOUGHT["💡 Fleeting thought"]:::source
     BOOK["📚 Book / article highlights"]:::source
     WORK_EXP["💼 Project / work experience"]:::source
+    COURSE["📖 Structured learning<br/>(courses, projects)"]:::source
 
     BTN["Zettel capture button"]:::cmd
     INBOX["Inbox/"]:::inbox
     IR["/inbox-review (weekly)"]:::cmd
     ZT["/zettel [source]"]:::cmd
     RT["/retro [source]"]:::cmd
+    LI["/learning-init [plan]"]:::cmd
+    LL["/learning-log [plan]"]:::cmd
+    LR["/learning-review [plan]"]:::cmd
 
+    PLAN["Learning/"]:::plan
     ZK["Zettelkasten/ — permanent notes"]:::store
 
     THOUGHT --> BTN --> INBOX --> IR
     BOOK --> ZT
     WORK_EXP --> RT
+    COURSE --> LI --> PLAN
+    PLAN --> LL --> LR
 
     IR -->|"[z] convert to zettel"| ZK
     ZT -->|"confirm draft"| ZK
     RT -->|"confirm draft"| ZK
+    LR -->|"zettel candidates"| ZK
 ```
 
 ```mermaid

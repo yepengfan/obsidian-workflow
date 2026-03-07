@@ -30,6 +30,8 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Work/Work Dashboard.md** — Work dashboard with task views and project summary.
 - **Templates/Work Daily.md** — Template for daily work notes.
 - **Templates/Work Project.md** — Template for project pages.
+- **Templates/Learning Plan.md** — Template for `00_plan.md` (learning plan goals and phases).
+- **Templates/Learning Week.md** — Template for weekly learning logs (`Weeks/YYYY-WXX.md`).
 
 ## Conventions
 

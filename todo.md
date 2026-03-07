@@ -36,8 +36,8 @@
 - [x] CLAUDE.md, README.md, sortspec.md 更新
 
 ### 待做
-- [ ] 为 AI-SA plan 创建 `00_plan.md`（运行 `/learning-init AI-SA`）
-- [ ] 将 `ai-sa-stage12-detail-v5.md` 和 `ai-sa-stage34-detail-v5.md` 整合进 `00_plan.md` 的阶段划分
+- [x] 为 AI-SA plan 创建 `00_plan.md`（运行 `/learning-init AI-SA`）
+- [x] 将 `ai-sa-stage12-detail-v5.md` 和 `ai-sa-stage34-detail-v5.md` 整合进 `00_plan.md` 的阶段划分
 
 ---
 
