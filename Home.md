@@ -244,26 +244,60 @@ if (plans.length === 0) {
     const planLogs = allLogs.filter(l => l.code === code);
     const logMap = {};
     for (const l of planLogs) logMap[l.week] = l;
+    const weeksElapsed = p.started
+      ? Math.floor((new Date() - p.started.toJSDate()) / (7 * 24 * 60 * 60 * 1000)) + 1
+      : null;
+    const currentPhase = p.phase || 1;
 
-    const row = container.createEl("div", { attr: { style: "display:flex;align-items:center;gap:8px;margin-bottom:8px;" } });
+    // Card
+    const card = container.createEl("div", {
+      attr: { style: "display:flex;gap:0;margin-bottom:8px;border:1px solid var(--background-modifier-border);border-radius:8px;overflow:hidden;background:var(--background-secondary);" }
+    });
 
-    row.innerHTML += `<a class="internal-link" data-href="${p.file.path}" style="font-weight:700;font-size:0.8em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;text-decoration:none;white-space:nowrap;">${code}</a>`;
+    // Left accent bar
+    card.createEl("div", { attr: { style: "width:3px;background:var(--color-accent);flex-shrink:0;" } });
 
-    if (p.target) {
-      row.createEl("span", { text: p.target, attr: { style: "font-size:0.8em;color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+    const body = card.createEl("div", { attr: { style: "flex:1;min-width:0;padding:9px 12px;" } });
+
+    // Row 1: code badge + phase pill + week stat
+    const row1 = body.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;margin-bottom:5px;" } });
+    row1.innerHTML += `<a class="internal-link" data-href="${p.file.path}" style="font-weight:700;font-size:0.75em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;text-decoration:none;white-space:nowrap;flex-shrink:0;">${code}</a>`;
+    row1.createEl("span", {
+      text: `Phase ${currentPhase}`,
+      attr: { style: "font-size:0.7em;padding:1px 7px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
+    });
+    if (weeksElapsed !== null) {
+      row1.createEl("span", {
+        text: `Wk ${weeksElapsed}`,
+        attr: { style: "font-size:0.7em;color:var(--text-faint);white-space:nowrap;" }
+      });
     }
 
-    const dots = row.createEl("span", { attr: { style: "display:flex;gap:4px;align-items:center;flex-shrink:0;" } });
-    for (const w of WEEKS) {
+    // Row 2: target text
+    if (p.target) {
+      body.createEl("div", {
+        text: p.target,
+        attr: { style: "font-size:0.8em;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" }
+      });
+    }
+
+    // Right: 4-week activity squares
+    const dotsWrap = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:3px;padding:0 12px;flex-shrink:0;" } });
+    for (const w of [...WEEKS].reverse()) {
       if (logMap[w]) {
-        dots.innerHTML += `<a class="internal-link" data-href="${logMap[w].file.path}" title="${w}" style="color:var(--color-accent);font-size:1.1em;text-decoration:none;">■</a>`;
+        const sq = dotsWrap.createEl("a", {
+          attr: { class: "internal-link", "data-href": logMap[w].file.path, title: w, style: "width:10px;height:10px;border-radius:2px;background:var(--color-accent);display:inline-block;opacity:0.85;" }
+        });
       } else {
         const isCurrent = w === currentWeek;
-        dots.createEl("span", { text: isCurrent ? "□" : "·", attr: { title: w, style: `color:${isCurrent ? "var(--text-normal)" : "var(--background-modifier-border)"};font-size:1.1em;` } });
+        dotsWrap.createEl("div", {
+          attr: { title: w, style: `width:10px;height:10px;border-radius:2px;${isCurrent ? "border:1.5px dashed var(--color-accent);opacity:0.7;" : "background:var(--background-modifier-border);opacity:0.5;"}` }
+        });
       }
     }
   }
-  container.innerHTML += `<div style="margin-top:6px;font-size:0.75em;color:var(--text-muted);"><a class="internal-link" data-href="Learning/Dashboard.md">→ Full dashboard</a></div>`;
+
+  container.innerHTML += `<div style="margin-top:8px;font-size:0.78em;"><a class="internal-link" data-href="Learning/Dashboard.md" style="color:var(--text-muted);">→ Full dashboard</a></div>`;
 }
 ```
 
