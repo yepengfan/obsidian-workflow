@@ -202,7 +202,7 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 
 ### Zettelkasten Workflow
 
-**Capture (mobile):** Use the `+ Inbox` button on Home.md to create a timestamped note in `Inbox/` — no format required, just the thought.
+**Capture (mobile):** Use the `+ Zettel` button on Home.md to create a timestamped note in `Inbox/` — no format required, just the thought.
 
 **Inbox → Zettel flow** (run `/inbox-review` in Claude Code):
 1. Each inbox note is shown one at a time
