@@ -13,7 +13,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Kanban/** — Kanban boards (uses obsidian-kanban plugin)
 - **Matter/** — Article notes from Matter app
 - **Inbox/** — Fleeting notes capture. Quick thoughts from any source (reading, work, life). Processed weekly into Zettelkasten or deleted.
-- **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `domain` (reading/work/skill/meta).
+- **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `topics` (list of keywords for filtering).
 - **Thoughts/** — Personal reflections and ideas
 - **Training/** — Learning resources and course notes
 - **Book Summaries/** — AI-generated thematic summaries of WeRead books (in English). Each summary links back to its WeRead source.

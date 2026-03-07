@@ -73,7 +73,6 @@ const recent = zk.sort(p => p.file.ctime, "desc").limit(6);
 const grid = container.createEl("div", {
   attr: { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;" }
 });
-const domainColors = { reading: "background:#d0ebff;color:#1864ab", work: "background:#fff3bf;color:#e67700", skill: "background:#d3f9d8;color:#2b8a3e", meta: "background:#f3f0ff;color:#7048e8" };
 const statusIcon = { seedling: "🌱", growing: "🌿", evergreen: "🌳" };
 for (const p of recent) {
   const card = grid.createEl("div", {
@@ -95,10 +94,6 @@ for (const p of recent) {
   }
   const bottom = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;" } });
   bottom.createEl("span", { text: statusIcon[p.status] || "🌱", attr: { style: "font-size:0.8em;" } });
-  if (p.domain) {
-    const dc = domainColors[p.domain] || "background:var(--background-secondary);color:var(--text-muted)";
-    bottom.createEl("span", { text: p.domain, attr: { style: `${dc};font-size:0.68em;padding:1px 7px;border-radius:8px;font-weight:500;` } });
-  }
 }
 
 // Link to full dashboard
