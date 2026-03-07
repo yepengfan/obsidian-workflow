@@ -2,7 +2,7 @@ Extract work experience and lessons from: $ARGUMENTS
 
 Workflow:
 1. Read the specified source (Work daily note, project page, or date range like "this week")
-   - If "this week": read all daily notes from the current week in `Work/2026/`
+   - If "this week": read all daily notes from the current week in `Work/{current_year}/`
    - If a project name: read the project page and recent daily note sections for that project
 2. Identify insights worth preserving long-term:
    - Technical decisions and their rationale
