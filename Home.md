@@ -9,18 +9,18 @@ banner_y: 0
 ## Work
 
 ```dataviewjs
-const row = dv.el("div", "", { attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
+const row = dv.container.createEl("div", { attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
 
 // Navigation buttons
 const navDash = row.createEl("button", {
   text: "Work Dashboard",
-  attr: { style: "padding:6px 14px;border:1px solid var(--background-modifier-border);border-radius:7px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.85em;" }
+  attr: { style: "padding:8px 18px;border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.88em;" }
 });
 navDash.addEventListener("click", () => app.workspace.openLinkText("Work/Work Dashboard", "", false));
 
 const navToday = row.createEl("button", {
   text: dv.date("today").toFormat("yyyy-MM-dd"),
-  attr: { style: "padding:6px 14px;border:1px solid var(--background-modifier-border);border-radius:7px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.85em;" }
+  attr: { style: "padding:8px 18px;border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.88em;" }
 });
 navToday.addEventListener("click", () => app.workspace.openLinkText("Work/" + dv.date("today").toFormat("yyyy/yyyy-MM-dd"), "", false));
 
