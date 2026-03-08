@@ -17,6 +17,7 @@ sorting-spec: |
   CLAUDE
   README
   sortspec
+  system-design-primer
   Home
 ---
 
