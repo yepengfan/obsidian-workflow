@@ -112,11 +112,15 @@ flowchart TD
     classDef plan fill:#e8d5ff,color:#5f3dc4,stroke:#5f3dc4
     classDef output fill:#ff922b,color:#fff
 
-    subgraph capture ["Capture → Distill"]
+    subgraph capture ["Capture → Zettel"]
         THOUGHT["💡 Fleeting thought"]:::source
         THOUGHT --> BTN["Zettel capture"]:::cmd
         BTN --> INBOX["Inbox/"]:::inbox
         INBOX --> IR["/inbox-review"]:::cmd
+        IR ~~~ BOOK["📚 Book / article"]:::source
+        BOOK --> ZT["/zettel"]:::cmd
+        ZT ~~~ WORK_EXP["💼 Work experience"]:::source
+        WORK_EXP --> RT["/retro"]:::cmd
     end
 
     subgraph learn ["Learn → Share"]
@@ -125,12 +129,6 @@ flowchart TD
         PLAN --> LL["/learning-log"]:::cmd
         LL --> LR["/learning-review"]:::cmd
         LR -.-> BB["/brownbag"]:::cmd
-    end
-
-    subgraph extract ["Extract → Zettel"]
-        BOOK["📚 Book / article"]:::source --> ZT["/zettel"]:::cmd
-        ZT ~~~ WORK_EXP["💼 Work experience"]:::source
-        WORK_EXP --> RT["/retro"]:::cmd
     end
 
     IR --> ZK["Zettelkasten/"]:::store
