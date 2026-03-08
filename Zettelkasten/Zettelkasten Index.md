@@ -71,7 +71,8 @@ function updateSortStyles() {
 updateSortStyles();
 
 // Row 1b: Status filter
-let activeStatus = null;
+const STATUS_KEY = "zk-index-status";
+let activeStatus = localStorage.getItem(STATUS_KEY) || null;
 const statusRow = container.createEl("div", {
   attr: { style: "display:flex;gap:6px;align-items:center;margin-bottom:10px;" }
 });
@@ -80,11 +81,18 @@ const statusOpts = [
   { label: "All", value: null },
   { label: "\ud83c\udf31 Seedling", value: "seedling" },
   { label: "\ud83c\udf3f Growing", value: "growing" },
+  { label: "\ud83c\udf32 Candidate", value: "candidate" },
   { label: "\ud83c\udf33 Evergreen", value: "evergreen" },
 ];
 const statusEls = statusOpts.map(s => {
   const btn = statusRow.createEl("button", { text: s.label, attr: { style: s.value === activeStatus ? btnOn : btnOff } });
-  btn.addEventListener("click", () => { activeStatus = s.value; updateStatusStyles(); render(); });
+  btn.addEventListener("click", () => {
+    activeStatus = s.value;
+    if (activeStatus) localStorage.setItem(STATUS_KEY, activeStatus);
+    else localStorage.removeItem(STATUS_KEY);
+    updateStatusStyles();
+    render();
+  });
   return { el: btn, value: s.value };
 });
 function updateStatusStyles() {
@@ -178,7 +186,7 @@ function render() {
     filtered = filtered.sort(p => String(p.source || "zzz"), "asc");
   }
 
-  const statusIcon = { seedling: "\ud83c\udf31", growing: "\ud83c\udf3f", evergreen: "\ud83c\udf33" };
+  const statusIcon = { seedling: "\ud83c\udf31", growing: "\ud83c\udf3f", candidate: "\ud83c\udf32", evergreen: "\ud83c\udf33" };
 
   // Render cards
   const grid = list.createEl("div", {
@@ -237,26 +245,42 @@ function render() {
       metaRight.createEl("span", { text: created });
     }
 
-    // Evergreen promote button — only shown on growing notes
-    if (p.status === "growing") {
-      const evBtn = metaRight.createEl("button", {
-        text: "\ud83c\udf33 Evergreen",
+    // Candidate actions — confirm to evergreen or revert to growing
+    if (p.status === "candidate") {
+      const confirmBtn = metaRight.createEl("button", {
+        text: "\ud83c\udf33",
         attr: {
-          title: "Mark as evergreen",
-          style: "border:1px solid var(--color-green);border-radius:6px;background:none;color:var(--color-green);cursor:pointer;font-size:0.8em;padding:3px 10px;opacity:0.5;transition:opacity 0.15s;flex-shrink:0;"
+          title: "Confirm as Evergreen",
+          style: "border:1px solid var(--color-green);border-radius:6px;background:none;color:var(--color-green);cursor:pointer;font-size:0.85em;padding:3px 8px;opacity:0.6;transition:opacity 0.15s;flex-shrink:0;"
         }
       });
-      evBtn.addEventListener("mouseenter", () => { evBtn.style.opacity = "1"; });
-      evBtn.addEventListener("mouseleave", () => { evBtn.style.opacity = "0.5"; });
-      evBtn.addEventListener("click", async (e) => {
+      confirmBtn.addEventListener("mouseenter", () => { confirmBtn.style.opacity = "1"; });
+      confirmBtn.addEventListener("mouseleave", () => { confirmBtn.style.opacity = "0.6"; });
+      confirmBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
         const tFile = app.vault.getAbstractFileByPath(p.file.path);
         if (!tFile) return;
         await app.fileManager.processFrontMatter(tFile, fm => { fm.status = "evergreen"; });
-        evBtn.style.opacity = "1";
-        evBtn.style.cursor = "default";
-        evBtn.title = "Marked as evergreen \u2713";
         card.style.borderColor = "var(--color-green)";
+        confirmBtn.disabled = true; revertBtn.disabled = true;
+      });
+
+      const revertBtn = metaRight.createEl("button", {
+        text: "\u21a9",
+        attr: {
+          title: "Revert to Growing",
+          style: "border:1px solid var(--text-muted);border-radius:6px;background:none;color:var(--text-muted);cursor:pointer;font-size:0.85em;padding:3px 8px;opacity:0.6;transition:opacity 0.15s;flex-shrink:0;"
+        }
+      });
+      revertBtn.addEventListener("mouseenter", () => { revertBtn.style.opacity = "1"; });
+      revertBtn.addEventListener("mouseleave", () => { revertBtn.style.opacity = "0.6"; });
+      revertBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const tFile = app.vault.getAbstractFileByPath(p.file.path);
+        if (!tFile) return;
+        await app.fileManager.processFrontMatter(tFile, fm => { fm.status = "growing"; });
+        card.style.opacity = "0.4";
+        confirmBtn.disabled = true; revertBtn.disabled = true;
       });
     }
   }
