@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"$CLAUDE_TOOL_INPUT\" | python3 .claude/scripts/upgrade-zettel-status.py"
+            "command": "echo \"$CLAUDE_TOOL_INPUT\" | python3 \"$CLAUDE_PROJECT_DIR/.claude/scripts/upgrade-zettel-status.py\""
           }
         ]
       }
