@@ -133,8 +133,6 @@ flowchart TD
         WORK_EXP --> RT["/retro"]:::cmd
     end
 
-    THOUGHT ~~~ COURSE ~~~ BOOK
-
     IR --> ZK["Zettelkasten/"]:::store
     ZT --> ZK
     RT --> ZK
