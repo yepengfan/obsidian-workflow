@@ -62,6 +62,77 @@ if (todayPage) {
 
 ---
 
+## Brownbag Sessions
+
+```dataviewjs
+const sessions = dv.pages('"Work/Brownbag Sessions"')
+  .where(p => p.file.name !== "Brownbag Sessions")
+  .sort(p => p.created, "desc")
+  .limit(3);
+
+const container = dv.el("div", "");
+
+if (sessions.length === 0) {
+  container.createEl("p", { text: "No brownbag sessions yet.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
+} else {
+  const statusColor = {
+    "planning": "var(--color-yellow)",
+    "in-progress": "var(--color-blue)",
+    "done": "var(--color-green)"
+  };
+
+  function inferStatus(page) {
+    const ac = page.file.tasks.where(t => t.section?.subpath === "验收标准");
+    if (ac.length === 0) return "planning";
+    const done = ac.where(t => t.completed).length;
+    if (done === ac.length) return "done";
+    if (done > 0) return "in-progress";
+    return "planning";
+  }
+
+  for (const s of sessions) {
+    const st = inferStatus(s);
+    const accentColor = statusColor[st] || "var(--color-accent)";
+
+    const card = container.createEl("div", {
+      attr: { style: "display:flex;gap:0;margin-bottom:8px;border:1px solid var(--background-modifier-border);border-radius:8px;overflow:hidden;background:var(--background-secondary);" }
+    });
+
+    // Left accent bar
+    card.createEl("div", { attr: { style: `width:3px;background:${accentColor};flex-shrink:0;` } });
+
+    const body = card.createEl("div", { attr: { style: "flex:1;min-width:0;padding:9px 12px;display:flex;align-items:center;gap:10px;" } });
+
+    // ID badge
+    const id = s.id || "BB-?";
+    body.createEl("span", {
+      text: id,
+      attr: { style: "font-weight:700;font-size:0.72em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;white-space:nowrap;flex-shrink:0;" }
+    });
+
+    // Title + meta
+    const info = body.createEl("div", { attr: { style: "flex:1;min-width:0;" } });
+    const titleEl = info.createEl("div", { attr: { style: "font-size:0.88em;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+    titleEl.innerHTML = `<a class="internal-link" data-href="${s.file.path}">${s.title || s.file.name}</a>`;
+
+    const meta = info.createEl("div", { attr: { style: "font-size:0.72em;color:var(--text-muted);margin-top:2px;" } });
+    const created = s.created ? dv.date(s.created).toFormat("yyyy-MM-dd") : "";
+    meta.textContent = created;
+
+    // Status pill
+    body.createEl("span", {
+      text: st,
+      attr: { style: `font-size:0.7em;padding:1px 8px;border-radius:20px;border:1px solid ${accentColor};color:${accentColor};white-space:nowrap;flex-shrink:0;` }
+    });
+  }
+
+  container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.85em;" } }).innerHTML =
+    `<a class="internal-link" data-href="Work/Brownbag Sessions/Brownbag Sessions">All sessions →</a>`;
+}
+```
+
+---
+
 ## Recent Updates
 
 ```dataview

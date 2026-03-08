@@ -36,7 +36,7 @@ Learning/         # Structured learning plans (folder name = plan code)
     Weeks/        # Weekly logs (YYYY-WXX.md)
     Courses/      # Course notes
     Projects/     # Project notes
-Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week
+Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week, Brownbag Session
 CLAUDE.md         # Vault-level Claude Code instructions
 Home.md           # Obsidian dashboard with Dataview queries
 sortspec.md       # Custom file explorer sort order (Custom File Explorer Sorting plugin)
@@ -149,8 +149,10 @@ flowchart TD
     LI["/learning-init [code]"]:::cmd
     LL["/learning-log [code]"]:::cmd
     LR["/learning-review [code]"]:::cmd
+    BB["/brownbag [topic]"]:::cmd
 
     PLAN["Learning/"]:::plan
+    BBS["Brownbag Sessions/"]:::plan
     ZK["Zettelkasten/ — permanent notes"]:::store
 
     THOUGHT --> BTN --> INBOX --> IR
@@ -158,6 +160,7 @@ flowchart TD
     WORK_EXP --> RT
     COURSE --> LI --> PLAN
     PLAN --> LL --> LR
+    PLAN -->|"share learnings"| BB --> BBS
 
     IR -->|"[z] convert to zettel"| ZK
     ZT -->|"confirm draft"| ZK
@@ -207,6 +210,7 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 | `/meeting <title>` | Create a meeting note |
 | `/decision-log <decision>` | Record a decision with context and rationale |
 | `/project <name>` | Create a new project page in `Work/Projects/` |
+| `/brownbag <topic>` | Create a new brownbag session plan in `Work/Brownbag Sessions/` (auto-assigns BB-N id) |
 
 #### Learning
 

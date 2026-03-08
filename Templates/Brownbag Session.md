@@ -1,10 +1,10 @@
 ---
+id: BB-{{id}}
 title: "Brownbag: {{title}}"
 created: {{date}}
 date: {{date}}
 tags:
   - brownbag
-status: planning
 source: ""
 ---
 
