@@ -22,6 +22,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
   - `archive/` — Past years and completed projects
   - `2026/` — Current year daily notes (`YYYY-MM-DD.md`)
   - `Projects/` — Project pages (one per project, created from template)
+  - `Brownbag Sessions/` — Brownbag session plans. Each session has a unique `id` (BB-1, BB-2, ...), `created` date, and acceptance criteria checklist (`## 验收标准`). Status is auto-inferred from the checklist: all unchecked → planning, partially checked → in-progress, all checked → done. Created via `/brownbag <topic>`. Index at `Brownbag Sessions/Brownbag Sessions.md`.
 
 ## Key Files
 
@@ -32,6 +33,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Templates/Work Project.md** — Template for project pages.
 - **Templates/Learning Plan.md** — Template for `00_plan.md` (learning plan goals and phases).
 - **Templates/Learning Week.md** — Template for weekly learning logs (`Weeks/YYYY-WXX.md`).
+- **Templates/Brownbag Session.md** — Template for brownbag session plans (used by `/brownbag` command).
 
 ## Conventions
 
