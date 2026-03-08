@@ -112,25 +112,30 @@ flowchart TD
     classDef plan fill:#e8d5ff,color:#5f3dc4,stroke:#5f3dc4
     classDef output fill:#ff922b,color:#fff
 
-    THOUGHT["💡 Fleeting thought"]:::source
-    THOUGHT --> BTN["Zettel capture"]:::cmd --> INBOX["Inbox/"]:::inbox
-    INBOX --> IR["/inbox-review"]:::cmd --> ZK
+    subgraph capture ["Capture → Distill"]
+        THOUGHT["💡 Fleeting thought"]:::source
+        THOUGHT --> BTN["Zettel capture"]:::cmd
+        BTN --> INBOX["Inbox/"]:::inbox
+        INBOX --> IR["/inbox-review"]:::cmd
+    end
 
-    IR ~~~ BOOK
-    BOOK["📚 Book / article"]:::source
-    BOOK --> ZT["/zettel"]:::cmd --> ZK
+    subgraph extract ["Extract → Zettel"]
+        BOOK["📚 Book / article"]:::source --> ZT["/zettel"]:::cmd
+        WORK_EXP["💼 Work experience"]:::source --> RT["/retro"]:::cmd
+    end
 
-    ZT ~~~ WORK_EXP
-    WORK_EXP["💼 Work experience"]:::source
-    WORK_EXP --> RT["/retro"]:::cmd --> ZK
+    subgraph learn ["Learn → Share"]
+        COURSE["📖 Structured learning"]:::source --> LI["/learning-init"]:::cmd
+        LI --> PLAN["Learning/"]:::plan
+        PLAN --> LL["/learning-log"]:::cmd --> LR["/learning-review"]:::cmd
+        PLAN -->|share| BB["/brownbag"]:::cmd
+    end
 
-    RT ~~~ COURSE
-    COURSE["📖 Structured learning"]:::source
-    COURSE --> LI["/learning-init"]:::cmd --> PLAN["Learning/"]:::plan
-    PLAN --> LL["/learning-log"]:::cmd --> LR["/learning-review"]:::cmd
-    LR --> ZK["Zettelkasten/"]:::store
-
-    PLAN -->|share| BB["/brownbag"]:::cmd --> BBS["Brownbag Sessions/"]:::output
+    IR --> ZK["Zettelkasten/"]:::store
+    ZT --> ZK
+    RT --> ZK
+    LR --> ZK
+    BB --> BBS["Brownbag Sessions/"]:::output
 ```
 
 ```mermaid
