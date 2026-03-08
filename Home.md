@@ -297,7 +297,8 @@ if (plans.length === 0) {
     }
   }
 
-  container.innerHTML += `<div style="margin-top:8px;font-size:0.78em;"><a class="internal-link" data-href="Learning/Dashboard.md" style="color:var(--text-muted);">→ Full dashboard</a></div>`;
+  container.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
+    `<a class="internal-link" data-href="Learning/Dashboard.md">Full dashboard →</a>`;
 }
 ```
 
