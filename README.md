@@ -133,7 +133,7 @@ flowchart TD
         WORK_EXP --> RT["/retro"]:::cmd
     end
 
-    capture ~~~ learn ~~~ extract
+    THOUGHT ~~~ COURSE ~~~ BOOK
 
     IR --> ZK["Zettelkasten/"]:::store
     ZT --> ZK
