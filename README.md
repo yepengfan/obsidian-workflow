@@ -121,20 +121,23 @@ flowchart TD
 
     subgraph extract ["Extract → Zettel"]
         BOOK["📚 Book / article"]:::source --> ZT["/zettel"]:::cmd
-        WORK_EXP["💼 Work experience"]:::source --> RT["/retro"]:::cmd
+        ZT -.-> WORK_EXP["💼 Work experience"]:::source
+        WORK_EXP --> RT["/retro"]:::cmd
     end
 
     subgraph learn ["Learn → Share"]
         COURSE["📖 Structured learning"]:::source --> LI["/learning-init"]:::cmd
         LI --> PLAN["Learning/"]:::plan
-        PLAN --> LL["/learning-log"]:::cmd --> LR["/learning-review"]:::cmd
-        PLAN -->|share| BB["/brownbag"]:::cmd
+        PLAN --> LL["/learning-log"]:::cmd
+        LL --> LR["/learning-review"]:::cmd
+        LR -.-> BB["/brownbag"]:::cmd
     end
 
     IR --> ZK["Zettelkasten/"]:::store
     ZT --> ZK
     RT --> ZK
     LR --> ZK
+    PLAN -->|share| BB
     BB --> BBS["Brownbag Sessions/"]:::output
 ```
 
