@@ -104,7 +104,7 @@ A structured reading workflow: **scaffold first → directed reading → active 
 ## Knowledge Flow (Zettelkasten)
 
 ```mermaid
-flowchart LR
+flowchart TD
     classDef cmd fill:#4a9eff,color:#fff,font-weight:bold
     classDef store fill:#20c997,color:#fff
     classDef inbox fill:#ffd43b,color:#000
@@ -113,7 +113,6 @@ flowchart LR
     classDef output fill:#ff922b,color:#fff
 
     subgraph capture ["Capture → Distill"]
-        direction TB
         THOUGHT["💡 Fleeting thought"]:::source
         THOUGHT --> BTN["Zettel capture"]:::cmd
         BTN --> INBOX["Inbox/"]:::inbox
@@ -121,7 +120,6 @@ flowchart LR
     end
 
     subgraph learn ["Learn → Share"]
-        direction TB
         COURSE["📖 Structured learning"]:::source --> LI["/learning-init"]:::cmd
         LI --> PLAN["Learning/"]:::plan
         PLAN --> LL["/learning-log"]:::cmd
@@ -130,13 +128,12 @@ flowchart LR
     end
 
     subgraph extract ["Extract → Zettel"]
-        direction TB
         BOOK["📚 Book / article"]:::source --> ZT["/zettel"]:::cmd
         ZT -.-> WORK_EXP["💼 Work experience"]:::source
         WORK_EXP --> RT["/retro"]:::cmd
     end
 
-    capture ~~~ learn ~~~ extract
+    THOUGHT ~~~ COURSE ~~~ BOOK
 
     IR --> ZK["Zettelkasten/"]:::store
     ZT --> ZK
