@@ -146,9 +146,9 @@ flowchart TD
     IR["/inbox-review (weekly)"]:::cmd
     ZT["/zettel [source]"]:::cmd
     RT["/retro [source]"]:::cmd
-    LI["/learning-init [plan]"]:::cmd
-    LL["/learning-log [plan]"]:::cmd
-    LR["/learning-review [plan]"]:::cmd
+    LI["/learning-init [code]"]:::cmd
+    LL["/learning-log [code]"]:::cmd
+    LR["/learning-review [code]"]:::cmd
 
     PLAN["Learning/"]:::plan
     ZK["Zettelkasten/ — permanent notes"]:::store
