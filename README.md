@@ -45,43 +45,17 @@ sortspec.md       # Custom file explorer sort order (Custom File Explorer Sortin
 ## Architecture
 
 ```mermaid
-graph LR
-    subgraph Sources
-        EPUB[EPUB/PDF]
-        WR[WeRead Highlights]
-    end
+graph TD
+    EPUB[EPUB/PDF] -->|book_init.py| Vault
+    WR[WeRead] -->|auto-sync plugin| Vault
+    SYS[GitHub repo<br/>templates, commands] -->|git clone| Vault
 
-    subgraph GitHub["GitHub (this repo)"]
-        SYS[System Files<br/>scripts, templates,<br/>CLAUDE.md, commands]
-    end
+    Vault["🗃️ Obsidian Vault<br/>Home · Books · Work<br/>Inbox · Zettelkasten"]
 
-    subgraph Vault["Obsidian Vault"]
-        HOME[Home Dashboard]
-        IDX[Books Index]
-        BOOKS[Book Notes]
-        WORK[Work Notes]
-        INBOX[Inbox<br/>Fleeting Notes]
-        ZK[Zettelkasten<br/>Permanent Notes]
-        OTHER[Thoughts, Articles, ...]
-    end
-
-    subgraph AWS["AWS S3 (ap-southeast-2)"]
-        S3V[obsidian-vault-sync<br/>Remotely Save]
-        S3E[obsidian-ebook-library<br/>launchd auto-sync]
-    end
-
-    subgraph NAS["Synology NAS"]
-        BACKUP[Cloud Sync<br/>download-only backup]
-    end
-
-    EBOOKS[~/Library/ebooks] -->|launchd WatchPaths| S3E
-    S3E -->|aws s3 sync| EBOOKS
-    EPUB -->|book_init.py| BOOKS
-    WR -->|auto-sync plugin| Vault
-    SYS -->|git clone| Vault
-    Vault <-->|Remotely Save plugin| S3V
-    S3V -->|Cloud Sync| BACKUP
-    S3E -->|Cloud Sync| BACKUP
+    Vault <-->|Remotely Save| S3V[S3: vault-sync]
+    EBOOKS[~/Library/ebooks] -->|launchd| S3E[S3: ebook-library]
+    S3V --> BACKUP[NAS backup]
+    S3E --> BACKUP
 ```
 
 ## Book Learning System
@@ -90,30 +64,30 @@ graph LR
 graph TD
     INIT["<b>INIT</b><br/>初始化 书名"]
     INIT -->|book_init.py| GEN[Generate Structure]
-    GEN --> META[00_meta.md<br/>Reading goals]
-    GEN --> MAP[00_map.md<br/>Chapter map +<br/>Concept network]
-    GEN --> CH[chapters/Ch01..N<br/>Feynman prompts +<br/>Pre-generated flashcards]
-    GEN -->|auto-detect| WRLINK[WeRead links<br/>in each chapter]
+
+    subgraph scaffold [" "]
+        direction LR
+        META[00_meta.md<br/>Reading goals]
+        MAP[00_map.md<br/>Concept network]
+        CH[chapters/Ch01..N<br/>Feynman prompts]
+    end
+    GEN --> scaffold
 
     READ["<b>READ</b><br/>Read chapter on WeRead"]
     READ --> FILL[Fill 核心概念 +<br/>和已知事物的连接]
 
-    FEYNMAN["<b>FEYNMAN</b><br/>帮我费曼测试第 X 章"]
-    FILL --> FEYNMAN
-    FEYNMAN -->|Claude interrogates| CARDS[Generate flashcards]
-    FEYNMAN -->|extract insights| ZK[Zettelkasten<br/>Permanent Notes]
+    FILL --> FEYNMAN["<b>FEYNMAN</b><br/>帮我费曼测试第 X 章"]
+    FEYNMAN --> CARDS[Generate flashcards]
+    FEYNMAN -->|extract insights| ZK[Zettelkasten]
 
-    REVIEW["<b>REVIEW</b><br/>review 第 X 部分"]
-    CARDS --> REVIEW
-    REVIEW --> SUMMARY[Part summary +<br/>Cross-chapter connections]
+    CARDS --> REVIEW["<b>REVIEW</b><br/>review 第 X 部分"]
+    REVIEW --> SUMMARY[Part summary]
 
-    FINAL["<b>FINAL</b><br/>我读完了这本书"]
-    SUMMARY --> FINAL
-    FINAL --> SYNTH[Book synthesis +<br/>Gap check]
+    SUMMARY --> FINAL["<b>FINAL</b><br/>我读完了这本书"]
+    FINAL --> SYNTH[Book synthesis]
     FINAL -->|cross-chapter insights| ZK
 
-    SR["<b>SPACED REVIEW</b><br/>Obsidian SR plugin"]
-    CARDS -.->|#flashcards/BookName| SR
+    CARDS -.->|#flashcards| SR["<b>SPACED REVIEW</b><br/>Obsidian SR plugin"]
     SR -.->|interval repetition| SR
 
     style INIT fill:#4a9eff,color:#fff
@@ -122,6 +96,7 @@ graph TD
     style FINAL fill:#51cf66,color:#fff
     style SR fill:#be4bdb,color:#fff
     style ZK fill:#20c997,color:#fff
+    style scaffold fill:none,stroke:#ddd,stroke-dasharray:5
 ```
 
 A structured reading workflow: **scaffold first → directed reading → active construction → spaced review → permanent knowledge**.
@@ -135,37 +110,24 @@ flowchart TD
     classDef inbox fill:#ffd43b,color:#000
     classDef source fill:#f8f9fa,color:#333,stroke:#ccc
     classDef plan fill:#e8d5ff,color:#5f3dc4,stroke:#5f3dc4
+    classDef output fill:#ff922b,color:#fff
 
     THOUGHT["💡 Fleeting thought"]:::source
-    BOOK["📚 Book / article highlights"]:::source
-    WORK_EXP["💼 Project / work experience"]:::source
-    COURSE["📖 Structured learning<br/>(courses, projects)"]:::source
+    THOUGHT --> BTN["Zettel capture"]:::cmd --> INBOX["Inbox/"]:::inbox
+    INBOX --> IR["/inbox-review"]:::cmd --> ZK
 
-    BTN["Zettel capture button"]:::cmd
-    INBOX["Inbox/"]:::inbox
-    IR["/inbox-review (weekly)"]:::cmd
-    ZT["/zettel [source]"]:::cmd
-    RT["/retro [source]"]:::cmd
-    LI["/learning-init [code]"]:::cmd
-    LL["/learning-log [code]"]:::cmd
-    LR["/learning-review [code]"]:::cmd
-    BB["/brownbag [topic]"]:::cmd
+    BOOK["📚 Book / article"]:::source
+    BOOK --> ZT["/zettel"]:::cmd --> ZK
 
-    PLAN["Learning/"]:::plan
-    BBS["Brownbag Sessions/"]:::plan
-    ZK["Zettelkasten/ — permanent notes"]:::store
+    WORK_EXP["💼 Work experience"]:::source
+    WORK_EXP --> RT["/retro"]:::cmd --> ZK
 
-    THOUGHT --> BTN --> INBOX --> IR
-    BOOK --> ZT
-    WORK_EXP --> RT
-    COURSE --> LI --> PLAN
-    PLAN --> LL --> LR
-    PLAN -->|"share learnings"| BB --> BBS
+    COURSE["📖 Structured learning"]:::source
+    COURSE --> LI["/learning-init"]:::cmd --> PLAN["Learning/"]:::plan
+    PLAN --> LL["/learning-log"]:::cmd --> LR["/learning-review"]:::cmd
+    LR --> ZK["Zettelkasten/"]:::store
 
-    IR -->|"[z] convert to zettel"| ZK
-    ZT -->|"confirm draft"| ZK
-    RT -->|"confirm draft"| ZK
-    LR -->|"zettel candidates"| ZK
+    PLAN -->|share| BB["/brownbag"]:::cmd --> BBS["Brownbag Sessions/"]:::output
 ```
 
 ```mermaid
