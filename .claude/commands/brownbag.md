@@ -1,0 +1,1 @@
+Create a new brownbag session note at `Work/Brownbag Sessions/$ARGUMENTS.md` using the `Templates/Brownbag Session.md` template. Replace `{{title}}` with the session topic provided. Replace `{{date}}` with today's date (YYYY-MM-DD). If the session note already exists, tell me instead of overwriting it.
