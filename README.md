@@ -116,12 +116,15 @@ flowchart TD
     THOUGHT --> BTN["Zettel capture"]:::cmd --> INBOX["Inbox/"]:::inbox
     INBOX --> IR["/inbox-review"]:::cmd --> ZK
 
+    IR ~~~ BOOK
     BOOK["📚 Book / article"]:::source
     BOOK --> ZT["/zettel"]:::cmd --> ZK
 
+    ZT ~~~ WORK_EXP
     WORK_EXP["💼 Work experience"]:::source
     WORK_EXP --> RT["/retro"]:::cmd --> ZK
 
+    RT ~~~ COURSE
     COURSE["📖 Structured learning"]:::source
     COURSE --> LI["/learning-init"]:::cmd --> PLAN["Learning/"]:::plan
     PLAN --> LL["/learning-log"]:::cmd --> LR["/learning-review"]:::cmd
