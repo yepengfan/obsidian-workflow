@@ -119,12 +119,6 @@ flowchart TD
         INBOX --> IR["/inbox-review"]:::cmd
     end
 
-    subgraph extract ["Extract → Zettel"]
-        BOOK["📚 Book / article"]:::source --> ZT["/zettel"]:::cmd
-        ZT -.-> WORK_EXP["💼 Work experience"]:::source
-        WORK_EXP --> RT["/retro"]:::cmd
-    end
-
     subgraph learn ["Learn → Share"]
         COURSE["📖 Structured learning"]:::source --> LI["/learning-init"]:::cmd
         LI --> PLAN["Learning/"]:::plan
@@ -133,26 +127,18 @@ flowchart TD
         LR -.-> BB["/brownbag"]:::cmd
     end
 
+    subgraph extract ["Extract → Zettel"]
+        BOOK["📚 Book / article"]:::source --> ZT["/zettel"]:::cmd
+        ZT -.-> WORK_EXP["💼 Work experience"]:::source
+        WORK_EXP --> RT["/retro"]:::cmd
+    end
+
     IR --> ZK["Zettelkasten/"]:::store
     ZT --> ZK
     RT --> ZK
     LR --> ZK
     PLAN -->|share| BB
     BB --> BBS["Brownbag Sessions/"]:::output
-```
-
-```mermaid
-flowchart LR
-    classDef seedling fill:#d3f9d8,color:#2b8a3e,stroke:#2b8a3e
-    classDef growing fill:#b2f2bb,color:#2b8a3e,stroke:#2b8a3e
-    classDef evergreen fill:#69db7c,color:#1a4731,stroke:#1a4731
-
-    S["🌱 seedling — 0–1 Related links"]:::seedling
-    G["🌿 growing — 2+ Related links"]:::growing
-    E["🌳 evergreen — cross-domain insight"]:::evergreen
-
-    S -->|"auto — on save"| G
-    G -->|"manual judgment"| E
 ```
 
 ### Commands
