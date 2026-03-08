@@ -21,6 +21,8 @@ Zettelkasten/*
 # ── Local config (machine-specific paths) ──
 .bookrc
 .claude/settings.local.json
+.claude/claudian-settings.json
+.claude/sessions/
 
 # ── Obsidian internals ──
 .obsidian/
