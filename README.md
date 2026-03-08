@@ -129,8 +129,7 @@ flowchart TD
 
     subgraph extract ["Extract → Zettel"]
         BOOK["📚 Book / article"]:::source --> ZT["/zettel"]:::cmd
-        ZT -.-> WORK_EXP["💼 Work experience"]:::source
-        WORK_EXP --> RT["/retro"]:::cmd
+        WORK_EXP["💼 Work experience"]:::source --> RT["/retro"]:::cmd
     end
 
     IR --> ZK["Zettelkasten/"]:::store
