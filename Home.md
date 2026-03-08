@@ -197,12 +197,43 @@ readContainer.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em
 
 ### Articles
 
-```dataview
-TABLE length(rows) AS "Notes"
-FROM "Matter" OR "Instapaper Notes"
-FLATTEN file.folder AS source
-GROUP BY source
-SORT length(rows) DESC
+```dataviewjs
+function renderSection(container, title, pages, indexPath) {
+  const section = container.createEl("div", { attr: { style: "flex:1;min-width:200px;" } });
+
+  // Header with count badge
+  const header = section.createEl("div", { attr: { style: "display:flex;align-items:center;gap:8px;margin-bottom:8px;" } });
+  const titleEl = header.createEl("span", { attr: { style: "font-weight:600;font-size:0.85em;" } });
+  titleEl.innerHTML = `<a class="internal-link" data-href="${indexPath}" style="text-decoration:none;">${title}</a>`;
+  header.createEl("span", {
+    text: String(pages.length),
+    attr: { style: "font-size:0.65em;padding:1px 7px;border-radius:10px;background:var(--background-primary);color:var(--text-muted);border:1px solid var(--background-modifier-border);" }
+  });
+
+  // Article list
+  const list = section.createEl("div", "");
+  const recent = pages.sort(p => p.file.mtime, "desc").limit(8);
+  for (const p of recent) {
+    const row = list.createEl("div", { attr: { style: "padding:5px 0;border-bottom:1px solid var(--background-modifier-border);" } });
+    const link = row.createEl("div", { attr: { style: "font-size:0.82em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+    link.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${p.file.name}</a>`;
+  }
+
+  // "All articles →" link
+  section.createEl("div", { attr: { style: "margin-top:6px;font-size:0.8em;" } }).innerHTML =
+    `<a class="internal-link" data-href="${indexPath}" style="color:var(--text-faint);">All ${title.toLowerCase()} →</a>`;
+}
+
+const container = dv.el("div", "");
+const grid = container.createEl("div", {
+  attr: { style: "display:flex;gap:20px;flex-wrap:wrap;" }
+});
+
+const matter = dv.pages('"Matter"').where(p => p.file.name !== "Matter Index");
+const instapaper = dv.pages('"Instapaper Notes"').where(p => p.file.name !== "Instapaper Index");
+
+renderSection(grid, "Matter", matter, "Matter/Matter Index");
+renderSection(grid, "Instapaper", instapaper, "Instapaper Notes/Instapaper Index");
 ```
 
 ---
