@@ -79,3 +79,9 @@ tags: [learning/{{title}}]
 
 ### 工具
 -
+
+---
+
+## 附件目录
+
+截图、图表等媒体文件放在 `Learning/<PLAN-CODE>/Attachments/`

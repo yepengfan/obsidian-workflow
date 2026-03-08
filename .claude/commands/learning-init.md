@@ -12,6 +12,7 @@ Create a new Learning Plan for: $ARGUMENTS
      Weeks/
      Courses/
      Projects/
+     Attachments/
    ```
 
 4. **Create `Learning/<CODE>/00_plan.md`**:
