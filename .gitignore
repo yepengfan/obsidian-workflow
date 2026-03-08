@@ -6,9 +6,11 @@ Books/Designing Data-Intensive Applications (2nd Edition)/
 Entertainment/
 system-design-primer/
 Excalidraw/
-Instapaper Notes/
+Instapaper Notes/*
+!Instapaper Notes/Instapaper Index.md
 Kanban/
-Matter/
+Matter/*
+!Matter/Matter Index.md
 Thoughts/
 Learning/
 Training/
