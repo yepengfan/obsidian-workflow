@@ -13,7 +13,6 @@ Run manually:
 
 import re
 import os
-import sys
 import argparse
 
 VAULT = os.path.join(os.path.dirname(__file__), "..", "..", "Zettelkasten")
@@ -27,13 +26,14 @@ def parse_frontmatter(content):
         return {}
     fm = {}
     for line in m.group(1).splitlines():
-        kv = re.match(r"^(\w+):\s*(.+)", line)
-        if kv:
-            fm[kv.group(1)] = kv.group(2).strip()
         # parse topics list: topics: [a, b, c]
         topics_m = re.match(r"^topics:\s*\[(.+)\]", line)
         if topics_m:
             fm["topics"] = [t.strip() for t in topics_m.group(1).split(",")]
+        else:
+            kv = re.match(r"^(\w+):\s*(.+)", line)
+            if kv:
+                fm[kv.group(1)] = kv.group(2).strip()
     return fm
 
 
@@ -78,9 +78,7 @@ def score(content, index, min_links=MIN_LINKS, min_topics=MIN_TOPICS):
     return len(links), cross_topics, qualified
 
 
-def promote(path, dry_run):
-    with open(path, "r", encoding="utf-8") as f:
-        content = f.read()
+def promote(path, content, dry_run):
     new_content = re.sub(
         r"^status:\s*growing", "status: candidate", content, flags=re.MULTILINE
     )
@@ -115,7 +113,7 @@ def main():
 
         if qualified:
             promoted.append((title, link_count, cross_topics))
-            promote(path, args.dry_run)
+            promote(path, content, args.dry_run)
         else:
             skipped.append((title, link_count, len(cross_topics)))
 

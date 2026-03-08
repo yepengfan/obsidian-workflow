@@ -247,24 +247,6 @@ function render() {
 
     // Candidate actions — confirm to evergreen or revert to growing
     if (p.status === "candidate") {
-      const confirmBtn = metaRight.createEl("button", {
-        text: "\ud83c\udf33",
-        attr: {
-          title: "Confirm as Evergreen",
-          style: "border:1px solid var(--color-green);border-radius:6px;background:none;color:var(--color-green);cursor:pointer;font-size:0.85em;padding:3px 8px;opacity:0.6;transition:opacity 0.15s;flex-shrink:0;"
-        }
-      });
-      confirmBtn.addEventListener("mouseenter", () => { confirmBtn.style.opacity = "1"; });
-      confirmBtn.addEventListener("mouseleave", () => { confirmBtn.style.opacity = "0.6"; });
-      confirmBtn.addEventListener("click", async (e) => {
-        e.stopPropagation();
-        const tFile = app.vault.getAbstractFileByPath(p.file.path);
-        if (!tFile) return;
-        await app.fileManager.processFrontMatter(tFile, fm => { fm.status = "evergreen"; });
-        card.style.borderColor = "var(--color-green)";
-        confirmBtn.disabled = true; revertBtn.disabled = true;
-      });
-
       const revertBtn = metaRight.createEl("button", {
         text: "\u21a9",
         attr: {
@@ -272,6 +254,15 @@ function render() {
           style: "border:1px solid var(--text-muted);border-radius:6px;background:none;color:var(--text-muted);cursor:pointer;font-size:0.85em;padding:3px 8px;opacity:0.6;transition:opacity 0.15s;flex-shrink:0;"
         }
       });
+
+      const confirmBtn = metaRight.createEl("button", {
+        text: "\ud83c\udf33",
+        attr: {
+          title: "Confirm as Evergreen",
+          style: "border:1px solid var(--color-green);border-radius:6px;background:none;color:var(--color-green);cursor:pointer;font-size:0.85em;padding:3px 8px;opacity:0.6;transition:opacity 0.15s;flex-shrink:0;"
+        }
+      });
+
       revertBtn.addEventListener("mouseenter", () => { revertBtn.style.opacity = "1"; });
       revertBtn.addEventListener("mouseleave", () => { revertBtn.style.opacity = "0.6"; });
       revertBtn.addEventListener("click", async (e) => {
@@ -280,6 +271,17 @@ function render() {
         if (!tFile) return;
         await app.fileManager.processFrontMatter(tFile, fm => { fm.status = "growing"; });
         card.style.opacity = "0.4";
+        confirmBtn.disabled = true; revertBtn.disabled = true;
+      });
+
+      confirmBtn.addEventListener("mouseenter", () => { confirmBtn.style.opacity = "1"; });
+      confirmBtn.addEventListener("mouseleave", () => { confirmBtn.style.opacity = "0.6"; });
+      confirmBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const tFile = app.vault.getAbstractFileByPath(p.file.path);
+        if (!tFile) return;
+        await app.fileManager.processFrontMatter(tFile, fm => { fm.status = "evergreen"; });
+        card.style.borderColor = "var(--color-green)";
         confirmBtn.disabled = true; revertBtn.disabled = true;
       });
     }
