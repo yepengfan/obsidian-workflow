@@ -34,7 +34,7 @@ Create or open this week's learning log for: $ARGUMENTS
    ### 📖 阅读
    - <match readings from 00_plan.md resources to this week's goals — e.g. specific DDIA chapters, System Design Primer sections>
 
-   ### 🎬 视频（通勤/碎片时间）
+   ### 🎬 视频
    - <match video resources from 00_plan.md to this week's topics — e.g. specific Kleppmann lectures>
 
    ### 🔧 动手
