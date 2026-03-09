@@ -272,7 +272,7 @@ const pages = dv.pages('"Work"')
     const d = dv.date(p.date);
     return d && d >= weekStart && d <= weekEnd;
   })
-  .sort(p => p.date, "asc");
+  .sort(p => p.date, "desc");
 
 const container = dv.el("div", "");
 
