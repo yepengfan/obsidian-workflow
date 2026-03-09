@@ -283,47 +283,62 @@ container.createEl("div", {
   attr: { style: "font-size:0.78em;color:var(--text-muted);margin-bottom:6px;font-weight:600;" }
 });
 
-if (pages.length === 0) {
-  container.createEl("p", { text: "No work notes this week yet.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
+const todayStr = today.toFormat("yyyy-MM-dd");
+const hasTodayNote = pages.some(p => dv.date(p.date).toFormat("yyyy-MM-dd") === todayStr);
+
+function renderRow(rowEl, labelText, isToday, open, done, total, href) {
+  // Date label
+  const dateEl = rowEl.createEl("a", {
+    cls: "internal-link",
+    attr: { "data-href": href, style: `font-size:0.82em;font-weight:${isToday ? "700" : "400"};min-width:75px;text-decoration:none;color:${isToday ? "var(--interactive-accent)" : "var(--text-normal)"};` }
+  });
+  dateEl.textContent = labelText;
+
+  // Progress bar
+  const barWrap = rowEl.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;overflow:hidden;" } });
+  if (total > 0) {
+    const pct = Math.round(done / total * 100);
+    barWrap.createEl("div", { attr: { style: `height:100%;width:${pct}%;background:var(--interactive-accent);border-radius:3px;` } });
+  }
+
+  // Counts
+  const countStyle = "font-size:0.75em;padding:1px 6px;border-radius:4px;white-space:nowrap;";
+  if (open > 0)  rowEl.createEl("span", { text: `${open} open`,  attr: { style: countStyle + "color:var(--text-muted);background:var(--background-primary);" } });
+  if (done > 0)  rowEl.createEl("span", { text: `${done} done`,  attr: { style: countStyle + "color:var(--interactive-accent);background:var(--background-primary);" } });
+  if (total === 0) rowEl.createEl("span", { text: "no tasks", attr: { style: countStyle + "color:var(--text-faint);" } });
+}
+
+// Always show a Today row at the top — ghost row if note doesn't exist yet
+if (!hasTodayNote) {
+  const ghostRow = container.createEl("div", {
+    attr: { style: "display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px dashed var(--interactive-accent);opacity:0.6;" }
+  });
+  const year = today.toFormat("yyyy");
+  const ghostPath = `Work/${year}/${todayStr}.md`;
+  renderRow(ghostRow, "Today", true, 0, 0, 0, ghostPath);
+  ghostRow.createEl("span", { text: "create →", attr: { style: "font-size:0.72em;color:var(--interactive-accent);white-space:nowrap;" } });
+}
+
+if (pages.length === 0 && hasTodayNote) {
+  // hasTodayNote=true but pages empty is impossible, but guard anyway
 } else {
   for (const page of pages) {
     const d = dv.date(page.date);
     const dateStr = d.toFormat("MM-dd ccc");
-    const isToday = d.toFormat("yyyy-MM-dd") === today.toFormat("yyyy-MM-dd");
+    const isToday = d.toFormat("yyyy-MM-dd") === todayStr;
     const open = page.file.tasks.where(t => !t.completed).length;
     const done = page.file.tasks.where(t => t.completed).length;
     const total = open + done;
 
     const row = container.createEl("div", {
-      attr: { style: `display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;${isToday ? "background:var(--background-secondary);border:1px solid var(--interactive-accent);" : "background:var(--background-secondary);border:1px solid var(--background-modifier-border);"}` }
+      attr: { style: `display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px solid ${isToday ? "var(--interactive-accent)" : "var(--background-modifier-border)"};` }
     });
-
-    // Date
-    const dateEl = row.createEl("a", {
-      cls: "internal-link",
-      attr: { "data-href": page.file.path, style: `font-size:0.82em;font-weight:${isToday ? "700" : "400"};min-width:75px;text-decoration:none;color:${isToday ? "var(--interactive-accent)" : "var(--text-normal)"};` }
-    });
-    dateEl.textContent = isToday ? "Today" : dateStr;
-
-    // Progress bar
-    const barWrap = row.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;overflow:hidden;" } });
-    if (total > 0) {
-      const pct = Math.round(done / total * 100);
-      barWrap.createEl("div", { attr: { style: `height:100%;width:${pct}%;background:var(--interactive-accent);border-radius:3px;` } });
-    }
-
-    // Counts
-    const countStyle = "font-size:0.75em;padding:1px 6px;border-radius:4px;white-space:nowrap;";
-    if (open > 0) {
-      row.createEl("span", { text: `${open} open`, attr: { style: countStyle + "color:var(--text-muted);background:var(--background-primary);" } });
-    }
-    if (done > 0) {
-      row.createEl("span", { text: `${done} done`, attr: { style: countStyle + "color:var(--interactive-accent);background:var(--background-primary);" } });
-    }
-    if (total === 0) {
-      row.createEl("span", { text: "no tasks", attr: { style: countStyle + "color:var(--text-faint);" } });
-    }
+    renderRow(row, isToday ? "Today" : dateStr, isToday, open, done, total, page.file.path);
   }
+}
+
+if (!hasTodayNote && pages.length === 0) {
+  container.createEl("p", { text: "No other work notes this week yet.", attr: { style: "color:var(--text-muted);font-size:0.85em;margin-top:4px;" } });
 }
 ```
 
