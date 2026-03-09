@@ -22,7 +22,147 @@ const navToday = row.createEl("button", {
   text: dv.date("today").toFormat("yyyy-MM-dd"),
   attr: { style: "padding:8px 18px;border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.88em;" }
 });
-navToday.addEventListener("click", () => app.workspace.openLinkText("Work/" + dv.date("today").toFormat("yyyy/yyyy-MM-dd"), "", false));
+navToday.addEventListener("click", async () => {
+  const today = dv.date("today");
+  const dateStr = today.toFormat("yyyy-MM-dd");
+  const dayName = today.toFormat("cccc");
+  const year = today.toFormat("yyyy");
+  const notePath = `Work/${year}/${dateStr}.md`;
+
+  // If the note already exists, just open it
+  if (app.vault.getAbstractFileByPath(notePath)) {
+    await app.workspace.openLinkText(notePath, "", false);
+    return;
+  }
+
+  // Ensure year folder exists
+  const folder = `Work/${year}`;
+  if (!app.vault.getAbstractFileByPath(folder)) {
+    await app.vault.createFolder(folder);
+  }
+
+  // Read active projects from Work/Projects.md
+  const configFile = app.metadataCache.getFirstLinkpathDest("Work/Projects", "");
+  const projects = [];
+  if (configFile) {
+    const cache = app.metadataCache.getFileCache(configFile);
+    if (cache?.frontmatter?.projects) {
+      for (const p of cache.frontmatter.projects) {
+        projects.push(String(p));
+      }
+    }
+  }
+
+  // Build daily note content
+  const fence = String.fromCharCode(96).repeat(3);
+  let content = [
+    "---",
+    `date: ${dateStr}`,
+    `day: ${dayName}`,
+    "tags: work-daily",
+    "focus: ",
+    "---",
+    "",
+    `# ${dateStr} ${dayName}`,
+    "",
+    "## Tasks",
+    "",
+  ].join("\n");
+
+  // Priority toolbar (dataviewjs block)
+  content += fence + "dataviewjs\n";
+  content += `const file = app.workspace.getActiveFile();\n`;
+  content += `const config = dv.page("Work/Projects");\n`;
+  content += `const projects = (config?.projects || []).map(String);\n`;
+  content += `const focus = dv.current().focus || "";\n`;
+  content += `const prios = [\n`;
+  content += `  { e: "\u{1F534}", l: "Urgent" }, { e: "\u{1F7E0}", l: "High" },\n`;
+  content += `  { e: "\u{1F7E1}", l: "Medium" }, { e: "\u{1F7E2}", l: "Low" },\n`;
+  content += `];\n`;
+  content += `let sel = focus || projects[0] || "";\n`;
+  content += `\n`;
+  content += `const w = dv.container.createEl("div", {\n`;
+  content += `  attr: { style: "display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0;" }\n`;
+  content += `});\n`;
+  content += `\n`;
+  content += `const pbs = [];\n`;
+  content += `for (const p of projects) {\n`;
+  content += `  const a = p === sel;\n`;
+  content += `  const b = w.createEl("button", { text: p, attr: {\n`;
+  content += "    style: `padding:3px 12px;border-radius:6px;font-size:0.82em;font-weight:600;cursor:pointer;border:1px solid ${a ? \"var(--interactive-accent)\" : \"var(--background-modifier-border)\"};background:${a ? \"var(--interactive-accent)\" : \"var(--background-secondary)\"};color:${a ? \"var(--text-on-accent)\" : \"var(--text-normal)\"};`\n";
+  content += `  }});\n`;
+  content += `  pbs.push({ b, p });\n`;
+  content += `  b.addEventListener("click", () => {\n`;
+  content += `    sel = p;\n`;
+  content += `    pbs.forEach(x => {\n`;
+  content += `      const on = x.p === p;\n`;
+  content += `      x.b.style.background = on ? "var(--interactive-accent)" : "var(--background-secondary)";\n`;
+  content += `      x.b.style.color = on ? "var(--text-on-accent)" : "var(--text-normal)";\n`;
+  content += `      x.b.style.borderColor = on ? "var(--interactive-accent)" : "var(--background-modifier-border)";\n`;
+  content += `    });\n`;
+  content += `  });\n`;
+  content += `}\n`;
+  content += `\n`;
+  content += `w.createEl("span", { text: "\\u2502", attr: { style: "color:var(--text-faint);" } });\n`;
+  content += `\n`;
+  content += `for (const pr of prios) {\n`;
+  content += `  const b = w.createEl("button", { text: pr.e + " " + pr.l, attr: {\n`;
+  content += `    title: pr.l,\n`;
+  content += `    style: "padding:3px 10px;border-radius:6px;border:1px solid var(--background-modifier-border);background:var(--background-secondary);cursor:pointer;font-size:0.82em;"\n`;
+  content += `  }});\n`;
+  content += `  b.addEventListener("click", async () => {\n`;
+  content += `    if (!sel || !file) return;\n`;
+  content += `    const content = await app.vault.read(file);\n`;
+  content += `    const lines = content.split("\\n");\n`;
+  content += `    const task = "- [ ] " + pr.e + " ";\n`;
+  content += `    let target;\n`;
+  content += `    let headIdx = -1;\n`;
+  content += `    for (let i = 0; i < lines.length; i++) {\n`;
+  content += `      if (lines[i].trim() === "### " + sel) { headIdx = i; break; }\n`;
+  content += `    }\n`;
+  content += `    if (headIdx >= 0) {\n`;
+  content += `      let ins = headIdx + 1, repl = -1;\n`;
+  content += `      for (let j = headIdx + 1; j < lines.length; j++) {\n`;
+  content += `        const t = lines[j].trim();\n`;
+  content += `        if (t.startsWith("### ") || t.startsWith("## ")) break;\n`;
+  content += `        if (t === "- [ ]" && repl < 0) repl = j;\n`;
+  content += `        ins = j;\n`;
+  content += `      }\n`;
+  content += `      if (repl >= 0) {\n`;
+  content += `        lines[repl] = lines[repl].replace("- [ ]", task);\n`;
+  content += `        target = repl;\n`;
+  content += `      } else {\n`;
+  content += `        lines.splice(ins + 1, 0, task);\n`;
+  content += `        target = ins + 1;\n`;
+  content += `      }\n`;
+  content += `    } else {\n`;
+  content += `      let noteIdx = lines.length;\n`;
+  content += `      for (let i = 0; i < lines.length; i++) {\n`;
+  content += `        if (lines[i].trim() === "## Notes") { noteIdx = i; break; }\n`;
+  content += `      }\n`;
+  content += `      lines.splice(noteIdx, 0, "### " + sel, "", task, "");\n`;
+  content += `      target = noteIdx + 2;\n`;
+  content += `    }\n`;
+  content += `    await app.vault.modify(file, lines.join("\\n"));\n`;
+  content += `    setTimeout(() => {\n`;
+  content += `      const ed = app.workspace.activeLeaf?.view?.editor;\n`;
+  content += `      if (ed) { ed.setCursor({ line: target, ch: task.length }); ed.focus(); }\n`;
+  content += `    }, 150);\n`;
+  content += `    new Notice("Added " + pr.e + " " + pr.l + " task to " + sel);\n`;
+  content += `  });\n`;
+  content += `}\n`;
+  content += fence + "\n\n";
+
+  // Add a heading for each active project
+  for (const p of projects) {
+    content += `### ${p}\n\n- [ ] \n\n`;
+  }
+
+  content += "## Notes\n\n";
+
+  await app.vault.create(notePath, content);
+  await app.workspace.openLinkText(notePath, "", false);
+});
 
 // Zettel capture button — creates a new timestamped note in Inbox/
 const btn = row.createEl("button", {
@@ -43,20 +183,63 @@ btn.addEventListener("click", async () => {
 });
 ```
 
-**Today's open tasks:**
-
 ```dataviewjs
-const today = dv.date("today").toFormat("yyyy-MM-dd");
-const todayPage = dv.page("Work/" + today.slice(0, 4) + "/" + today);
-if (todayPage) {
-    const tasks = todayPage.file.tasks.where(t => !t.completed);
-    if (tasks.length > 0) {
-        dv.taskList(tasks, false);
-    } else {
-        dv.paragraph("All done for today!");
-    }
+const today = dv.date("today");
+const dow = today.weekday;
+const weekStart = today.minus({ days: dow - 1 });
+const weekEnd = weekStart.plus({ days: 6 });
+
+const pages = dv.pages('"Work"')
+  .where(p => p.file.tags.includes("#work-daily"))
+  .where(p => {
+    const d = dv.date(p.date);
+    return d && d >= weekStart && d <= weekEnd;
+  })
+  .sort(p => p.date, "asc");
+
+const container = dv.el("div", "");
+
+if (pages.length === 0) {
+  container.createEl("p", { text: "No work notes this week yet.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
 } else {
-    dv.paragraph("No daily note yet — click today in Calendar to start.");
+  for (const page of pages) {
+    const d = dv.date(page.date);
+    const dateStr = d.toFormat("MM-dd ccc");
+    const isToday = d.toFormat("yyyy-MM-dd") === today.toFormat("yyyy-MM-dd");
+    const open = page.file.tasks.where(t => !t.completed).length;
+    const done = page.file.tasks.where(t => t.completed).length;
+    const total = open + done;
+
+    const row = container.createEl("div", {
+      attr: { style: `display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;${isToday ? "background:var(--background-secondary);border:1px solid var(--interactive-accent);" : "background:var(--background-secondary);border:1px solid var(--background-modifier-border);"}` }
+    });
+
+    // Date
+    const dateEl = row.createEl("a", {
+      cls: "internal-link",
+      attr: { "data-href": page.file.path, style: `font-size:0.82em;font-weight:${isToday ? "700" : "400"};min-width:75px;text-decoration:none;color:${isToday ? "var(--interactive-accent)" : "var(--text-normal)"};` }
+    });
+    dateEl.textContent = isToday ? "Today" : dateStr;
+
+    // Progress bar
+    const barWrap = row.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;overflow:hidden;" } });
+    if (total > 0) {
+      const pct = Math.round(done / total * 100);
+      barWrap.createEl("div", { attr: { style: `height:100%;width:${pct}%;background:var(--interactive-accent);border-radius:3px;` } });
+    }
+
+    // Counts
+    const countStyle = "font-size:0.75em;padding:1px 6px;border-radius:4px;white-space:nowrap;";
+    if (open > 0) {
+      row.createEl("span", { text: `${open} open`, attr: { style: countStyle + "color:var(--text-muted);background:var(--background-primary);" } });
+    }
+    if (done > 0) {
+      row.createEl("span", { text: `${done} done`, attr: { style: countStyle + "color:var(--interactive-accent);background:var(--background-primary);" } });
+    }
+    if (total === 0) {
+      row.createEl("span", { text: "no tasks", attr: { style: countStyle + "color:var(--text-faint);" } });
+    }
+  }
 }
 ```
 
