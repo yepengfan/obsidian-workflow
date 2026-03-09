@@ -2,7 +2,6 @@
 date: {{date:YYYY-MM-DD}}
 day: {{date:dddd}}
 tags: work-daily
-focus:
 ---
 
 # {{date:YYYY-MM-DD}} {{date:dddd}}
@@ -13,12 +12,11 @@ focus:
 const file = app.workspace.getActiveFile();
 const config = dv.page("Work/Projects");
 const projects = (config?.projects || []).map(String);
-const focus = dv.current().focus || "";
 const prios = [
   { e: "🔴", l: "Urgent" }, { e: "🟠", l: "High" },
   { e: "🟡", l: "Medium" }, { e: "🟢", l: "Low" },
 ];
-let sel = focus || projects[0] || "";
+let sel = projects[0] || "";
 
 const w = dv.container.createEl("div", {
   attr: { style: "display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0;" }

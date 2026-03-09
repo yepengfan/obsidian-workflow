@@ -60,7 +60,6 @@ navToday.addEventListener("click", async () => {
     `date: ${dateStr}`,
     `day: ${dayName}`,
     "tags: work-daily",
-    "focus: ",
     "---",
     "",
     `# ${dateStr} ${dayName}`,
@@ -74,12 +73,11 @@ navToday.addEventListener("click", async () => {
   content += `const file = app.workspace.getActiveFile();\n`;
   content += `const config = dv.page("Work/Projects");\n`;
   content += `const projects = (config?.projects || []).map(String);\n`;
-  content += `const focus = dv.current().focus || "";\n`;
   content += `const prios = [\n`;
   content += `  { e: "\u{1F534}", l: "Urgent" }, { e: "\u{1F7E0}", l: "High" },\n`;
   content += `  { e: "\u{1F7E1}", l: "Medium" }, { e: "\u{1F7E2}", l: "Low" },\n`;
   content += `];\n`;
-  content += `let sel = focus || projects[0] || "";\n`;
+  content += `let sel = projects[0] || "";\n`;
   content += `\n`;
   content += `const w = dv.container.createEl("div", {\n`;
   content += `  attr: { style: "display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0;" }\n`;
