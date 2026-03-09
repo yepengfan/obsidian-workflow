@@ -311,33 +311,37 @@ function renderRow(rowEl, labelText, isToday, open, done, total, href) {
 // Always show a Today row at the top — ghost row if note doesn't exist yet
 if (!hasTodayNote) {
   const ghostRow = container.createEl("div", {
-    attr: { style: "display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px dashed var(--interactive-accent);opacity:0.6;" }
+    attr: { style: "display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px dashed var(--interactive-accent);opacity:0.6;cursor:pointer;" }
   });
-  const year = today.toFormat("yyyy");
-  const ghostPath = `Work/${year}/${todayStr}.md`;
-  renderRow(ghostRow, "Today", true, 0, 0, 0, ghostPath);
+  ghostRow.createEl("span", {
+    text: "Today",
+    attr: { style: "font-size:0.82em;font-weight:700;min-width:75px;color:var(--interactive-accent);" }
+  });
+  ghostRow.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;" } });
   ghostRow.createEl("span", { text: "create →", attr: { style: "font-size:0.72em;color:var(--interactive-accent);white-space:nowrap;" } });
+  // Click → trigger the navToday button (date button in the Work toolbar above) which has the full creation logic
+  ghostRow.addEventListener("click", () => {
+    const btn = Array.from(document.querySelectorAll("button"))
+      .find(b => b.textContent.trim() === todayStr);
+    if (btn) btn.click();
+  });
 }
 
-if (pages.length === 0 && hasTodayNote) {
-  // hasTodayNote=true but pages empty is impossible, but guard anyway
-} else {
-  for (const page of pages) {
-    const d = dv.date(page.date);
-    const dateStr = d.toFormat("MM-dd ccc");
-    const isToday = d.toFormat("yyyy-MM-dd") === todayStr;
-    const open = page.file.tasks.where(t => !t.completed).length;
-    const done = page.file.tasks.where(t => t.completed).length;
-    const total = open + done;
+for (const page of pages) {
+  const d = dv.date(page.date);
+  const dateStr = d.toFormat("MM-dd ccc");
+  const isToday = d.toFormat("yyyy-MM-dd") === todayStr;
+  const open = page.file.tasks.where(t => !t.completed).length;
+  const done = page.file.tasks.where(t => t.completed).length;
+  const total = open + done;
 
-    const row = container.createEl("div", {
-      attr: { style: `display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px solid ${isToday ? "var(--interactive-accent)" : "var(--background-modifier-border)"};` }
-    });
-    renderRow(row, isToday ? "Today" : dateStr, isToday, open, done, total, page.file.path);
-  }
+  const row = container.createEl("div", {
+    attr: { style: `display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px solid ${isToday ? "var(--interactive-accent)" : "var(--background-modifier-border)"};` }
+  });
+  renderRow(row, isToday ? "Today" : dateStr, isToday, open, done, total, page.file.path);
 }
 
-if (!hasTodayNote && pages.length === 0) {
+if (pages.length === 0) {
   container.createEl("p", { text: "No other work notes this week yet.", attr: { style: "color:var(--text-muted);font-size:0.85em;margin-top:4px;" } });
 }
 ```
