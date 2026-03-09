@@ -22,7 +22,150 @@ const navToday = row.createEl("button", {
   text: dv.date("today").toFormat("yyyy-MM-dd"),
   attr: { style: "padding:8px 18px;border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.88em;" }
 });
-navToday.addEventListener("click", () => app.workspace.openLinkText("Work/" + dv.date("today").toFormat("yyyy/yyyy-MM-dd"), "", false));
+navToday.addEventListener("click", async () => {
+  const today = dv.date("today");
+  const dateStr = today.toFormat("yyyy-MM-dd");
+  const dayName = today.toFormat("cccc");
+  const year = today.toFormat("yyyy");
+  const notePath = `Work/${year}/${dateStr}.md`;
+
+  // If the note already exists, just open it
+  if (app.vault.getAbstractFileByPath(notePath)) {
+    await app.workspace.openLinkText(notePath, "", false);
+    return;
+  }
+
+  // Ensure year folder exists
+  const folder = `Work/${year}`;
+  if (!app.vault.getAbstractFileByPath(folder)) {
+    await app.vault.createFolder(folder);
+  }
+
+  // Read active projects from Work/Projects.md
+  const configFile = app.metadataCache.getFirstLinkpathDest("Work/Projects", "");
+  const projects = [];
+  if (configFile) {
+    const cache = app.metadataCache.getFileCache(configFile);
+    if (cache?.frontmatter?.projects) {
+      for (const p of cache.frontmatter.projects) {
+        projects.push(String(p));
+      }
+    }
+  }
+
+  // Build daily note content with priority toolbar
+  const fence = String.fromCharCode(96).repeat(3);
+  const toolbarCode = [
+    'const file = app.workspace.getActiveFile();',
+    'const config = dv.page("Work/Projects");',
+    'const projects = (config?.projects || []).map(String);',
+    'const prios = [',
+    '  { e: "\u{1F534}", l: "Urgent" }, { e: "\u{1F7E0}", l: "High" },',
+    '  { e: "\u{1F7E1}", l: "Medium" }, { e: "\u{1F7E2}", l: "Low" },',
+    '];',
+    'let sel = projects[0] || "";',
+    '',
+    'const w = dv.container.createEl("div", {',
+    '  attr: { style: "display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0;" }',
+    '});',
+    '',
+    '// Project selector',
+    'const pbs = [];',
+    'for (const p of projects) {',
+    '  const a = p === sel;',
+    '  const b = w.createEl("button", { text: p, attr: {',
+    '    style: `padding:3px 12px;border-radius:6px;font-size:0.82em;font-weight:600;cursor:pointer;border:1px solid ${a ? "var(--interactive-accent)" : "var(--background-modifier-border)"};background:${a ? "var(--interactive-accent)" : "var(--background-secondary)"};color:${a ? "var(--text-on-accent)" : "var(--text-normal)"};`',
+    '  }});',
+    '  pbs.push({ b, p });',
+    '  b.addEventListener("click", () => {',
+    '    sel = p;',
+    '    pbs.forEach(x => {',
+    '      const on = x.p === p;',
+    '      x.b.style.background = on ? "var(--interactive-accent)" : "var(--background-secondary)";',
+    '      x.b.style.color = on ? "var(--text-on-accent)" : "var(--text-normal)";',
+    '      x.b.style.borderColor = on ? "var(--interactive-accent)" : "var(--background-modifier-border)";',
+    '    });',
+    '  });',
+    '}',
+    '',
+    'w.createEl("span", { text: "\\u2502", attr: { style: "color:var(--text-faint);" } });',
+    '',
+    '// Priority buttons — click to insert task under selected project',
+    'for (const pr of prios) {',
+    '  const b = w.createEl("button", { text: pr.e + " " + pr.l, attr: {',
+    '    title: pr.l,',
+    '    style: "padding:3px 10px;border-radius:6px;border:1px solid var(--background-modifier-border);background:var(--background-secondary);cursor:pointer;font-size:0.82em;"',
+    '  }});',
+    '  b.addEventListener("click", async () => {',
+    '    if (!sel || !file) return;',
+    '    const content = await app.vault.read(file);',
+    '    const lines = content.split("\\n");',
+    '    const task = "- [ ] " + pr.e + " ";',
+    '    let target;',
+    '    let headIdx = -1;',
+    '    for (let i = 0; i < lines.length; i++) {',
+    '      if (lines[i].trim() === "### " + sel) { headIdx = i; break; }',
+    '    }',
+    '    if (headIdx >= 0) {',
+    '      let ins = headIdx + 1, repl = -1;',
+    '      for (let j = headIdx + 1; j < lines.length; j++) {',
+    '        const t = lines[j].trim();',
+    '        if (t.startsWith("### ") || t.startsWith("## ")) break;',
+    '        if (t === "- [ ]" && repl < 0) repl = j;',
+    '        ins = j;',
+    '      }',
+    '      if (repl >= 0) {',
+    '        lines[repl] = lines[repl].replace("- [ ]", task);',
+    '        target = repl;',
+    '      } else {',
+    '        lines.splice(ins + 1, 0, task);',
+    '        target = ins + 1;',
+    '      }',
+    '    } else {',
+    '      let noteIdx = lines.length;',
+    '      for (let i = 0; i < lines.length; i++) {',
+    '        if (lines[i].trim() === "## Notes") { noteIdx = i; break; }',
+    '      }',
+    '      lines.splice(noteIdx, 0, "### " + sel, "", task, "");',
+    '      target = noteIdx + 2;',
+    '    }',
+    '    await app.vault.modify(file, lines.join("\\n"));',
+    '    setTimeout(() => {',
+    '      const ed = app.workspace.activeEditor?.editor;',
+    '      if (ed) { ed.setCursor({ line: target, ch: task.length }); ed.focus(); }',
+    '    }, 150);',
+    '    new Notice("Added " + pr.e + " " + pr.l + " task to " + sel);',
+    '  });',
+    '}',
+  ].join("\n");
+
+  let content = [
+    "---",
+    "date: " + dateStr,
+    "day: " + dayName,
+    "tags: work-daily",
+    "---",
+    "",
+    "# " + dateStr + " " + dayName,
+    "",
+    "## Tasks",
+    "",
+    fence + "dataviewjs",
+    toolbarCode,
+    fence,
+    "",
+  ].join("\n");
+
+  // Add a heading for each active project
+  for (const p of projects) {
+    content += `### ${p}\n\n- [ ] \n\n`;
+  }
+
+  content += "## Notes\n\n";
+
+  await app.vault.create(notePath, content);
+  await app.workspace.openLinkText(notePath, "", false);
+});
 
 // Zettel capture button — creates a new timestamped note in Inbox/
 const btn = row.createEl("button", {
@@ -43,20 +186,143 @@ btn.addEventListener("click", async () => {
 });
 ```
 
-**Today's open tasks:**
+```dataviewjs
+const today = dv.date("today");
+const dow = today.weekday;
+const weekStart = today.minus({ days: dow - 1 });
+const weekEnd = weekStart.plus({ days: 6 });
+
+const pages = dv.pages('"Work"')
+  .where(p => p.file.tags.includes("#work-daily"))
+  .where(p => {
+    const d = dv.date(p.date);
+    return d && d >= weekStart && d <= weekEnd;
+  })
+  .sort(p => p.date, "asc");
+
+const container = dv.el("div", "");
+
+// Week label
+const weekLabel = weekStart.toFormat("MMM dd") + " – " + weekEnd.toFormat("MMM dd");
+container.createEl("div", {
+  text: weekLabel,
+  attr: { style: "font-size:0.78em;color:var(--text-muted);margin-bottom:6px;font-weight:600;" }
+});
+
+if (pages.length === 0) {
+  container.createEl("p", { text: "No work notes this week yet.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
+} else {
+  for (const page of pages) {
+    const d = dv.date(page.date);
+    const dateStr = d.toFormat("MM-dd ccc");
+    const isToday = d.toFormat("yyyy-MM-dd") === today.toFormat("yyyy-MM-dd");
+    const open = page.file.tasks.where(t => !t.completed).length;
+    const done = page.file.tasks.where(t => t.completed).length;
+    const total = open + done;
+
+    const row = container.createEl("div", {
+      attr: { style: `display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;${isToday ? "background:var(--background-secondary);border:1px solid var(--interactive-accent);" : "background:var(--background-secondary);border:1px solid var(--background-modifier-border);"}` }
+    });
+
+    // Date
+    const dateEl = row.createEl("a", {
+      cls: "internal-link",
+      attr: { "data-href": page.file.path, style: `font-size:0.82em;font-weight:${isToday ? "700" : "400"};min-width:75px;text-decoration:none;color:${isToday ? "var(--interactive-accent)" : "var(--text-normal)"};` }
+    });
+    dateEl.textContent = isToday ? "Today" : dateStr;
+
+    // Progress bar
+    const barWrap = row.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;overflow:hidden;" } });
+    if (total > 0) {
+      const pct = Math.round(done / total * 100);
+      barWrap.createEl("div", { attr: { style: `height:100%;width:${pct}%;background:var(--interactive-accent);border-radius:3px;` } });
+    }
+
+    // Counts
+    const countStyle = "font-size:0.75em;padding:1px 6px;border-radius:4px;white-space:nowrap;";
+    if (open > 0) {
+      row.createEl("span", { text: `${open} open`, attr: { style: countStyle + "color:var(--text-muted);background:var(--background-primary);" } });
+    }
+    if (done > 0) {
+      row.createEl("span", { text: `${done} done`, attr: { style: countStyle + "color:var(--interactive-accent);background:var(--background-primary);" } });
+    }
+    if (total === 0) {
+      row.createEl("span", { text: "no tasks", attr: { style: countStyle + "color:var(--text-faint);" } });
+    }
+  }
+}
+```
+
+---
+
+## Brownbag Sessions
 
 ```dataviewjs
-const today = dv.date("today").toFormat("yyyy-MM-dd");
-const todayPage = dv.page("Work/" + today.slice(0, 4) + "/" + today);
-if (todayPage) {
-    const tasks = todayPage.file.tasks.where(t => !t.completed);
-    if (tasks.length > 0) {
-        dv.taskList(tasks, false);
-    } else {
-        dv.paragraph("All done for today!");
-    }
+const sessions = dv.pages('"Work/Brownbag Sessions"')
+  .where(p => p.file.name !== "Brownbag Sessions")
+  .sort(p => p.created, "desc")
+  .limit(3);
+
+const container = dv.el("div", "");
+
+if (sessions.length === 0) {
+  container.createEl("p", { text: "No brownbag sessions yet.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
 } else {
-    dv.paragraph("No daily note yet — click today in Calendar to start.");
+  const statusColor = {
+    "planning": "var(--color-yellow)",
+    "in-progress": "var(--color-blue)",
+    "done": "var(--color-green)"
+  };
+
+  // Status inferred from acceptance criteria checklist (## 验收标准).
+  // If the heading is renamed, all sessions fall back to "planning".
+  function inferStatus(page) {
+    const ac = page.file.tasks.where(t => t.section?.subpath === "验收标准");
+    if (ac.length === 0) return "planning";
+    const done = ac.where(t => t.completed).length;
+    if (done === ac.length) return "done";
+    if (done > 0) return "in-progress";
+    return "planning";
+  }
+
+  for (const s of sessions) {
+    const st = inferStatus(s);
+    const accentColor = statusColor[st] || "var(--color-accent)";
+
+    const card = container.createEl("div", {
+      attr: { style: "display:flex;gap:0;margin-bottom:8px;border:1px solid var(--background-modifier-border);border-radius:8px;overflow:hidden;background:var(--background-secondary);" }
+    });
+
+    // Left accent bar
+    card.createEl("div", { attr: { style: `width:3px;background:${accentColor};flex-shrink:0;` } });
+
+    const body = card.createEl("div", { attr: { style: "flex:1;min-width:0;padding:9px 12px;display:flex;align-items:center;gap:10px;" } });
+
+    // ID badge
+    const id = s.id || "BB-?";
+    body.createEl("span", {
+      text: id,
+      attr: { style: "font-weight:700;font-size:0.72em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;white-space:nowrap;flex-shrink:0;" }
+    });
+
+    // Title + meta
+    const info = body.createEl("div", { attr: { style: "flex:1;min-width:0;" } });
+    const titleEl = info.createEl("div", { attr: { style: "font-size:0.88em;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+    titleEl.innerHTML = `<a class="internal-link" data-href="${s.file.path}">${s.title || s.file.name}</a>`;
+
+    const meta = info.createEl("div", { attr: { style: "font-size:0.72em;color:var(--text-muted);margin-top:2px;" } });
+    const created = s.created ? dv.date(s.created).toFormat("yyyy-MM-dd") : "";
+    meta.textContent = created;
+
+    // Status pill
+    body.createEl("span", {
+      text: st,
+      attr: { style: `font-size:0.7em;padding:1px 8px;border-radius:20px;border:1px solid ${accentColor};color:${accentColor};white-space:nowrap;flex-shrink:0;` }
+    });
+  }
+
+  container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.85em;" } }).innerHTML =
+    `<a class="internal-link" data-href="Work/Brownbag Sessions/Brownbag Sessions">All sessions →</a>`;
 }
 ```
 

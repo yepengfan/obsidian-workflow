@@ -7,15 +7,8 @@ tags: work-daily
 # {{date:YYYY-MM-DD}} {{date:dddd}}
 
 ## Tasks
-%% Group tasks under project headings (### ProjectName) %%
-
-### IS2
-
-- [ ]
-
-### IFM
-
-- [ ]
+%% Create daily notes from Home for the full toolbar experience %%
+%% Priority: 🔴 Urgent | 🟠 High | 🟡 Medium | 🟢 Low %%
 
 ## Notes
 
