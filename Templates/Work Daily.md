@@ -4,7 +4,7 @@ day: {{date:dddd}}
 tags: work-daily
 ---
 
-# {{date:YYYY-MM-DD}} {{date:dddd}}
+# {{date:dddd}}
 
 ## Tasks
 %% Create daily notes from Home for the full toolbar experience %%
