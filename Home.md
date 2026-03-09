@@ -53,103 +53,108 @@ navToday.addEventListener("click", async () => {
     }
   }
 
-  // Build daily note content
+  // Build daily note content with priority toolbar
   const fence = String.fromCharCode(96).repeat(3);
+  const toolbarCode = [
+    'const file = app.workspace.getActiveFile();',
+    'const config = dv.page("Work/Projects");',
+    'const projects = (config?.projects || []).map(String);',
+    'const prios = [',
+    '  { e: "\u{1F534}", l: "Urgent" }, { e: "\u{1F7E0}", l: "High" },',
+    '  { e: "\u{1F7E1}", l: "Medium" }, { e: "\u{1F7E2}", l: "Low" },',
+    '];',
+    'let sel = projects[0] || "";',
+    '',
+    'const w = dv.container.createEl("div", {',
+    '  attr: { style: "display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0;" }',
+    '});',
+    '',
+    '// Project selector',
+    'const pbs = [];',
+    'for (const p of projects) {',
+    '  const a = p === sel;',
+    '  const b = w.createEl("button", { text: p, attr: {',
+    '    style: `padding:3px 12px;border-radius:6px;font-size:0.82em;font-weight:600;cursor:pointer;border:1px solid ${a ? "var(--interactive-accent)" : "var(--background-modifier-border)"};background:${a ? "var(--interactive-accent)" : "var(--background-secondary)"};color:${a ? "var(--text-on-accent)" : "var(--text-normal)"};`',
+    '  }});',
+    '  pbs.push({ b, p });',
+    '  b.addEventListener("click", () => {',
+    '    sel = p;',
+    '    pbs.forEach(x => {',
+    '      const on = x.p === p;',
+    '      x.b.style.background = on ? "var(--interactive-accent)" : "var(--background-secondary)";',
+    '      x.b.style.color = on ? "var(--text-on-accent)" : "var(--text-normal)";',
+    '      x.b.style.borderColor = on ? "var(--interactive-accent)" : "var(--background-modifier-border)";',
+    '    });',
+    '  });',
+    '}',
+    '',
+    'w.createEl("span", { text: "\\u2502", attr: { style: "color:var(--text-faint);" } });',
+    '',
+    '// Priority buttons — click to insert task under selected project',
+    'for (const pr of prios) {',
+    '  const b = w.createEl("button", { text: pr.e + " " + pr.l, attr: {',
+    '    title: pr.l,',
+    '    style: "padding:3px 10px;border-radius:6px;border:1px solid var(--background-modifier-border);background:var(--background-secondary);cursor:pointer;font-size:0.82em;"',
+    '  }});',
+    '  b.addEventListener("click", async () => {',
+    '    if (!sel || !file) return;',
+    '    const content = await app.vault.read(file);',
+    '    const lines = content.split("\\n");',
+    '    const task = "- [ ] " + pr.e + " ";',
+    '    let target;',
+    '    let headIdx = -1;',
+    '    for (let i = 0; i < lines.length; i++) {',
+    '      if (lines[i].trim() === "### " + sel) { headIdx = i; break; }',
+    '    }',
+    '    if (headIdx >= 0) {',
+    '      let ins = headIdx + 1, repl = -1;',
+    '      for (let j = headIdx + 1; j < lines.length; j++) {',
+    '        const t = lines[j].trim();',
+    '        if (t.startsWith("### ") || t.startsWith("## ")) break;',
+    '        if (t === "- [ ]" && repl < 0) repl = j;',
+    '        ins = j;',
+    '      }',
+    '      if (repl >= 0) {',
+    '        lines[repl] = lines[repl].replace("- [ ]", task);',
+    '        target = repl;',
+    '      } else {',
+    '        lines.splice(ins + 1, 0, task);',
+    '        target = ins + 1;',
+    '      }',
+    '    } else {',
+    '      let noteIdx = lines.length;',
+    '      for (let i = 0; i < lines.length; i++) {',
+    '        if (lines[i].trim() === "## Notes") { noteIdx = i; break; }',
+    '      }',
+    '      lines.splice(noteIdx, 0, "### " + sel, "", task, "");',
+    '      target = noteIdx + 2;',
+    '    }',
+    '    await app.vault.modify(file, lines.join("\\n"));',
+    '    setTimeout(() => {',
+    '      const ed = app.workspace.activeEditor?.editor;',
+    '      if (ed) { ed.setCursor({ line: target, ch: task.length }); ed.focus(); }',
+    '    }, 150);',
+    '    new Notice("Added " + pr.e + " " + pr.l + " task to " + sel);',
+    '  });',
+    '}',
+  ].join("\n");
+
   let content = [
     "---",
-    `date: ${dateStr}`,
-    `day: ${dayName}`,
+    "date: " + dateStr,
+    "day: " + dayName,
     "tags: work-daily",
     "---",
     "",
-    `# ${dateStr} ${dayName}`,
+    "# " + dateStr + " " + dayName,
     "",
     "## Tasks",
     "",
+    fence + "dataviewjs",
+    toolbarCode,
+    fence,
+    "",
   ].join("\n");
-
-  // Priority toolbar (dataviewjs block)
-  content += fence + "dataviewjs\n";
-  content += `const file = app.workspace.getActiveFile();\n`;
-  content += `const config = dv.page("Work/Projects");\n`;
-  content += `const projects = (config?.projects || []).map(String);\n`;
-  content += `const prios = [\n`;
-  content += `  { e: "\u{1F534}", l: "Urgent" }, { e: "\u{1F7E0}", l: "High" },\n`;
-  content += `  { e: "\u{1F7E1}", l: "Medium" }, { e: "\u{1F7E2}", l: "Low" },\n`;
-  content += `];\n`;
-  content += `let sel = projects[0] || "";\n`;
-  content += `\n`;
-  content += `const w = dv.container.createEl("div", {\n`;
-  content += `  attr: { style: "display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0;" }\n`;
-  content += `});\n`;
-  content += `\n`;
-  content += `const pbs = [];\n`;
-  content += `for (const p of projects) {\n`;
-  content += `  const a = p === sel;\n`;
-  content += `  const b = w.createEl("button", { text: p, attr: {\n`;
-  content += "    style: `padding:3px 12px;border-radius:6px;font-size:0.82em;font-weight:600;cursor:pointer;border:1px solid ${a ? \"var(--interactive-accent)\" : \"var(--background-modifier-border)\"};background:${a ? \"var(--interactive-accent)\" : \"var(--background-secondary)\"};color:${a ? \"var(--text-on-accent)\" : \"var(--text-normal)\"};`\n";
-  content += `  }});\n`;
-  content += `  pbs.push({ b, p });\n`;
-  content += `  b.addEventListener("click", () => {\n`;
-  content += `    sel = p;\n`;
-  content += `    pbs.forEach(x => {\n`;
-  content += `      const on = x.p === p;\n`;
-  content += `      x.b.style.background = on ? "var(--interactive-accent)" : "var(--background-secondary)";\n`;
-  content += `      x.b.style.color = on ? "var(--text-on-accent)" : "var(--text-normal)";\n`;
-  content += `      x.b.style.borderColor = on ? "var(--interactive-accent)" : "var(--background-modifier-border)";\n`;
-  content += `    });\n`;
-  content += `  });\n`;
-  content += `}\n`;
-  content += `\n`;
-  content += `w.createEl("span", { text: "\\u2502", attr: { style: "color:var(--text-faint);" } });\n`;
-  content += `\n`;
-  content += `for (const pr of prios) {\n`;
-  content += `  const b = w.createEl("button", { text: pr.e + " " + pr.l, attr: {\n`;
-  content += `    title: pr.l,\n`;
-  content += `    style: "padding:3px 10px;border-radius:6px;border:1px solid var(--background-modifier-border);background:var(--background-secondary);cursor:pointer;font-size:0.82em;"\n`;
-  content += `  }});\n`;
-  content += `  b.addEventListener("click", async () => {\n`;
-  content += `    if (!sel || !file) return;\n`;
-  content += `    const content = await app.vault.read(file);\n`;
-  content += `    const lines = content.split("\\n");\n`;
-  content += `    const task = "- [ ] " + pr.e + " ";\n`;
-  content += `    let target;\n`;
-  content += `    let headIdx = -1;\n`;
-  content += `    for (let i = 0; i < lines.length; i++) {\n`;
-  content += `      if (lines[i].trim() === "### " + sel) { headIdx = i; break; }\n`;
-  content += `    }\n`;
-  content += `    if (headIdx >= 0) {\n`;
-  content += `      let ins = headIdx + 1, repl = -1;\n`;
-  content += `      for (let j = headIdx + 1; j < lines.length; j++) {\n`;
-  content += `        const t = lines[j].trim();\n`;
-  content += `        if (t.startsWith("### ") || t.startsWith("## ")) break;\n`;
-  content += `        if (t === "- [ ]" && repl < 0) repl = j;\n`;
-  content += `        ins = j;\n`;
-  content += `      }\n`;
-  content += `      if (repl >= 0) {\n`;
-  content += `        lines[repl] = lines[repl].replace("- [ ]", task);\n`;
-  content += `        target = repl;\n`;
-  content += `      } else {\n`;
-  content += `        lines.splice(ins + 1, 0, task);\n`;
-  content += `        target = ins + 1;\n`;
-  content += `      }\n`;
-  content += `    } else {\n`;
-  content += `      let noteIdx = lines.length;\n`;
-  content += `      for (let i = 0; i < lines.length; i++) {\n`;
-  content += `        if (lines[i].trim() === "## Notes") { noteIdx = i; break; }\n`;
-  content += `      }\n`;
-  content += `      lines.splice(noteIdx, 0, "### " + sel, "", task, "");\n`;
-  content += `      target = noteIdx + 2;\n`;
-  content += `    }\n`;
-  content += `    await app.vault.modify(file, lines.join("\\n"));\n`;
-  content += `    setTimeout(() => {\n`;
-  content += `      const ed = app.workspace.activeLeaf?.view?.editor;\n`;
-  content += `      if (ed) { ed.setCursor({ line: target, ch: task.length }); ed.focus(); }\n`;
-  content += `    }, 150);\n`;
-  content += `    new Notice("Added " + pr.e + " " + pr.l + " task to " + sel);\n`;
-  content += `  });\n`;
-  content += `}\n`;
-  content += fence + "\n\n";
 
   // Add a heading for each active project
   for (const p of projects) {
@@ -196,6 +201,13 @@ const pages = dv.pages('"Work"')
   .sort(p => p.date, "asc");
 
 const container = dv.el("div", "");
+
+// Week label
+const weekLabel = weekStart.toFormat("MMM dd") + " – " + weekEnd.toFormat("MMM dd");
+container.createEl("div", {
+  text: weekLabel,
+  attr: { style: "font-size:0.78em;color:var(--text-muted);margin-bottom:6px;font-weight:600;" }
+});
 
 if (pages.length === 0) {
   container.createEl("p", { text: "No work notes this week yet.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
@@ -262,6 +274,8 @@ if (sessions.length === 0) {
     "done": "var(--color-green)"
   };
 
+  // Status inferred from acceptance criteria checklist (## 验收标准).
+  // If the heading is renamed, all sessions fall back to "planning".
   function inferStatus(page) {
     const ac = page.file.tasks.where(t => t.section?.subpath === "验收标准");
     if (ac.length === 0) return "planning";
