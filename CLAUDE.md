@@ -34,6 +34,9 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Templates/Learning Plan.md** — Template for `00_plan.md` (learning plan goals and phases).
 - **Templates/Learning Week.md** — Template for weekly learning logs (`Weeks/YYYY-WXX.md`).
 - **Templates/Brownbag Session.md** — Template for brownbag session plans (used by `/brownbag` command).
+- **Templates/Work Dashboard.md** — Reference backup + design decisions log for `Work/Work Dashboard.md`.
+- **Templates/Work Weekly View.md** — Reference backup + design decisions log for `Work/Weekly View.md`.
+- **Templates/Work Monthly View.md** — Reference backup + design decisions log for `Work/Monthly View.md`.
 
 ## Conventions
 
@@ -47,6 +50,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Inbox notes**: No format required. Just capture the thought. Run `/inbox-review` weekly to process: convert to zettel or archive to `Inbox/archive/YYYY-MM/`.
 - **Project tasks**: Group tasks under `### ProjectName` headings in daily notes (e.g., `### IS2`, `### IFM`). The heading name must match the filename in `Work/Projects/`. Dataview queries use `t.section.subpath` to filter tasks by project.
 - **Dataview tag filtering**: Use `p.file.tags.includes("#tag")` (not `p.tags`) in dataviewjs queries for reliable tag matching.
+- **Dashboard template sync**: When editing `Work/Work Dashboard.md`, `Work/Weekly View.md`, or `Work/Monthly View.md`, update the corresponding `Templates/Work *.md` reference file and bump its `updated:` frontmatter date. Append a new dated `> [!note]` entry to the Design Decisions section when making structural changes.
 
 ## Installed Plugins
 
