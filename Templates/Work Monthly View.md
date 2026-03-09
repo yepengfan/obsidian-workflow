@@ -4,7 +4,7 @@ for: Work/Monthly View
 updated: 2026-03-10
 ---
 
-%% Reference template for Work/Monthly View.md. Not used to create new notes — edit the live file directly. Update this file whenever the view structure changes. %%
+%% Reference template for Work/Monthly View.md. Not used to create new notes — edit the live file directly. Update this file whenever the view structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
 

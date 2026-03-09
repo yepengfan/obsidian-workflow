@@ -4,7 +4,7 @@ for: Work/Weekly View
 updated: 2026-03-10
 ---
 
-%% Reference template for Work/Weekly View.md. Not used to create new notes — edit the live file directly. Update this file whenever the view structure changes. %%
+%% Reference template for Work/Weekly View.md. Not used to create new notes — edit the live file directly. Update this file whenever the view structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
 
@@ -26,12 +26,14 @@ updated: 2026-03-10
 
 ```dataviewjs
 const today = dv.date("today").toFormat("yyyy-MM-dd");
-const todayPage = dv.page("Work/" + today.slice(0, 4) + "/" + today);
+const notePath = "Work/" + today.slice(0, 4) + "/" + today;
+const todayPage = dv.page(notePath);
 if (todayPage) {
     dv.taskList(todayPage.file.tasks, false);
 } else {
     dv.paragraph("No note for today yet. Click today's date in the Calendar to create one.");
 }
+dv.el("div", `<a class="internal-link" data-href="${notePath}" style="font-size:0.85em;">Open today's note →</a>`);
 ```
 
 ### This Week — Incomplete
