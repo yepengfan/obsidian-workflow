@@ -25,15 +25,16 @@ updated: 2026-03-10
 ### Today
 
 ```dataviewjs
-const today = dv.date("today").toFormat("yyyy-MM-dd");
-const notePath = "Work/" + today.slice(0, 4) + "/" + today;
+const todayStr = dv.date("today").toFormat("yyyy-MM-dd");
+const notePath = "Work/" + todayStr.slice(0, 4) + "/" + todayStr;
 const todayPage = dv.page(notePath);
 if (todayPage) {
     dv.taskList(todayPage.file.tasks, false);
 } else {
     dv.paragraph("No note for today yet. Click today's date in the Calendar to create one.");
 }
-dv.el("div", `<a class="internal-link" data-href="${notePath}" style="font-size:0.85em;">Open today's note →</a>`);
+dv.container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.85em;" } }).innerHTML =
+    `<a class="internal-link" data-href="${notePath}">Open today's note →</a>`;
 ```
 
 ### This Week — Incomplete
