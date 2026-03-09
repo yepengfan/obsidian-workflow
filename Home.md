@@ -220,7 +220,7 @@ navToday.addEventListener("click", async () => {
     "tags: work-daily",
     "---",
     "",
-    "# " + dateStr + " " + dayName,
+    "# " + dayName,
     "",
     "## Tasks",
     "",
