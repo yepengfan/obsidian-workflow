@@ -331,8 +331,8 @@ for (const page of pages) {
   const d = dv.date(page.date);
   const dateStr = d.toFormat("MM-dd ccc");
   const isToday = d.toFormat("yyyy-MM-dd") === todayStr;
-  const open = page.file.tasks.where(t => !t.completed).length;
-  const done = page.file.tasks.where(t => t.completed).length;
+  const open = page.file.tasks.where(t => !t.completed && t.section?.subpath === "Tasks").length;
+  const done = page.file.tasks.where(t => t.completed && t.section?.subpath === "Tasks").length;
   const total = open + done;
 
   const row = container.createEl("div", {
