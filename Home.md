@@ -331,8 +331,21 @@ for (const page of pages) {
   const d = dv.date(page.date);
   const dateStr = d.toFormat("MM-dd ccc");
   const isToday = d.toFormat("yyyy-MM-dd") === todayStr;
-  const open = page.file.tasks.where(t => !t.completed).length;
-  const done = page.file.tasks.where(t => t.completed).length;
+  // Count only tasks between ## Tasks and ## Notes (or EOF if ## Notes absent).
+  // Tasks live under ### <ProjectName> sub-headings, so section.subpath won't work — line range is used instead.
+  const tfile = app.vault.getAbstractFileByPath(page.file.path);
+  const fCache = tfile ? app.metadataCache.getFileCache(tfile) : null;
+  const fHeadings = fCache?.headings || [];
+  let tasksLine = -1, notesLine = Infinity;
+  for (const h of fHeadings) {
+    if (h.level === 2 && h.heading === "Tasks" && tasksLine === -1) tasksLine = h.position.start.line;
+    if (h.level === 2 && h.heading === "Notes" && notesLine === Infinity) notesLine = h.position.start.line;
+  }
+  const inTasksSection = tasksLine !== -1
+    ? t => t.line > tasksLine && t.line < notesLine
+    : () => false;
+  const open = page.file.tasks.where(t => !t.completed && inTasksSection(t)).length;
+  const done = page.file.tasks.where(t => t.completed && inTasksSection(t)).length;
   const total = open + done;
 
   const row = container.createEl("div", {
