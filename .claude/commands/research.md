@@ -1,4 +1,4 @@
-Research the topic I specify using web search, then create a well-structured note in `Thoughts/`.
+Research the topic I specify using web search, then create a well-structured note in `Inbox/`.
 
 File name: Use a concise, descriptive name in the same language as the topic.
 
