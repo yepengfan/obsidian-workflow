@@ -18,10 +18,10 @@ updated: 2026-03-12
 > - **No reference template syncing**: Home.md is a single bespoke file with no structural variants. A reference template is maintained here for design decision history only — there is no "live file + mirror" sync requirement like the Work Dashboard views.
 
 > [!note] 2026-03-12 — Four-segment progress bar (carryover system)
-> - **Four segments** (left→right, dark→light): done (solid accent) | carried-in (30% opacity accent) | carried-away (yellow) | open (gray background). Open always at far right.
+> - **Four segments** (left→right, dark→light): done (solid accent) | carried-away/carry-out (yellow) | carried-in/carry-in (30% opacity accent) | open (gray background). Open always at far right.
 > - **Carried-away detection**: `t.status === ">"` in the Tasks section (between `## Tasks` and `## Notes`). These are tasks forwarded to the next day.
 > - **Carried-in detection**: Level-2 heading where `h.heading.includes("Carryover")`. Unchecked (`t.status === " "`) tasks between that line and `carryoverEndLine` (the next `##` heading, or EOF). The end bound prevents tasks in later sections from being mis-counted as carried-in.
 > - **Open uses `t.status === " "`** (not `!t.completed`) to exclude `[>]` tasks from the open count. `inTasksSection` is also capped at `min(notesLine, carryoverLine)` so Carryover tasks aren't double-counted when `## Notes` is absent.
 > - **Total**: `open + done + carriedAway + carriedIn` — all four segments sum to 100%.
-> - **Count badges**: `N open` | `N ➡️` (carry-in) | `N ⬆️` (carry-out, yellow) | `N done` | `N total` — all 5 always shown; zeros are dimmed (opacity 0.35) for layout consistency. Fixed `width:4.8em` per badge reserves space for 2-digit numbers.
+> - **Count badges**: `N open` | `N ⬆️` (carry-out, yellow) | `N ➡️` (carry-in) | `N done` | `N total` — all 5 always shown; zeros are dimmed (opacity 0.35) for layout consistency. Fixed `width:4.8em` per badge reserves space for 2-digit numbers. Badge order mirrors bar order (left→right).
 
