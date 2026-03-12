@@ -183,7 +183,7 @@ sortBtn.addEventListener("click", async () => {
 ## Notes
 
 ```
-(Note: in the actual file, the dataviewjs block uses triple backticks — write them correctly)
+**IMPORTANT when writing the file**: The template above uses ` `` ` as a placeholder to avoid nesting code fences inside this instruction block. When writing the actual note to disk, replace every ` `` ` with three backtick characters (` ``` `). The note must contain a real fenced code block — ```` ```dataviewjs ```` opening and ```` ``` ```` closing — for the toolbar to render in Obsidian.
 
 ## Step 4 — Add Carryover section (if there are unfinished tasks)
 
@@ -206,12 +206,21 @@ If unfinished tasks exist:
 - [ ] another task
 ```
 
-**4b. Mark tasks in the previous note** — In the previous note's file, replace each carried-over top-level `- [ ]` with `- [>]` and append ` ➡️ [[Work/<YYYY>/<today-date>]]` to the line. Do the same for nested sub-tasks (replace `- [ ]` with `- [>]`). This marks them as "forwarded" in Obsidian task style.
+**4b. Mark tasks in the previous note** — In the previous note's file:
+- Top-level carried-over tasks: replace `- [ ]` with `- [>]` **and** append ` ➡️ [[Work/<YYYY>/<today-date>]]` to the line.
+- Nested sub-tasks: replace `- [ ]` with `- [>]` only — **do not** append the wikilink to sub-tasks (the parent already carries it).
 
 Example transformation in previous note:
 ```
-Before: - [ ] 🟡 4 articles to read
-After:  - [>] 🟡 4 articles to read ➡️ [[Work/2026/2026-03-13]]
+Before:
+- [ ] 🟡 4 articles to read
+	- [ ] 🟡 openai harness engineering: https://...
+	- [ ] 🟡 martin fowler: https://...
+
+After:
+- [>] 🟡 4 articles to read ➡️ [[Work/2026/2026-03-13]]
+	- [>] 🟡 openai harness engineering: https://...
+	- [>] 🟡 martin fowler: https://...
 ```
 
 ## Step 5 — Report

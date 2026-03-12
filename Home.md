@@ -360,8 +360,11 @@ for (const page of pages) {
     if (h.level === 2 && h.heading.includes("Carryover") && carryoverLine === -1) carryoverLine = h.position.start.line;
     else if (carryoverLine !== -1 && h.level === 2 && carryoverEndLine === Infinity) carryoverEndLine = h.position.start.line;
   }
+  // Cap tasksSection at carryoverLine when ## Notes is absent — prevents Carryover tasks
+  // from being double-counted as both inTasksSection and inCarryoverSection.
+  const tasksSectionEnd = Math.min(notesLine, carryoverLine === -1 ? Infinity : carryoverLine);
   const inTasksSection = tasksLine !== -1
-    ? t => t.line > tasksLine && t.line < notesLine
+    ? t => t.line > tasksLine && t.line < tasksSectionEnd
     : () => false;
   const inCarryoverSection = carryoverLine !== -1
     ? t => t.line > carryoverLine && t.line < carryoverEndLine
