@@ -311,15 +311,16 @@ function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway
   }
 
   // Counts — always show all metrics for consistent layout; dim zeros
-  const countStyle = "font-size:0.75em;padding:1px 6px;border-radius:4px;white-space:nowrap;min-width:2em;text-align:center;";
+  // display:inline-block + width:4.8em reserves space for 2-digit numbers and keeps columns aligned
+  const countStyle = "display:inline-block;width:4.8em;font-size:0.75em;padding:1px 4px;border-radius:4px;white-space:nowrap;text-align:center;box-sizing:border-box;";
   const dim = "color:var(--text-faint);background:var(--background-primary);opacity:0.35;";
   if (total === 0) {
     rowEl.createEl("span", { text: "no tasks", attr: { style: countStyle + "color:var(--text-faint);" } });
   } else {
-    rowEl.createEl("span", { text: `${open} open`,      attr: { style: countStyle + (open      > 0 ? "color:var(--text-muted);background:var(--background-primary);"       : dim) } });
-    rowEl.createEl("span", { text: `${carriedIn} 🔄`,   attr: { style: countStyle + (carriedIn > 0 ? "color:var(--text-faint);background:var(--background-primary);"       : dim) } });
-    rowEl.createEl("span", { text: `${carriedAway} ➡️`, attr: { style: countStyle + (carriedAway > 0 ? "color:var(--color-yellow);background:var(--background-primary);"  : dim) } });
-    rowEl.createEl("span", { text: `${done} done`,      attr: { style: countStyle + (done       > 0 ? "color:var(--interactive-accent);background:var(--background-primary);" : dim) } });
+    rowEl.createEl("span", { text: `${open} open`,      attr: { style: countStyle + (open       > 0 ? "color:var(--text-muted);background:var(--background-primary);"        : dim) } });
+    rowEl.createEl("span", { text: `${carriedIn} ⬇️`,   attr: { style: countStyle + (carriedIn  > 0 ? "color:var(--text-faint);background:var(--background-primary);"        : dim) } });
+    rowEl.createEl("span", { text: `${carriedAway} ⬆️`, attr: { style: countStyle + (carriedAway > 0 ? "color:var(--color-yellow);background:var(--background-primary);"    : dim) } });
+    rowEl.createEl("span", { text: `${done} done`,      attr: { style: countStyle + (done        > 0 ? "color:var(--interactive-accent);background:var(--background-primary);" : dim) } });
     rowEl.createEl("span", { text: `${total} total`,    attr: { style: countStyle + "color:var(--text-faint);background:var(--background-primary);" } });
   }
 }
