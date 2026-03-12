@@ -287,7 +287,7 @@ navToday.addEventListener("click", async () => {
         if (/^- \[ \]/.test(pc[b[0]].trim())) {
           const out = [];
           for (const idx of b) {
-            if (/- \[ \]/.test(pc[idx])) { toMark.push(idx); tot++; out.push(pc[idx]); }
+            if (/- \[ \]/.test(pc[idx]) && pc[idx].replace(/^\t*- \[ \] ?/, "").trim() !== "") { toMark.push(idx); tot++; out.push(pc[idx]); }
           }
           if (out.length > 0) kept.push(...out);
         }
@@ -296,7 +296,7 @@ navToday.addEventListener("click", async () => {
     }
     // Mark previous note tasks as [>] and append carryover section
     if (toMark.length > 0) {
-      for (const idx of toMark) pc[idx] = pc[idx].replace("- [ ] ", "- [>] ");
+      for (const idx of toMark) pc[idx] = pc[idx].replace(/- \[ \]/, "- [>]");
       await app.vault.modify(pf, pc.join("\n"));
       const ref = pf.path.replace(".md", "");
       content += "## \u{1F504} Carryover\n\n";
