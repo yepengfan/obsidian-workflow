@@ -300,7 +300,7 @@ function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway
   if (total > 0) {
     const donePct        = Math.round(done        / total * 100);
     const carriedAwayPct = Math.round(carriedAway / total * 100);
-    const carriedInPct   = Math.round(carriedIn   / total * 100);
+    const carriedInPct   = Math.max(0, 100 - donePct - carriedAwayPct);
     if (done > 0)
       barWrap.createEl("div", { attr: { style: `position:absolute;left:0;top:0;height:100%;width:${donePct}%;background:var(--interactive-accent);` } });
     if (carriedAway > 0)
@@ -346,17 +346,18 @@ for (const page of pages) {
   const tfile = app.vault.getAbstractFileByPath(page.file.path);
   const fCache = tfile ? app.metadataCache.getFileCache(tfile) : null;
   const fHeadings = fCache?.headings || [];
-  let tasksLine = -1, notesLine = Infinity, carryoverLine = -1;
+  let tasksLine = -1, notesLine = Infinity, carryoverLine = -1, carryoverEndLine = Infinity;
   for (const h of fHeadings) {
     if (h.level === 2 && h.heading === "Tasks" && tasksLine === -1) tasksLine = h.position.start.line;
     if (h.level === 2 && h.heading === "Notes" && notesLine === Infinity) notesLine = h.position.start.line;
     if (h.level === 2 && h.heading.includes("Carryover") && carryoverLine === -1) carryoverLine = h.position.start.line;
+    else if (carryoverLine !== -1 && h.level === 2 && carryoverEndLine === Infinity) carryoverEndLine = h.position.start.line;
   }
   const inTasksSection = tasksLine !== -1
     ? t => t.line > tasksLine && t.line < notesLine
     : () => false;
   const inCarryoverSection = carryoverLine !== -1
-    ? t => t.line > carryoverLine
+    ? t => t.line > carryoverLine && t.line < carryoverEndLine
     : () => false;
   const open        = page.file.tasks.where(t => t.status === " "  && inTasksSection(t)).length;
   const done        = page.file.tasks.where(t => t.completed        && inTasksSection(t)).length;

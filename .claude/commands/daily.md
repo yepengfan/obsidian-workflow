@@ -1,13 +1,13 @@
-Create today's work daily note in `Work/2026/` and carry over any unfinished tasks from the previous work daily note.
+Create today's work daily note in `Work/<YYYY>/` and carry over any unfinished tasks from the previous work daily note.
 
 ## Step 1 — Determine dates
 
 - Today: $CURRENT_DATE (format `YYYY-MM-DD`, day name `DayName`)
-- Previous work daily note: scan `Work/2026/` for the most recent `.md` file with a date **before** today (skip weekends only if no file exists for them — use the most recent file that actually exists).
+- Previous work daily note: scan `Work/<YYYY>/` (where `<YYYY>` is the current year) for the most recent `.md` file with a date **before** today (skip weekends only if no file exists for them — use the most recent file that actually exists). If today is the first day of a new year, also check `Work/<YYYY-1>/`.
 
 ## Step 2 — Find unfinished tasks in the previous note
 
-Read the previous work daily note. Scan for **all unchecked tasks** (`- [ ] …`) anywhere in the file, including nested sub-tasks. Group them by their parent `### ProjectName` heading. Ignore tasks under a `## 🔄 Carryover` section (those are already carried-over items — don't double-carry).
+Read the previous work daily note. Scan for **all unchecked tasks** (`- [ ] …`) that appear **between `## Tasks` and `## Notes`** (the main tasks section), including nested sub-tasks. Do **not** scan tasks inside `## Notes` or any other section. Group them by their parent `### ProjectName` heading. Ignore tasks under a `## 🔄 Carryover` section (those are already carried-over items — don't double-carry).
 
 Keep track of:
 - Which `### ProjectName` each task belongs to
@@ -16,7 +16,7 @@ Keep track of:
 
 ## Step 3 — Create (or open) today's note
 
-**Path**: `Work/2026/<YYYY-MM-DD>.md`
+**Path**: `Work/<YYYY>/<YYYY-MM-DD>.md`
 
 **If the file does NOT exist**, create it using the template below.
 
@@ -196,7 +196,7 @@ If unfinished tasks exist:
 ```
 ## 🔄 Carryover
 
-> Carried over from [[Work/2026/<prev-date>]] — <N> tasks across <M> projects
+> Carried over from [[Work/<YYYY>/<prev-date>]] — <N> tasks across <M> projects
 
 ### ProjectName
 - [ ] task text here
@@ -206,12 +206,12 @@ If unfinished tasks exist:
 - [ ] another task
 ```
 
-**4b. Mark tasks in the previous note** — In the previous note's file, replace each carried-over top-level `- [ ]` with `- [>]` and append ` ➡️ [[Work/2026/<today-date>]]` to the line. Do the same for nested sub-tasks (replace `- [ ]` with `- [>]`). This marks them as "forwarded" in Obsidian task style.
+**4b. Mark tasks in the previous note** — In the previous note's file, replace each carried-over top-level `- [ ]` with `- [>]` and append ` ➡️ [[Work/<YYYY>/<today-date>]]` to the line. Do the same for nested sub-tasks (replace `- [ ]` with `- [>]`). This marks them as "forwarded" in Obsidian task style.
 
 Example transformation in previous note:
 ```
 Before: - [ ] 🟡 4 articles to read
-After:  - [>] 🟡 4 articles to read ➡️ [[Work/2026/2026-03-12]]
+After:  - [>] 🟡 4 articles to read ➡️ [[Work/2026/2026-03-13]]
 ```
 
 ## Step 5 — Report
