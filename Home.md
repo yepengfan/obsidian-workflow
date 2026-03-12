@@ -294,8 +294,8 @@ function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway
   });
   dateEl.textContent = labelText;
 
-  // Progress bar: [done][carried-away][carried-in][  open  ]
-  // dark → light, open (gray bg) always at the far right
+  // Progress bar: [done][carried-away ⬆️][carried-in ➡️][  open  ]
+  // done (solid accent) | carry-out (yellow) | carry-in (30% accent) | open (gray bg)
   const barWrap = rowEl.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;overflow:hidden;position:relative;" } });
   if (total > 0) {
     const filledPct      = Math.round((done + carriedAway + carriedIn) / total * 100);
@@ -318,8 +318,8 @@ function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway
     rowEl.createEl("span", { text: "no tasks", attr: { style: countStyle + "color:var(--text-faint);" } });
   } else {
     rowEl.createEl("span", { text: `${open} open`,      attr: { style: countStyle + (open       > 0 ? "color:var(--text-muted);background:var(--background-primary);"        : dim) } });
-    rowEl.createEl("span", { text: `${carriedIn} ⬇️`,   attr: { style: countStyle + (carriedIn  > 0 ? "color:var(--text-faint);background:var(--background-primary);"        : dim) } });
     rowEl.createEl("span", { text: `${carriedAway} ⬆️`, attr: { style: countStyle + (carriedAway > 0 ? "color:var(--color-yellow);background:var(--background-primary);"    : dim) } });
+    rowEl.createEl("span", { text: `${carriedIn} ➡️`,   attr: { style: countStyle + (carriedIn  > 0 ? "color:var(--text-faint);background:var(--background-primary);"        : dim) } });
     rowEl.createEl("span", { text: `${done} done`,      attr: { style: countStyle + (done        > 0 ? "color:var(--interactive-accent);background:var(--background-primary);" : dim) } });
     rowEl.createEl("span", { text: `${total} total`,    attr: { style: countStyle + "color:var(--text-faint);background:var(--background-primary);" } });
   }
