@@ -298,9 +298,10 @@ function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway
   // dark → light, open (gray bg) always at the far right
   const barWrap = rowEl.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;overflow:hidden;position:relative;" } });
   if (total > 0) {
+    const filledPct      = Math.round((done + carriedAway + carriedIn) / total * 100);
     const donePct        = Math.round(done        / total * 100);
     const carriedAwayPct = Math.round(carriedAway / total * 100);
-    const carriedInPct   = Math.max(0, 100 - donePct - carriedAwayPct);
+    const carriedInPct   = Math.max(0, filledPct - donePct - carriedAwayPct);
     if (done > 0)
       barWrap.createEl("div", { attr: { style: `position:absolute;left:0;top:0;height:100%;width:${donePct}%;background:var(--interactive-accent);` } });
     if (carriedAway > 0)
