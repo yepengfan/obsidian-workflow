@@ -310,13 +310,18 @@ function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway
       barWrap.createEl("div", { attr: { style: `position:absolute;left:${donePct + carriedAwayPct}%;top:0;height:100%;width:${carriedInPct}%;background:var(--interactive-accent);opacity:0.3;` } });
   }
 
-  // Counts
-  const countStyle = "font-size:0.75em;padding:1px 6px;border-radius:4px;white-space:nowrap;";
-  if (open > 0)        rowEl.createEl("span", { text: `${open} open`,       attr: { style: countStyle + "color:var(--text-muted);background:var(--background-primary);" } });
-  if (carriedIn > 0)   rowEl.createEl("span", { text: `${carriedIn} 🔄`,    attr: { style: countStyle + "color:var(--text-faint);background:var(--background-primary);" } });
-  if (carriedAway > 0) rowEl.createEl("span", { text: `${carriedAway} ➡️`,  attr: { style: countStyle + "color:var(--color-yellow);background:var(--background-primary);" } });
-  if (done > 0)        rowEl.createEl("span", { text: `${done} done`,       attr: { style: countStyle + "color:var(--interactive-accent);background:var(--background-primary);" } });
-  if (total === 0)     rowEl.createEl("span", { text: "no tasks",           attr: { style: countStyle + "color:var(--text-faint);" } });
+  // Counts — always show all metrics for consistent layout; dim zeros
+  const countStyle = "font-size:0.75em;padding:1px 6px;border-radius:4px;white-space:nowrap;min-width:2em;text-align:center;";
+  const dim = "color:var(--text-faint);background:var(--background-primary);opacity:0.35;";
+  if (total === 0) {
+    rowEl.createEl("span", { text: "no tasks", attr: { style: countStyle + "color:var(--text-faint);" } });
+  } else {
+    rowEl.createEl("span", { text: `${open} open`,      attr: { style: countStyle + (open      > 0 ? "color:var(--text-muted);background:var(--background-primary);"       : dim) } });
+    rowEl.createEl("span", { text: `${carriedIn} 🔄`,   attr: { style: countStyle + (carriedIn > 0 ? "color:var(--text-faint);background:var(--background-primary);"       : dim) } });
+    rowEl.createEl("span", { text: `${carriedAway} ➡️`, attr: { style: countStyle + (carriedAway > 0 ? "color:var(--color-yellow);background:var(--background-primary);"  : dim) } });
+    rowEl.createEl("span", { text: `${done} done`,      attr: { style: countStyle + (done       > 0 ? "color:var(--interactive-accent);background:var(--background-primary);" : dim) } });
+    rowEl.createEl("span", { text: `${total} total`,    attr: { style: countStyle + "color:var(--text-faint);background:var(--background-primary);" } });
+  }
 }
 
 // Always show a Today row at the top — ghost row if note doesn't exist yet
