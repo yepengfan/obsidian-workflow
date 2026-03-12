@@ -1,7 +1,7 @@
 ---
 tags: template
 for: Home
-updated: 2026-03-12
+updated: 2026-03-13
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
@@ -24,4 +24,10 @@ updated: 2026-03-12
 > - **Open uses `t.status === " "`** (not `!t.completed`) to exclude `[>]` tasks from the open count. `inTasksSection` is also capped at `min(notesLine, carryoverLine)` so Carryover tasks aren't double-counted when `## Notes` is absent.
 > - **Total**: `open + done + carriedAway + carriedIn` — all four segments sum to 100%.
 > - **Count badges**: `N open` | `N ⬆️` (carry-out, yellow) | `N ➡️` (carry-in) | `N done` | `N total` — all 5 always shown; zeros are dimmed (opacity 0.35) for layout consistency. Fixed `width:4.8em` per badge reserves space for 2-digit numbers. Badge order mirrors bar order (left→right).
+
+> [!note] 2026-03-13 — Automatic carryover in navToday button
+> - **Problem**: The create button generated clean daily notes without checking for unfinished tasks from the previous day. The `/daily` skill had carryover logic, but clicking the Home.md button did not.
+> - **Solution**: After building the note content, the button now finds the most recent previous daily note (`Work/YYYY/YYYY-MM-DD.md` where basename < today), scans its `## Tasks` and `## 🔄 Carryover` sections for incomplete tasks (`- [ ]`), marks them as `- [>]` in the previous note, and appends a `## 🔄 Carryover` section to the new note with those tasks grouped by project.
+> - **Task block logic**: Tasks are grouped into blocks (top-level + indented subtasks). Only blocks where the top-level task is incomplete are carried. Within a carried block, only `- [ ]` subtasks are included (completed `- [x]` subtasks are dropped).
+> - **Code fence safety**: Uses the existing `fence` variable (`String.fromCharCode(96).repeat(3)`) to detect and skip code blocks when scanning headings and tasks, preventing false matches inside dataviewjs blocks.
 
