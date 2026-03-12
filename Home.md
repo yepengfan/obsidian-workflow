@@ -286,7 +286,7 @@ container.createEl("div", {
 const todayStr = today.toFormat("yyyy-MM-dd");
 const hasTodayNote = pages.some(p => dv.date(p.date).toFormat("yyyy-MM-dd") === todayStr);
 
-function renderRow(rowEl, labelText, isToday, open, done, total, href) {
+function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway, total, href) {
   // Date label
   const dateEl = rowEl.createEl("a", {
     cls: "internal-link",
@@ -294,18 +294,28 @@ function renderRow(rowEl, labelText, isToday, open, done, total, href) {
   });
   dateEl.textContent = labelText;
 
-  // Progress bar
-  const barWrap = rowEl.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;overflow:hidden;" } });
+  // Progress bar: [done][carried-away][carried-in][  open  ]
+  // dark → light, open (gray bg) always at the far right
+  const barWrap = rowEl.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;overflow:hidden;position:relative;" } });
   if (total > 0) {
-    const pct = Math.round(done / total * 100);
-    barWrap.createEl("div", { attr: { style: `height:100%;width:${pct}%;background:var(--interactive-accent);border-radius:3px;` } });
+    const donePct        = Math.round(done        / total * 100);
+    const carriedAwayPct = Math.round(carriedAway / total * 100);
+    const carriedInPct   = Math.round(carriedIn   / total * 100);
+    if (done > 0)
+      barWrap.createEl("div", { attr: { style: `position:absolute;left:0;top:0;height:100%;width:${donePct}%;background:var(--interactive-accent);` } });
+    if (carriedAway > 0)
+      barWrap.createEl("div", { attr: { style: `position:absolute;left:${donePct}%;top:0;height:100%;width:${carriedAwayPct}%;background:var(--color-yellow);opacity:0.75;` } });
+    if (carriedIn > 0)
+      barWrap.createEl("div", { attr: { style: `position:absolute;left:${donePct + carriedAwayPct}%;top:0;height:100%;width:${carriedInPct}%;background:var(--interactive-accent);opacity:0.3;` } });
   }
 
   // Counts
   const countStyle = "font-size:0.75em;padding:1px 6px;border-radius:4px;white-space:nowrap;";
-  if (open > 0)  rowEl.createEl("span", { text: `${open} open`,  attr: { style: countStyle + "color:var(--text-muted);background:var(--background-primary);" } });
-  if (done > 0)  rowEl.createEl("span", { text: `${done} done`,  attr: { style: countStyle + "color:var(--interactive-accent);background:var(--background-primary);" } });
-  if (total === 0) rowEl.createEl("span", { text: "no tasks", attr: { style: countStyle + "color:var(--text-faint);" } });
+  if (open > 0)        rowEl.createEl("span", { text: `${open} open`,       attr: { style: countStyle + "color:var(--text-muted);background:var(--background-primary);" } });
+  if (carriedIn > 0)   rowEl.createEl("span", { text: `${carriedIn} 🔄`,    attr: { style: countStyle + "color:var(--text-faint);background:var(--background-primary);" } });
+  if (carriedAway > 0) rowEl.createEl("span", { text: `${carriedAway} ➡️`,  attr: { style: countStyle + "color:var(--color-yellow);background:var(--background-primary);" } });
+  if (done > 0)        rowEl.createEl("span", { text: `${done} done`,       attr: { style: countStyle + "color:var(--interactive-accent);background:var(--background-primary);" } });
+  if (total === 0)     rowEl.createEl("span", { text: "no tasks",           attr: { style: countStyle + "color:var(--text-faint);" } });
 }
 
 // Always show a Today row at the top — ghost row if note doesn't exist yet
@@ -336,22 +346,28 @@ for (const page of pages) {
   const tfile = app.vault.getAbstractFileByPath(page.file.path);
   const fCache = tfile ? app.metadataCache.getFileCache(tfile) : null;
   const fHeadings = fCache?.headings || [];
-  let tasksLine = -1, notesLine = Infinity;
+  let tasksLine = -1, notesLine = Infinity, carryoverLine = -1;
   for (const h of fHeadings) {
     if (h.level === 2 && h.heading === "Tasks" && tasksLine === -1) tasksLine = h.position.start.line;
     if (h.level === 2 && h.heading === "Notes" && notesLine === Infinity) notesLine = h.position.start.line;
+    if (h.level === 2 && h.heading.includes("Carryover") && carryoverLine === -1) carryoverLine = h.position.start.line;
   }
   const inTasksSection = tasksLine !== -1
     ? t => t.line > tasksLine && t.line < notesLine
     : () => false;
-  const open = page.file.tasks.where(t => !t.completed && inTasksSection(t)).length;
-  const done = page.file.tasks.where(t => t.completed && inTasksSection(t)).length;
-  const total = open + done;
+  const inCarryoverSection = carryoverLine !== -1
+    ? t => t.line > carryoverLine
+    : () => false;
+  const open        = page.file.tasks.where(t => t.status === " "  && inTasksSection(t)).length;
+  const done        = page.file.tasks.where(t => t.completed        && inTasksSection(t)).length;
+  const carriedAway = page.file.tasks.where(t => t.status === ">"  && inTasksSection(t)).length;
+  const carriedIn   = page.file.tasks.where(t => t.status === " "  && inCarryoverSection(t)).length;
+  const total = open + done + carriedAway + carriedIn;
 
   const row = container.createEl("div", {
     attr: { style: `display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px solid ${isToday ? "var(--interactive-accent)" : "var(--background-modifier-border)"};` }
   });
-  renderRow(row, isToday ? "Today" : dateStr, isToday, open, done, total, page.file.path);
+  renderRow(row, isToday ? "Today" : dateStr, isToday, open, done, carriedIn, carriedAway, total, page.file.path);
 }
 
 if (pages.length === 0) {

@@ -14,7 +14,6 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Matter/** — Article notes from Matter app
 - **Inbox/** — Fleeting notes capture. Quick thoughts from any source (reading, work, life). Processed weekly into Zettelkasten or deleted.
 - **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `topics` (list of keywords for filtering).
-- **Thoughts/** — Personal reflections and ideas
 - **Learning/** — Structured learning plans. Each plan lives in a subfolder named by its code (e.g. `Learning/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier — used as shorthand in all commands (`/learning-log AISA`). Managed via `/learning-init`, `/learning-log`, `/learning-review`.
 - **Training/** — Legacy learning resources (being migrated to `Learning/`)
 - **WeRead/** — Book highlights synced from WeRead (微信读书). **DO NOT MODIFY** — this folder is auto-synced and must remain untouched.
@@ -46,7 +45,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Language**: Mix of English and Chinese — match the language of the content being worked on
 - **Formatting**: Use headers (##), callouts (`> [!tip]`), blockquotes, and lists. Follow existing patterns in the vault.
 - **Attachments**: Place images/media in `Attachments/`. Exception: Learning plan assets (screenshots, diagrams, etc.) go in `Learning/<CODE>/Attachments/`
-- **New notes**: Place in the appropriate existing folder. If unsure, use `Thoughts/`
+- **New notes**: Place in the appropriate existing folder. If unsure, use `Inbox/`
 - **Zettel notes**: One idea per note, written in your own words (not copy-paste). Use `[[wikilinks]]` in the `Related::` field to connect to other zettel. Title should be a descriptive statement (e.g., "Distributed systems trade consistency for availability").
 - **Inbox notes**: No format required. Just capture the thought. Run `/inbox-review` weekly to process: convert to zettel or archive to `Inbox/archive/YYYY-MM/`.
 - **Project tasks**: Group tasks under `### ProjectName` headings in daily notes (e.g., `### IS2`, `### IFM`). The heading name must match the filename in `Work/Projects/`. Dataview queries use `t.section.subpath` to filter tasks by project.

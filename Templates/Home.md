@@ -1,7 +1,7 @@
 ---
 tags: template
 for: Home
-updated: 2026-03-10
+updated: 2026-03-12
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
@@ -16,4 +16,12 @@ updated: 2026-03-10
 > - **Priority toolbar**: Embedded as a dataviewjs block inside the created note — gives quick-insert buttons for 🔴/🟠/🟡/🟢 task priorities and per-project task insertion/movement. Toolbar code is inlined at creation time (not a separate template file) to keep the note self-contained.
 > - **Idempotent open**: If the note already exists, the button simply opens it rather than overwriting. Safe to click multiple times.
 > - **No reference template syncing**: Home.md is a single bespoke file with no structural variants. A reference template is maintained here for design decision history only — there is no "live file + mirror" sync requirement like the Work Dashboard views.
+
+> [!note] 2026-03-12 — Four-segment progress bar (carryover system)
+> - **Four segments** (left→right, dark→light): done (solid accent) | carried-away (yellow) | carried-in (30% opacity accent) | open (gray background). Open always at far right.
+> - **Carried-away detection**: `t.status === ">"` in the Tasks section (between `## Tasks` and `## Notes`). These are tasks forwarded to the next day.
+> - **Carried-in detection**: Level-2 heading where `h.heading.includes("Carryover")`. Unchecked (`t.status === " "`) tasks after that line.
+> - **Open uses `t.status === " "`** (not `!t.completed`) to exclude `[>]` tasks from the open count.
+> - **Total**: `open + done + carriedAway + carriedIn` — all four segments sum to 100%.
+> - **Count badges**: `N open` | `N 🔄` | `N ➡️` (yellow) | `N done` — only shown when > 0.
 
