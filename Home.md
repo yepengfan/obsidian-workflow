@@ -237,6 +237,77 @@ navToday.addEventListener("click", async () => {
 
   content += "## Notes\n\n";
 
+  // --- Carryover: bring incomplete tasks from previous daily note ---
+  const prevDailies = app.vault.getMarkdownFiles()
+    .filter(f => /^Work\/\d{4}\/\d{4}-\d{2}-\d{2}\.md$/.test(f.path) && f.basename < dateStr)
+    .sort((a, b) => b.basename.localeCompare(a.basename));
+  if (prevDailies.length > 0) {
+    const pf = prevDailies[0];
+    const pc = (await app.vault.read(pf)).split("\n");
+    // Locate ## headings (skip code blocks)
+    let tS = -1, cS = -1; const h2L = []; let inCB = false;
+    for (let i = 0; i < pc.length; i++) {
+      if (pc[i].trim().startsWith(fence)) { inCB = !inCB; continue; }
+      if (inCB) continue;
+      if (/^## /.test(pc[i])) {
+        h2L.push(i);
+        if (/^## Tasks/.test(pc[i]) && tS < 0) tS = i;
+        if (/Carryover/.test(pc[i]) && cS < 0) cS = i;
+      }
+    }
+    const nxtH2 = (pos) => { for (const h of h2L) if (h > pos) return h; return pc.length; };
+    // Collect task line indices from ## Tasks and ## Carryover sections
+    const ranges = [];
+    if (tS >= 0) ranges.push([tS, nxtH2(tS)]);
+    if (cS >= 0) ranges.push([cS, nxtH2(cS)]);
+    const byProj = {};
+    for (const [s, e] of ranges) {
+      let proj = null, ic = false;
+      for (let i = s + 1; i < e; i++) {
+        const t = pc[i].trim();
+        if (t.startsWith(fence)) { ic = !ic; continue; }
+        if (ic) continue;
+        if (t.startsWith("### ")) { proj = t.slice(4); continue; }
+        if (proj && /^- \[.\]/.test(t)) {
+          if (!byProj[proj]) byProj[proj] = [];
+          byProj[proj].push(i);
+        }
+      }
+    }
+    // Build task blocks (top-level + subtasks), keep only incomplete
+    const toMark = []; const carry = {}; let tot = 0, pCt = 0;
+    for (const [pr, idxs] of Object.entries(byProj)) {
+      const blocks = []; let blk = null;
+      for (const idx of idxs) {
+        if (pc[idx].search(/\S/) === 0) { blk = [idx]; blocks.push(blk); }
+        else if (blk) blk.push(idx);
+      }
+      const kept = [];
+      for (const b of blocks) {
+        if (/^- \[ \]/.test(pc[b[0]].trim())) {
+          const out = [];
+          for (const idx of b) {
+            if (/- \[ \]/.test(pc[idx])) { toMark.push(idx); tot++; out.push(pc[idx]); }
+          }
+          if (out.length > 0) kept.push(...out);
+        }
+      }
+      if (kept.length > 0) { carry[pr] = kept; pCt++; }
+    }
+    // Mark previous note tasks as [>] and append carryover section
+    if (toMark.length > 0) {
+      for (const idx of toMark) pc[idx] = pc[idx].replace("- [ ] ", "- [>] ");
+      await app.vault.modify(pf, pc.join("\n"));
+      const ref = pf.path.replace(".md", "");
+      content += "## \u{1F504} Carryover\n\n";
+      content += "> Carried over from [[" + ref + "]] \u2014 " + tot + " tasks across " + pCt + " project" + (pCt !== 1 ? "s" : "") + "\n\n";
+      for (const [pr, lines] of Object.entries(carry)) {
+        content += "### " + pr + "\n";
+        content += lines.join("\n") + "\n\n";
+      }
+    }
+  }
+
   await app.vault.create(notePath, content);
   await app.workspace.openLinkText(notePath, "", false);
 });
