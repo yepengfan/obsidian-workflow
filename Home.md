@@ -294,20 +294,20 @@ function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway
   });
   dateEl.textContent = labelText;
 
-  // Progress bar: [done][carried-away][carried-in][  open  ]
-  // dark → light, open (gray bg) always at the far right
+  // Progress bar: [done][carried-in][carried-away][  open  ]
+  // dark → light: solid accent | 30% accent | yellow | gray bg
   const barWrap = rowEl.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;overflow:hidden;position:relative;" } });
   if (total > 0) {
     const filledPct      = Math.round((done + carriedAway + carriedIn) / total * 100);
-    const donePct        = Math.round(done        / total * 100);
-    const carriedAwayPct = Math.round(carriedAway / total * 100);
-    const carriedInPct   = Math.max(0, filledPct - donePct - carriedAwayPct);
+    const donePct        = Math.round(done      / total * 100);
+    const carriedInPct   = Math.round(carriedIn / total * 100);
+    const carriedAwayPct = Math.max(0, filledPct - donePct - carriedInPct);
     if (done > 0)
       barWrap.createEl("div", { attr: { style: `position:absolute;left:0;top:0;height:100%;width:${donePct}%;background:var(--interactive-accent);` } });
-    if (carriedAway > 0)
-      barWrap.createEl("div", { attr: { style: `position:absolute;left:${donePct}%;top:0;height:100%;width:${carriedAwayPct}%;background:var(--color-yellow);opacity:0.75;` } });
     if (carriedIn > 0)
-      barWrap.createEl("div", { attr: { style: `position:absolute;left:${donePct + carriedAwayPct}%;top:0;height:100%;width:${carriedInPct}%;background:var(--interactive-accent);opacity:0.3;` } });
+      barWrap.createEl("div", { attr: { style: `position:absolute;left:${donePct}%;top:0;height:100%;width:${carriedInPct}%;background:var(--interactive-accent);opacity:0.3;` } });
+    if (carriedAway > 0)
+      barWrap.createEl("div", { attr: { style: `position:absolute;left:${donePct + carriedInPct}%;top:0;height:100%;width:${carriedAwayPct}%;background:var(--color-yellow);opacity:0.75;` } });
   }
 
   // Counts — always show all metrics for consistent layout; dim zeros
