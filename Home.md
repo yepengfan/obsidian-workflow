@@ -567,7 +567,7 @@ if (zhFile) {
     });
 
     // Spinner
-    const spinner = genBtn.createEl("span", {
+    genBtn.createEl("span", {
       attr: { style: "display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;vertical-align:middle;animation:digest-spin 0.8s linear infinite;" }
     });
     genBtn.createEl("span", { text: " Generating…", attr: { style: "vertical-align:middle;" } });
