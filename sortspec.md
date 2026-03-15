@@ -13,6 +13,7 @@ sorting-spec: |
   Excalidraw
   Attachments
   Entertainment
+  scripts
   Templates
   CLAUDE
   README
