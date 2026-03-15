@@ -56,7 +56,7 @@ graph TD
     EPUB[EPUB/PDF] -->|book_init.py| Vault
     WR[WeRead] -->|auto-sync plugin| Vault
     SYS[GitHub repo<br/>templates, commands] -->|git clone| Vault
-    DIGEST[AI Daily Digest] -->|Shell Commands<br/>on startup| Vault
+    DIGEST[scripts/ai-digest] -->|Shell Commands<br/>on startup| Vault
 
     Vault["🗃️ Obsidian Vault<br/>Home · Books · Work<br/>Inbox · Zettelkasten · Feeds"]
 
@@ -223,14 +223,33 @@ Features:
 - Spaced repetition flashcards via [obsidian-spaced-repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition)
 - Interactive workflows: Feynman testing, Part Review, Final synthesis (via Claude Code)
 
+## AI Daily Digest
+
+A self-contained pipeline in `scripts/ai-digest/` that generates a bilingual (中/EN) daily AI news digest:
+
+```
+92 RSS feeds (Karpathy curated)
+  → async fetch + time-window filter
+  → title dedup (Jaccard similarity)
+  → Haiku batch scoring (relevance × quality × timeliness)
+  → Sonnet bilingual summarization (zh + en in parallel)
+  → Obsidian markdown reports → Feeds/AI-Daily/
+  → CloudWatch cost metrics
+```
+
+- **Trigger**: Shell Commands plugin on Obsidian startup, or Home.md ▶ Generate button
+- **Output**: `Feeds/AI-Daily/YYYY-MM-DD.md` (中文) + `YYYY-MM-DD-en.md` (English)
+- **Cost**: ~$0.13/day (Haiku scoring + Sonnet summarization)
+- **Time**: ~90s (zh/en parallelized)
+
 ## Setup (new machine)
 
 ### Prerequisites
 
 - [Obsidian](https://obsidian.md)
 - [Claude Code](https://claude.ai/claude-code)
-- Python 3 with `pip install ebooklib beautifulsoup4 pdfplumber`
-- AWS CLI (`brew install awscli`)
+- Python 3.13+ with `pip install ebooklib beautifulsoup4 pdfplumber`
+- AWS CLI (`brew install awscli`) — for vault sync and Bedrock access
 
 ### 1. AWS credentials
 
