@@ -943,7 +943,7 @@ if (plans.length === 0) {
       });
     }
 
-    // Right: 4-week activity squares
+    // Right: 10-week activity squares
     const dotsWrap = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:3px;padding:0 12px;flex-shrink:0;" } });
     for (const w of [...WEEKS].reverse()) {
       if (logMap[w]) {
