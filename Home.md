@@ -544,18 +544,29 @@ if (zhFile) {
     genBtn.disabled = true;
     genBtn.setText("");
 
-    // Spinner via CSS animation
-    const spinner = genBtn.createEl("span", {
-      attr: { style: "display:inline-block;width:14px;height:14px;border:2px solid var(--text-on-accent);border-top-color:transparent;border-radius:50;vertical-align:middle;" }
-    });
+    // Rainbow gradient + spinner CSS
     const style = document.createElement("style");
-    style.textContent = `@keyframes digest-spin{to{transform:rotate(360deg)}}`;
+    style.textContent = [
+      `@keyframes digest-spin{to{transform:rotate(360deg)}}`,
+      `@keyframes digest-rainbow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}`,
+    ].join("");
     document.head.appendChild(style);
-    spinner.style.animation = "digest-spin 0.8s linear infinite";
 
+    // Rainbow flowing background
+    Object.assign(genBtn.style, {
+      background: "linear-gradient(90deg, #ff6b6b, #ffa94d, #ffd43b, #51cf66, #339af0, #845ef7, #ff6b6b)",
+      backgroundSize: "300% 100%",
+      animation: "digest-rainbow 2s ease infinite",
+      cursor: "wait",
+      color: "#fff",
+      textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+    });
+
+    // Spinner
+    const spinner = genBtn.createEl("span", {
+      attr: { style: "display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;vertical-align:middle;animation:digest-spin 0.8s linear infinite;" }
+    });
     genBtn.createEl("span", { text: " Generating…", attr: { style: "vertical-align:middle;" } });
-    genBtn.style.opacity = "0.85";
-    genBtn.style.cursor = "wait";
 
     // Progress dots in the status text
     const statusEl = empty.querySelector("span");
