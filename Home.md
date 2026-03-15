@@ -500,7 +500,7 @@ if (zhFile) {
     attr: { style: "font-size:0.78em;color:var(--text-muted);" }
   });
   const links = row.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
-  const zhLink = links.createEl("a", {
+  links.createEl("a", {
     text: "中文",
     cls: "internal-link",
     attr: { "data-href": zhPath, style: "font-size:0.82em;" }
@@ -544,13 +544,17 @@ if (zhFile) {
     genBtn.disabled = true;
     genBtn.setText("");
 
-    // Rainbow gradient + spinner CSS
-    const style = document.createElement("style");
-    style.textContent = [
-      `@keyframes digest-spin{to{transform:rotate(360deg)}}`,
-      `@keyframes digest-rainbow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}`,
-    ].join("");
-    document.head.appendChild(style);
+    // Rainbow gradient + spinner CSS (reuse existing style tag to avoid DOM accumulation)
+    let style = document.getElementById("digest-anim");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "digest-anim";
+      style.textContent = [
+        `@keyframes digest-spin{to{transform:rotate(360deg)}}`,
+        `@keyframes digest-rainbow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}`,
+      ].join("");
+      document.head.appendChild(style);
+    }
 
     // Rainbow flowing background
     Object.assign(genBtn.style, {
@@ -579,23 +583,7 @@ if (zhFile) {
     }, 1000);
 
     // Poll for the file to appear
-    const poll = setInterval(() => {
-      if (app.vault.getAbstractFileByPath(zhPath)) {
-        clearInterval(poll);
-        clearInterval(dotTimer);
-        style.remove();
-        genBtn.setText("✓ Done!");
-        genBtn.style.opacity = "1";
-        genBtn.style.cursor = "default";
-        genBtn.style.background = "var(--color-green)";
-        statusEl.textContent = "Digest ready — refreshing…";
-        // Re-render after a short delay
-        setTimeout(() => app.workspace.trigger("dataview:refresh-views"), 1500);
-      }
-    }, 2000);
-
-    // Timeout after 120s
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       clearInterval(poll);
       clearInterval(dotTimer);
       if (!app.vault.getAbstractFileByPath(zhPath)) {
@@ -608,6 +596,22 @@ if (zhFile) {
         statusEl.textContent = "Generation timed out — try again?";
       }
     }, 120000);
+
+    const poll = setInterval(() => {
+      if (app.vault.getAbstractFileByPath(zhPath)) {
+        clearInterval(poll);
+        clearInterval(dotTimer);
+        clearTimeout(timeout);
+        style.remove();
+        genBtn.setText("✓ Done!");
+        genBtn.style.opacity = "1";
+        genBtn.style.cursor = "default";
+        genBtn.style.background = "var(--color-green)";
+        statusEl.textContent = "Digest ready — refreshing…";
+        // Re-render after a short delay
+        setTimeout(() => app.workspace.trigger("dataview:refresh-views"), 1500);
+      }
+    }, 2000);
   });
 }
 
