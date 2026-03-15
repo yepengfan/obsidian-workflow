@@ -38,6 +38,11 @@ Learning/         # Structured learning plans (folder name = plan code)
     Projects/     # Project notes
 Feeds/            # Auto-generated content feeds
   AI-Daily/       # Daily AI news digest (中英文), generated on Obsidian startup
+scripts/
+  ai-digest/      # Bedrock-powered RSS digest pipeline (Python)
+    digest/       # Core module (fetch → dedup → score → summarize → report)
+    utils/        # Bedrock client, CloudWatch metrics, config
+    setup.sh      # One-command bootstrap (venv + deps)
 Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week, Brownbag Session
 CLAUDE.md         # Vault-level Claude Code instructions
 Home.md           # Obsidian dashboard with Dataview queries
@@ -51,7 +56,7 @@ graph TD
     EPUB[EPUB/PDF] -->|book_init.py| Vault
     WR[WeRead] -->|auto-sync plugin| Vault
     SYS[GitHub repo<br/>templates, commands] -->|git clone| Vault
-    DIGEST[AI Daily Digest] -->|Shell Commands<br/>on startup| Vault
+    DIGEST[scripts/ai-digest] -->|Shell Commands<br/>on startup| Vault
 
     Vault["🗃️ Obsidian Vault<br/>Home · Books · Work<br/>Inbox · Zettelkasten · Feeds"]
 
@@ -218,14 +223,33 @@ Features:
 - Spaced repetition flashcards via [obsidian-spaced-repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition)
 - Interactive workflows: Feynman testing, Part Review, Final synthesis (via Claude Code)
 
+## AI Daily Digest
+
+A self-contained pipeline in `scripts/ai-digest/` that generates a bilingual (中/EN) daily AI news digest:
+
+```
+92 RSS feeds (Karpathy curated)
+  → async fetch + time-window filter
+  → title dedup (Jaccard similarity)
+  → Haiku batch scoring (relevance × quality × timeliness)
+  → Sonnet bilingual summarization (zh + en in parallel)
+  → Obsidian markdown reports → Feeds/AI-Daily/
+  → CloudWatch cost metrics
+```
+
+- **Trigger**: Shell Commands plugin on Obsidian startup, or Home.md ▶ Generate button
+- **Output**: `Feeds/AI-Daily/YYYY-MM-DD.md` (中文) + `YYYY-MM-DD-en.md` (English)
+- **Cost**: ~$0.13/day (Haiku scoring + Sonnet summarization)
+- **Time**: ~90s (zh/en parallelized)
+
 ## Setup (new machine)
 
 ### Prerequisites
 
 - [Obsidian](https://obsidian.md)
 - [Claude Code](https://claude.ai/claude-code)
-- Python 3 with `pip install ebooklib beautifulsoup4 pdfplumber`
-- AWS CLI (`brew install awscli`)
+- Python 3.13+ with `pip install ebooklib beautifulsoup4 pdfplumber`
+- AWS CLI (`brew install awscli`) — for vault sync and Bedrock access
 
 ### 1. AWS credentials
 
@@ -313,14 +337,24 @@ cp Books/.bookrc.example .bookrc
 
 Install via Community Plugins: Dataview, Spaced Repetition, Kanban, Calendar, Excalidraw, Tag Wrangler, Remotely Save, Custom File Explorer Sorting, Shell Commands
 
-### 7. Shell Commands — AI Daily Digest
+### 7. AI Daily Digest
 
-The [Shell Commands](https://github.com/Taitava/obsidian-shellcommands) plugin runs a Python script on Obsidian startup to generate a daily AI news digest in `Feeds/AI-Daily/`.
+The digest pipeline lives in `scripts/ai-digest/` and runs on Obsidian startup via the [Shell Commands](https://github.com/Taitava/obsidian-shellcommands) plugin.
+
+#### 7a. Install the pipeline
+
+```bash
+cd scripts/ai-digest && bash setup.sh
+```
+
+This creates a `.venv` and installs dependencies (`boto3`, `aiohttp`, `trafilatura`).
+
+#### 7b. Configure Shell Commands
 
 1. Settings → Shell Commands → **New shell command**, paste:
 
    ```bash
-   [ -f ~/Vaults/Workspace/Feeds/AI-Daily/$(date +%Y-%m-%d).md ] || cd /Users/tedfan/Developer/ai-sa-portfolio/systems/s1-cost && .venv/bin/python -m digest &
+   VAULT=~/Vaults/Workspace; [ -f "$VAULT/Feeds/AI-Daily/$(date +%Y-%m-%d).md" ] || { cd "$VAULT/scripts/ai-digest" && .venv/bin/python -m digest & }
    ```
 
    Logic: check if today's file exists → only run if missing → `&` backgrounds the process so Obsidian isn't blocked.
