@@ -320,7 +320,7 @@ The [Shell Commands](https://github.com/Taitava/obsidian-shellcommands) plugin r
 1. Settings → Shell Commands → **New shell command**, paste:
 
    ```bash
-   [ -f ~/Vaults/Workspace/Feeds/AI-Daily/$(date +%Y-%m-%d).md ] || cd /Users/tedfan/Developer/ai-sa-portfolio/systems/s1-cost && /Users/tedfan/Developer/ai-sa-portfolio/systems/s1-cost/.venv/bin/python -m digest &
+   [ -f ~/Vaults/Workspace/Feeds/AI-Daily/$(date +%Y-%m-%d).md ] || cd /Users/tedfan/Developer/ai-sa-portfolio/systems/s1-cost && .venv/bin/python -m digest &
    ```
 
    Logic: check if today's file exists → only run if missing → `&` backgrounds the process so Obsidian isn't blocked.
