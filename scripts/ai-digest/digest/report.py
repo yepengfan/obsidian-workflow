@@ -1,15 +1,12 @@
 """Obsidian markdown report generation, dashboard, and archiving."""
 
-import os
 import re
 import shutil
 from datetime import date, timedelta
 from pathlib import Path
 
+from digest import VAULT_ROOT
 from digest.summarizer import SummarizedArticle, CATEGORY_EMOJI
-
-# Vault root: scripts/ai-digest/digest/ is three levels below the vault root.
-_VAULT_ROOT = str(Path(__file__).resolve().parents[3])
 
 FEED_DIR = "Feeds/AI-Daily"
 ARCHIVE_DIR = "Feeds/AI-Daily/archive"
@@ -209,7 +206,7 @@ def generate_reports(
     trend_zh: str,
     trend_en: str,
     stats: dict,
-    vault_path: str = _VAULT_ROOT,
+    vault_path: str = VAULT_ROOT,
     today: date | None = None,
 ) -> tuple[Path, Path]:
     """Generate Chinese and English Obsidian reports. Returns (zh_path, en_path)."""
@@ -231,7 +228,7 @@ def generate_reports(
 
 
 def update_dashboard(
-    vault_path: str = _VAULT_ROOT,
+    vault_path: str = VAULT_ROOT,
     today: date | None = None,
 ) -> Path:
     """Update the Dashboard.md index file with recent 14 days."""
@@ -288,7 +285,7 @@ def update_dashboard(
 
 
 def archive_old_reports(
-    vault_path: str = _VAULT_ROOT,
+    vault_path: str = VAULT_ROOT,
     keep_days: int = 14,
 ) -> int:
     """Move reports older than keep_days to archive/. Returns count of moved files."""

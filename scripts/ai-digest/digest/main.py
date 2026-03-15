@@ -2,19 +2,17 @@
 
 import argparse
 import asyncio
-import sys
 from datetime import date
 from pathlib import Path
 
-# Vault root: __file__ is scripts/ai-digest/digest/main.py → parents[3] is vault root.
-_VAULT_ROOT = str(Path(__file__).resolve().parents[3])
+from digest import VAULT_ROOT
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="AI Daily Digest")
     parser.add_argument("--hours", type=int, default=48, help="Time window in hours")
     parser.add_argument("--top-n", type=int, default=15, help="Number of articles to summarize")
-    parser.add_argument("--vault-path", default=_VAULT_ROOT, help="Obsidian vault path")
+    parser.add_argument("--vault-path", default=VAULT_ROOT, help="Obsidian vault path")
     parser.add_argument("--stdout", action="store_true", help="Print to terminal only")
     parser.add_argument("--no-metrics", action="store_true", help="Skip CloudWatch metrics")
     return parser.parse_args()

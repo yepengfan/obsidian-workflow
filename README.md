@@ -354,7 +354,7 @@ This creates a `.venv` and installs dependencies (`boto3`, `aiohttp`, `trafilatu
 1. Settings → Shell Commands → **New shell command**, paste:
 
    ```bash
-   VAULT=~/Vaults/Workspace; [ -f "$VAULT/Feeds/AI-Daily/$(date +%Y-%m-%d).md" ] || cd "$VAULT/scripts/ai-digest" && .venv/bin/python -m digest &
+   VAULT=~/Vaults/Workspace; [ -f "$VAULT/Feeds/AI-Daily/$(date +%Y-%m-%d).md" ] || { cd "$VAULT/scripts/ai-digest" && .venv/bin/python -m digest & }
    ```
 
    Logic: check if today's file exists → only run if missing → `&` backgrounds the process so Obsidian isn't blocked.
