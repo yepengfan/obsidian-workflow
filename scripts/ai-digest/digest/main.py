@@ -6,8 +6,8 @@ import sys
 from datetime import date
 from pathlib import Path
 
-# Vault root: scripts/ai-digest/ is two levels below the vault root.
-_VAULT_ROOT = str(Path(__file__).resolve().parents[2])
+# Vault root: __file__ is scripts/ai-digest/digest/main.py → parents[3] is vault root.
+_VAULT_ROOT = str(Path(__file__).resolve().parents[3])
 
 
 def parse_args() -> argparse.Namespace:
