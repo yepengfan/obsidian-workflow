@@ -3,10 +3,10 @@ sorting-spec: |
   target-folder: .
   Inbox
   Zettelkasten
-  Thoughts
   Work
   Books
   Learning
+  Feeds
   Matter
   Instapaper Notes
   WeRead
@@ -17,7 +17,6 @@ sorting-spec: |
   CLAUDE
   README
   sortspec
-  system-design-primer
   Home
 ---
 
