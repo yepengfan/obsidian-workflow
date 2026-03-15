@@ -142,25 +142,24 @@ async def summarize_articles(
 
     loop = asyncio.get_running_loop()
     total_cost = 0.0
-
-    # Chinese pass
-    zh_results_all = []
     batches = [articles[i:i + BATCH_SIZE] for i in range(0, len(articles), BATCH_SIZE)]
-    for batch in batches:
-        results, cost = await loop.run_in_executor(
-            None, _summarize_batch, batch, "zh", no_metrics
-        )
-        zh_results_all.extend(results)
-        total_cost += cost
 
-    # English pass
-    en_results_all = []
-    for batch in batches:
-        results, cost = await loop.run_in_executor(
-            None, _summarize_batch, batch, "en", no_metrics
-        )
-        en_results_all.extend(results)
-        total_cost += cost
+    # Run zh + en passes concurrently
+    async def _run_lang(lang: str) -> tuple[list[dict], float]:
+        results_all = []
+        lang_cost = 0.0
+        for batch in batches:
+            results, cost = await loop.run_in_executor(
+                None, _summarize_batch, batch, lang, no_metrics
+            )
+            results_all.extend(results)
+            lang_cost += cost
+        return results_all, lang_cost
+
+    (zh_results_all, zh_cost), (en_results_all, en_cost) = await asyncio.gather(
+        _run_lang("zh"), _run_lang("en")
+    )
+    total_cost = zh_cost + en_cost
 
     # Merge
     summarized = []
@@ -190,20 +189,18 @@ async def generate_trends(
     """Generate trend summary in both languages. Returns (zh, en, cost)."""
     loop = asyncio.get_running_loop()
     user_text = _build_trend_input(articles)
-    total_cost = 0.0
 
-    # Chinese
+    # Run zh + en trend summaries concurrently
     zh_prompt = TREND_SYSTEM_PROMPT.format(lang_instruction="用中文回答。")
-    zh_result = await loop.run_in_executor(
-        None, _call_bedrock_with_metrics, "sonnet", user_text, zh_prompt, no_metrics, 1024,
-    )
-    total_cost += zh_result["cost"]
-
-    # English
     en_prompt = TREND_SYSTEM_PROMPT.format(lang_instruction="Write in English.")
-    en_result = await loop.run_in_executor(
-        None, _call_bedrock_with_metrics, "sonnet", user_text, en_prompt, no_metrics, 1024,
-    )
-    total_cost += en_result["cost"]
 
-    return zh_result["text"], en_result["text"], total_cost
+    zh_result, en_result = await asyncio.gather(
+        loop.run_in_executor(
+            None, _call_bedrock_with_metrics, "sonnet", user_text, zh_prompt, no_metrics, 1024,
+        ),
+        loop.run_in_executor(
+            None, _call_bedrock_with_metrics, "sonnet", user_text, en_prompt, no_metrics, 1024,
+        ),
+    )
+
+    return zh_result["text"], en_result["text"], zh_result["cost"] + en_result["cost"]
