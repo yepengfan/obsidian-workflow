@@ -459,6 +459,99 @@ if (pages.length === 0) {
 
 ---
 
+## AI Daily Digest
+
+```dataviewjs
+const today = dv.date("today").toFormat("yyyy-MM-dd");
+const zhPath = `Feeds/AI-Daily/${today}.md`;
+const enPath = `Feeds/AI-Daily/${today}-en.md`;
+const zhFile = app.vault.getAbstractFileByPath(zhPath);
+
+const container = dv.el("div", "");
+
+if (zhFile) {
+  const page = dv.page(zhPath);
+  const content = await app.vault.read(zhFile);
+  const lines = content.split("\n");
+
+  // Extract 今日看点 summary
+  let start = -1, end = lines.length;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes("今日看点")) { start = i + 1; continue; }
+    if (start > 0 && lines[i].startsWith("---")) { end = i; break; }
+  }
+  const summary = start > 0
+    ? lines.slice(start, end).filter(l => l.trim()).join(" ")
+    : "";
+
+  // Stats row + language links
+  const row = container.createEl("div", {
+    attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
+  });
+  const scanned = page.articles_scanned || "?";
+  const selected = page.articles_selected || "?";
+  const cost = page.bedrock_cost || "?";
+  row.createEl("span", {
+    text: `📰 ${selected}/${scanned} articles`,
+    attr: { style: "font-size:0.78em;color:var(--text-muted);" }
+  });
+  row.createEl("span", {
+    text: `💰 ${cost}`,
+    attr: { style: "font-size:0.78em;color:var(--text-muted);" }
+  });
+  const links = row.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
+  const zhLink = links.createEl("a", {
+    text: "中文",
+    cls: "internal-link",
+    attr: { "data-href": zhPath, style: "font-size:0.82em;" }
+  });
+  if (app.vault.getAbstractFileByPath(enPath)) {
+    links.createEl("a", {
+      text: "EN",
+      cls: "internal-link",
+      attr: { "data-href": enPath, style: "font-size:0.82em;" }
+    });
+  }
+
+  // Summary card
+  if (summary) {
+    container.createEl("div", {
+      text: summary,
+      attr: { style: "font-size:0.85em;line-height:1.6;padding:10px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--interactive-accent);" }
+    });
+  }
+} else {
+  // No digest — show placeholder with generate button
+  const empty = container.createEl("div", {
+    attr: { style: "display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
+  });
+  empty.createEl("span", {
+    text: "No digest for today yet.",
+    attr: { style: "font-size:0.85em;color:var(--text-muted);flex:1;" }
+  });
+  const genBtn = empty.createEl("button", {
+    text: "▶ Generate",
+    attr: { style: "padding:6px 14px;border-radius:8px;background:var(--interactive-accent);color:var(--text-on-accent);border:none;cursor:pointer;font-size:0.82em;font-weight:600;" }
+  });
+  genBtn.addEventListener("click", () => {
+    const cmd = Object.values(app.commands.commands)
+      .find(c => c.name && c.name.includes("AI Daily Digest"));
+    if (cmd) {
+      app.commands.executeCommandById(cmd.id);
+      new Notice("AI Daily Digest triggered — should appear in ~30s");
+    } else {
+      new Notice("Shell command 'AI Daily Digest' not found — check Shell Commands plugin config");
+    }
+  });
+}
+
+// Link to all digests
+container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } }).innerHTML =
+  '<a class="internal-link" data-href="Feeds/AI-Daily/Dashboard">All digests →</a>';
+```
+
+---
+
 ## Brownbag Sessions
 
 ```dataviewjs
