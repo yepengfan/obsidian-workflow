@@ -38,6 +38,11 @@ Learning/         # Structured learning plans (folder name = plan code)
     Projects/     # Project notes
 Feeds/            # Auto-generated content feeds
   AI-Daily/       # Daily AI news digest (中英文), generated on Obsidian startup
+scripts/
+  ai-digest/      # Bedrock-powered RSS digest pipeline (Python)
+    digest/       # Core module (fetch → dedup → score → summarize → report)
+    utils/        # Bedrock client, CloudWatch metrics, config
+    setup.sh      # One-command bootstrap (venv + deps)
 Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week, Brownbag Session
 CLAUDE.md         # Vault-level Claude Code instructions
 Home.md           # Obsidian dashboard with Dataview queries
@@ -313,14 +318,24 @@ cp Books/.bookrc.example .bookrc
 
 Install via Community Plugins: Dataview, Spaced Repetition, Kanban, Calendar, Excalidraw, Tag Wrangler, Remotely Save, Custom File Explorer Sorting, Shell Commands
 
-### 7. Shell Commands — AI Daily Digest
+### 7. AI Daily Digest
 
-The [Shell Commands](https://github.com/Taitava/obsidian-shellcommands) plugin runs a Python script on Obsidian startup to generate a daily AI news digest in `Feeds/AI-Daily/`.
+The digest pipeline lives in `scripts/ai-digest/` and runs on Obsidian startup via the [Shell Commands](https://github.com/Taitava/obsidian-shellcommands) plugin.
+
+#### 7a. Install the pipeline
+
+```bash
+cd scripts/ai-digest && bash setup.sh
+```
+
+This creates a `.venv` and installs dependencies (`boto3`, `aiohttp`, `trafilatura`).
+
+#### 7b. Configure Shell Commands
 
 1. Settings → Shell Commands → **New shell command**, paste:
 
    ```bash
-   [ -f ~/Vaults/Workspace/Feeds/AI-Daily/$(date +%Y-%m-%d).md ] || cd /Users/tedfan/Developer/ai-sa-portfolio/systems/s1-cost && .venv/bin/python -m digest &
+   VAULT=~/Vaults/Workspace; [ -f "$VAULT/Feeds/AI-Daily/$(date +%Y-%m-%d).md" ] || cd "$VAULT/scripts/ai-digest" && .venv/bin/python -m digest &
    ```
 
    Logic: check if today's file exists → only run if missing → `&` backgrounds the process so Obsidian isn't blocked.
