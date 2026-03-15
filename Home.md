@@ -459,6 +459,169 @@ if (pages.length === 0) {
 
 ---
 
+## AI Daily Digest
+
+```dataviewjs
+const today = dv.date("today").toFormat("yyyy-MM-dd");
+const zhPath = `Feeds/AI-Daily/${today}.md`;
+const enPath = `Feeds/AI-Daily/${today}-en.md`;
+const zhFile = app.vault.getAbstractFileByPath(zhPath);
+
+const container = dv.el("div", "");
+
+if (zhFile) {
+  const page = dv.page(zhPath);
+  const content = await app.vault.read(zhFile);
+  const lines = content.split("\n");
+
+  // Extract 今日看点 summary
+  let start = -1, end = lines.length;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes("今日看点")) { start = i + 1; continue; }
+    if (start > 0 && lines[i].startsWith("---")) { end = i; break; }
+  }
+  const summary = start > 0
+    ? lines.slice(start, end).filter(l => l.trim()).join(" ")
+    : "";
+
+  // Stats row + language links
+  const row = container.createEl("div", {
+    attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
+  });
+  const scanned = page.articles_scanned || "?";
+  const selected = page.articles_selected || "?";
+  const cost = page.bedrock_cost || "?";
+  row.createEl("span", {
+    text: `📰 ${selected}/${scanned} articles`,
+    attr: { style: "font-size:0.78em;color:var(--text-muted);" }
+  });
+  row.createEl("span", {
+    text: `💰 ${cost}`,
+    attr: { style: "font-size:0.78em;color:var(--text-muted);" }
+  });
+  const links = row.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
+  links.createEl("a", {
+    text: "中文",
+    cls: "internal-link",
+    attr: { "data-href": zhPath, style: "font-size:0.82em;" }
+  });
+  if (app.vault.getAbstractFileByPath(enPath)) {
+    links.createEl("a", {
+      text: "EN",
+      cls: "internal-link",
+      attr: { "data-href": enPath, style: "font-size:0.82em;" }
+    });
+  }
+
+  // Summary card
+  if (summary) {
+    container.createEl("div", {
+      text: summary,
+      attr: { style: "font-size:0.85em;line-height:1.6;padding:10px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--interactive-accent);" }
+    });
+  }
+} else {
+  // No digest — show placeholder with generate button
+  const empty = container.createEl("div", {
+    attr: { style: "display:flex;align-items:center;gap:10px;padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
+  });
+  empty.createEl("span", {
+    text: "No digest for today yet.",
+    attr: { style: "font-size:0.85em;color:var(--text-muted);flex:1;" }
+  });
+  const genBtn = empty.createEl("button", {
+    text: "▶ Generate",
+    attr: { style: "padding:6px 14px;border-radius:8px;background:var(--interactive-accent);color:var(--text-on-accent);border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.3s ease;" }
+  });
+  genBtn.addEventListener("click", () => {
+    const cmd = Object.values(app.commands.commands)
+      .find(c => c.name && c.name.includes("AI Daily Digest"));
+    if (!cmd) {
+      new Notice("Shell command 'AI Daily Digest' not found — check Shell Commands plugin config");
+      return;
+    }
+    app.commands.executeCommandById(cmd.id);
+    genBtn.disabled = true;
+    genBtn.setText("");
+
+    // Rainbow gradient + spinner CSS (reuse existing style tag to avoid DOM accumulation)
+    let style = document.getElementById("digest-anim");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "digest-anim";
+      style.textContent = [
+        `@keyframes digest-spin{to{transform:rotate(360deg)}}`,
+        `@keyframes digest-rainbow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}`,
+      ].join("");
+      document.head.appendChild(style);
+    }
+
+    // Rainbow flowing background
+    Object.assign(genBtn.style, {
+      background: "linear-gradient(90deg, #ff6b6b, #ffa94d, #ffd43b, #51cf66, #339af0, #845ef7, #ff6b6b)",
+      backgroundSize: "300% 100%",
+      animation: "digest-rainbow 2s ease infinite",
+      cursor: "wait",
+      color: "#fff",
+      textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+    });
+
+    // Spinner
+    genBtn.createEl("span", {
+      attr: { style: "display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;vertical-align:middle;animation:digest-spin 0.8s linear infinite;" }
+    });
+    genBtn.createEl("span", { text: " Generating…", attr: { style: "vertical-align:middle;" } });
+
+    // Progress dots in the status text
+    const statusEl = empty.querySelector("span");
+    let dots = 0;
+    const elapsed = { s: 0 };
+    const dotTimer = setInterval(() => {
+      dots = (dots % 3) + 1;
+      elapsed.s += 1;
+      statusEl.textContent = `Generating${".".repeat(dots)}  (${elapsed.s}s)`;
+    }, 1000);
+
+    // Poll for the file to appear
+    const timeout = setTimeout(() => {
+      clearInterval(poll);
+      clearInterval(dotTimer);
+      if (!app.vault.getAbstractFileByPath(zhPath)) {
+        style.remove();
+        genBtn.setText("⚠ Retry");
+        genBtn.disabled = false;
+        genBtn.style.opacity = "1";
+        genBtn.style.cursor = "pointer";
+        genBtn.style.background = "var(--color-yellow)";
+        statusEl.textContent = "Generation timed out — try again?";
+      }
+    }, 120000);
+
+    const poll = setInterval(() => {
+      if (app.vault.getAbstractFileByPath(zhPath)) {
+        clearInterval(poll);
+        clearInterval(dotTimer);
+        clearTimeout(timeout);
+        style.remove();
+        genBtn.setText("✓ Done!");
+        genBtn.style.opacity = "1";
+        genBtn.style.cursor = "default";
+        genBtn.style.background = "var(--color-green)";
+        statusEl.textContent = "Digest ready — refreshing…";
+        // Re-render after a short delay
+        setTimeout(() => app.workspace.trigger("dataview:refresh-views"), 1500);
+      }
+    }, 2000);
+  });
+}
+
+// Link to all digests
+container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } }).innerHTML =
+  '<a class="internal-link" data-href="Feeds/AI-Daily/Dashboard">All digests →</a>';
+```
+
+---
+
 ## Brownbag Sessions
 
 ```dataviewjs

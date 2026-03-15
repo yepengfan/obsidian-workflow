@@ -36,6 +36,8 @@ Learning/         # Structured learning plans (folder name = plan code)
     Weeks/        # Weekly logs (YYYY-WXX.md)
     Courses/      # Course notes
     Projects/     # Project notes
+Feeds/            # Auto-generated content feeds
+  AI-Daily/       # Daily AI news digest (中英文), generated on Obsidian startup
 Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week, Brownbag Session
 CLAUDE.md         # Vault-level Claude Code instructions
 Home.md           # Obsidian dashboard with Dataview queries
@@ -49,8 +51,9 @@ graph TD
     EPUB[EPUB/PDF] -->|book_init.py| Vault
     WR[WeRead] -->|auto-sync plugin| Vault
     SYS[GitHub repo<br/>templates, commands] -->|git clone| Vault
+    DIGEST[AI Daily Digest] -->|Shell Commands<br/>on startup| Vault
 
-    Vault["🗃️ Obsidian Vault<br/>Home · Books · Work<br/>Inbox · Zettelkasten"]
+    Vault["🗃️ Obsidian Vault<br/>Home · Books · Work<br/>Inbox · Zettelkasten · Feeds"]
 
     Vault <-->|Remotely Save| S3V[S3: vault-sync]
     EBOOKS[~/Library/ebooks] -->|launchd| S3E[S3: ebook-library]
@@ -308,9 +311,26 @@ cp Books/.bookrc.example .bookrc
 
 ### 6. Obsidian plugins
 
-Install via Community Plugins: Dataview, Spaced Repetition, Kanban, Calendar, Excalidraw, Tag Wrangler, Remotely Save, Custom File Explorer Sorting
+Install via Community Plugins: Dataview, Spaced Repetition, Kanban, Calendar, Excalidraw, Tag Wrangler, Remotely Save, Custom File Explorer Sorting, Shell Commands
 
-### 7. NAS backup (optional)
+### 7. Shell Commands — AI Daily Digest
+
+The [Shell Commands](https://github.com/Taitava/obsidian-shellcommands) plugin runs a Python script on Obsidian startup to generate a daily AI news digest in `Feeds/AI-Daily/`.
+
+1. Settings → Shell Commands → **New shell command**, paste:
+
+   ```bash
+   [ -f ~/Vaults/Workspace/Feeds/AI-Daily/$(date +%Y-%m-%d).md ] || cd /Users/tedfan/Developer/ai-sa-portfolio/systems/s1-cost && .venv/bin/python -m digest &
+   ```
+
+   Logic: check if today's file exists → only run if missing → `&` backgrounds the process so Obsidian isn't blocked.
+
+2. Set **Alias** to `AI Daily Digest`
+3. Click the command → **Events** → enable **Obsidian starts**
+
+Output: `Feeds/AI-Daily/YYYY-MM-DD.md` (中文) and `YYYY-MM-DD-en.md` (English) appear ~30 s after Obsidian launches.
+
+### 8. NAS backup (optional)
 
 Synology NAS can pull from S3 as an offline backup via **Cloud Sync**:
 
