@@ -531,17 +531,72 @@ if (zhFile) {
   });
   const genBtn = empty.createEl("button", {
     text: "▶ Generate",
-    attr: { style: "padding:6px 14px;border-radius:8px;background:var(--interactive-accent);color:var(--text-on-accent);border:none;cursor:pointer;font-size:0.82em;font-weight:600;" }
+    attr: { style: "padding:6px 14px;border-radius:8px;background:var(--interactive-accent);color:var(--text-on-accent);border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.3s ease;" }
   });
   genBtn.addEventListener("click", () => {
     const cmd = Object.values(app.commands.commands)
       .find(c => c.name && c.name.includes("AI Daily Digest"));
-    if (cmd) {
-      app.commands.executeCommandById(cmd.id);
-      new Notice("AI Daily Digest triggered — should appear in ~30s");
-    } else {
+    if (!cmd) {
       new Notice("Shell command 'AI Daily Digest' not found — check Shell Commands plugin config");
+      return;
     }
+    app.commands.executeCommandById(cmd.id);
+    genBtn.disabled = true;
+    genBtn.setText("");
+
+    // Spinner via CSS animation
+    const spinner = genBtn.createEl("span", {
+      attr: { style: "display:inline-block;width:14px;height:14px;border:2px solid var(--text-on-accent);border-top-color:transparent;border-radius:50;vertical-align:middle;" }
+    });
+    const style = document.createElement("style");
+    style.textContent = `@keyframes digest-spin{to{transform:rotate(360deg)}}`;
+    document.head.appendChild(style);
+    spinner.style.animation = "digest-spin 0.8s linear infinite";
+
+    genBtn.createEl("span", { text: " Generating…", attr: { style: "vertical-align:middle;" } });
+    genBtn.style.opacity = "0.85";
+    genBtn.style.cursor = "wait";
+
+    // Progress dots in the status text
+    const statusEl = empty.querySelector("span");
+    let dots = 0;
+    const elapsed = { s: 0 };
+    const dotTimer = setInterval(() => {
+      dots = (dots % 3) + 1;
+      elapsed.s += 1;
+      statusEl.textContent = `Generating${".".repeat(dots)}  (${elapsed.s}s)`;
+    }, 1000);
+
+    // Poll for the file to appear
+    const poll = setInterval(() => {
+      if (app.vault.getAbstractFileByPath(zhPath)) {
+        clearInterval(poll);
+        clearInterval(dotTimer);
+        style.remove();
+        genBtn.setText("✓ Done!");
+        genBtn.style.opacity = "1";
+        genBtn.style.cursor = "default";
+        genBtn.style.background = "var(--color-green)";
+        statusEl.textContent = "Digest ready — refreshing…";
+        // Re-render after a short delay
+        setTimeout(() => app.workspace.trigger("dataview:refresh-views"), 1500);
+      }
+    }, 2000);
+
+    // Timeout after 120s
+    setTimeout(() => {
+      clearInterval(poll);
+      clearInterval(dotTimer);
+      if (!app.vault.getAbstractFileByPath(zhPath)) {
+        style.remove();
+        genBtn.setText("⚠ Retry");
+        genBtn.disabled = false;
+        genBtn.style.opacity = "1";
+        genBtn.style.cursor = "pointer";
+        genBtn.style.background = "var(--color-yellow)";
+        statusEl.textContent = "Generation timed out — try again?";
+      }
+    }, 120000);
   });
 }
 
