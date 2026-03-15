@@ -333,22 +333,20 @@ btn.addEventListener("click", async () => {
 
 ```dataviewjs
 const today = dv.date("today");
-const dow = today.weekday;
-const weekStart = today.minus({ days: dow - 1 });
-const weekEnd = weekStart.plus({ days: 6 });
+const rangeStart = today.minus({ days: 6 });
 
 const pages = dv.pages('"Work"')
   .where(p => p.file.tags.includes("#work-daily"))
   .where(p => {
     const d = dv.date(p.date);
-    return d && d >= weekStart && d <= weekEnd;
+    return d && d >= rangeStart && d <= today;
   })
   .sort(p => p.date, "desc");
 
 const container = dv.el("div", "");
 
-// Week label
-const weekLabel = weekStart.toFormat("MMM dd") + " – " + weekEnd.toFormat("MMM dd");
+// Date range label (rolling 7 days)
+const weekLabel = rangeStart.toFormat("MMM dd") + " – " + today.toFormat("MMM dd");
 container.createEl("div", {
   text: weekLabel,
   attr: { style: "font-size:0.78em;color:var(--text-muted);margin-bottom:6px;font-weight:600;" }
@@ -453,7 +451,7 @@ for (const page of pages) {
 }
 
 if (pages.length === 0) {
-  container.createEl("p", { text: "No other work notes this week yet.", attr: { style: "color:var(--text-muted);font-size:0.85em;margin-top:4px;" } });
+  container.createEl("p", { text: "No other work notes in the last 7 days.", attr: { style: "color:var(--text-muted);font-size:0.85em;margin-top:4px;" } });
 }
 ```
 
