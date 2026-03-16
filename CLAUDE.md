@@ -24,7 +24,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
   - `archive/` — Past years and completed projects
   - `2026/` — Current year daily notes (`YYYY-MM-DD.md`)
   - `Projects/` — Project pages (one per project, created from template)
-  - `Brownbag Sessions/` — Brownbag session plans. Each session has a unique `id` (BB-1, BB-2, ...), `created` date, and acceptance criteria checklist (`## 验收标准`). Status is auto-inferred from the checklist: all unchecked → planning, partially checked → in-progress, all checked → done. Created via `/brownbag <topic>`. Index at `Brownbag Sessions/Brownbag Sessions.md`.
+  - `Brownbag Sessions/` — Brownbag session plans. Each session lives in its own subfolder (e.g., `Brownbag Sessions/Bedrock Cost Optimization/`). Each session has a unique `id` (BB-1, BB-2, ...), `created` date, and acceptance criteria checklist (`## 验收标准`). Status is auto-inferred from the checklist: all unchecked → planning, partially checked → in-progress, all checked → done. Created via `/brownbag <topic>`. Index at `Brownbag Sessions/Brownbag Sessions.md`. Shared assets (e.g., slide templates) stay at the `Brownbag Sessions/` root.
 
 ## Key Files
 
