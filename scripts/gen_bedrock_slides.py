@@ -3,18 +3,26 @@
 
 Uses the CI&T Slide Presentation Template as the base, clones relevant slides,
 modifies content, and adds speaker notes for a 30-minute presentation.
+
+Usage:
+    PYTHONPATH=".venv/lib/python3.*/site-packages" python3 scripts/gen_bedrock_slides.py
 """
 
-import sys, os, copy
+import glob
+import os
+import copy
+
+# Add venv packages (version-agnostic)
+_venv_pattern = os.path.join(
+    os.path.dirname(__file__), '..', '.venv', 'lib', 'python3.*', 'site-packages'
+)
+_venv_paths = glob.glob(_venv_pattern)
+if _venv_paths:
+    import sys
+    sys.path.insert(0, _venv_paths[0])
+
 from lxml import etree
-
-# Add venv packages
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '.venv', 'lib', 'python3.13', 'site-packages'))
-
 from pptx import Presentation
-from pptx.util import Inches, Pt, Emu
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
 
 VAULT = os.path.join(os.path.dirname(__file__), '..')
 TEMPLATE = os.path.join(VAULT, 'Work', 'Brownbag Sessions', 'CI&T - Slide Presentation Template.pptx')
@@ -75,10 +83,18 @@ def clone_slide(prs, src_index):
 
 
 def delete_slide(prs, index):
-    """Delete slide at index."""
+    """Delete slide at index, including its part from the package."""
     rId = prs.slides._sldIdLst[index].get(qn('r:id'))
+    # Remove the slide part from the package to avoid orphaned XML
+    rel = prs.part.rels[rId]
+    slide_part = rel.target_part
     prs.part.drop_rel(rId)
     del prs.slides._sldIdLst[index]
+    # Remove the part from the package to reclaim space
+    try:
+        prs.part.package.drop_part(slide_part.partname)
+    except (KeyError, AttributeError):
+        pass  # Part may already be removed or shared
 
 
 def _get_first_rPr(shape):
@@ -155,9 +171,25 @@ def add_speaker_notes(slide, notes_text):
 
 
 def get_text_shapes(slide):
-    """Return list of shapes with text, sorted top-to-bottom."""
+    """Return list of shapes with text, sorted by visual hierarchy.
+
+    Sorts by font size (largest first) as a proxy for semantic importance,
+    falling back to top-to-bottom position. This handles template slides
+    where the title shape is visually below the body shape.
+    """
     shapes = [s for s in slide.shapes if s.has_text_frame and s.text_frame.text.strip()]
-    shapes.sort(key=lambda s: (s.top or 0, s.left or 0))
+
+    def _sort_key(s):
+        # Extract the largest font size in the shape (title text is bigger)
+        max_size = 0
+        for para in s.text_frame.paragraphs:
+            for run in para.runs:
+                if run.font.size and run.font.size > max_size:
+                    max_size = run.font.size
+        # Sort by: largest font first, then top-to-bottom
+        return (-max_size, s.top or 0, s.left or 0)
+
+    shapes.sort(key=_sort_key)
     return shapes
 
 
@@ -472,33 +504,13 @@ def build_presentation():
 
         elif 'items' in content:
             # Numbered items slide (comparison table)
-            # Has "01" "02" "03" "04" + title shapes + description shapes
-            title_shapes = [s for s in shapes
-                           if s.text_frame.text.startswith('Title for this number')
-                           or s.text_frame.text.startswith('Description of this number')]
-            num_shapes = [s for s in shapes if s.text_frame.text.strip() in ('01', '02', '03', '04')]
-
-            # Group shapes by vertical position to match items
-            # Each item has: number, title+desc
-            all_item_shapes = [s for s in shapes
-                              if s.text_frame.text.strip() not in ('Insert here your title. Use up to 2 lines of text.',)]
-
-            # Simpler approach: find shapes by content pattern
+            # Template has: main title, "01"-"04" number shapes, title+desc shapes
             for s in shapes:
                 txt = s.text_frame.text.strip()
-                if txt == 'Insert here your title. Use up to 2 lines of text.':
+                if 'Insert here your title' in txt:
                     set_text(s, "Strategy Comparison")
-                    continue
-                for i, (num, title, desc) in enumerate(content['items']):
-                    expected_num = f"0{i+1}"
-                    if txt == expected_num:
-                        set_text(s, num)
-                        break
-                    if txt.startswith('Title for this number') or txt.startswith('Description of this number'):
-                        # Match by position
-                        pass
 
-            # Fallback: modify the title/desc shapes in order
+            # Update title+description shapes (sorted left-to-right)
             td_shapes = [s for s in shapes
                         if 'Title for this number' in s.text_frame.text
                         or 'Description of this number' in s.text_frame.text]
@@ -506,12 +518,6 @@ def build_presentation():
             for i, (num, title, desc) in enumerate(content['items']):
                 if i < len(td_shapes):
                     set_multiline_text(td_shapes[i], [title, "", desc])
-
-            # Set the main title
-            for s in shapes:
-                if 'Insert here your title' in s.text_frame.text:
-                    set_text(s, "Strategy Comparison")
-                    break
 
         else:
             # Generic content: map by index in content dict
