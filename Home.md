@@ -475,7 +475,7 @@ if (zhFile) {
   // Extract 今日看点 summary
   let start = -1, end = lines.length;
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].includes("今日看点")) { start = i + 1; continue; }
+    if (lines[i].startsWith("##") && lines[i].includes("今日看点")) { start = i + 1; continue; }
     if (start > 0 && lines[i].startsWith("---")) { end = i; break; }
   }
   const summary = start > 0
