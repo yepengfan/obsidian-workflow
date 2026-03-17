@@ -3,7 +3,7 @@
 #
 # Step 0: Python fetches & deduplicates RSS feeds → JSON
 # Step 1: Claude (haiku) scores & selects top 15 → JSON
-# Step 2: Claude (haiku) summarizes bilingually → JSON
+# Step 2: Claude (sonnet) summarizes bilingually → JSON
 # Step 3: Python assembles & writes Obsidian reports (~1s)
 # Step 4: Bash archives old reports (>14 days)
 #
@@ -21,7 +21,7 @@ FEED_DIR="$VAULT_DIR/Feeds/AI-Daily"
 DIGEST_FILE="$FEED_DIR/$TODAY.md"
 
 CLAUDE_COMMON=(--permission-mode bypassPermissions --no-session-persistence)
-CLAUDE_TIMEOUT=300  # seconds per phase; Phase 2 (summarization) needs ~120-180s
+CLAUDE_TIMEOUT=300  # seconds per phase; Phase 2 (sonnet summarization) needs ~120-180s
 
 # Portable timeout: prefer GNU timeout/gtimeout, fall back to bash background+kill
 if command -v timeout &>/dev/null; then
@@ -158,13 +158,13 @@ if ! echo "$SCORED" | python3 -c "import sys,json; d=json.load(sys.stdin); asser
 fi
 echo "[digest] Step 1 complete: $(echo "$SCORED" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['top_articles']),'articles selected')")"
 
-# ── Step 2: Bilingual Summarization (Haiku, stdout JSON) ────────────
+# ── Step 2: Bilingual Summarization (Sonnet, stdout JSON) ────────────
 echo "[digest] Step 2: Summarizing articles..."
 SUMMARIES=$(echo "$SCORED" | run_with_timeout claude -p \
     "Summarize the ranked articles from the JSON on stdin. Output ONLY the raw JSON object — no markdown fences, no commentary." \
     --system-prompt "$(cat "$PROMPTS_DIR/summarize.md")" \
-    --model haiku \
-    --max-budget-usd 0.25 \
+    --model sonnet \
+    --max-budget-usd 1.50 \
     "${CLAUDE_COMMON[@]}" | extract_json) || {
     echo "[digest] ERROR: Phase 2 (summarization) timed out or failed." >&2
     exit 1
