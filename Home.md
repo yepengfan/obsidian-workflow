@@ -488,13 +488,8 @@ if (zhFile) {
   });
   const scanned = page.articles_scanned || "?";
   const selected = page.articles_selected || "?";
-  const cost = page.bedrock_cost || "?";
   row.createEl("span", {
     text: `📰 ${selected}/${scanned} articles`,
-    attr: { style: "font-size:0.78em;color:var(--text-muted);" }
-  });
-  row.createEl("span", {
-    text: `💰 ${cost}`,
     attr: { style: "font-size:0.78em;color:var(--text-muted);" }
   });
   const links = row.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
@@ -593,7 +588,7 @@ if (zhFile) {
         genBtn.style.background = "var(--color-yellow)";
         statusEl.textContent = "Generation timed out — try again?";
       }
-    }, 300000);
+    }, 600000);
 
     const poll = setInterval(() => {
       if (app.vault.getAbstractFileByPath(zhPath)) {

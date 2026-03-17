@@ -1,0 +1,332 @@
+"""Phase 3 — Assemble scored articles + summaries into Obsidian markdown reports.
+
+Reads three JSON files (scored, summaries, articles) from TMPDIR_DIGEST,
+merges them, and writes the ZH report, EN report, and Dashboard.
+
+This replaces the Claude Code Phase 3 with pure Python templating (~1s vs ~180s).
+"""
+
+import json
+import os
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+# ── Config ──────────────────────────────────────────────────────────
+
+CATEGORY_EMOJI = {
+    "ai-ml": "🤖",
+    "security": "🔒",
+    "engineering": "⚙️",
+    "tools": "🛠️",
+    "opinion": "💬",
+    "other": "📌",
+}
+
+CATEGORY_LABEL = {
+    "ai-ml": "AI / ML",
+    "security": "Security",
+    "engineering": "Engineering",
+    "tools": "Tools",
+    "opinion": "Opinion",
+    "other": "Other",
+}
+
+RANK_EMOJI = {1: "🥇", 2: "🥈", 3: "🥉"}
+
+
+def rank_str(rank: int) -> str:
+    return RANK_EMOJI.get(rank, f"#{rank}")
+
+
+def relative_time(pub_date_str: str, today_str: str) -> str:
+    """Calculate relative time like '2h ago', '1d ago'."""
+    try:
+        pub = datetime.fromisoformat(pub_date_str)
+        # Assume end of day for today
+        today = datetime.fromisoformat(today_str + "T23:59:59+00:00")
+        if pub.tzinfo is None:
+            pub = pub.replace(tzinfo=timezone.utc)
+        if today.tzinfo is None:
+            today = today.replace(tzinfo=timezone.utc)
+        delta = today - pub
+        hours = int(delta.total_seconds() / 3600)
+        if hours < 1:
+            return "just now"
+        elif hours < 24:
+            return f"{hours}h ago"
+        else:
+            return f"{delta.days}d ago"
+    except Exception:
+        return "recent"
+
+
+def build_callout_zh(art: dict, today: str) -> str:
+    cat_emoji = CATEGORY_EMOJI.get(art["category"], "📌")
+    cat_label = CATEGORY_LABEL.get(art["category"], "Other")
+    rtime = relative_time(art["pub_date"], today)
+    keywords = ", ".join(art.get("keywords", []))
+    return f"""> [!tip] {rank_str(art["rank"])} {art["title_zh"]}
+> [{art["title"]}]({art["link"]})
+> — {art["source_name"]} · {rtime} · {cat_emoji} {cat_label}
+>
+> {art["summary_zh"]}
+>
+> 💡 **为什么值得读**: {art["reason_zh"]}
+> 🏷️ {keywords}"""
+
+
+def build_callout_en(art: dict, today: str) -> str:
+    cat_emoji = CATEGORY_EMOJI.get(art["category"], "📌")
+    cat_label = CATEGORY_LABEL.get(art["category"], "Other")
+    rtime = relative_time(art["pub_date"], today)
+    keywords = ", ".join(art.get("keywords", []))
+    return f"""> [!tip] {rank_str(art["rank"])} {art["title"]}
+> [{art["title"]}]({art["link"]})
+> — {art["source_name"]} · {rtime} · {cat_emoji} {cat_label}
+>
+> {art["summary_en"]}
+>
+> 💡 **Why read**: {art["reason_en"]}
+> 🏷️ {keywords}"""
+
+
+def build_category_index_zh(articles: list) -> str:
+    """Build category index sections for ZH report."""
+    cats: dict[str, list] = {}
+    for art in articles:
+        cats.setdefault(art["category"], []).append(art)
+
+    sections = []
+    for cat_key in ["ai-ml", "security", "engineering", "tools", "opinion", "other"]:
+        if cat_key not in cats:
+            continue
+        emoji = CATEGORY_EMOJI[cat_key]
+        label = CATEGORY_LABEL[cat_key]
+        items = "\n".join(f"- {a['title_zh']} — {a['source_name']}" for a in cats[cat_key])
+        sections.append(f"## {emoji} {label}\n\n{items}")
+
+    return "\n\n".join(sections)
+
+
+def build_category_index_en(articles: list) -> str:
+    """Build category index sections for EN report."""
+    cats: dict[str, list] = {}
+    for art in articles:
+        cats.setdefault(art["category"], []).append(art)
+
+    sections = []
+    for cat_key in ["ai-ml", "security", "engineering", "tools", "opinion", "other"]:
+        if cat_key not in cats:
+            continue
+        emoji = CATEGORY_EMOJI[cat_key]
+        label = CATEGORY_LABEL[cat_key]
+        items = "\n".join(f"- {a['title']} — {a['source_name']}" for a in cats[cat_key])
+        sections.append(f"## {emoji} {label}\n\n{items}")
+
+    return "\n\n".join(sections)
+
+
+def write_zh_report(payload: dict, output_path: Path) -> None:
+    today = payload["date"]
+    stats = payload["stats"]
+    articles = payload["articles"]
+    selected = len(articles)
+
+    callouts = "\n\n".join(build_callout_zh(a, today) for a in articles)
+    category_index = build_category_index_zh(articles)
+
+    report = f"""---
+date: {today}
+tags: [ai-daily, digest]
+lang: zh
+sources: {stats["sources_total"]} RSS (Karpathy curated)
+articles_scanned: {stats["articles_after_dedup"]}
+articles_selected: {selected}
+generator: claude-code
+---
+
+# 🗞️ AI 早报 — {today}
+
+> Karpathy 推荐的 {stats["sources_total"]} 个顶级技术博客 | Claude Code 生成
+> English version: [[{today}-en]]
+
+## 📝 今日看点
+
+{payload["trend_zh"]}
+
+---
+
+## 🏆 今日必读
+
+{callouts}
+
+---
+
+## 📊 数据概览
+
+| 扫描源 | 抓取文章 | 去重后 | 精选 |
+|:---:|:---:|:---:|:---:|
+| {stats["feeds_ok"]}/{stats["sources_total"]} | {stats["articles_fetched"]} | {stats["articles_after_dedup"]} | **{selected}** |
+
+---
+
+{category_index}
+
+---
+*Generated by Claude Code*
+"""
+    output_path.write_text(report, encoding="utf-8")
+
+
+def write_en_report(payload: dict, output_path: Path) -> None:
+    today = payload["date"]
+    stats = payload["stats"]
+    articles = payload["articles"]
+    selected = len(articles)
+
+    callouts = "\n\n".join(build_callout_en(a, today) for a in articles)
+    category_index = build_category_index_en(articles)
+
+    report = f"""---
+date: {today}
+tags: [ai-daily, digest]
+lang: en
+sources: {stats["sources_total"]} RSS (Karpathy curated)
+articles_scanned: {stats["articles_after_dedup"]}
+articles_selected: {selected}
+generator: claude-code
+---
+
+# 🗞️ AI Daily Digest — {today}
+
+> {stats["sources_total"]} Karpathy-curated top tech blogs | Claude Code
+> 中文版: [[{today}]]
+
+## 📝 Today's Highlights
+
+{payload["trend_en"]}
+
+---
+
+## 🏆 Top Picks
+
+{callouts}
+
+---
+
+## 📊 Stats
+
+| Sources | Fetched | After Dedup | Selected |
+|:---:|:---:|:---:|:---:|
+| {stats["feeds_ok"]}/{stats["sources_total"]} | {stats["articles_fetched"]} | {stats["articles_after_dedup"]} | **{selected}** |
+
+---
+
+{category_index}
+
+---
+*Generated by Claude Code*
+"""
+    output_path.write_text(report, encoding="utf-8")
+
+
+def write_dashboard(today: str, feed_dir: Path) -> None:
+    """Rebuild Dashboard.md from existing digest files (last 14 days)."""
+    # Collect all ZH digest dates
+    dates = set()
+    for f in feed_dir.glob("*.md"):
+        name = f.stem
+        if name == "Dashboard" or name.endswith("-en"):
+            continue
+        # Validate YYYY-MM-DD format
+        parts = name.split("-")
+        if len(parts) == 3 and len(parts[0]) == 4:
+            dates.add(name)
+
+    # Also check archive
+    archive = feed_dir / "archive"
+    if archive.exists():
+        for f in archive.glob("*.md"):
+            name = f.stem
+            if name.endswith("-en"):
+                continue
+            parts = name.split("-")
+            if len(parts) == 3 and len(parts[0]) == 4:
+                dates.add(name)
+
+    # Sort descending, take last 14
+    sorted_dates = sorted(dates, reverse=True)[:14]
+
+    if not sorted_dates:
+        return
+
+    latest = sorted_dates[0]
+    rows = "\n".join(f"| {d} | [[{d}]] | [[{d}-en]] |" for d in sorted_dates)
+
+    dashboard = f"""---
+date: {today}
+tags: [ai-daily, dashboard]
+---
+
+# AI Daily Digest
+
+## Quick Links
+
+- Latest: [[{latest}]]
+- Latest (EN): [[{latest}-en]]
+
+## Recent Digests
+
+| Date | ZH | EN |
+|------|----|----|
+{rows}
+"""
+    (feed_dir / "Dashboard.md").write_text(dashboard, encoding="utf-8")
+
+
+def main() -> None:
+    tmpdir = os.environ["TMPDIR_DIGEST"]
+    today = os.environ["TODAY"]
+    vault_dir = Path(os.environ["VAULT_DIR"])
+    feed_dir = vault_dir / "Feeds" / "AI-Daily"
+
+    # Load inputs
+    scored = json.loads(Path(f"{tmpdir}/scored.json").read_text())
+    summaries = json.loads(Path(f"{tmpdir}/summaries.json").read_text())
+    articles_in = json.loads(Path(f"{tmpdir}/articles.json").read_text())
+
+    # Merge scored articles + summaries
+    merged = []
+    for art, summ in zip(scored["top_articles"], summaries["summaries"]):
+        art.update({
+            "title_zh": summ["title_zh"],
+            "summary_zh": summ["summary_zh"],
+            "reason_zh": summ["reason_zh"],
+            "summary_en": summ["summary_en"],
+            "reason_en": summ["reason_en"],
+        })
+        merged.append(art)
+
+    payload = {
+        "date": today,
+        "stats": articles_in["stats"],
+        "trend_zh": summaries["trend_zh"],
+        "trend_en": summaries["trend_en"],
+        "articles": merged,
+    }
+
+    # Write reports
+    write_zh_report(payload, feed_dir / f"{today}.md")
+    print(f"[digest]   Wrote {feed_dir / f'{today}.md'}")
+
+    write_en_report(payload, feed_dir / f"{today}-en.md")
+    print(f"[digest]   Wrote {feed_dir / f'{today}-en.md'}")
+
+    write_dashboard(today, feed_dir)
+    print(f"[digest]   Wrote {feed_dir / 'Dashboard.md'}")
+
+
+if __name__ == "__main__":
+    main()
