@@ -475,7 +475,7 @@ if (zhFile) {
   // Extract 今日看点 summary
   let start = -1, end = lines.length;
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].includes("今日看点")) { start = i + 1; continue; }
+    if (lines[i].startsWith("##") && lines[i].includes("今日看点")) { start = i + 1; continue; }
     if (start > 0 && lines[i].startsWith("---")) { end = i; break; }
   }
   const summary = start > 0
@@ -488,13 +488,8 @@ if (zhFile) {
   });
   const scanned = page.articles_scanned || "?";
   const selected = page.articles_selected || "?";
-  const cost = page.bedrock_cost || "?";
   row.createEl("span", {
     text: `📰 ${selected}/${scanned} articles`,
-    attr: { style: "font-size:0.78em;color:var(--text-muted);" }
-  });
-  row.createEl("span", {
-    text: `💰 ${cost}`,
     attr: { style: "font-size:0.78em;color:var(--text-muted);" }
   });
   const links = row.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
@@ -593,7 +588,7 @@ if (zhFile) {
         genBtn.style.background = "var(--color-yellow)";
         statusEl.textContent = "Generation timed out — try again?";
       }
-    }, 300000);
+    }, 600000);
 
     const poll = setInterval(() => {
       if (app.vault.getAbstractFileByPath(zhPath)) {

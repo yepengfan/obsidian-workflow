@@ -1,4 +1,4 @@
-"""AI Daily Digest — Bedrock-powered RSS summarizer for Obsidian."""
+"""AI Daily Digest — RSS feed fetcher and deduplicator for Obsidian."""
 
 from pathlib import Path
 
