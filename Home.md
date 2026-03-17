@@ -467,15 +467,22 @@ const zhFile = app.vault.getAbstractFileByPath(zhPath);
 
 const container = dv.el("div", "");
 
-if (zhFile) {
-  const page = dv.page(zhPath);
-  const content = await app.vault.read(zhFile);
+const enFile = app.vault.getAbstractFileByPath(enPath);
+// Prefer EN file for preview; fall back to ZH
+const digestFile = enFile || zhFile;
+
+if (digestFile) {
+  const isEn = !!enFile;
+  const digestPath = isEn ? enPath : zhPath;
+  const page = dv.page(digestPath);
+  const content = await app.vault.read(digestFile);
   const lines = content.split("\n");
 
-  // Extract 今日看点 summary
+  // Extract highlights summary (EN: "Today's Highlights", ZH: "今日看点")
+  const highlightMarker = isEn ? "Today's Highlights" : "今日看点";
   let start = -1, end = lines.length;
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith("##") && lines[i].includes("今日看点")) { start = i + 1; continue; }
+    if (lines[i].startsWith("##") && lines[i].includes(highlightMarker)) { start = i + 1; continue; }
     if (start > 0 && lines[i].startsWith("---")) { end = i; break; }
   }
   const summary = start > 0
@@ -498,7 +505,7 @@ if (zhFile) {
     cls: "internal-link",
     attr: { "data-href": zhPath, style: "font-size:0.82em;" }
   });
-  if (app.vault.getAbstractFileByPath(enPath)) {
+  if (enFile) {
     links.createEl("a", {
       text: "EN",
       cls: "internal-link",
