@@ -92,8 +92,8 @@ def build_callout_en(art: dict, today: str) -> str:
 > 🏷️ {keywords}"""
 
 
-def build_category_index_zh(articles: list) -> str:
-    """Build category index sections for ZH report."""
+def build_category_index(articles: list, title_key: str = "title") -> str:
+    """Build category index sections. Use title_key='title_zh' for ZH, 'title' for EN."""
     cats: dict[str, list] = {}
     for art in articles:
         cats.setdefault(art["category"], []).append(art)
@@ -104,25 +104,7 @@ def build_category_index_zh(articles: list) -> str:
             continue
         emoji = CATEGORY_EMOJI[cat_key]
         label = CATEGORY_LABEL[cat_key]
-        items = "\n".join(f"- {a['title_zh']} — {a['source_name']}" for a in cats[cat_key])
-        sections.append(f"## {emoji} {label}\n\n{items}")
-
-    return "\n\n".join(sections)
-
-
-def build_category_index_en(articles: list) -> str:
-    """Build category index sections for EN report."""
-    cats: dict[str, list] = {}
-    for art in articles:
-        cats.setdefault(art["category"], []).append(art)
-
-    sections = []
-    for cat_key in ["ai-ml", "security", "engineering", "tools", "opinion", "other"]:
-        if cat_key not in cats:
-            continue
-        emoji = CATEGORY_EMOJI[cat_key]
-        label = CATEGORY_LABEL[cat_key]
-        items = "\n".join(f"- {a['title']} — {a['source_name']}" for a in cats[cat_key])
+        items = "\n".join(f"- {a[title_key]} — {a['source_name']}" for a in cats[cat_key])
         sections.append(f"## {emoji} {label}\n\n{items}")
 
     return "\n\n".join(sections)
@@ -135,7 +117,7 @@ def write_zh_report(payload: dict, output_path: Path) -> None:
     selected = len(articles)
 
     callouts = "\n\n".join(build_callout_zh(a, today) for a in articles)
-    category_index = build_category_index_zh(articles)
+    category_index = build_category_index(articles, title_key="title_zh")
 
     report = f"""---
 date: {today}
@@ -187,7 +169,7 @@ def write_en_report(payload: dict, output_path: Path) -> None:
     selected = len(articles)
 
     callouts = "\n\n".join(build_callout_en(a, today) for a in articles)
-    category_index = build_category_index_en(articles)
+    category_index = build_category_index(articles, title_key="title")
 
     report = f"""---
 date: {today}
@@ -234,7 +216,7 @@ generator: claude-code
 
 def write_dashboard(today: str, feed_dir: Path) -> None:
     """Rebuild Dashboard.md from existing digest files (last 14 days)."""
-    # Collect all ZH digest dates
+    # Collect all ZH digest dates (only from main dir — archive is >14 days by definition)
     dates = set()
     for f in feed_dir.glob("*.md"):
         name = f.stem
@@ -244,17 +226,6 @@ def write_dashboard(today: str, feed_dir: Path) -> None:
         parts = name.split("-")
         if len(parts) == 3 and len(parts[0]) == 4:
             dates.add(name)
-
-    # Also check archive
-    archive = feed_dir / "archive"
-    if archive.exists():
-        for f in archive.glob("*.md"):
-            name = f.stem
-            if name.endswith("-en"):
-                continue
-            parts = name.split("-")
-            if len(parts) == 3 and len(parts[0]) == 4:
-                dates.add(name)
 
     # Sort descending, take last 14
     sorted_dates = sorted(dates, reverse=True)[:14]
@@ -297,15 +268,23 @@ def main() -> None:
     summaries = json.loads(Path(f"{tmpdir}/summaries.json").read_text())
     articles_in = json.loads(Path(f"{tmpdir}/articles.json").read_text())
 
-    # Merge scored articles + summaries
+    # Merge scored articles + summaries (with length validation)
+    top_articles = scored["top_articles"]
+    summ_list = summaries["summaries"]
+    if len(top_articles) != len(summ_list):
+        print(
+            f"[digest] WARNING: scored ({len(top_articles)}) and summaries ({len(summ_list)}) "
+            f"count mismatch — using min({len(top_articles)}, {len(summ_list)})",
+            file=sys.stderr,
+        )
     merged = []
-    for art, summ in zip(scored["top_articles"], summaries["summaries"]):
+    for art, summ in zip(top_articles, summ_list):
         art.update({
-            "title_zh": summ["title_zh"],
-            "summary_zh": summ["summary_zh"],
-            "reason_zh": summ["reason_zh"],
-            "summary_en": summ["summary_en"],
-            "reason_en": summ["reason_en"],
+            "title_zh": summ.get("title_zh", art["title"]),
+            "summary_zh": summ.get("summary_zh", ""),
+            "reason_zh": summ.get("reason_zh", ""),
+            "summary_en": summ.get("summary_en", ""),
+            "reason_en": summ.get("reason_en", ""),
         })
         merged.append(art)
 

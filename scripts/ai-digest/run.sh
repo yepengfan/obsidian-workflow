@@ -20,7 +20,27 @@ TODAY=$(date +%Y-%m-%d)
 FEED_DIR="$VAULT_DIR/Feeds/AI-Daily"
 DIGEST_FILE="$FEED_DIR/$TODAY.md"
 
-CLAUDE_COMMON="--permission-mode bypassPermissions --no-session-persistence"
+CLAUDE_COMMON=(--permission-mode bypassPermissions --no-session-persistence)
+CLAUDE_TIMEOUT=300  # seconds per phase; Phase 2 (summarization) needs ~120-180s
+
+# Portable timeout: prefer GNU timeout/gtimeout, fall back to bash background+kill
+if command -v timeout &>/dev/null; then
+    run_with_timeout() { timeout "$CLAUDE_TIMEOUT" "$@"; }
+elif command -v gtimeout &>/dev/null; then
+    run_with_timeout() { gtimeout "$CLAUDE_TIMEOUT" "$@"; }
+else
+    run_with_timeout() {
+        "$@" &
+        local pid=$!
+        ( sleep "$CLAUDE_TIMEOUT" && kill "$pid" 2>/dev/null ) &
+        local watcher=$!
+        wait "$pid" 2>/dev/null
+        local rc=$?
+        kill "$watcher" 2>/dev/null
+        wait "$watcher" 2>/dev/null
+        return $rc
+    }
+fi
 
 # Helper: strip markdown fences and extract valid JSON from Claude output.
 # Handles: code fences, leading/trailing text, unescaped quotes in strings.
@@ -107,7 +127,7 @@ fi
 
 # ── Step 0: Fetch + Dedup (Python) ──────────────────────────────────
 echo "[digest] Step 0: Fetching RSS feeds..."
-ARTICLES=$("$SCRIPT_DIR/.venv/bin/python" "$SCRIPT_DIR/fetch.py" --vault-path "$VAULT_DIR" 2>/dev/null) || {
+ARTICLES=$("$SCRIPT_DIR/.venv/bin/python" "$SCRIPT_DIR/fetch.py" --vault-path "$VAULT_DIR") || {
     exit_code=$?
     if [ $exit_code -eq 2 ]; then
         echo "[digest] Digest already exists (fetcher check). Skipping."
@@ -120,12 +140,15 @@ echo "[digest] Step 0 complete."
 
 # ── Step 1: Score & Select top 15 (Haiku, stdout JSON) ──────────────
 echo "[digest] Step 1: Scoring articles..."
-SCORED=$(echo "$ARTICLES" | claude -p \
+SCORED=$(echo "$ARTICLES" | run_with_timeout claude -p \
     "Score and rank the articles from the JSON on stdin. Output ONLY valid JSON." \
     --system-prompt "$(cat "$PROMPTS_DIR/score.md")" \
     --model haiku \
     --max-budget-usd 0.25 \
-    $CLAUDE_COMMON | extract_json)
+    "${CLAUDE_COMMON[@]}" | extract_json) || {
+    echo "[digest] ERROR: Phase 1 (scoring) timed out or failed." >&2
+    exit 1
+}
 
 # Validate we got JSON back
 if ! echo "$SCORED" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'top_articles' in d" 2>/dev/null; then
@@ -137,12 +160,15 @@ echo "[digest] Step 1 complete: $(echo "$SCORED" | python3 -c "import sys,json; 
 
 # ── Step 2: Bilingual Summarization (Haiku, stdout JSON) ────────────
 echo "[digest] Step 2: Summarizing articles..."
-SUMMARIES=$(echo "$SCORED" | claude -p \
+SUMMARIES=$(echo "$SCORED" | run_with_timeout claude -p \
     "Summarize the ranked articles from the JSON on stdin. Output ONLY the raw JSON object — no markdown fences, no commentary." \
     --system-prompt "$(cat "$PROMPTS_DIR/summarize.md")" \
     --model haiku \
     --max-budget-usd 0.25 \
-    $CLAUDE_COMMON | extract_json)
+    "${CLAUDE_COMMON[@]}" | extract_json) || {
+    echo "[digest] ERROR: Phase 2 (summarization) timed out or failed." >&2
+    exit 1
+}
 
 # Validate summaries JSON
 if ! echo "$SUMMARIES" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'summaries' in d and 'trend_zh' in d" 2>/dev/null; then
