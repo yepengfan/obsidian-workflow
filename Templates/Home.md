@@ -1,7 +1,7 @@
 ---
 tags: template
 for: Home
-updated: 2026-03-13
+updated: 2026-03-18
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
@@ -24,6 +24,10 @@ updated: 2026-03-13
 > - **Open uses `t.status === " "`** (not `!t.completed`) to exclude `[>]` tasks from the open count. `inTasksSection` is also capped at `min(notesLine, carryoverLine)` so Carryover tasks aren't double-counted when `## Notes` is absent.
 > - **Total**: `open + done + carriedAway + carriedIn` — all four segments sum to 100%.
 > - **Count badges**: `N open` | `N ⬆️` (carry-out, yellow) | `N ➡️` (carry-in) | `N done` | `N total` — all 5 always shown; zeros are dimmed (opacity 0.35) for layout consistency. Fixed `width:4.8em` per badge reserves space for 2-digit numbers. Badge order mirrors bar order (left→right).
+
+> [!note] 2026-03-18 — Increase AI Daily Digest generation timeout to 15 min
+> - **Why**: Phase 2 was upgraded from Haiku to Sonnet for better bilingual summary quality. Pipeline now runs ~10 min, which was cutting it too close to the previous 10 min (600,000ms) ceiling and causing occasional "timed out" errors.
+> - **Change**: `setTimeout` value changed from `600000` → `900000` (15 minutes).
 
 > [!note] 2026-03-13 — Automatic carryover in navToday button
 > - **Problem**: The create button generated clean daily notes without checking for unfinished tasks from the previous day. The `/daily` skill had carryover logic, but clicking the Home.md button did not.

@@ -1,8 +1,6 @@
 # ── Content (synced via S3/iCloud, not git) ──
 Attachments/
-Books/思考，快与慢（第二版）/
-Books/AI Engineering/
-Books/Designing Data-Intensive Applications (2nd Edition)/
+Books/*/
 Entertainment/
 system-design-primer/
 Excalidraw/
@@ -20,6 +18,8 @@ Book Summaries/
 Inbox/
 Zettelkasten/*
 !Zettelkasten/Zettelkasten Index.md
+Feeds/*
+!Feeds/AI-Daily/Dashboard.md
 
 # ── Local config (machine-specific paths) ──
 .bookrc

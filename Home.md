@@ -595,7 +595,7 @@ if (digestFile) {
         genBtn.style.background = "var(--color-yellow)";
         statusEl.textContent = "Generation timed out — try again?";
       }
-    }, 600000);
+    }, 900000);
 
     const poll = setInterval(() => {
       if (app.vault.getAbstractFileByPath(zhPath)) {

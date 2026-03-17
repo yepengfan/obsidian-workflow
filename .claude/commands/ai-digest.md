@@ -3,7 +3,7 @@ Generate today's AI Daily Digest (or for a specified date).
 This runs the same hybrid Python + Claude Code pipeline as the Home.md "Generate" button:
   Phase 0: Python fetches 92 Karpathy-curated RSS feeds + deduplicates
   Phase 1: Claude Haiku scores & selects top 15 articles
-  Phase 2: Claude Sonnet generates bilingual summaries (中文 + English)
+  Phase 2: Claude Haiku generates bilingual summaries (中文 + English)
   Phase 3: Python assembles Obsidian markdown reports
   Phase 4: Bash archives digests older than 14 days
 
@@ -14,7 +14,7 @@ This runs the same hybrid Python + Claude Code pipeline as the Home.md "Generate
    bash scripts/ai-digest/run.sh
    ```
    - The script is idempotent — if today's digest already exists, it exits cleanly (exit 0 or 2).
-   - Typical runtime: ~10 minutes (Phase 2 Sonnet summarization is the slow part).
+   - Typical runtime: ~4-6 minutes (both phases use Haiku for speed).
    - The script outputs progress to stderr (`[digest] Step N: ...`). Stream these to the user as status updates.
 
 2. Check the result:
