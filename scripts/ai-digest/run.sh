@@ -13,6 +13,11 @@ set -euo pipefail
 # Ensure common tool paths are available (Obsidian Shell Commands has a minimal PATH)
 export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
 
+# Log stderr to file (tee preserves console output for interactive callers)
+LOG_FILE="$(cd "$(dirname "$0")" && pwd)/digest.log"
+exec 2> >(tee -a "$LOG_FILE" >&2)
+echo "[digest] ── Run started at $(date '+%Y-%m-%d %H:%M:%S') ──" >&2
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VAULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PROMPTS_DIR="$SCRIPT_DIR/prompts"
@@ -21,26 +26,28 @@ FEED_DIR="$VAULT_DIR/Feeds/AI-Daily"
 DIGEST_FILE="$FEED_DIR/$TODAY.md"
 
 CLAUDE_COMMON=(--permission-mode bypassPermissions --no-session-persistence)
-CLAUDE_TIMEOUT=300  # seconds per phase; Phase 2 (summarization) needs ~120-180s
+CLAUDE_TIMEOUT_P1=180   # Phase 1: Haiku scoring (~2-3 min)
+CLAUDE_TIMEOUT_P2=180   # Phase 2: Haiku summarization (~2-3 min)
 
 # Portable timeout: prefer GNU timeout/gtimeout, fall back to bash background+kill
-if command -v timeout &>/dev/null; then
-    run_with_timeout() { timeout "$CLAUDE_TIMEOUT" "$@"; }
-elif command -v gtimeout &>/dev/null; then
-    run_with_timeout() { gtimeout "$CLAUDE_TIMEOUT" "$@"; }
-else
-    run_with_timeout() {
+_run_with_timeout() {
+    local secs=$1; shift
+    if command -v timeout &>/dev/null; then
+        timeout "$secs" "$@"
+    elif command -v gtimeout &>/dev/null; then
+        gtimeout "$secs" "$@"
+    else
         "$@" &
         local pid=$!
-        ( sleep "$CLAUDE_TIMEOUT" && kill "$pid" 2>/dev/null ) &
+        ( sleep "$secs" && kill "$pid" 2>/dev/null ) &
         local watcher=$!
         wait "$pid" 2>/dev/null
         local rc=$?
         kill "$watcher" 2>/dev/null
         wait "$watcher" 2>/dev/null
         return $rc
-    }
-fi
+    fi
+}
 
 # Helper: strip markdown fences and extract valid JSON from Claude output.
 # Handles: code fences, leading/trailing text, unescaped quotes in strings.
@@ -79,11 +86,15 @@ result = []
 while i < len(chars):
     c = chars[i]
     if c == '\\\\' and in_string:
-        result.append(c)
         i += 1
         if i < len(chars):
-            result.append(chars[i])
-        i += 1
+            next_c = chars[i]
+            if next_c in '\"\\\\bfnrtu' or next_c == '/':
+                result.append(c)
+                result.append(next_c)
+            else:
+                result.append(next_c)
+            i += 1
         continue
     if c == '\"':
         if not in_string:
@@ -140,7 +151,7 @@ echo "[digest] Step 0 complete."
 
 # ── Step 1: Score & Select top 15 (Haiku, stdout JSON) ──────────────
 echo "[digest] Step 1: Scoring articles..."
-SCORED=$(echo "$ARTICLES" | run_with_timeout claude -p \
+SCORED=$(echo "$ARTICLES" | _run_with_timeout "$CLAUDE_TIMEOUT_P1" claude -p \
     "Score and rank the articles from the JSON on stdin. Output ONLY valid JSON." \
     --system-prompt "$(cat "$PROMPTS_DIR/score.md")" \
     --model haiku \
@@ -160,7 +171,7 @@ echo "[digest] Step 1 complete: $(echo "$SCORED" | python3 -c "import sys,json; 
 
 # ── Step 2: Bilingual Summarization (Haiku, stdout JSON) ────────────
 echo "[digest] Step 2: Summarizing articles..."
-SUMMARIES=$(echo "$SCORED" | run_with_timeout claude -p \
+SUMMARIES=$(echo "$SCORED" | _run_with_timeout "$CLAUDE_TIMEOUT_P2" claude -p \
     "Summarize the ranked articles from the JSON on stdin. Output ONLY the raw JSON object — no markdown fences, no commentary." \
     --system-prompt "$(cat "$PROMPTS_DIR/summarize.md")" \
     --model haiku \
