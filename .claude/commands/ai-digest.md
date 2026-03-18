@@ -1,6 +1,6 @@
 Generate today's AI Daily Digest (or for a specified date).
 
-This runs the same hybrid Python + Claude Code pipeline as the Home.md "Generate" button:
+This runs the hybrid Python + Claude Code pipeline defined in `scripts/ai-digest/run.sh`:
   Phase 0: Python fetches 92 Karpathy-curated RSS feeds + deduplicates
   Phase 1: Claude Haiku scores & selects top 15 articles
   Phase 2: Claude Haiku generates bilingual summaries (中文 + English)

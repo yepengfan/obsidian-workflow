@@ -19,6 +19,8 @@ Inbox/
 Zettelkasten/*
 !Zettelkasten/Zettelkasten Index.md
 Feeds/*
+!Feeds/AI-Daily/
+Feeds/AI-Daily/*
 !Feeds/AI-Daily/Dashboard.md
 
 # ── Local config (machine-specific paths) ──
@@ -34,4 +36,5 @@ Feeds/*
 .DS_Store
 __pycache__/
 *.pyc
+*.log
 .venv/

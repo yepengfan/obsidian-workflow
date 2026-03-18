@@ -13,6 +13,11 @@ set -euo pipefail
 # Ensure common tool paths are available (Obsidian Shell Commands has a minimal PATH)
 export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
 
+# Log stderr to file (tee preserves console output for interactive callers)
+LOG_FILE="$(cd "$(dirname "$0")" && pwd)/digest.log"
+exec 2> >(tee -a "$LOG_FILE" >&2)
+echo "[digest] ── Run started at $(date '+%Y-%m-%d %H:%M:%S') ──" >&2
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VAULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PROMPTS_DIR="$SCRIPT_DIR/prompts"

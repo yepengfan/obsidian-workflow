@@ -1,7 +1,7 @@
 ---
 tags: template
 for: Home
-updated: 2026-03-18 (2)
+updated: 2026-03-18
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
