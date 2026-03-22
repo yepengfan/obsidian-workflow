@@ -3,6 +3,7 @@ sorting-spec: |
   target-folder: .
   Inbox
   Zettelkasten
+  Note
   Work
   Books
   Learning
