@@ -22,6 +22,9 @@ Feeds/*
 !Feeds/AI-Daily/
 Feeds/AI-Daily/*
 !Feeds/AI-Daily/Dashboard.md
+!Feeds/GitHub-Trending/
+Feeds/GitHub-Trending/*
+!Feeds/GitHub-Trending/Dashboard.md
 
 # ── Local config (machine-specific paths) ──
 .bookrc
