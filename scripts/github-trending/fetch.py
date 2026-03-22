@@ -131,7 +131,7 @@ def main() -> None:
 
     # Date windows
     seven_days_ago = (today - timedelta(days=7)).isoformat()
-    yesterday = (today - timedelta(days=1)).isoformat()
+    two_days_ago = (today - timedelta(days=2)).isoformat()
 
     # Query 1: newly created repos gaining traction
     new_query = f"created:>{seven_days_ago} stars:>20"
@@ -140,7 +140,7 @@ def main() -> None:
     print(f"[fetch] Query 1 total: {len(new_items)} repos", file=sys.stderr)
 
     # Query 2: established repos with recent activity
-    active_query = f"pushed:>{yesterday} stars:>500"
+    active_query = f"pushed:>{two_days_ago} stars:>200"
     print(f"[fetch] Query 2 (active popular repos): {active_query}", file=sys.stderr)
     active_items = fetch_query(active_query, headers)
     print(f"[fetch] Query 2 total: {len(active_items)} repos", file=sys.stderr)
@@ -184,7 +184,7 @@ def main() -> None:
     }
 
     # JSON to stdout (all logs go to stderr)
-    json.dump(payload, sys.stdout, ensure_ascii=False, indent=2)
+    json.dump(payload, sys.stdout, ensure_ascii=False)
     print(file=sys.stdout)  # trailing newline
 
 

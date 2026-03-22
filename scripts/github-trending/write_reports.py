@@ -81,7 +81,7 @@ def build_callout_en(repo: dict) -> str:
 > 🏷️ {topics}"""
 
 
-def build_category_index(repos: list, summary_key: str = "summary_en") -> str:
+def build_category_index(repos: list) -> str:
     """Build category index sections."""
     cats: dict[str, list] = {}
     for repo in repos:
@@ -105,7 +105,7 @@ def build_category_index(repos: list, summary_key: str = "summary_en") -> str:
 def write_zh_report(repos: list, stats: dict, today: str, output_path: Path) -> None:
     count = len(repos)
     callouts = "\n\n".join(build_callout_zh(r) for r in repos)
-    category_index = build_category_index(repos, summary_key="summary_zh")
+    category_index = build_category_index(repos)
 
     report = f"""---
 date: {today}
@@ -146,7 +146,7 @@ generator: claude-code
 def write_en_report(repos: list, stats: dict, today: str, output_path: Path) -> None:
     count = len(repos)
     callouts = "\n\n".join(build_callout_en(r) for r in repos)
-    category_index = build_category_index(repos, summary_key="summary_en")
+    category_index = build_category_index(repos)
 
     report = f"""---
 date: {today}
@@ -240,21 +240,20 @@ def main() -> None:
 
     stats = fetched["stats"]
 
-    # Build a lookup from enriched repos by full_name
     enriched_list = enriched.get("enriched", enriched.get("repos", []))
-    enriched_by_name: dict[str, dict] = {
-        r["full_name"]: r for r in enriched_list
+
+    # Build lookup from fetched repos (richer metadata: created_at, pushed_at, etc.)
+    fetched_by_name: dict[str, dict] = {
+        r["full_name"]: r for r in fetched.get("repos", [])
     }
 
-    # Merge: enriched list defines selection and ranking
+    # Merge: start with fetched base, overlay enriched fields
     repos = []
     for i, repo in enumerate(enriched_list, start=1):
         full_name = repo["full_name"]
-        # Start with raw fetch data if available, then overlay enriched fields
-        base = enriched_by_name.get(full_name, {})
-        merged = dict(base)
+        base = fetched_by_name.get(full_name, {})
+        merged = {**base, **repo}
         merged["rank"] = i
-        # Ensure required fields fall back gracefully
         merged.setdefault("summary_zh", "")
         merged.setdefault("summary_en", "")
         merged.setdefault("category", "other")

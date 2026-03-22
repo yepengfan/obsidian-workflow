@@ -9,10 +9,10 @@ Input  (stdin): repos JSON from fetch.py
 Output (stdout): enriched JSON { "date": "...", "enriched": [...], "stats": {...} }
 """
 
-import asyncio
 import json
 import re
 import shutil
+import subprocess
 import sys
 from datetime import date
 from pathlib import Path
@@ -59,25 +59,24 @@ def extract_json_array(raw: str) -> list:
 
 # ── Claude subprocess runner ─────────────────────────────────────────
 
-async def run_claude(user_prompt: str, stdin_data: str) -> str:
-    proc = await asyncio.create_subprocess_exec(
-        CLAUDE_BIN, "-p", user_prompt,
-        "--system-prompt", SYSTEM_PROMPT,
-        *CLAUDE_FLAGS,
-        stdin=asyncio.subprocess.PIPE,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
+def run_claude(user_prompt: str, stdin_data: str) -> str:
+    result = subprocess.run(
+        [CLAUDE_BIN, "-p", user_prompt,
+         "--system-prompt", SYSTEM_PROMPT,
+         *CLAUDE_FLAGS],
+        input=stdin_data.encode(),
+        capture_output=True,
+        timeout=120,
     )
-    stdout, stderr = await proc.communicate(input=stdin_data.encode())
-    if proc.returncode != 0:
-        err = stderr.decode().strip()
-        raise RuntimeError(f"claude exited {proc.returncode}: {err}")
-    return stdout.decode()
+    if result.returncode != 0:
+        err = result.stderr.decode().strip()
+        raise RuntimeError(f"claude exited {result.returncode}: {err}")
+    return result.stdout.decode()
 
 
 # ── Enrichment ───────────────────────────────────────────────────────
 
-async def enrich_repos(repos: list) -> list:
+def enrich_repos(repos: list) -> list:
     """Send all repos to Claude in a single call and return enrichment records."""
     user_prompt = (
         f"Enrich ALL {len(repos)} repos in this list. "
@@ -87,7 +86,7 @@ async def enrich_repos(repos: list) -> list:
         "no markdown fences, no wrapper object."
     )
     print(f"[enrich] Sending {len(repos)} repos to Claude for enrichment...", file=sys.stderr)
-    raw = await run_claude(user_prompt, json.dumps(repos, ensure_ascii=False))
+    raw = run_claude(user_prompt, json.dumps(repos, ensure_ascii=False))
     result = extract_json_array(raw)
     print(f"[enrich] Received {len(result)} enriched records", file=sys.stderr)
     return result
@@ -95,16 +94,18 @@ async def enrich_repos(repos: list) -> list:
 
 # ── Main ─────────────────────────────────────────────────────────────
 
-async def main() -> None:
+def main() -> None:
     raw_data = json.load(sys.stdin)
 
     # Support both a plain list and a structured object from fetch.py
     if isinstance(raw_data, list):
         repos = raw_data
         stats_in = {}
+        input_date = date.today().isoformat()
     else:
         repos = raw_data.get("repos", raw_data)
         stats_in = raw_data.get("stats", {})
+        input_date = raw_data.get("date", date.today().isoformat())
 
     total_fetched = stats_in.get("total_fetched", len(repos))
     after_dedup = stats_in.get("after_dedup", len(repos))
@@ -112,7 +113,10 @@ async def main() -> None:
     print(f"[enrich] {len(repos)} repos loaded from stdin", file=sys.stderr)
 
     try:
-        enrichment_records = await enrich_repos(repos)
+        enrichment_records = enrich_repos(repos)
+    except subprocess.TimeoutExpired:
+        print("[enrich] ERROR: Claude CLI timed out after 120s", file=sys.stderr)
+        sys.exit(1)
     except RuntimeError as e:
         print(f"[enrich] ERROR: Claude CLI failed — {e}", file=sys.stderr)
         sys.exit(1)
@@ -150,7 +154,7 @@ async def main() -> None:
     print(f"[enrich] Top {len(top)} repos selected after ranking", file=sys.stderr)
 
     output = {
-        "date": date.today().isoformat(),
+        "date": input_date,
         "enriched": top,
         "stats": {
             "total_fetched": total_fetched,
@@ -162,4 +166,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
