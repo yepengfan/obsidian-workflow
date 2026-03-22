@@ -38,11 +38,16 @@ Learning/         # Structured learning plans (folder name = plan code)
     Projects/     # Project notes
 Feeds/            # Auto-generated content feeds
   AI-Daily/       # Daily AI news digest (中英文), generated on Obsidian startup
+  GitHub-Trending/ # Daily GitHub trending repos digest (中英文)
 scripts/
-  ai-digest/      # Bedrock-powered RSS digest pipeline (Python)
+  ai-digest/      # Hybrid Python + Claude Code RSS digest pipeline
     digest/       # Core module (fetch → dedup → score → summarize → report)
-    utils/        # Bedrock client, CloudWatch metrics, config
     setup.sh      # One-command bootstrap (venv + deps)
+  github-trending/ # GitHub trending repos pipeline (stdlib Python + Claude Haiku)
+    fetch.py      # Two-query GitHub Search API fetcher + dedup
+    enrich.py     # Single Haiku call: categorize, score, bilingual one-liners
+    write_reports.py  # Obsidian markdown report assembler
+    run.sh        # Idempotent orchestrator with 14-day archive rotation
 Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week, Brownbag Session
 CLAUDE.md         # Vault-level Claude Code instructions
 Home.md           # Obsidian dashboard with Dataview queries
@@ -57,6 +62,7 @@ graph TD
     WR[WeRead] -->|auto-sync plugin| Vault
     SYS[GitHub repo<br/>templates, commands] -->|git clone| Vault
     DIGEST[scripts/ai-digest] -->|Shell Commands<br/>on startup| Vault
+    GHTREND[scripts/github-trending] -->|Claude Code skill| Vault
 
     Vault["🗃️ Obsidian Vault<br/>Home · Books · Work<br/>Inbox · Zettelkasten · Feeds"]
 
@@ -186,6 +192,13 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 | `/learning-review [code\|plan] [week]` | Review a week's log — produce zettel candidates and plan adjustments |
 | `/project-retro [code\|folder]` | Technical project retro — decisions, pitfalls, reusable patterns |
 
+#### Feeds
+
+| Command | When to use |
+|---------|------------|
+| `ai-digest` | Generate today's AI daily digest from 92 RSS feeds |
+| `github-trending` | Generate today's GitHub trending repos report |
+
 #### Vault Maintenance
 
 | Command | When to use |
@@ -241,6 +254,25 @@ A self-contained pipeline in `scripts/ai-digest/` that generates a bilingual (�
 - **Output**: `Feeds/AI-Daily/YYYY-MM-DD.md` (中文) + `YYYY-MM-DD-en.md` (English)
 - **Cost**: ~$0.13/day (Haiku scoring + Sonnet summarization)
 - **Time**: ~90s (zh/en parallelized)
+
+## GitHub Trending
+
+A lightweight pipeline in `scripts/github-trending/` that generates a bilingual (中/EN) daily GitHub trending repos digest:
+
+```
+GitHub Search API (2 queries: new hot + active popular)
+  → merge + dedup by full_name
+  → top 30 by stars
+  → single Haiku call (categorize + score + bilingual one-liners)
+  → rank by score, select top 15
+  → Obsidian markdown reports → Feeds/GitHub-Trending/
+```
+
+- **Trigger**: Claude Code skill command (`github-trending`), or `bash scripts/github-trending/run.sh`
+- **Output**: `Feeds/GitHub-Trending/YYYY-MM-DD.md` (中文) + `YYYY-MM-DD-en.md` (English)
+- **Cost**: ~$0.06/day (single Haiku enrichment call)
+- **Time**: ~30-60s
+- **Dependencies**: stdlib only (no pip install needed), requires `claude` CLI on PATH
 
 ## Setup (new machine)
 
@@ -364,7 +396,21 @@ This creates a `.venv` and installs dependencies (`boto3`, `aiohttp`, `trafilatu
 
 Output: `Feeds/AI-Daily/YYYY-MM-DD.md` (中文) and `YYYY-MM-DD-en.md` (English) appear ~30 s after Obsidian launches.
 
-### 8. NAS backup (optional)
+### 8. GitHub Trending
+
+The trending pipeline lives in `scripts/github-trending/` and uses only stdlib Python — no setup needed beyond having `claude` CLI on PATH.
+
+Run manually or via the Claude Code skill command:
+
+```bash
+bash scripts/github-trending/run.sh
+```
+
+Optional: set `GITHUB_TOKEN` for higher API rate limits (30 req/min authenticated vs 10 req/min unauthenticated).
+
+Output: `Feeds/GitHub-Trending/YYYY-MM-DD.md` (中文) and `YYYY-MM-DD-en.md` (English).
+
+### 9. NAS backup (optional)
 
 Synology NAS can pull from S3 as an offline backup via **Cloud Sync**:
 
