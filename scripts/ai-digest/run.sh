@@ -56,11 +56,11 @@ SCORED=$(echo "$ARTICLES" | "$PYTHON" "$SCRIPT_DIR/score.py") || {
     exit 1
 }
 
-if ! echo "$SCORED" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'top_articles' in d" 2>/dev/null; then
+if ! echo "$SCORED" | "$PYTHON" -c "import sys,json; d=json.load(sys.stdin); assert 'top_articles' in d" 2>/dev/null; then
     echo "[digest] ERROR: Phase 1 did not return valid scored JSON." >&2
     exit 1
 fi
-echo "[digest] Step 1 complete: $(echo "$SCORED" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['top_articles']),'articles selected')")"
+echo "[digest] Step 1 complete: $(echo "$SCORED" | "$PYTHON" -c "import sys,json; print(len(json.load(sys.stdin)['top_articles']),'articles selected')")"
 
 # ── Step 2: Bilingual Summarization (parallel Python) ───────────────
 echo "[digest] Step 2: Summarizing articles..."
@@ -69,11 +69,11 @@ SUMMARIES=$(echo "$SCORED" | "$PYTHON" "$SCRIPT_DIR/summarize.py") || {
     exit 1
 }
 
-if ! echo "$SUMMARIES" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'summaries' in d and 'trend_zh' in d" 2>/dev/null; then
+if ! echo "$SUMMARIES" | "$PYTHON" -c "import sys,json; d=json.load(sys.stdin); assert 'summaries' in d and 'trend_zh' in d" 2>/dev/null; then
     echo "[digest] ERROR: Phase 2 did not return valid summaries JSON." >&2
     exit 1
 fi
-echo "[digest] Step 2 complete: $(echo "$SUMMARIES" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['summaries']),'summaries generated')")"
+echo "[digest] Step 2 complete: $(echo "$SUMMARIES" | "$PYTHON" -c "import sys,json; print(len(json.load(sys.stdin)['summaries']),'summaries generated')")"
 
 # ── Step 3: Assemble & Write Reports (Python templating) ────────────
 echo "[digest] Step 3: Writing reports..."
@@ -85,7 +85,7 @@ echo "$SCORED" > "$TMPDIR_DIGEST/scored.json"
 echo "$SUMMARIES" > "$TMPDIR_DIGEST/summaries.json"
 echo "$ARTICLES" > "$TMPDIR_DIGEST/articles.json"
 
-python3 "$SCRIPT_DIR/write_reports.py"
+"$PYTHON" "$SCRIPT_DIR/write_reports.py"
 echo "[digest] Step 3 complete."
 
 # ── Step 4: Archive old reports ─────────────────────────────────────

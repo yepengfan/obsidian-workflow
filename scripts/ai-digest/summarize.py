@@ -77,7 +77,14 @@ async def run_claude(user_prompt: str, stdin_data: str) -> str:
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate(input=stdin_data.encode())
+    try:
+        stdout, stderr = await asyncio.wait_for(
+            proc.communicate(input=stdin_data.encode()),
+            timeout=120,
+        )
+    except asyncio.TimeoutError:
+        proc.kill()
+        raise RuntimeError("claude timed out after 120s")
     if proc.returncode != 0:
         err = stderr.decode().strip()
         raise RuntimeError(f"claude exited {proc.returncode}: {err}")
@@ -125,9 +132,13 @@ async def main() -> None:
     )
 
     # All batches run concurrently
-    batch_results = await asyncio.gather(
-        *[summarize_batch(batch, i) for i, batch in enumerate(batches)]
-    )
+    try:
+        batch_results = await asyncio.gather(
+            *[summarize_batch(batch, i) for i, batch in enumerate(batches)]
+        )
+    except Exception as e:
+        print(f"[summarize] ERROR: Batch summarization failed — {e}", file=sys.stderr)
+        sys.exit(1)
 
     # Flatten and restore original rank order
     all_summaries = [s for batch in batch_results for s in batch]
@@ -135,7 +146,11 @@ async def main() -> None:
 
     # Trend is sequential (needs full picture)
     print("[summarize] Generating trend summary...", file=sys.stderr)
-    trend = await generate_trend(all_summaries)
+    try:
+        trend = await generate_trend(all_summaries)
+    except Exception as e:
+        print(f"[summarize] ERROR: Trend generation failed — {e}", file=sys.stderr)
+        sys.exit(1)
 
     result = {
         "trend_zh": trend["trend_zh"],

@@ -69,7 +69,14 @@ async def run_claude(user_prompt: str, stdin_data: str) -> str:
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    stdout, stderr = await proc.communicate(input=stdin_data.encode())
+    try:
+        stdout, stderr = await asyncio.wait_for(
+            proc.communicate(input=stdin_data.encode()),
+            timeout=120,
+        )
+    except asyncio.TimeoutError:
+        proc.kill()
+        raise RuntimeError("claude timed out after 120s")
     if proc.returncode != 0:
         err = stderr.decode().strip()
         raise RuntimeError(f"claude exited {proc.returncode}: {err}")
@@ -114,9 +121,13 @@ async def main() -> None:
     )
 
     # All batches score concurrently
-    batch_results = await asyncio.gather(
-        *[score_batch(batch, i) for i, batch in enumerate(batches)]
-    )
+    try:
+        batch_results = await asyncio.gather(
+            *[score_batch(batch, i) for i, batch in enumerate(batches)]
+        )
+    except Exception as e:
+        print(f"[score] ERROR: Batch scoring failed — {e}", file=sys.stderr)
+        sys.exit(1)
 
     # Merge, sort globally by total score (desc), assign ranks, take top N
     all_scored = [art for batch in batch_results for art in batch]
