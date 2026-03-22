@@ -535,6 +535,80 @@ container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } 
 
 ---
 
+## GitHub Trending
+
+```dataviewjs
+const today = dv.date("today").toFormat("yyyy-MM-dd");
+const zhPath = `Feeds/GitHub-Trending/${today}.md`;
+const enPath = `Feeds/GitHub-Trending/${today}-en.md`;
+const zhFile = app.vault.getAbstractFileByPath(zhPath);
+
+const container = dv.el("div", "");
+
+const enFile = app.vault.getAbstractFileByPath(enPath);
+const reportFile = enFile || zhFile;
+
+if (reportFile) {
+  const isEn = !!enFile;
+  const reportPath = isEn ? enPath : zhPath;
+  const page = dv.page(reportPath);
+  const content = await app.vault.read(reportFile);
+  const lines = content.split("\n");
+
+  // Extract top 3 repos from callout headers: "> [!tip] 🥇 org/repo  ⭐ 1234 · Python"
+  const repoLines = lines
+    .filter(l => l.startsWith("> [!tip]") && (l.includes("🥇") || l.includes("🥈") || l.includes("🥉")))
+    .slice(0, 3);
+
+  // Stats row + language links
+  const row = container.createEl("div", {
+    attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
+  });
+  const scanned = page.repos_scanned || "?";
+  const selected = page.repos_selected || "?";
+  row.createEl("span", {
+    text: `📦 ${selected}/${scanned} repos`,
+    attr: { style: "font-size:0.78em;color:var(--text-muted);" }
+  });
+  const links = row.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
+  links.createEl("a", {
+    text: "中文",
+    cls: "internal-link",
+    attr: { "data-href": zhPath, style: "font-size:0.82em;" }
+  });
+  if (enFile) {
+    links.createEl("a", {
+      text: "EN",
+      cls: "internal-link",
+      attr: { "data-href": enPath, style: "font-size:0.82em;" }
+    });
+  }
+
+  // Top 3 repos preview
+  if (repoLines.length > 0) {
+    const preview = container.createEl("div", {
+      attr: { style: "font-size:0.85em;line-height:1.8;padding:10px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--interactive-accent);" }
+    });
+    for (const line of repoLines) {
+      // Clean the callout prefix "> [!tip] " and render the rest
+      const cleaned = line.replace(/^>\s*\[!tip\]\s*/, "");
+      preview.createEl("div", { text: cleaned });
+    }
+  }
+} else {
+  container.createEl("div", {
+    text: "No trending report for today yet. Run /github-trending in Claude Code to generate.",
+    attr: { style: "font-size:0.85em;color:var(--text-muted);padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
+  });
+}
+
+// Link to all reports
+container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } }).innerHTML =
+  '<a class="internal-link" data-href="Feeds/GitHub-Trending/Dashboard">All reports →</a>';
+```
+
+---
+
 ## Brownbag Sessions
 
 ```dataviewjs
