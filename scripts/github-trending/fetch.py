@@ -1,6 +1,6 @@
 """Standalone GitHub Trending fetcher via GitHub REST Search API.
 
-Fetches trending repos using two complementary queries, deduplicates by
+Fetches trending repos using three complementary queries, deduplicates by
 full_name, and outputs a JSON payload to stdout for downstream processing.
 
 Usage:
@@ -202,11 +202,12 @@ def main() -> None:
 
     # Sort by star velocity (stars/day), take top 30
     repos = sorted(seen.values(), key=lambda r: r["velocity"], reverse=True)[:30]
-    print(
-        f"[fetch] Top {len(repos)} repos by velocity selected "
-        f"(best: {repos[0]['velocity']}⭐/day — {repos[0]['full_name']}).",
-        file=sys.stderr,
-    )
+    if repos:
+        print(
+            f"[fetch] Top {len(repos)} repos by velocity selected "
+            f"(best: {repos[0]['velocity']}⭐/day — {repos[0]['full_name']}).",
+            file=sys.stderr,
+        )
 
     # Build output payload
     payload = {
