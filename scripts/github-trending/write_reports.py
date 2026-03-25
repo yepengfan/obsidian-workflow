@@ -44,9 +44,19 @@ def rank_str(rank: int) -> str:
 
 
 def source_badge(source: str) -> str:
-    if source == "new":
-        return "🆕 New"
-    return "🔄 Active"
+    return {
+        "new": "🆕 New",
+        "rising": "🚀 Rising",
+        "breakout": "📈 Breakout",
+    }.get(source, "🔄 Active")
+
+
+def velocity_str(repo: dict, lang: str = "zh") -> str:
+    v = repo.get("velocity", 0)
+    if not v:
+        return ""
+    unit = "天" if lang == "zh" else "day"
+    return f" · ⚡ {v:g}/{unit}"
 
 
 def build_callout_zh(repo: dict) -> str:
@@ -56,7 +66,8 @@ def build_callout_zh(repo: dict) -> str:
     topics = ", ".join(repo.get("topics", []))
     language = repo.get("language") or "—"
     stars = repo.get("stars", 0)
-    return f"""> [!tip] {rank_str(repo["rank"])} {repo["full_name"]}  ⭐ {stars} · {language}
+    vel = velocity_str(repo, "zh")
+    return f"""> [!tip] {rank_str(repo["rank"])} {repo["full_name"]}  ⭐ {stars}{vel} · {language}
 > [{repo["full_name"]}]({repo["url"]})
 > {cat_emoji} {cat_label} · {badge}
 >
@@ -72,7 +83,8 @@ def build_callout_en(repo: dict) -> str:
     topics = ", ".join(repo.get("topics", []))
     language = repo.get("language") or "—"
     stars = repo.get("stars", 0)
-    return f"""> [!tip] {rank_str(repo["rank"])} {repo["full_name"]}  ⭐ {stars} · {language}
+    vel = velocity_str(repo, "en")
+    return f"""> [!tip] {rank_str(repo["rank"])} {repo["full_name"]}  ⭐ {stars}{vel} · {language}
 > [{repo["full_name"]}]({repo["url"]})
 > {cat_emoji} {cat_label} · {badge}
 >
