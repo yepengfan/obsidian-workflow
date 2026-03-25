@@ -18,7 +18,7 @@ import os
 import sys
 import urllib.error
 import urllib.request
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 
@@ -97,19 +97,37 @@ def fetch_query(query: str, headers: dict) -> list[dict]:
     return items
 
 
-def normalize_repo(item: dict, source: str) -> dict:
+def normalize_repo(item: dict, source: str, today: date) -> dict:
     """Extract relevant fields from a GitHub API repo item."""
+    stars = item.get("stargazers_count", 0)
+    created_str = item.get("created_at", "")
+
+    # Calculate age and star velocity (stars/day)
+    age_days = 1
+    if created_str:
+        try:
+            created_date = datetime.fromisoformat(
+                created_str.replace("Z", "+00:00")
+            ).date()
+            age_days = max((today - created_date).days, 1)
+        except (ValueError, TypeError):
+            pass
+
+    velocity = round(stars / age_days, 1)
+
     return {
         "full_name": item.get("full_name", ""),
         "description": item.get("description") or "",
         "language": item.get("language") or "",
-        "stars": item.get("stargazers_count", 0),
+        "stars": stars,
         "forks": item.get("forks_count", 0),
         "topics": item.get("topics") or [],
-        "created_at": item.get("created_at", ""),
+        "created_at": created_str,
         "pushed_at": item.get("pushed_at", ""),
         "url": item.get("html_url", ""),
         "source": source,
+        "age_days": age_days,
+        "velocity": velocity,
     }
 
 
@@ -131,34 +149,47 @@ def main() -> None:
 
     # Date windows
     seven_days_ago = (today - timedelta(days=7)).isoformat()
-    two_days_ago = (today - timedelta(days=2)).isoformat()
+    thirty_days_ago = (today - timedelta(days=30)).isoformat()
+    ninety_days_ago = (today - timedelta(days=90)).isoformat()
 
-    # Query 1: newly created repos gaining traction
-    new_query = f"created:>{seven_days_ago} stars:>20"
-    print(f"[fetch] Query 1 (new hot repos): {new_query}", file=sys.stderr)
-    new_items = fetch_query(new_query, headers)
-    print(f"[fetch] Query 1 total: {len(new_items)} repos", file=sys.stderr)
+    # Query 1: brand-new repos (< 7 days) gaining traction
+    q1 = f"created:>{seven_days_ago} stars:>20"
+    print(f"[fetch] Query 1 (new, <7d): {q1}", file=sys.stderr)
+    q1_items = fetch_query(q1, headers)
+    print(f"[fetch] Query 1 total: {len(q1_items)} repos", file=sys.stderr)
 
-    # Query 2: established repos with recent activity
-    active_query = f"pushed:>{two_days_ago} stars:>200"
-    print(f"[fetch] Query 2 (active popular repos): {active_query}", file=sys.stderr)
-    active_items = fetch_query(active_query, headers)
-    print(f"[fetch] Query 2 total: {len(active_items)} repos", file=sys.stderr)
+    # Query 2: rising repos (< 30 days) with solid traction
+    q2 = f"created:>{thirty_days_ago} stars:>100"
+    print(f"[fetch] Query 2 (rising, <30d): {q2}", file=sys.stderr)
+    q2_items = fetch_query(q2, headers)
+    print(f"[fetch] Query 2 total: {len(q2_items)} repos", file=sys.stderr)
 
-    total_fetched = len(new_items) + len(active_items)
+    # Query 3: breakout repos (< 90 days) that exploded
+    q3 = f"created:>{ninety_days_ago} stars:>500"
+    print(f"[fetch] Query 3 (breakout, <90d): {q3}", file=sys.stderr)
+    q3_items = fetch_query(q3, headers)
+    print(f"[fetch] Query 3 total: {len(q3_items)} repos", file=sys.stderr)
+
+    total_fetched = len(q1_items) + len(q2_items) + len(q3_items)
     print(f"[fetch] Total fetched before dedup: {total_fetched}", file=sys.stderr)
 
-    # Merge + dedup: "new" takes priority over "active" for source label
+    # Merge + dedup: earlier queries take priority for source label
     seen: dict[str, dict] = {}
 
-    for item in new_items:
-        repo = normalize_repo(item, source="new")
+    for item in q1_items:
+        repo = normalize_repo(item, source="new", today=today)
         full_name = repo["full_name"]
         if full_name and full_name not in seen:
             seen[full_name] = repo
 
-    for item in active_items:
-        repo = normalize_repo(item, source="active")
+    for item in q2_items:
+        repo = normalize_repo(item, source="rising", today=today)
+        full_name = repo["full_name"]
+        if full_name and full_name not in seen:
+            seen[full_name] = repo
+
+    for item in q3_items:
+        repo = normalize_repo(item, source="breakout", today=today)
         full_name = repo["full_name"]
         if full_name and full_name not in seen:
             seen[full_name] = repo
@@ -169,9 +200,13 @@ def main() -> None:
         print("[fetch] No repos found. Exiting.", file=sys.stderr)
         sys.exit(1)
 
-    # Sort by stars descending, take top 30
-    repos = sorted(seen.values(), key=lambda r: r["stars"], reverse=True)[:30]
-    print(f"[fetch] Top {len(repos)} repos by stars selected.", file=sys.stderr)
+    # Sort by star velocity (stars/day), take top 30
+    repos = sorted(seen.values(), key=lambda r: r["velocity"], reverse=True)[:30]
+    print(
+        f"[fetch] Top {len(repos)} repos by velocity selected "
+        f"(best: {repos[0]['velocity']}⭐/day — {repos[0]['full_name']}).",
+        file=sys.stderr,
+    )
 
     # Build output payload
     payload = {
