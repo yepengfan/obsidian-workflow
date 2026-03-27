@@ -51,7 +51,16 @@ def source_badge(source: str) -> str:
     }.get(source, "🔄 Active")
 
 
-def velocity_str(repo: dict, lang: str = "zh") -> str:
+def gain_str(repo: dict, lang: str = "zh") -> str:
+    """Format daily gain or fall back to velocity for repos without history."""
+    dg = repo.get("daily_gain")
+    if dg is not None and dg > 0:
+        if dg >= 1000:
+            formatted = f"+{dg / 1000:.1f}k"
+        else:
+            formatted = f"+{dg:g}"
+        return f" · ⚡ {formatted}/{'天' if lang == 'zh' else 'day'}"
+    # Fall back to lifetime velocity for first-time repos
     v = repo.get("velocity", 0)
     if not v:
         return ""
@@ -59,17 +68,24 @@ def velocity_str(repo: dict, lang: str = "zh") -> str:
     return f" · ⚡ {v:g}/{unit}"
 
 
+def first_appearance_badge(repo: dict) -> str:
+    if repo.get("appearances", 0) == 0:
+        return " · 🆕"
+    return ""
+
+
 def build_callout_zh(repo: dict) -> str:
     cat_emoji = CATEGORY_EMOJI.get(repo["category"], "📌")
     cat_label = CATEGORY_LABEL.get(repo["category"], "Other")
     badge = source_badge(repo.get("source", "active"))
+    new_badge = first_appearance_badge(repo)
     topics = ", ".join(repo.get("topics", []))
     language = repo.get("language") or "—"
     stars = repo.get("stars", 0)
-    vel = velocity_str(repo, "zh")
-    return f"""> [!tip] {rank_str(repo["rank"])} {repo["full_name"]}  ⭐ {stars}{vel} · {language}
+    gain = gain_str(repo, "zh")
+    return f"""> [!tip] {rank_str(repo["rank"])} {repo["full_name"]}  ⭐ {stars}{gain} · {language}
 > [{repo["full_name"]}]({repo["url"]})
-> {cat_emoji} {cat_label} · {badge}
+> {cat_emoji} {cat_label} · {badge}{new_badge}
 >
 > {repo["summary_zh"]}
 >
@@ -80,13 +96,14 @@ def build_callout_en(repo: dict) -> str:
     cat_emoji = CATEGORY_EMOJI.get(repo["category"], "📌")
     cat_label = CATEGORY_LABEL.get(repo["category"], "Other")
     badge = source_badge(repo.get("source", "active"))
+    new_badge = first_appearance_badge(repo)
     topics = ", ".join(repo.get("topics", []))
     language = repo.get("language") or "—"
     stars = repo.get("stars", 0)
-    vel = velocity_str(repo, "en")
-    return f"""> [!tip] {rank_str(repo["rank"])} {repo["full_name"]}  ⭐ {stars}{vel} · {language}
+    gain = gain_str(repo, "en")
+    return f"""> [!tip] {rank_str(repo["rank"])} {repo["full_name"]}  ⭐ {stars}{gain} · {language}
 > [{repo["full_name"]}]({repo["url"]})
-> {cat_emoji} {cat_label} · {badge}
+> {cat_emoji} {cat_label} · {badge}{new_badge}
 >
 > {repo["summary_en"]}
 >
