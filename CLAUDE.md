@@ -19,6 +19,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **scripts/** — Vault automation scripts.
   - `ai-digest/` — Hybrid Python + Claude Code RSS digest pipeline. Python fetches 92 Karpathy-curated feeds and deduplicates (`fetch.py`), then Claude Code CLI scores and summarizes bilingually (`prompts/score.md`, `prompts/summarize.md`), and Python assembles Obsidian markdown reports (`write_reports.py`). Run via `bash scripts/ai-digest/run.sh`.
   - `github-trending/` — GitHub trending repos pipeline. Python fetches trending repos via GitHub Search API (`fetch.py`), Claude Haiku categorizes and scores with bilingual one-liners (`enrich.py`, `prompts/enrich.md`), and Python assembles Obsidian markdown reports (`write_reports.py`). Run via `bash scripts/github-trending/run.sh`.
+- **Profile/** — Personal assessment and self-development. Contains `Personal Baseball Card.md` (Ray Dalio-inspired Baseball Card with PrinciplesYou assessment + self-evaluation + cross-validation), PrinciplesYou assessment PDF, and profile photo. The Baseball Card is displayed on `Home.md` via a radar chart in the Work section's Card tab.
 - **Training/** — Legacy learning resources (being migrated to `Learning/`)
 - **WeRead/** — Book highlights synced from WeRead (微信读书). **DO NOT MODIFY** — this folder is auto-synced and must remain untouched.
 - **Work/** — Work documentation, organized by year and project
@@ -29,7 +30,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 
 ## Key Files
 
-- **Home.md** — Dashboard using Dataview queries. Avoid modifying unless asked.
+- **Home.md** — Dashboard using Dataview queries. Avoid modifying unless asked. Uses pill/segment tab UI: Work section has `[Work | Card]` tabs (Card shows Baseball Card radar chart with holographic effect); Feeds section has `[AI Digest | GitHub Trending]` tabs.
 - **sortspec.md** — Custom file explorer sort order (Custom File Explorer Sorting plugin). Do not delete.
 - **Work/Work Dashboard.md** — Work dashboard with task views and project summary.
 - **Templates/Work Daily.md** — Template for daily work notes.
