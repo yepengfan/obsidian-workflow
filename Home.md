@@ -28,7 +28,7 @@ function createTabGroup(dvRef, tabs, defaultId) {
     }
   }
   const seg = topBar.createEl("div", {
-    attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);margin-left:-10px;" }
+    attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);margin-left:-6px;" }
   });
   for (const t of tabs) {
     btns[t.id] = seg.createEl("button", { text: t.label });
@@ -690,7 +690,7 @@ function createTabGroup(dvRef, tabs, defaultId) {
     }
   }
   const seg = topBar.createEl("div", {
-    attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);margin-left:-10px;" }
+    attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);margin-left:-6px;" }
   });
   for (const t of tabs) {
     btns[t.id] = seg.createEl("button", { text: t.label });
