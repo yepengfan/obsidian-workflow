@@ -489,8 +489,12 @@ if (pages.length === 0) {
 // ========== CARD TAB ==========
 const bcPage = dv.page("Profile/Personal Baseball Card");
 if (bcPage) {
-  const card = panels["card"].createEl("div", {
-    attr: { style: "width:260px;max-width:100%;margin:0 auto;border:1px solid var(--background-modifier-border);border-radius:12px;overflow:hidden;background:var(--background-primary);box-shadow:0 2px 6px rgba(0,0,0,0.08);" }
+  // 3D wrapper for perspective
+  const cardWrap = panels["card"].createEl("div", {
+    attr: { style: "width:260px;max-width:100%;margin:0 auto;perspective:600px;" }
+  });
+  const card = cardWrap.createEl("div", {
+    attr: { style: "position:relative;border:1px solid var(--background-modifier-border);border-radius:12px;overflow:hidden;background:#faf6f0;box-shadow:0 2px 6px rgba(0,0,0,0.08);transition:transform 0.15s ease,box-shadow 0.15s ease;transform-style:preserve-3d;will-change:transform;" }
   });
 
   // Header
@@ -506,6 +510,11 @@ if (bcPage) {
   bcBadges.createEl("span", { text: String(bcPage.mbti || ""), attr: { style: "font-size:0.52em;font-weight:700;padding:1px 4px;border-radius:3px;background:var(--interactive-accent);color:var(--text-on-accent);" } });
   bcBadges.createEl("span", { text: String(bcPage.role || ""), attr: { style: "font-size:0.52em;padding:1px 4px;border-radius:3px;border:1px solid var(--background-modifier-border);color:var(--text-muted);" } });
   bcBadges.createEl("span", { text: "🏆 " + String(bcPage.py_archetype || ""), attr: { style: "font-size:0.52em;padding:1px 4px;border-radius:3px;border:1px solid var(--background-modifier-border);color:var(--text-muted);" } });
+  // Archetype tagline
+  hdr.createEl("div", {
+    text: "Planful, methodical and results-oriented",
+    attr: { style: "font-size:0.55em;color:var(--text-faint);font-style:italic;margin-top:3px;" }
+  });
 
   // Radar chart
   const traits = [
@@ -541,7 +550,7 @@ if (bcPage) {
   traits.forEach((t,i) => {
     const [x,y] = rpt(i, t.v);
     const c = t.v >= 70 ? '#3a9a5c' : t.v >= 40 ? '#999' : '#c75c5c';
-    svg += `<circle cx="${x}" cy="${y}" r="2.5" fill="${c}"><title>${t.n}: ${t.v}%</title></circle>`;
+    svg += `<circle cx="${x}" cy="${y}" r="3.5" fill="${c}" stroke="var(--background-primary)" stroke-width="1"><title>${t.n}: ${t.v}%</title></circle>`;
   });
   // Trait labels around the outside
   traits.forEach((t, i) => {
@@ -553,8 +562,70 @@ if (bcPage) {
   const chartEl = card.createEl("div", { attr: { style: "padding:6px 8px 2px;border-top:1px solid var(--background-modifier-border);" } });
   chartEl.innerHTML = svg;
 
-  card.createEl("div", { attr: { style: "padding:4px 14px 10px;text-align:center;font-size:0.7em;" } }).innerHTML =
-    '<a class="internal-link" data-href="Profile/Personal Baseball Card">Open Baseball Card →</a>';
+  // Summary
+  card.createEl("div", {
+    text: "Strong thinker & executor · Low social engagement",
+    attr: { style: "padding:2px 14px 0;text-align:center;font-size:0.58em;color:var(--text-faint);line-height:1.4;" }
+  });
+
+  // Footer: date + link
+  const footer = card.createEl("div", {
+    attr: { style: "padding:6px 14px 10px;display:flex;justify-content:space-between;align-items:center;" }
+  });
+  footer.createEl("span", {
+    text: "Feb 2026",
+    attr: { style: "font-size:0.55em;color:var(--text-faint);" }
+  });
+  footer.createEl("span", { attr: { style: "font-size:0.7em;" } }).innerHTML =
+    '<a class="internal-link" data-href="Profile/Personal Baseball Card">Open Card →</a>';
+
+  // === HOLOGRAPHIC EFFECT ===
+  // No overlay divs — apply directly to card background
+  const baseBg = "var(--background-primary)";
+
+  cardWrap.addEventListener("mousemove", (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const px = x / rect.width;
+    const py = y / rect.height;
+    const rotY = (px - 0.5) * 20;
+    const rotX = (0.5 - py) * 20;
+
+    card.style.transform = `rotateY(${rotY}deg) rotateX(${rotX}deg)`;
+    card.style.boxShadow = `${-rotY*0.5}px ${rotX*0.5}px 20px rgba(0,0,0,0.15)`;
+
+    // Border color follows mouse position through rainbow
+    const hue = Math.round(px * 360);
+    card.style.borderColor = `hsla(${hue}, 70%, 70%, 0.6)`;
+
+    // Holographic foil: conic prism + shine + micro-texture
+    const cx = px * 100;
+    const cy = py * 100;
+    card.style.backgroundImage = [
+      // 1. White spotlight
+      `radial-gradient(circle at ${cx}% ${cy}%, rgba(255,255,255,0.35) 0%, transparent 45%)`,
+      // 2. Conic rainbow prism from mouse position
+      `conic-gradient(from ${(px-0.5)*180}deg at ${cx}% ${cy}%, rgba(255,50,50,0.12), rgba(255,180,50,0.12), rgba(50,255,100,0.12), rgba(50,180,255,0.12), rgba(180,50,255,0.12), rgba(255,50,150,0.12), rgba(255,50,50,0.12))`,
+      // 3. Micro-texture (fine parallel lines)
+      `repeating-linear-gradient(${135 + (px-0.5)*20}deg, transparent 0px, transparent 2px, rgba(255,255,255,0.06) 2px, rgba(255,255,255,0.06) 3px)`
+    ].join(",");
+    card.style.backgroundColor = "#faf6f0";
+  });
+
+  cardWrap.addEventListener("mouseleave", () => {
+    // Bounce-back with overshoot
+    card.style.transition = "transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease, border-color 0.4s ease, background-image 0.4s ease";
+    card.style.transform = "rotateY(0deg) rotateX(0deg)";
+    card.style.boxShadow = "0 2px 6px rgba(0,0,0,0.08)";
+    card.style.borderColor = "var(--background-modifier-border)";
+    card.style.backgroundImage = "none";
+  });
+
+  cardWrap.addEventListener("mouseenter", () => {
+    // Switch to fast tracking (no bounce)
+    card.style.transition = "transform 0.1s ease, box-shadow 0.1s ease";
+  });
 }
 ```
 
