@@ -46,7 +46,7 @@ const { panels, topBar } = createTabGroup(dv, [
 
 // ========== WORK TAB ==========
 // Action buttons always inside Work panel, separate row from segment
-const row = panels["work"].createEl("div", { attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px;margin-left:-2px;" } });
+const row = panels["work"].createEl("div", { attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
 
 // Navigation buttons
 const navDash = row.createEl("button", {
