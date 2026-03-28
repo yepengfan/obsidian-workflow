@@ -4,6 +4,7 @@ sorting-spec: |
   Inbox
   Zettelkasten
   Note
+  Profile
   Work
   Books
   Learning

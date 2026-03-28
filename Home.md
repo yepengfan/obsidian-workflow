@@ -9,7 +9,40 @@ banner_y: 0
 ## Work
 
 ```dataviewjs
-const row = dv.container.createEl("div", { attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
+document.getElementById('bc-grid-layout')?.remove();
+
+// ========== TOP BAR: segment + action buttons in one row ==========
+const topBar = dv.el("div", "", {
+  attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;" }
+});
+
+// Panels (created AFTER topBar so they appear below)
+const panels = {};
+panels["work"] = dv.el("div", "", { attr: { style: "display:none;" } });
+panels["card"] = dv.el("div", "", { attr: { style: "display:none;" } });
+const tabBtns = {};
+function setTab(id) {
+  for (const k of Object.keys(panels)) {
+    panels[k].style.display = k === id ? "block" : "none";
+    tabBtns[k].style.cssText = "padding:4px 14px;border-radius:7px;border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.15s;" + (k === id
+      ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
+      : "background:transparent;color:var(--text-muted);box-shadow:none;");
+  }
+}
+
+// Segment control (left side of topBar)
+const seg = topBar.createEl("div", {
+  attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);margin-left:-6px;" }
+});
+for (const t of [{id:"work",label:"Work"},{id:"card",label:"Card"}]) {
+  tabBtns[t.id] = seg.createEl("button", { text: t.label });
+  tabBtns[t.id].addEventListener("click", () => setTab(t.id));
+}
+setTab("work");
+
+// ========== WORK TAB ==========
+// Action buttons always inside Work panel, separate row from segment
+const row = panels["work"].createEl("div", { attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
 
 // Navigation buttons
 const navDash = row.createEl("button", {
@@ -329,9 +362,8 @@ btn.addEventListener("click", async () => {
   await app.vault.create(path, "");
   await app.workspace.openLinkText(path, "", false);
 });
-```
 
-```dataviewjs
+// ========== WEEKLY VIEW (Work tab) ==========
 const today = dv.date("today");
 const rangeStart = today.minus({ days: 6 });
 
@@ -343,11 +375,11 @@ const pages = dv.pages('"Work"')
   })
   .sort(p => p.date, "desc");
 
-const container = dv.el("div", "");
+const wkView = panels["work"].createEl("div", "");
 
 // Date range label (rolling 7 days)
 const weekLabel = rangeStart.toFormat("MMM dd") + " – " + today.toFormat("MMM dd");
-container.createEl("div", {
+wkView.createEl("div", {
   text: weekLabel,
   attr: { style: "font-size:0.78em;color:var(--text-muted);margin-bottom:6px;font-weight:600;" }
 });
@@ -396,7 +428,7 @@ function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway
 
 // Always show a Today row at the top — ghost row if note doesn't exist yet
 if (!hasTodayNote) {
-  const ghostRow = container.createEl("div", {
+  const ghostRow = wkView.createEl("div", {
     attr: { style: "display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px dashed var(--interactive-accent);opacity:0.6;cursor:pointer;" }
   });
   ghostRow.createEl("span", {
@@ -444,167 +476,228 @@ for (const page of pages) {
   const carriedIn   = page.file.tasks.where(t => t.status === " "  && inCarryoverSection(t)).length;
   const total = open + done + carriedAway + carriedIn;
 
-  const row = container.createEl("div", {
+  const row = wkView.createEl("div", {
     attr: { style: `display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px solid ${isToday ? "var(--interactive-accent)" : "var(--background-modifier-border)"};` }
   });
   renderRow(row, isToday ? "Today" : dateStr, isToday, open, done, carriedIn, carriedAway, total, page.file.path);
 }
 
 if (pages.length === 0) {
-  container.createEl("p", { text: "No other work notes in the last 7 days.", attr: { style: "color:var(--text-muted);font-size:0.85em;margin-top:4px;" } });
+  wkView.createEl("p", { text: "No other work notes in the last 7 days.", attr: { style: "color:var(--text-muted);font-size:0.85em;margin-top:4px;" } });
+}
+
+// ========== CARD TAB ==========
+const bcPage = dv.page("Profile/Personal Baseball Card");
+if (bcPage) {
+  const card = panels["card"].createEl("div", {
+    attr: { style: "width:260px;max-width:100%;margin:0 auto;border:1px solid var(--background-modifier-border);border-radius:12px;overflow:hidden;background:var(--background-primary);box-shadow:0 2px 6px rgba(0,0,0,0.08);" }
+  });
+
+  // Header
+  const hdr = card.createEl("div", { attr: { style: "padding:14px 14px 6px;text-align:center;" } });
+  const imgFile = app.vault.getAbstractFileByPath("Profile/ted-profile.png");
+  if (imgFile) {
+    hdr.createEl("img", {
+      attr: { src: app.vault.getResourcePath(imgFile), style: "width:48px;height:48px;border-radius:50%;object-fit:cover;object-position:top;border:2px solid var(--background-modifier-border);" }
+    });
+  }
+  hdr.createEl("div", { text: "Ted Fan", attr: { style: "font-size:0.92em;font-weight:800;margin-top:4px;" } });
+  const bcBadges = hdr.createEl("div", { attr: { style: "display:flex;justify-content:center;gap:3px;margin-top:3px;" } });
+  bcBadges.createEl("span", { text: String(bcPage.mbti || ""), attr: { style: "font-size:0.52em;font-weight:700;padding:1px 4px;border-radius:3px;background:var(--interactive-accent);color:var(--text-on-accent);" } });
+  bcBadges.createEl("span", { text: String(bcPage.role || ""), attr: { style: "font-size:0.52em;padding:1px 4px;border-radius:3px;border:1px solid var(--background-modifier-border);color:var(--text-muted);" } });
+  bcBadges.createEl("span", { text: "🏆 " + String(bcPage.py_archetype || ""), attr: { style: "font-size:0.52em;padding:1px 4px;border-radius:3px;border:1px solid var(--background-modifier-border);color:var(--text-muted);" } });
+
+  // Radar chart
+  const traits = [
+    { n: "Deliberative", v: Number(bcPage.py_deliberative) || 0 },
+    { n: "Detailed", v: Number(bcPage.py_detailed) || 0 },
+    { n: "Creative", v: Number(bcPage.py_creative) || 0 },
+    { n: "Conceptual", v: Number(bcPage.py_conceptual) || 0 },
+    { n: "Leadership", v: Number(bcPage.py_leadership) || 0 },
+    { n: "Tough", v: Number(bcPage.py_tough) || 0 },
+    { n: "Nurturing", v: Number(bcPage.py_nurturing) || 0 },
+    { n: "Extraverted", v: Number(bcPage.py_extraverted) || 0 },
+    { n: "Composed", v: Number(bcPage.py_composed) || 0 },
+    { n: "Determined", v: Number(bcPage.py_determined) || 0 },
+    { n: "Humble", v: Number(bcPage.py_humble) || 0 },
+    { n: "Autonomous", v: Number(bcPage.py_autonomous) || 0 },
+  ];
+  const sz = 200, rcx = sz/2, rcy = sz/2, RR = 78;
+  const NN = traits.length, rstep = (2 * Math.PI) / NN;
+  const rpt = (i, pct) => {
+    const a = -Math.PI/2 + i * rstep;
+    return [rcx + (pct/100)*RR*Math.cos(a), rcy + (pct/100)*RR*Math.sin(a)];
+  };
+  let svg = `<svg viewBox="0 0 ${sz} ${sz}" style="width:100%;max-width:200px;display:block;margin:0 auto;">`;
+  for (const p of [25,50,75,100])
+    svg += `<circle cx="${rcx}" cy="${rcy}" r="${(p/100)*RR}" fill="none" stroke="var(--background-modifier-border)" stroke-width="0.5"/>`;
+  for (let i = 0; i < NN; i++) {
+    const [x,y] = rpt(i, 100);
+    svg += `<line x1="${rcx}" y1="${rcy}" x2="${x}" y2="${y}" stroke="var(--background-modifier-border)" stroke-width="0.3"/>`;
+  }
+  const polyPts = traits.map((t,i) => rpt(i, t.v).join(",")).join(" ");
+  svg += `<polygon points="${polyPts}" fill="rgba(58,154,92,0.12)" stroke="#3a9a5c" stroke-width="1.8" stroke-linejoin="round"/>`;
+  traits.forEach((t,i) => {
+    const [x,y] = rpt(i, t.v);
+    const c = t.v >= 70 ? '#3a9a5c' : t.v >= 40 ? '#999' : '#c75c5c';
+    svg += `<circle cx="${x}" cy="${y}" r="2.5" fill="${c}"><title>${t.n}: ${t.v}%</title></circle>`;
+  });
+  const lbls = [["T",1.5,"#2ba5a5"],["E",5.5,"#8b6bae"],["A",9.5,"#c4953a"]];
+  for (const [txt,idx,col] of lbls) {
+    const [x,y] = rpt(idx, 118);
+    svg += `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="800" fill="${col}" opacity="0.7">${txt}</text>`;
+  }
+  svg += '</svg>';
+  const chartEl = card.createEl("div", { attr: { style: "padding:6px 8px 2px;border-top:1px solid var(--background-modifier-border);" } });
+  chartEl.innerHTML = svg;
+
+  card.createEl("div", { attr: { style: "padding:4px 14px 10px;text-align:center;font-size:0.7em;" } }).innerHTML =
+    '<a class="internal-link" data-href="Profile/Personal Baseball Card">Open Baseball Card →</a>';
 }
 ```
 
 ---
 
-## AI Daily Digest
+## Feeds
 
 ```dataviewjs
-const today = dv.date("today").toFormat("yyyy-MM-dd");
-const zhPath = `Feeds/AI-Daily/${today}.md`;
-const enPath = `Feeds/AI-Daily/${today}-en.md`;
-const zhFile = app.vault.getAbstractFileByPath(zhPath);
-
-const container = dv.el("div", "");
-
-const enFile = app.vault.getAbstractFileByPath(enPath);
-// Prefer EN file for preview; fall back to ZH
-const digestFile = enFile || zhFile;
-
-if (digestFile) {
-  const isEn = !!enFile;
-  const digestPath = isEn ? enPath : zhPath;
-  const page = dv.page(digestPath);
-  const content = await app.vault.read(digestFile);
-  const lines = content.split("\n");
-
-  // Extract highlights summary (EN: "Today's Highlights", ZH: "今日看点")
-  const highlightMarker = isEn ? "Today's Highlights" : "今日看点";
-  let start = -1, end = lines.length;
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith("##") && lines[i].includes(highlightMarker)) { start = i + 1; continue; }
-    if (start > 0 && lines[i].startsWith("---")) { end = i; break; }
+// Tab bar (pill / segment)
+const fTopBar = dv.el("div", "", {
+  attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;" }
+});
+const fSeg = fTopBar.createEl("div", {
+  attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);margin-left:-6px;" }
+});
+const fPanels = {};
+fPanels["ai"] = dv.el("div", "", { attr: { style: "display:none;" } });
+fPanels["gh"] = dv.el("div", "", { attr: { style: "display:none;" } });
+const fBtns = {};
+function setFeedTab(id) {
+  for (const k of Object.keys(fPanels)) {
+    fPanels[k].style.display = k === id ? "block" : "none";
+    fBtns[k].style.cssText = "padding:4px 14px;border-radius:7px;border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.15s;" + (k === id
+      ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
+      : "background:transparent;color:var(--text-muted);box-shadow:none;");
   }
-  const summary = start > 0
-    ? lines.slice(start, end).filter(l => l.trim()).join(" ")
-    : "";
-
-  // Stats row + language links
-  const row = container.createEl("div", {
-    attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
-  });
-  const scanned = page.articles_scanned || "?";
-  const selected = page.articles_selected || "?";
-  row.createEl("span", {
-    text: `📰 ${selected}/${scanned} articles`,
-    attr: { style: "font-size:0.78em;color:var(--text-muted);" }
-  });
-  const links = row.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
-  links.createEl("a", {
-    text: "中文",
-    cls: "internal-link",
-    attr: { "data-href": zhPath, style: "font-size:0.82em;" }
-  });
-  if (enFile) {
-    links.createEl("a", {
-      text: "EN",
-      cls: "internal-link",
-      attr: { "data-href": enPath, style: "font-size:0.82em;" }
-    });
-  }
-
-  // Summary card
-  if (summary) {
-    container.createEl("div", {
-      text: summary,
-      attr: { style: "font-size:0.85em;line-height:1.6;padding:10px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--interactive-accent);" }
-    });
-  }
-} else {
-  // No digest yet — run /ai-digest in Claude Code to generate
-  container.createEl("div", {
-    text: "No digest for today yet. Run /ai-digest in Claude Code to generate.",
-    attr: { style: "font-size:0.85em;color:var(--text-muted);padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
-  });
 }
+for (const t of [{id:"ai",label:"AI Digest"},{id:"gh",label:"GitHub Trending"}]) {
+  fBtns[t.id] = fSeg.createEl("button", { text: t.label });
+  fBtns[t.id].addEventListener("click", () => setFeedTab(t.id));
+}
+setFeedTab("ai");
 
-// Link to all digests
-container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } }).innerHTML =
-  '<a class="internal-link" data-href="Feeds/AI-Daily/Dashboard">All digests →</a>';
-```
+// ========== AI DIGEST TAB ==========
+{
+  const p = fPanels["ai"];
+  const today = dv.date("today").toFormat("yyyy-MM-dd");
+  const zhPath = `Feeds/AI-Daily/${today}.md`;
+  const enPath = `Feeds/AI-Daily/${today}-en.md`;
+  const zhFile = app.vault.getAbstractFileByPath(zhPath);
+  const enFile = app.vault.getAbstractFileByPath(enPath);
+  const digestFile = enFile || zhFile;
 
----
+  if (digestFile) {
+    const isEn = !!enFile;
+    const digestPath = isEn ? enPath : zhPath;
+    const page = dv.page(digestPath);
+    const content = await app.vault.read(digestFile);
+    const lines = content.split("\n");
 
-## GitHub Trending
-
-```dataviewjs
-const today = dv.date("today").toFormat("yyyy-MM-dd");
-const zhPath = `Feeds/GitHub-Trending/${today}.md`;
-const enPath = `Feeds/GitHub-Trending/${today}-en.md`;
-const zhFile = app.vault.getAbstractFileByPath(zhPath);
-
-const container = dv.el("div", "");
-
-const enFile = app.vault.getAbstractFileByPath(enPath);
-const reportFile = enFile || zhFile;
-
-if (reportFile) {
-  const isEn = !!enFile;
-  const reportPath = isEn ? enPath : zhPath;
-  const page = dv.page(reportPath);
-  const content = await app.vault.read(reportFile);
-  const lines = content.split("\n");
-
-  // Extract top 3 repos from callout headers: "> [!tip] 🥇 org/repo  ⭐ 1234 · Python"
-  const repoLines = lines
-    .filter(l => l.startsWith("> [!tip]") && (l.includes("🥇") || l.includes("🥈") || l.includes("🥉")))
-    .slice(0, 3);
-
-  // Stats row + language links
-  const row = container.createEl("div", {
-    attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
-  });
-  const scanned = page.repos_scanned || "?";
-  const selected = page.repos_selected || "?";
-  row.createEl("span", {
-    text: `📦 ${selected}/${scanned} repos`,
-    attr: { style: "font-size:0.78em;color:var(--text-muted);" }
-  });
-  const links = row.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
-  links.createEl("a", {
-    text: "中文",
-    cls: "internal-link",
-    attr: { "data-href": zhPath, style: "font-size:0.82em;" }
-  });
-  if (enFile) {
-    links.createEl("a", {
-      text: "EN",
-      cls: "internal-link",
-      attr: { "data-href": enPath, style: "font-size:0.82em;" }
-    });
-  }
-
-  // Top 3 repos preview
-  if (repoLines.length > 0) {
-    const preview = container.createEl("div", {
-      attr: { style: "font-size:0.85em;line-height:1.8;padding:10px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--interactive-accent);" }
-    });
-    for (const line of repoLines) {
-      // Clean the callout prefix "> [!tip] " and render the rest
-      const cleaned = line.replace(/^>\s*\[!tip\]\s*/, "");
-      preview.createEl("div", { text: cleaned });
+    const highlightMarker = isEn ? "Today's Highlights" : "今日看点";
+    let start = -1, end = lines.length;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith("##") && lines[i].includes(highlightMarker)) { start = i + 1; continue; }
+      if (start > 0 && lines[i].startsWith("---")) { end = i; break; }
     }
+    const summary = start > 0
+      ? lines.slice(start, end).filter(l => l.trim()).join(" ")
+      : "";
+
+    const row = p.createEl("div", {
+      attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
+    });
+    const scanned = page.articles_scanned || "?";
+    const selected = page.articles_selected || "?";
+    row.createEl("span", {
+      text: `📰 ${selected}/${scanned} articles`,
+      attr: { style: "font-size:0.78em;color:var(--text-muted);" }
+    });
+    const links = row.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
+    links.createEl("a", { text: "中文", cls: "internal-link", attr: { "data-href": zhPath, style: "font-size:0.82em;" } });
+    if (enFile) {
+      links.createEl("a", { text: "EN", cls: "internal-link", attr: { "data-href": enPath, style: "font-size:0.82em;" } });
+    }
+
+    if (summary) {
+      p.createEl("div", {
+        text: summary,
+        attr: { style: "font-size:0.85em;line-height:1.6;padding:10px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--interactive-accent);" }
+      });
+    }
+  } else {
+    p.createEl("div", {
+      text: "No digest for today yet. Run /ai-digest in Claude Code to generate.",
+      attr: { style: "font-size:0.85em;color:var(--text-muted);padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
+    });
   }
-} else {
-  container.createEl("div", {
-    text: "No trending report for today yet. Run /github-trending in Claude Code to generate.",
-    attr: { style: "font-size:0.85em;color:var(--text-muted);padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
-  });
+  p.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } }).innerHTML =
+    '<a class="internal-link" data-href="Feeds/AI-Daily/Dashboard">All digests →</a>';
 }
 
-// Link to all reports
-container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } }).innerHTML =
-  '<a class="internal-link" data-href="Feeds/GitHub-Trending/Dashboard">All reports →</a>';
+// ========== GITHUB TRENDING TAB ==========
+{
+  const p = fPanels["gh"];
+  const today = dv.date("today").toFormat("yyyy-MM-dd");
+  const zhPath = `Feeds/GitHub-Trending/${today}.md`;
+  const enPath = `Feeds/GitHub-Trending/${today}-en.md`;
+  const zhFile = app.vault.getAbstractFileByPath(zhPath);
+  const enFile = app.vault.getAbstractFileByPath(enPath);
+  const reportFile = enFile || zhFile;
+
+  if (reportFile) {
+    const isEn = !!enFile;
+    const reportPath = isEn ? enPath : zhPath;
+    const page = dv.page(reportPath);
+    const content = await app.vault.read(reportFile);
+    const lines = content.split("\n");
+
+    const repoLines = lines
+      .filter(l => l.startsWith("> [!tip]") && (l.includes("🥇") || l.includes("🥈") || l.includes("🥉")))
+      .slice(0, 3);
+
+    const row = p.createEl("div", {
+      attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
+    });
+    const scanned = page.repos_scanned || "?";
+    const selected = page.repos_selected || "?";
+    row.createEl("span", {
+      text: `📦 ${selected}/${scanned} repos`,
+      attr: { style: "font-size:0.78em;color:var(--text-muted);" }
+    });
+    const links = row.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
+    links.createEl("a", { text: "中文", cls: "internal-link", attr: { "data-href": zhPath, style: "font-size:0.82em;" } });
+    if (enFile) {
+      links.createEl("a", { text: "EN", cls: "internal-link", attr: { "data-href": enPath, style: "font-size:0.82em;" } });
+    }
+
+    if (repoLines.length > 0) {
+      const preview = p.createEl("div", {
+        attr: { style: "font-size:0.85em;line-height:1.8;padding:10px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--interactive-accent);" }
+      });
+      for (const line of repoLines) {
+        const cleaned = line.replace(/^>\s*\[!tip\]\s*/, "");
+        preview.createEl("div", { text: cleaned });
+      }
+    }
+  } else {
+    p.createEl("div", {
+      text: "No trending report for today yet. Run /github-trending in Claude Code to generate.",
+      attr: { style: "font-size:0.85em;color:var(--text-muted);padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
+    });
+  }
+  p.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } }).innerHTML =
+    '<a class="internal-link" data-href="Feeds/GitHub-Trending/Dashboard">All reports →</a>';
+}
 ```
 
 ---
@@ -613,7 +706,7 @@ container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } 
 
 ```dataviewjs
 const sessions = dv.pages('"Work/Brownbag Sessions"')
-  .where(p => p.file.name !== "Brownbag Sessions")
+  .where(p => p.id && String(p.id).startsWith("BB-"))
   .sort(p => p.created, "desc")
   .limit(3);
 
