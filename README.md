@@ -36,6 +36,8 @@ Learning/         # Structured learning plans (folder name = plan code)
     Weeks/        # Weekly logs (YYYY-WXX.md)
     Courses/      # Course notes
     Projects/     # Project notes
+Profile/          # Personal assessment & self-development
+  Personal Baseball Card.md  # Ray Dalio-inspired Baseball Card (PrinciplesYou + self-eval)
 Feeds/            # Auto-generated content feeds
   AI-Daily/       # Daily AI news digest (中英文), generated on Obsidian startup
   GitHub-Trending/ # Daily GitHub trending repos digest (中英文)
@@ -50,7 +52,7 @@ scripts/
     run.sh        # Idempotent orchestrator with 14-day archive rotation
 Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week, Brownbag Session
 CLAUDE.md         # Vault-level Claude Code instructions
-Home.md           # Obsidian dashboard with Dataview queries
+Home.md           # Dashboard — tabbed sections (Work/Card, AI Digest/GitHub Trending)
 sortspec.md       # Custom file explorer sort order (Custom File Explorer Sorting plugin)
 ```
 
@@ -64,7 +66,7 @@ graph TD
     DIGEST[scripts/ai-digest] -->|Shell Commands<br/>on startup| Vault
     GHTREND[scripts/github-trending] -->|Claude Code skill| Vault
 
-    Vault["🗃️ Obsidian Vault<br/>Home · Books · Work<br/>Inbox · Zettelkasten · Feeds"]
+    Vault["🗃️ Obsidian Vault<br/>Home · Books · Work · Profile<br/>Inbox · Zettelkasten · Feeds"]
 
     Vault <-->|Remotely Save| S3V[S3: vault-sync]
     EBOOKS[~/Library/ebooks] -->|launchd| S3E[S3: ebook-library]
