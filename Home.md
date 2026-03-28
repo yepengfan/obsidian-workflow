@@ -637,23 +637,34 @@ if (bcPage) {
   cardWrap.addEventListener("mouseenter", startInteraction);
   cardWrap.addEventListener("mouseleave", endInteraction);
 
-  // Touch events
+  // Touch events — distinguish tap (click) from swipe (holo effect)
   let touching = false;
+  let touchMoved = false;
   cardWrap.addEventListener("touchstart", (e) => {
     touching = true;
+    touchMoved = false;
     startInteraction();
     const t = e.touches[0];
     applyHoloEffect(t.clientX, t.clientY);
   }, { passive: true });
   cardWrap.addEventListener("touchmove", (e) => {
     if (!touching) return;
+    touchMoved = true;
     e.preventDefault();
     const t = e.touches[0];
     applyHoloEffect(t.clientX, t.clientY);
   }, { passive: false });
-  cardWrap.addEventListener("touchend", () => {
+  cardWrap.addEventListener("touchend", (e) => {
+    const wasTap = !touchMoved;
     touching = false;
+    touchMoved = false;
     endInteraction();
+    // If it was a tap (not a swipe), let the link work
+    if (wasTap && e.target.closest("a")) {
+      const link = e.target.closest("a");
+      const href = link.getAttribute("data-href") || link.getAttribute("href");
+      if (href) app.workspace.openLinkText(href, "", false);
+    }
   });
 
   // Idle breathing animation
