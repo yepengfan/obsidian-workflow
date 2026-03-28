@@ -656,7 +656,38 @@ if (bcPage) {
     endInteraction();
   });
 
-  // Idle breathing animation
+  // Gyroscope: tilt phone → card follows (replaces idle breathing on mobile)
+  let gyroActive = false;
+  if (window.DeviceOrientationEvent) {
+    const gyroHandler = (e) => {
+      if (touching) return; // touch takes priority
+      if (!gyroActive) {
+        gyroActive = true;
+        card.style.animation = "none";
+        card.style.transition = "transform 0.15s ease, box-shadow 0.15s ease";
+      }
+      // beta = front-back tilt (-180..180), gamma = left-right tilt (-90..90)
+      const beta = Math.max(-30, Math.min(30, e.beta || 0));
+      const gamma = Math.max(-30, Math.min(30, e.gamma || 0));
+      const px = (gamma + 30) / 60; // 0..1
+      const py = (30 - beta) / 60;  // 0..1 (invert so tilting forward = top closer)
+      const rect = card.getBoundingClientRect();
+      applyHoloEffect(rect.left + px * rect.width, rect.top + py * rect.height);
+    };
+    // iOS 13+ requires permission request
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      cardWrap.addEventListener("click", () => {
+        if (gyroActive) return;
+        DeviceOrientationEvent.requestPermission().then(state => {
+          if (state === 'granted') window.addEventListener("deviceorientation", gyroHandler);
+        }).catch(() => {});
+      }, { once: true });
+    } else {
+      window.addEventListener("deviceorientation", gyroHandler);
+    }
+  }
+
+  // Idle breathing animation (desktop or if no gyro)
   const breatheId = 'bc-breathe';
   if (!document.getElementById(breatheId)) {
     const s = document.createElement('style');
@@ -664,7 +695,7 @@ if (bcPage) {
     s.textContent = `@keyframes bc-float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-3px)}}`;
     document.head.appendChild(s);
   }
-  card.style.animation = "bc-float 4s ease-in-out infinite";
+  if (!gyroActive) card.style.animation = "bc-float 4s ease-in-out infinite";
 }
 ```
 
