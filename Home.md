@@ -9,36 +9,40 @@ banner_y: 0
 ## Work
 
 ```dataviewjs
-document.getElementById('bc-grid-layout')?.remove();
-
-// ========== TOP BAR: segment + action buttons in one row ==========
-const topBar = dv.el("div", "", {
-  attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;" }
-});
-
-// Panels (created AFTER topBar so they appear below)
-const panels = {};
-panels["work"] = dv.el("div", "", { attr: { style: "display:none;" } });
-panels["card"] = dv.el("div", "", { attr: { style: "display:none;" } });
-const tabBtns = {};
-function setTab(id) {
-  for (const k of Object.keys(panels)) {
-    panels[k].style.display = k === id ? "block" : "none";
-    tabBtns[k].style.cssText = "padding:4px 14px;border-radius:7px;border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.15s;" + (k === id
-      ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
-      : "background:transparent;color:var(--text-muted);box-shadow:none;");
+// Tab factory: creates pill/segment tab group, returns { panels, topBar }
+function createTabGroup(dvRef, tabs, defaultId) {
+  const topBar = dvRef.el("div", "", {
+    attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;" }
+  });
+  const panels = {};
+  const btns = {};
+  for (const t of tabs) {
+    panels[t.id] = dvRef.el("div", "", { attr: { style: "display:none;" } });
   }
+  function activate(id) {
+    for (const k of Object.keys(panels)) {
+      panels[k].style.display = k === id ? "block" : "none";
+      btns[k].style.cssText = "padding:4px 14px;border-radius:7px;border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.15s;" + (k === id
+        ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
+        : "background:transparent;color:var(--text-muted);box-shadow:none;");
+    }
+  }
+  const seg = topBar.createEl("div", {
+    attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);margin-left:-6px;" }
+  });
+  for (const t of tabs) {
+    btns[t.id] = seg.createEl("button", { text: t.label });
+    btns[t.id].addEventListener("click", () => activate(t.id));
+  }
+  activate(defaultId);
+  return { panels, topBar };
 }
 
-// Segment control (left side of topBar)
-const seg = topBar.createEl("div", {
-  attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);margin-left:-6px;" }
-});
-for (const t of [{id:"work",label:"Work"},{id:"card",label:"Card"}]) {
-  tabBtns[t.id] = seg.createEl("button", { text: t.label });
-  tabBtns[t.id].addEventListener("click", () => setTab(t.id));
-}
-setTab("work");
+// ========== WORK + CARD TABS ==========
+const { panels, topBar } = createTabGroup(dv, [
+  { id: "work", label: "Work" },
+  { id: "card", label: "Card" },
+], "work");
 
 // ========== WORK TAB ==========
 // Action buttons always inside Work panel, separate row from segment
@@ -575,16 +579,13 @@ if (bcPage) {
     attr: { style: "padding:6px 14px 10px;display:flex;justify-content:space-between;align-items:center;" }
   });
   footer.createEl("span", {
-    text: "Feb 2026",
+    text: bcPage.py_date ? dv.date(bcPage.py_date).toFormat("MMM yyyy") : "",
     attr: { style: "font-size:0.55em;color:var(--text-faint);" }
   });
   footer.createEl("span", { attr: { style: "font-size:0.7em;" } }).innerHTML =
     '<a class="internal-link" data-href="Profile/Personal Baseball Card">Open Card →</a>';
 
   // === HOLOGRAPHIC EFFECT ===
-  // No overlay divs — apply directly to card background
-  const baseBg = "var(--background-primary)";
-
   cardWrap.addEventListener("mousemove", (e) => {
     const rect = card.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -663,30 +664,37 @@ if (bcPage) {
 ## Feeds
 
 ```dataviewjs
-// Tab bar (pill / segment)
-const fTopBar = dv.el("div", "", {
-  attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;" }
-});
-const fSeg = fTopBar.createEl("div", {
-  attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);margin-left:-6px;" }
-});
-const fPanels = {};
-fPanels["ai"] = dv.el("div", "", { attr: { style: "display:none;" } });
-fPanels["gh"] = dv.el("div", "", { attr: { style: "display:none;" } });
-const fBtns = {};
-function setFeedTab(id) {
-  for (const k of Object.keys(fPanels)) {
-    fPanels[k].style.display = k === id ? "block" : "none";
-    fBtns[k].style.cssText = "padding:4px 14px;border-radius:7px;border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.15s;" + (k === id
-      ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
-      : "background:transparent;color:var(--text-muted);box-shadow:none;");
+// Tab factory (same as Work section — each dataviewjs block has its own scope)
+function createTabGroup(dvRef, tabs, defaultId) {
+  const topBar = dvRef.el("div", "", {
+    attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;" }
+  });
+  const panels = {};
+  const btns = {};
+  for (const t of tabs) panels[t.id] = dvRef.el("div", "", { attr: { style: "display:none;" } });
+  function activate(id) {
+    for (const k of Object.keys(panels)) {
+      panels[k].style.display = k === id ? "block" : "none";
+      btns[k].style.cssText = "padding:4px 14px;border-radius:7px;border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.15s;" + (k === id
+        ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
+        : "background:transparent;color:var(--text-muted);box-shadow:none;");
+    }
   }
+  const seg = topBar.createEl("div", {
+    attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);margin-left:-6px;" }
+  });
+  for (const t of tabs) {
+    btns[t.id] = seg.createEl("button", { text: t.label });
+    btns[t.id].addEventListener("click", () => activate(t.id));
+  }
+  activate(defaultId);
+  return { panels, topBar };
 }
-for (const t of [{id:"ai",label:"AI Digest"},{id:"gh",label:"GitHub Trending"}]) {
-  fBtns[t.id] = fSeg.createEl("button", { text: t.label });
-  fBtns[t.id].addEventListener("click", () => setFeedTab(t.id));
-}
-setFeedTab("ai");
+
+const { panels: fPanels } = createTabGroup(dv, [
+  { id: "ai", label: "AI Digest" },
+  { id: "gh", label: "GitHub Trending" },
+], "ai");
 
 // ========== AI DIGEST TAB ==========
 {
