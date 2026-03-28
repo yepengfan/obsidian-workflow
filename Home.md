@@ -585,48 +585,69 @@ if (bcPage) {
   footer.createEl("span", { attr: { style: "font-size:0.7em;" } }).innerHTML =
     '<a class="internal-link" data-href="Profile/Personal Baseball Card">Open Card →</a>';
 
-  // === HOLOGRAPHIC EFFECT ===
-  cardWrap.addEventListener("mousemove", (e) => {
+  // === HOLOGRAPHIC EFFECT (mouse + touch) ===
+  function applyHoloEffect(clientX, clientY) {
     const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const px = x / rect.width;
-    const py = y / rect.height;
+    const px = (clientX - rect.left) / rect.width;
+    const py = (clientY - rect.top) / rect.height;
     const rotY = (px - 0.5) * 20;
     const rotX = (0.5 - py) * 20;
+    const hue = Math.round(px * 360);
+    const cx = px * 100, cy = py * 100;
 
     card.style.transform = `rotateY(${rotY}deg) rotateX(${rotX}deg)`;
-
-    // Rainbow hue from mouse X
-    const hue = Math.round(px * 360);
-
-    // Colorful light-bleed shadow (as if foil refracts onto table)
     card.style.boxShadow = [
       `${-rotY*0.5}px ${rotX*0.5}px 15px rgba(0,0,0,0.1)`,
       `${-rotY*0.8}px ${rotX*0.8}px 30px hsla(${hue}, 60%, 65%, 0.15)`,
       `${-rotY*0.3}px ${rotX*0.3}px 8px hsla(${(hue+120)%360}, 50%, 70%, 0.1)`
     ].join(",");
 
-    // Edge highlight: border brighter on the side closer to "light"
     const edgeHue = (hue + 60) % 360;
     card.style.borderColor = `hsla(${edgeHue}, 70%, 75%, 0.5)`;
     card.style.borderWidth = "1px";
-    const brightSide = px > 0.5 ? "right" : "left";
-    card.style[`border${brightSide === "right" ? "Right" : "Left"}Color`] = `hsla(${edgeHue}, 80%, 80%, 0.8)`;
+    const side = px > 0.5 ? "Right" : "Left";
+    card.style[`border${side}Color`] = `hsla(${edgeHue}, 80%, 80%, 0.8)`;
 
-    // Holographic foil: conic prism + shine + micro-texture
-    const cx = px * 100;
-    const cy = py * 100;
     card.style.backgroundImage = [
-      // 1. White spotlight
       `radial-gradient(circle at ${cx}% ${cy}%, rgba(255,255,255,0.35) 0%, transparent 45%)`,
-      // 2. Conic rainbow prism from mouse position
       `conic-gradient(from ${(px-0.5)*180}deg at ${cx}% ${cy}%, rgba(255,50,50,0.12), rgba(255,180,50,0.12), rgba(50,255,100,0.12), rgba(50,180,255,0.12), rgba(180,50,255,0.12), rgba(255,50,150,0.12), rgba(255,50,50,0.12))`,
-      // 3. Micro-texture (fine parallel lines)
       `repeating-linear-gradient(${135 + (px-0.5)*20}deg, transparent 0px, transparent 2px, rgba(255,255,255,0.06) 2px, rgba(255,255,255,0.06) 3px)`
     ].join(",");
     card.style.backgroundColor = "#faf6f0";
-  });
+  }
+
+  function startInteraction() {
+    card.style.animation = "none";
+    card.style.transition = "transform 0.1s ease, box-shadow 0.1s ease";
+  }
+
+  function endInteraction() {
+    card.style.transition = "transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease, border-color 0.4s ease, background-image 0.4s ease";
+    card.style.transform = "rotateY(0deg) rotateX(0deg)";
+    card.style.boxShadow = "0 2px 6px rgba(0,0,0,0.08)";
+    card.style.borderColor = "var(--background-modifier-border)";
+    card.style.borderLeftColor = "var(--background-modifier-border)";
+    card.style.borderRightColor = "var(--background-modifier-border)";
+    card.style.backgroundImage = "none";
+    setTimeout(() => { card.style.animation = "bc-float 4s ease-in-out infinite"; }, 600);
+  }
+
+  // Mouse events
+  cardWrap.addEventListener("mousemove", (e) => applyHoloEffect(e.clientX, e.clientY));
+  cardWrap.addEventListener("mouseenter", startInteraction);
+  cardWrap.addEventListener("mouseleave", endInteraction);
+
+  // Touch events
+  cardWrap.addEventListener("touchstart", (e) => {
+    startInteraction();
+    const t = e.touches[0];
+    applyHoloEffect(t.clientX, t.clientY);
+  }, { passive: true });
+  cardWrap.addEventListener("touchmove", (e) => {
+    const t = e.touches[0];
+    applyHoloEffect(t.clientX, t.clientY);
+  }, { passive: true });
+  cardWrap.addEventListener("touchend", endInteraction);
 
   // Idle breathing animation
   const breatheId = 'bc-breathe';
@@ -637,25 +658,6 @@ if (bcPage) {
     document.head.appendChild(s);
   }
   card.style.animation = "bc-float 4s ease-in-out infinite";
-
-  cardWrap.addEventListener("mouseleave", () => {
-    // Bounce-back with overshoot, restore idle float
-    card.style.transition = "transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease, border-color 0.4s ease, background-image 0.4s ease";
-    card.style.transform = "rotateY(0deg) rotateX(0deg)";
-    card.style.boxShadow = "0 2px 6px rgba(0,0,0,0.08)";
-    card.style.borderColor = "var(--background-modifier-border)";
-    card.style.borderLeftColor = "var(--background-modifier-border)";
-    card.style.borderRightColor = "var(--background-modifier-border)";
-    card.style.backgroundImage = "none";
-    // Restore idle breathing after bounce settles
-    setTimeout(() => { card.style.animation = "bc-float 4s ease-in-out infinite"; }, 600);
-  });
-
-  cardWrap.addEventListener("mouseenter", () => {
-    // Stop idle float, switch to fast mouse tracking
-    card.style.animation = "none";
-    card.style.transition = "transform 0.1s ease, box-shadow 0.1s ease";
-  });
 }
 ```
 
