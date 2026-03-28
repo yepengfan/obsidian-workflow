@@ -41,7 +41,8 @@ function createTabGroup(dvRef, tabs, defaultId) {
 // ========== WORK + CARD TABS ==========
 const { panels, topBar } = createTabGroup(dv, [
   { id: "work", label: "Work" },
-  { id: "card", label: "Card" },
+  { id: "card", label: "Profile" },
+  { id: "skills", label: "Skills" },
 ], "work");
 
 // ========== WORK TAB ==========
@@ -667,6 +668,91 @@ if (bcPage) {
     document.head.appendChild(s);
   }
   card.style.animation = "bc-float 4s ease-in-out infinite";
+}
+
+// ========== SKILLS TAB ==========
+const srPage = dv.page("Profile/Skill Radar");
+if (srPage && srPage.skills) {
+  const skills = Array.isArray(srPage.skills) ? srPage.skills : [srPage.skills];
+  const stageRings = [
+    { label: "探索", r: 0.25 },
+    { label: "入门", r: 0.50 },
+    { label: "熟练", r: 0.75 },
+    { label: "精通", r: 1.00 },
+  ];
+  const cogColors = { "\u26A1": "#e57373", "\uD83C\uDFAF": "#4db6ac", "\uD83C\uDF0A": "#81c784" };
+
+  const sz = 240, rcx = sz/2, rcy = sz/2, RR = 85;
+  let rsvg = `<svg viewBox="0 0 ${sz} ${sz}" style="width:100%;max-width:220px;display:block;margin:0 auto;">`;
+
+  // Concentric rings
+  for (const s of stageRings) {
+    rsvg += `<circle cx="${rcx}" cy="${rcy}" r="${s.r * RR}" fill="none" stroke="var(--text-faint)" stroke-width="0.6" opacity="0.45"/>`;
+  }
+  // Stage labels along right axis
+  for (const s of stageRings) {
+    rsvg += `<text x="${rcx + s.r * RR + 3}" y="${rcy - 3}" font-size="6" fill="var(--text-muted)" font-weight="500">${s.label}</text>`;
+  }
+  // Crosshairs
+  rsvg += `<line x1="${rcx}" y1="${rcy - RR}" x2="${rcx}" y2="${rcy + RR}" stroke="var(--text-faint)" stroke-width="0.4" opacity="0.4"/>`;
+  rsvg += `<line x1="${rcx - RR}" y1="${rcy}" x2="${rcx + RR}" y2="${rcy}" stroke="var(--text-faint)" stroke-width="0.4" opacity="0.4"/>`;
+  // Center dot
+  rsvg += `<circle cx="${rcx}" cy="${rcy}" r="1.5" fill="var(--text-faint)" opacity="0.5"/>`;
+
+  // Plot skills as blips
+  const sN = skills.length;
+  skills.forEach((sk, si) => {
+    const ss = String(sk.stage || "");
+    const sc = String(sk.cognitive || "");
+    // Stage → radial position
+    let rPct = 0.25;
+    if (ss.includes("\uD83C\uDFD4") || ss.includes("精通")) rPct = 1.0;
+    else if (ss.includes("\uD83C\uDF33") || ss.includes("熟练")) rPct = 0.75;
+    else if (ss.includes("\uD83C\uDF3F") || ss.includes("入门")) rPct = 0.5;
+    // Cognitive → color
+    let sCol = "#4db6ac";
+    for (const [em, cl] of Object.entries(cogColors)) { if (sc.includes(em)) { sCol = cl; break; } }
+    // Position (distribute evenly from top)
+    const sAngle = -Math.PI/2 + (si * 2 * Math.PI / Math.max(sN, 1));
+    const sx = rcx + rPct * RR * Math.cos(sAngle);
+    const sy = rcy + rPct * RR * Math.sin(sAngle);
+    // Glow
+    rsvg += `<circle cx="${sx}" cy="${sy}" r="12" fill="${sCol}" opacity="0.1"/>`;
+    rsvg += `<circle cx="${sx}" cy="${sy}" r="7" fill="${sCol}" opacity="0.15"/>`;
+    // Dot
+    rsvg += `<circle cx="${sx}" cy="${sy}" r="4" fill="${sCol}" stroke="var(--background-primary)" stroke-width="1.5"><title>${String(sk.name||"")}: ${ss}</title></circle>`;
+    // Label
+    const lbR = rPct * RR + 16;
+    const lx = rcx + lbR * Math.cos(sAngle);
+    const ly = rcy + lbR * Math.sin(sAngle);
+    rsvg += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" font-size="7.5" font-weight="600" fill="var(--text-normal)">${String(sk.name||"")}</text>`;
+  });
+  rsvg += '</svg>';
+
+  // Render
+  const srWrap = panels["skills"].createEl("div", {
+    attr: { style: "width:280px;max-width:100%;margin:0 auto;text-align:center;" }
+  });
+  const srChart = srWrap.createEl("div", { attr: { style: "padding:8px 0;" } });
+  srChart.innerHTML = rsvg;
+
+  // Legend
+  const srLeg = srWrap.createEl("div", {
+    attr: { style: "display:flex;justify-content:center;gap:12px;margin-top:2px;" }
+  });
+  for (const [em, label, col] of [["\u26A1","高认知","#e57373"],["\uD83C\uDFAF","高专注","#4db6ac"],["\uD83C\uDF0A","低认知","#81c784"]]) {
+    const li = srLeg.createEl("span", { attr: { style: "display:flex;align-items:center;gap:3px;font-size:0.6em;color:var(--text-faint);" } });
+    li.createEl("span", { attr: { style: `width:6px;height:6px;border-radius:50%;background:${col};display:inline-block;` } });
+    li.createEl("span", { text: label });
+  }
+
+  // Footer
+  const srFoot = srWrap.createEl("div", {
+    attr: { style: "margin-top:8px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;" }
+  });
+  srFoot.createEl("span", { text: `${skills.length} active`, attr: { style: "font-size:0.6em;color:var(--text-faint);" } });
+  srFoot.createEl("span", { attr: { style: "font-size:0.7em;" } }).innerHTML =
+    '<a class="internal-link" data-href="Profile/Skill Radar">Open Radar →</a>';
 }
 ```
 
