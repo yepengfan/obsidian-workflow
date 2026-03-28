@@ -6,6 +6,7 @@ sorting-spec: |
   Note
   Profile
   Work
+  Training
   Books
   Learning
   Feeds
