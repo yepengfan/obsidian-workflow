@@ -546,7 +546,9 @@ if (bcPage) {
     svg += `<line x1="${rcx}" y1="${rcy}" x2="${x}" y2="${y}" stroke="var(--background-modifier-border)" stroke-width="0.3"/>`;
   }
   const polyPts = traits.map((t,i) => rpt(i, t.v).join(",")).join(" ");
-  svg += `<polygon points="${polyPts}" fill="rgba(58,154,92,0.12)" stroke="#3a9a5c" stroke-width="1.8" stroke-linejoin="round"/>`;
+  // Glow filter for radar polygon
+  svg += `<defs><filter id="radarGlow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  svg += `<polygon points="${polyPts}" fill="rgba(58,154,92,0.12)" stroke="#3a9a5c" stroke-width="1.8" stroke-linejoin="round" filter="url(#radarGlow)"/>`;
   traits.forEach((t,i) => {
     const [x,y] = rpt(i, t.v);
     const c = t.v >= 70 ? '#3a9a5c' : t.v >= 40 ? '#999' : '#c75c5c';
@@ -593,11 +595,23 @@ if (bcPage) {
     const rotX = (0.5 - py) * 20;
 
     card.style.transform = `rotateY(${rotY}deg) rotateX(${rotX}deg)`;
-    card.style.boxShadow = `${-rotY*0.5}px ${rotX*0.5}px 20px rgba(0,0,0,0.15)`;
 
-    // Border color follows mouse position through rainbow
+    // Rainbow hue from mouse X
     const hue = Math.round(px * 360);
-    card.style.borderColor = `hsla(${hue}, 70%, 70%, 0.6)`;
+
+    // Colorful light-bleed shadow (as if foil refracts onto table)
+    card.style.boxShadow = [
+      `${-rotY*0.5}px ${rotX*0.5}px 15px rgba(0,0,0,0.1)`,
+      `${-rotY*0.8}px ${rotX*0.8}px 30px hsla(${hue}, 60%, 65%, 0.15)`,
+      `${-rotY*0.3}px ${rotX*0.3}px 8px hsla(${(hue+120)%360}, 50%, 70%, 0.1)`
+    ].join(",");
+
+    // Edge highlight: border brighter on the side closer to "light"
+    const edgeHue = (hue + 60) % 360;
+    card.style.borderColor = `hsla(${edgeHue}, 70%, 75%, 0.5)`;
+    card.style.borderWidth = "1px";
+    const brightSide = px > 0.5 ? "right" : "left";
+    card.style[`border${brightSide === "right" ? "Right" : "Left"}Color`] = `hsla(${edgeHue}, 80%, 80%, 0.8)`;
 
     // Holographic foil: conic prism + shine + micro-texture
     const cx = px * 100;
@@ -613,17 +627,32 @@ if (bcPage) {
     card.style.backgroundColor = "#faf6f0";
   });
 
+  // Idle breathing animation
+  const breatheId = 'bc-breathe';
+  if (!document.getElementById(breatheId)) {
+    const s = document.createElement('style');
+    s.id = breatheId;
+    s.textContent = `@keyframes bc-float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-3px)}}`;
+    document.head.appendChild(s);
+  }
+  card.style.animation = "bc-float 4s ease-in-out infinite";
+
   cardWrap.addEventListener("mouseleave", () => {
-    // Bounce-back with overshoot
+    // Bounce-back with overshoot, restore idle float
     card.style.transition = "transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease, border-color 0.4s ease, background-image 0.4s ease";
     card.style.transform = "rotateY(0deg) rotateX(0deg)";
     card.style.boxShadow = "0 2px 6px rgba(0,0,0,0.08)";
     card.style.borderColor = "var(--background-modifier-border)";
+    card.style.borderLeftColor = "var(--background-modifier-border)";
+    card.style.borderRightColor = "var(--background-modifier-border)";
     card.style.backgroundImage = "none";
+    // Restore idle breathing after bounce settles
+    setTimeout(() => { card.style.animation = "bc-float 4s ease-in-out infinite"; }, 600);
   });
 
   cardWrap.addEventListener("mouseenter", () => {
-    // Switch to fast tracking (no bounce)
+    // Stop idle float, switch to fast mouse tracking
+    card.style.animation = "none";
     card.style.transition = "transform 0.1s ease, box-shadow 0.1s ease";
   });
 }
