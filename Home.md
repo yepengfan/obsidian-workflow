@@ -509,26 +509,27 @@ if (bcPage) {
 
   // Radar chart
   const traits = [
-    { n: "Deliberative", v: Number(bcPage.py_deliberative) || 0 },
-    { n: "Detailed", v: Number(bcPage.py_detailed) || 0 },
-    { n: "Creative", v: Number(bcPage.py_creative) || 0 },
-    { n: "Conceptual", v: Number(bcPage.py_conceptual) || 0 },
-    { n: "Leadership", v: Number(bcPage.py_leadership) || 0 },
-    { n: "Tough", v: Number(bcPage.py_tough) || 0 },
-    { n: "Nurturing", v: Number(bcPage.py_nurturing) || 0 },
-    { n: "Extraverted", v: Number(bcPage.py_extraverted) || 0 },
-    { n: "Composed", v: Number(bcPage.py_composed) || 0 },
-    { n: "Determined", v: Number(bcPage.py_determined) || 0 },
-    { n: "Humble", v: Number(bcPage.py_humble) || 0 },
-    { n: "Autonomous", v: Number(bcPage.py_autonomous) || 0 },
+    { n: "Deliberative", s: "Del", v: Number(bcPage.py_deliberative) || 0, g: "t" },
+    { n: "Detailed", s: "Det", v: Number(bcPage.py_detailed) || 0, g: "t" },
+    { n: "Creative", s: "Cre", v: Number(bcPage.py_creative) || 0, g: "t" },
+    { n: "Conceptual", s: "Con", v: Number(bcPage.py_conceptual) || 0, g: "t" },
+    { n: "Leadership", s: "Ldr", v: Number(bcPage.py_leadership) || 0, g: "e" },
+    { n: "Tough", s: "Tgh", v: Number(bcPage.py_tough) || 0, g: "e" },
+    { n: "Nurturing", s: "Nur", v: Number(bcPage.py_nurturing) || 0, g: "e" },
+    { n: "Extraverted", s: "Ext", v: Number(bcPage.py_extraverted) || 0, g: "e" },
+    { n: "Composed", s: "Cmp", v: Number(bcPage.py_composed) || 0, g: "a" },
+    { n: "Determined", s: "Dtr", v: Number(bcPage.py_determined) || 0, g: "a" },
+    { n: "Humble", s: "Hum", v: Number(bcPage.py_humble) || 0, g: "a" },
+    { n: "Autonomous", s: "Aut", v: Number(bcPage.py_autonomous) || 0, g: "a" },
   ];
-  const sz = 200, rcx = sz/2, rcy = sz/2, RR = 78;
+  const gCol = { t: "#2ba5a5", e: "#8b6bae", a: "#c4953a" };
+  const sz = 240, rcx = sz/2, rcy = sz/2, RR = 72;
   const NN = traits.length, rstep = (2 * Math.PI) / NN;
   const rpt = (i, pct) => {
     const a = -Math.PI/2 + i * rstep;
     return [rcx + (pct/100)*RR*Math.cos(a), rcy + (pct/100)*RR*Math.sin(a)];
   };
-  let svg = `<svg viewBox="0 0 ${sz} ${sz}" style="width:100%;max-width:200px;display:block;margin:0 auto;">`;
+  let svg = `<svg viewBox="0 0 ${sz} ${sz}" style="width:100%;max-width:220px;display:block;margin:0 auto;">`;
   for (const p of [25,50,75,100])
     svg += `<circle cx="${rcx}" cy="${rcy}" r="${(p/100)*RR}" fill="none" stroke="var(--background-modifier-border)" stroke-width="0.5"/>`;
   for (let i = 0; i < NN; i++) {
@@ -542,11 +543,12 @@ if (bcPage) {
     const c = t.v >= 70 ? '#3a9a5c' : t.v >= 40 ? '#999' : '#c75c5c';
     svg += `<circle cx="${x}" cy="${y}" r="2.5" fill="${c}"><title>${t.n}: ${t.v}%</title></circle>`;
   });
-  const lbls = [["T",1.5,"#2ba5a5"],["E",5.5,"#8b6bae"],["A",9.5,"#c4953a"]];
-  for (const [txt,idx,col] of lbls) {
-    const [x,y] = rpt(idx, 118);
-    svg += `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="800" fill="${col}" opacity="0.7">${txt}</text>`;
-  }
+  // Trait labels around the outside
+  traits.forEach((t, i) => {
+    const [x, y] = rpt(i, 130);
+    const col = gCol[t.g];
+    svg += `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="6.5" font-weight="600" fill="${col}" opacity="0.8"><title>${t.n}: ${t.v}%</title>${t.s}</text>`;
+  });
   svg += '</svg>';
   const chartEl = card.createEl("div", { attr: { style: "padding:6px 8px 2px;border-top:1px solid var(--background-modifier-border);" } });
   chartEl.innerHTML = svg;
