@@ -638,16 +638,23 @@ if (bcPage) {
   cardWrap.addEventListener("mouseleave", endInteraction);
 
   // Touch events
+  let touching = false;
   cardWrap.addEventListener("touchstart", (e) => {
+    touching = true;
     startInteraction();
     const t = e.touches[0];
     applyHoloEffect(t.clientX, t.clientY);
   }, { passive: true });
   cardWrap.addEventListener("touchmove", (e) => {
+    if (!touching) return;
+    e.preventDefault();
     const t = e.touches[0];
     applyHoloEffect(t.clientX, t.clientY);
-  }, { passive: true });
-  cardWrap.addEventListener("touchend", endInteraction);
+  }, { passive: false });
+  cardWrap.addEventListener("touchend", () => {
+    touching = false;
+    endInteraction();
+  });
 
   // Idle breathing animation
   const breatheId = 'bc-breathe';
