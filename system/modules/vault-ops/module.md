@@ -7,6 +7,8 @@ enabled: true
 created: 2026-03-29
 updated: 2026-03-29
 depends_on: []
+requires:
+  cli: [claude, git]
 commands: [organize, tag-audit, summarize, backup, research, module-toggle]
 templates: []
 scripts: []
@@ -36,6 +38,15 @@ Vault 级别的维护和辅助工具集合。不属于特定领域，为整个 v
 | `/summarize <note\|folder>` | 生成摘要：单条 → 3-5 bullets，文件夹 → 每条一行 | 只读，不修改 |
 | `/backup` | Git 同步 + 推送：运行 `~/obsidian-config/sync.sh` | Git 仓库 |
 | `/research <topic>` | 网络搜索 → Inbox 结构化笔记 | 创建 Inbox/ 新笔记 |
+
+## Quick Start
+
+按需使用，无需日常流程：
+- **整理检查** → `/vault-ops/organize` — 扫描文件组织问题（错位笔记、孤儿文件、缺失链接）
+- **标签审计** → `/vault-ops/tag-audit` — 清理标签命名、统一 taxonomy
+- **笔记摘要** → `/vault-ops/summarize <note|folder>` — 快速了解笔记/文件夹内容概览
+- **备份** → `/vault-ops/backup` — Git 同步 + 推送
+- **网络调研** → `/vault-ops/research <topic>` — 搜索 → 结构化笔记存入 Inbox/
 
 ### 核心原则
 - `/organize` 和 `/tag-audit` 只报告，不自动修改（需确认）

@@ -7,6 +7,13 @@ enabled: true
 created: 2026-03-29
 updated: 2026-03-29
 depends_on: [dashboard]
+requires:
+  cli: [claude]
+  python: ">=3.13"
+  plugins: [dataview]
+  env:
+    ANTHROPIC_API_KEY: "(required) Claude API key for Haiku enrichment"
+    GITHUB_TOKEN: "(optional) Higher API rate limit — 30 req/min vs 10 req/min"
 commands: [github-trending]
 templates: []
 scripts:
@@ -26,6 +33,8 @@ tags: [system/module]
 
 ## Overview
 每日 GitHub 热门仓库摘要。通过 GitHub Search API 获取新仓库和活跃仓库，Claude Haiku 分类评分 + 双语一句话描述。
+
+依赖: [[system/modules/dashboard/module|dashboard]]
 
 ## 架构
 
@@ -65,6 +74,15 @@ Step 3: archive (>14 天报告归档)
 
 ### 性能
 ~30-60 秒，单次 Haiku 调用。可选设置 `GITHUB_TOKEN` 提高 API 速率限制（30 req/min vs 10 req/min）。
+
+## Quick Start
+
+1. **无需额外 pip 包** — Python 标准库即可（但 pipeline 需要 `ANTHROPIC_API_KEY`）
+2. **手动运行** → `/feeds/github-trending` — 生成今日 GitHub 热门仓库摘要（中英文双版）
+3. **(可选)** → 设置 `GITHUB_TOKEN` 环境变量以提高 API 速率限制
+4. **查看结果** → `Feeds/GitHub-Trending/` 目录下的 `YYYY-MM-DD.md`（中文）和 `YYYY-MM-DD-en.md`（英文）
+
+**日常节奏**: 需要时手动 `/github-trending` → Home.md Feeds 标签页查看
 
 ## 配置位置
 | 组件 | 位置 |

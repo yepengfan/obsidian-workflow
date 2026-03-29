@@ -7,6 +7,8 @@ enabled: true
 created: 2026-03-29
 updated: 2026-03-29
 depends_on: [dashboard]
+requires:
+  plugins: [dataview]
 commands: []
 templates: []
 scripts: []
@@ -20,6 +22,8 @@ tags: [system/module]
 
 ## Overview
 个人评估和自我发展模块。包含 Ray Dalio 风格的 Baseball Card（PrinciplesYou 测评 + 自评 + 交叉验证），在 Home.md 通过雷达图展示。
+
+依赖: [[system/modules/dashboard/module|dashboard]]
 
 ## 架构
 
