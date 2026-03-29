@@ -99,3 +99,6 @@ Phase 4: archive (>14 天报告归档)
 | Shell Command | `.obsidian/plugins/obsidian-shellcommands/data.json` |
 | 权限 | `.claude/settings.json` (Bash allow list) |
 | slash 命令 | `.claude/commands/feeds/ai-digest.md` |
+
+---
+🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]

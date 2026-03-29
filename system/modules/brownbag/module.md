@@ -58,3 +58,6 @@ Work/Brownbag Sessions/
 | 命令定义 | `.claude/commands/brownbag/brownbag.md` |
 | 模板 | `Templates/Brownbag Session.md` |
 | 索引 | `Work/Brownbag Sessions/Brownbag Sessions.md` |
+
+---
+🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]

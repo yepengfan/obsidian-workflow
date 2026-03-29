@@ -82,9 +82,7 @@ pip install aiohttp
 ```
 
 > [!tip] 入口
-> 📊 [[system/registry|控制中心]] — 所有模块状态总览
-> 📖 [[system/README|模块系统文档]] — 模块机制详细说明
-> 🏠 [[Home]] — 主仪表盘
+> 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 📖 [[system/README|Module Docs]]
 
 ## 第二步：选择你需要的模块
 
@@ -94,25 +92,25 @@ pip install aiohttp
 
 | 模块 | 做什么 | 命令 |
 |------|--------|------|
-| **dashboard** | Home.md 仪表盘 | （无命令，纯 UI） |
-| **work** | 每日工作记录 | `/work/daily`, `/work/project` |
-| **zettelkasten** | 永久知识库 | `/zettelkasten/zettel`, `/zettelkasten/inbox-review` |
+| [[system/modules/dashboard/module\|dashboard]] | Home.md 仪表盘 | （无命令，纯 UI） |
+| [[system/modules/work/module\|work]] | 每日工作记录 | `/work/daily`, `/work/project` |
+| [[system/modules/zettelkasten/module\|zettelkasten]] | 永久知识库 | `/zettelkasten/zettel`, `/zettelkasten/inbox-review` |
 
 ### 🟡 按需开启
 
 | 模块 | 做什么 | 前置条件 |
 |------|--------|----------|
-| **learning** | 结构化学习计划 | 依赖 zettelkasten |
-| **brownbag** | 技术分享会管理 | 依赖 work |
-| **vault-ops** | 维护工具（整理、备份） | git |
+| [[system/modules/learning/module\|learning]] | 结构化学习计划 | 依赖 zettelkasten |
+| [[system/modules/brownbag/module\|brownbag]] | 技术分享会管理 | 依赖 work |
+| [[system/modules/vault-ops/module\|vault-ops]] | 维护工具（整理、备份） | git |
 
 ### 🔵 进阶（需要额外配置）
 
 | 模块 | 做什么 | 前置条件 |
 |------|--------|----------|
-| **feeds-ai-digest** | 每日 AI 新闻 | Python 3.13+, aiohttp, ANTHROPIC_API_KEY |
-| **feeds-github-trending** | GitHub 热门仓库 | Python 3.13+, ANTHROPIC_API_KEY |
-| **profile** | 个人 Baseball Card | 依赖 dashboard |
+| [[system/modules/feeds-ai-digest/module\|feeds-ai-digest]] | 每日 AI 新闻 | Python 3.13+, aiohttp, ANTHROPIC_API_KEY |
+| [[system/modules/feeds-github-trending/module\|feeds-github-trending]] | GitHub 热门仓库 | Python 3.13+, ANTHROPIC_API_KEY |
+| [[system/modules/profile/module\|profile]] | 个人 Baseball Card | 依赖 dashboard |
 
 ## 第三步：启用模块
 

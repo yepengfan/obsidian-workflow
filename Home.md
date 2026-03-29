@@ -6,6 +6,8 @@ banner_x: 0.5
 banner_y: 0
 ---
 
+> 🚀 [[GETTING_STARTED|Getting Started]] · 📊 [[system/registry|Registry]] · 📖 [[system/README|Module Docs]]
+
 ## Work
 
 ```dataviewjs

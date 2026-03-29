@@ -91,3 +91,6 @@ Step 3: archive (>14 天报告归档)
 | 分类提示词 | `scripts/github-trending/prompts/enrich.md` |
 | 权限 | `.claude/settings.json` (Bash allow list) |
 | slash 命令 | `.claude/commands/feeds/github-trending.md` |
+
+---
+🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]

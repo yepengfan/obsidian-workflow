@@ -3,6 +3,8 @@ tags: [MOC]
 cssclasses: [wide-page]
 ---
 
+> 🏠 [[Home]]
+
 # Books Index
 
 ## Currently Reading
