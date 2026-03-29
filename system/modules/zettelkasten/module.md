@@ -67,3 +67,6 @@ Zettelkasten/
 | 自动升级脚本 | `.claude/scripts/upgrade-zettel-status.py` |
 | Hook 配置 | `.claude/settings.json` → PostToolUse |
 | 模板 | `Templates/Zettel.md` |
+
+---
+🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]

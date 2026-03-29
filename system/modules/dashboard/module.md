@@ -60,3 +60,6 @@ Work/Monthly View.md             # 月视图
 | Dashboard 备份 | `Templates/Work Dashboard.md` |
 | Weekly 备份 | `Templates/Work Weekly View.md` |
 | Monthly 备份 | `Templates/Work Monthly View.md` |
+
+---
+🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]

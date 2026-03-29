@@ -9,7 +9,7 @@ updated: 2026-03-29
 > [!abstract] Vault 控制中心
 > 所有功能模块的统一视图。数据来自 `system/modules/` 下的模块清单文件。
 >
-> 📖 [[system/README|模块系统文档]] · 🚀 [[GETTING_STARTED|新手上手指南]]
+> 🏠 [[Home]] · 🚀 [[GETTING_STARTED|Getting Started]] · 📖 [[system/README|Module Docs]]
 
 ## 模块总览
 

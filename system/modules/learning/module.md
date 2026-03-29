@@ -69,3 +69,6 @@ Learning/
 | 命令定义 | `.claude/commands/learning/{learning-init,learning-log,learning-review}.md` |
 | 计划模板 | `Templates/Learning Plan.md` |
 | 周记模板 | `Templates/Learning Week.md` |
+
+---
+🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]

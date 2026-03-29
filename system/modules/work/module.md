@@ -76,3 +76,6 @@ Work/
 | 项目模板 | `Templates/Work Project.md` |
 | 仪表盘 | `Work/Work Dashboard.md` |
 | 仪表盘备份 | `Templates/Work Dashboard.md` |
+
+---
+🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]

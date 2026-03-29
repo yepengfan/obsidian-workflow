@@ -50,3 +50,6 @@ Profile/
 | Baseball Card | `Profile/Personal Baseball Card.md` |
 | 技能雷达 | `Profile/Skill Radar.md` |
 | 展示层 | `Home.md`（Dataviewjs 雷达图代码） |
+
+---
+🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]

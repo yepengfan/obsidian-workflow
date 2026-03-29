@@ -3,6 +3,8 @@ date: 2026-03-23
 tags: [github-trending, dashboard]
 ---
 
+> 🏠 [[Home]]
+
 # GitHub Trending
 
 ## Quick Links
