@@ -1255,16 +1255,6 @@ if (plans.length === 0) {
 
 ---
 
-## Entertainment
-
-```dataview
-LIST
-FROM "Entertainment"
-SORT file.mtime DESC
-```
-
----
-
 ## Vault Stats
 
 ```dataviewjs
