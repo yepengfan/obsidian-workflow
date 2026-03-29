@@ -28,6 +28,8 @@ tags: [system/module]
 ## Overview
 日常工作记录系统。每天一条日记，按项目分组任务，未完成任务自动延续，支持优先级和排序。
 
+依赖: [[system/modules/dashboard/module|dashboard]] · 被依赖: [[system/modules/brownbag/module|brownbag]]
+
 ## 架构
 
 ```

@@ -27,6 +27,8 @@ tags: [system/module]
 ## Overview
 结构化学习计划系统。每个计划有 4-5 字母代码（如 AISA, SYSD），包含目标、阶段、周记、项目。
 
+依赖: [[system/modules/zettelkasten/module|zettelkasten]]
+
 ## 架构
 
 ```

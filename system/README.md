@@ -9,6 +9,8 @@ updated: 2026-03-29
 > [!abstract] 目的
 > 将 vault 的所有功能模块化管理，避免随着功能增加变成意大利面。
 > 每个功能是一个 **module**，有标准化清单，统一在 [[system/registry]] 查看。
+>
+> 🚀 第一次使用？请先看 [[GETTING_STARTED|新手上手指南]]
 
 ## 核心概念
 

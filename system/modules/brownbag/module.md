@@ -25,6 +25,8 @@ tags: [system/module]
 ## Overview
 Brownbag 技术分享会管理。每个 session 有唯一 ID（BB-N），通过验收标准清单自动推断状态。
 
+依赖: [[system/modules/work/module|work]]
+
 ## 架构
 
 ```

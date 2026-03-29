@@ -37,6 +37,8 @@ tags: [system/module]
 ## Overview
 每日 AI 新闻摘要管线。从 92 个 Karpathy 精选 RSS 源获取文章，Claude Haiku 评分筛选 + 双语摘要，输出中英文 Obsidian 报告。
 
+依赖: [[system/modules/dashboard/module|dashboard]]
+
 ## 架构
 
 ```

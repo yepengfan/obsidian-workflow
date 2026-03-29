@@ -82,7 +82,9 @@ pip install aiohttp
 ```
 
 > [!tip] 入口
-> 打开 [[system/registry]] 查看所有模块状态 — 这是你的控制中心。
+> 📊 [[system/registry|控制中心]] — 所有模块状态总览
+> 📖 [[system/README|模块系统文档]] — 模块机制详细说明
+> 🏠 [[Home]] — 主仪表盘
 
 ## 第二步：选择你需要的模块
 

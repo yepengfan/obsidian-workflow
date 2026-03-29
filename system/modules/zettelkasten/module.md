@@ -30,6 +30,8 @@ tags: [system/module]
 ## Overview
 原子化永久笔记系统。每条笔记一个想法，用自己的话写，通过 `Related::` 互相链接。
 
+被依赖: [[system/modules/learning/module|learning]]
+
 ## 架构
 
 ```

@@ -34,6 +34,8 @@ tags: [system/module]
 ## Overview
 每日 GitHub 热门仓库摘要。通过 GitHub Search API 获取新仓库和活跃仓库，Claude Haiku 分类评分 + 双语一句话描述。
 
+依赖: [[system/modules/dashboard/module|dashboard]]
+
 ## 架构
 
 ```
