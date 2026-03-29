@@ -19,6 +19,7 @@ sorting-spec: |
   CLAUDE
   README
   sortspec
+  GETTING_STARTED
   Home
 ---
 
