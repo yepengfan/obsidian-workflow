@@ -6,12 +6,12 @@ status: active
 enabled: true
 created: 2026-03-29
 updated: 2026-03-29
-depends_on: [inbox]
+depends_on: []
 commands: [zettel, retro, backlink, inbox-review, project-retro]
-templates: [Templates/Zettel.md]
+templates: [Templates/Zettel.md, Templates/Inbox.md]
 scripts: []
 hooks: [upgrade-zettel-status]
-folders: [Zettelkasten/]
+folders: [Zettelkasten/, Inbox/, Inbox/archive/]
 config_files:
   - .claude/commands/zettelkasten/zettel.md
   - .claude/commands/zettelkasten/retro.md

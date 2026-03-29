@@ -3,20 +3,16 @@ sorting-spec: |
   target-folder: .
   Inbox
   Zettelkasten
-  Note
   Profile
   Work
-  Training
-  Books
   Learning
+  Reading
   Feeds
-  Matter
-  Instapaper Notes
   WeRead
-  Excalidraw
   Attachments
-  Entertainment
+  Archive
   scripts
+  system
   Templates
   CLAUDE
   README

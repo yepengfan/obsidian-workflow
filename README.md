@@ -21,7 +21,7 @@ The combination produces a two-layer system: a **capture layer** (Inbox) where n
   skills/         # Claude Code skills (Obsidian markdown, Bases, Canvas, etc.)
   settings.json   # Hook configuration
 
-Books/
+Learning/Books/
   book_init.py    # EPUB/PDF parser → Obsidian note generator
   CLAUDE.md       # Book learning system instructions
   Books Index.md  # Dataview-powered book directory + WeRead Library card view
@@ -224,7 +224,7 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 - 🌳 `evergreen` — manually marked; deeply internalized, cross-domain connections
 
 ```
-python3 Books/book_init.py --file "path/to/book.epub" --output "path/to/vault/Books"
+python3 Learning/Books/book_init.py --file "path/to/book.epub" --output "path/to/vault/Learning/Books"
 ```
 
 Generates per-book Obsidian notes:
@@ -361,7 +361,7 @@ Any changes to `~/Library/ebooks/` are automatically synced to S3.
 ### 5. Book system config
 
 ```bash
-cp Books/.bookrc.example .bookrc
+cp Learning/Books/.bookrc.example .bookrc
 # Edit .bookrc:
 #   books_dir = "~/Library/ebooks"
 #   vault_dir = "~/Vaults/Workspace"
