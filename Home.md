@@ -886,7 +886,7 @@ const { panels: fPanels } = createTabGroup(dv, [
     const lines = content.split("\n");
 
     const repoLines = lines
-      .filter(l => l.startsWith("> [!tip]") && (l.includes("1️⃣") || l.includes("2️⃣") || l.includes("3️⃣") || l.includes("4️⃣") || l.includes("5️⃣")))
+      .filter(l => l.startsWith("> [!tip]"))
       .slice(0, 5);
 
     const row = p.createEl("div", {
