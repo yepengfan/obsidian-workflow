@@ -30,6 +30,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 
 ## Key Files
 
+- **GETTING_STARTED.md** — Onboarding guide for new users. Start here if you're setting up this vault for the first time.
 - **Home.md** — Dashboard using Dataview queries. Avoid modifying unless asked. Uses pill/segment tab UI: Work section has `[Work | Card]` tabs (Card shows Baseball Card radar chart with holographic effect); Feeds section has `[AI Digest | GitHub Trending]` tabs.
 - **sortspec.md** — Custom file explorer sort order (Custom File Explorer Sorting plugin). Do not delete.
 - **Work/Work Dashboard.md** — Work dashboard with task views and project summary.
@@ -91,6 +92,20 @@ Each module has an `enabled` field in `system/modules/<name>/module.md`:
   - **Pipelines**: `run.sh` scripts check their module status before executing
 
 **Toggle a module**: Use `/module-toggle <name>` (e.g., `/module-toggle feeds-ai-digest`)
+
+### Module Prerequisites
+
+Each module declares external dependencies via the `requires` frontmatter field:
+
+| Sub-field | What it checks | Example |
+|-----------|---------------|---------|
+| `cli` | CLI tools on PATH | `[claude, git]` |
+| `python` | Python minimum version | `">=3.13"` |
+| `pip` | Python packages | `[aiohttp]` |
+| `plugins` | Obsidian plugin IDs | `[dataview, obsidian-shellcommands]` |
+| `env` | Environment variables | `{ANTHROPIC_API_KEY: "description"}` |
+
+`/module-toggle` checks all `requires` when enabling a module and blocks if hard prerequisites are missing.
 
 ### Adding a New Feature
 

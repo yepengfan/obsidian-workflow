@@ -7,6 +7,9 @@ enabled: true
 created: 2026-03-29
 updated: 2026-03-29
 depends_on: [zettelkasten]
+requires:
+  cli: [claude]
+  plugins: [dataview]
 commands: [learning-init, learning-log, learning-review]
 templates: [Templates/Learning Plan.md, Templates/Learning Week.md]
 scripts: []
@@ -49,6 +52,14 @@ Learning/
 |------|------|------|------|
 | AISA | AI Solutions Architect | Phase 2 | 进行中 |
 | SYSD | System Design | - | 待启动 |
+
+## Quick Start
+
+1. **发起学习计划** → `/learning/learning-init <plan-name>` — 创建完整文件夹结构（计划、概念图、周记目录）
+2. **每周记录** → `/learning/learning-log <CODE>` — 记录本周学习进展，自动预填当前阶段目标
+3. **阶段复盘** → `/learning/learning-review <CODE>` — 检查进度对齐、提取 zettel 候选、调整下周方向
+
+**日常节奏**: `/learning-init` 启动计划 → 每周 `/learning-log` 记录 → 每 2-4 周 `/learning-review` 复盘
 
 ## 配置位置
 | 组件 | 位置 |

@@ -7,6 +7,9 @@ enabled: true
 created: 2026-03-29
 updated: 2026-03-29
 depends_on: [dashboard]
+requires:
+  cli: [claude]
+  plugins: [dataview]
 commands: [daily, project, decision-log, meeting]
 templates: [Templates/Work Daily.md, Templates/Work Project.md]
 scripts: []
@@ -53,6 +56,15 @@ Work/
 | 前一天笔记 | `- [ ]` → `- [>]` + ` ➡️ [[Work/YYYY/YYYY-MM-DD]]` |
 | 子任务 | `- [ ]` → `- [>]`（不加链接，父级已标记） |
 | 新一天笔记 | `## 🔄 Carryover` 区域 + 来源归因 |
+
+## Quick Start
+
+1. **每日开工** → `/work/daily` — 创建今日工作笔记，自动从昨天延续未完成任务
+2. **新建项目** → `/work/project <name>` — 创建项目页面，Dataview 自动汇总该项目所有任务
+3. **记录决策** → `/work/decision-log` — 记录重要决策（背景、选项、理由、后果）
+4. **会议纪要** → `/work/meeting` — 创建会议笔记（议程、讨论、行动项）
+
+**日常节奏**: 每天 `/daily` 开工 → 任务写在 `### 项目名` 下 → 需要时 `/decision-log` 或 `/meeting`
 
 ## 配置位置
 | 组件 | 位置 |

@@ -24,7 +24,8 @@ updated: 2026-03-29
 | `type` | 类型分类 | `knowledge` / `work` / `feed` / `utility` / `profile` |
 | `status` | 生命周期状态 | `active`（维护中）/ `inactive`（暂停开发）/ `deprecated`（计划移除） |
 | `enabled` | 运行时开关 | `true`（命令可用）/ `false`（命令拒绝执行） |
-| `depends_on` | 依赖的其他模块 | `[inbox]` |
+| `depends_on` | 依赖的其他模块 | `[dashboard]` |
+| `requires` | 外部前置条件（见下方） | `{cli: [claude], python: ">=3.13"}` |
 | `commands` | 关联的 slash 命令 | `[zettel, retro, backlink]` |
 | `templates` | 使用的模板 | `[Templates/Zettel.md]` |
 | `scripts` | 关联脚本 | `[scripts/ai-digest/run.sh]` |
@@ -38,6 +39,28 @@ updated: 2026-03-29
 - 🔗 依赖关系图
 - 📋 命令 × 模块映射
 - ⚠️ 健康检查（缺失模板、断链等）
+
+### `requires` — 外部前置条件
+
+`depends_on` 声明模块间依赖，`requires` 声明外部工具/环境依赖：
+
+| 子字段 | 说明 | 示例 |
+|--------|------|------|
+| `cli` | 命令行工具 | `[claude, git]` |
+| `python` | Python 最低版本 | `">=3.13"` |
+| `pip` | Python 包 | `[aiohttp]` |
+| `plugins` | Obsidian 插件 ID | `[dataview, obsidian-shellcommands]` |
+| `env` | 环境变量（key = 名称, value = 说明） | `{ANTHROPIC_API_KEY: "Claude API key"}` |
+
+`/module-toggle` 在启用模块时会自动检查所有 `requires` 字段，报告缺失项。
+
+### Module body 约定
+
+每个 module.md 的 body 部分应包含：
+- `## Overview` — 一句话说明模块做什么
+- `## 架构` — 文件结构和数据流
+- `## Quick Start` — **新用户日常使用流程**（命令顺序、触发节奏）
+- `## 配置位置` — 所有配置文件的位置表
 
 ## 模块开关
 
@@ -74,6 +97,12 @@ updated: 2026-03-29
 ### 禁用模块时的注意事项
 - **检查依赖**：`/module-toggle` 会自动检查并警告依赖关系
 - **Shell Commands**：Obsidian 启动时的 AI Digest 由 `run.sh` 内的脚本守卫控制
+
+### 启用模块时的前置条件检查
+- **`requires` 检查**：`/module-toggle` 在启用模块时自动检查 CLI 工具、Python 版本、pip 包、Obsidian 插件、环境变量
+- **`depends_on` 检查**：依赖的模块必须已 `enabled: true`
+- **硬失败 ❌**：CLI/Python/依赖模块缺失 → 拒绝启用
+- **软警告 ⚠️**：插件/环境变量缺失 → 提示但允许继续
 
 ## 添加新功能的标准流程
 

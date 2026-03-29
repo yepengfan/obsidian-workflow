@@ -7,6 +7,8 @@ enabled: true
 created: 2026-03-29
 updated: 2026-03-29
 depends_on: []
+requires:
+  plugins: [dataview, homepage]
 commands: []
 templates: [Templates/Home.md, Templates/Work Dashboard.md, Templates/Work Weekly View.md, Templates/Work Monthly View.md]
 scripts: []

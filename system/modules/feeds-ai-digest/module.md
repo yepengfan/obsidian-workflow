@@ -7,6 +7,13 @@ enabled: true
 created: 2026-03-29
 updated: 2026-03-29
 depends_on: [dashboard]
+requires:
+  cli: [claude]
+  python: ">=3.13"
+  pip: [aiohttp]
+  plugins: [dataview, obsidian-shellcommands]
+  env:
+    ANTHROPIC_API_KEY: "Claude API key for Haiku scoring/summarization"
 commands: [ai-digest]
 templates: []
 scripts:
@@ -71,6 +78,15 @@ Phase 4: archive (>14 天报告归档)
 
 ### 性能
 ~4-6 分钟，使用 Haiku 模型以控制成本和速度。
+
+## Quick Start
+
+1. **首次安装** → `cd scripts/ai-digest && python -m venv .venv && source .venv/bin/activate && pip install aiohttp`
+2. **手动运行** → `/feeds/ai-digest` — 生成今日 AI 摘要（中英文双版）
+3. **自动运行** → 配置 Shell Commands 插件，在 Obsidian 启动时执行 `bash scripts/ai-digest/run.sh`
+4. **查看结果** → `Feeds/AI-Daily/` 目录下的 `YYYY-MM-DD.md`（中文）和 `YYYY-MM-DD-en.md`（英文）
+
+**日常节奏**: 打开 Obsidian 自动生成 → Home.md Feeds 标签页查看
 
 ## 配置位置
 | 组件 | 位置 |

@@ -7,6 +7,8 @@ enabled: true
 created: 2026-03-29
 updated: 2026-03-29
 depends_on: [dashboard]
+requires:
+  plugins: [dataview]
 commands: []
 templates: []
 scripts: []
