@@ -8,6 +8,7 @@ sorting-spec: |
   Learning
   Reading
   Feeds
+  Note
   WeRead
   Attachments
   Archive

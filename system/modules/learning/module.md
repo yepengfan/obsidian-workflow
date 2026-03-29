@@ -11,7 +11,7 @@ commands: [learning-init, learning-log, learning-review]
 templates: [Templates/Learning Plan.md, Templates/Learning Week.md]
 scripts: []
 hooks: []
-folders: [Learning/, Learning/Books/]
+folders: [Learning/, Learning/Books/, Learning/Training/]
 config_files:
   - .claude/commands/learning/learning-init.md
   - .claude/commands/learning/learning-log.md
