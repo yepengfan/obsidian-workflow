@@ -10,7 +10,7 @@ Audit and clean up tags across the vault.
 The vault uses these standard tags. When auditing, classify notes into the appropriate categories:
 
 ### Content Type Tags
-- `book-summary` — AI-generated book summary (Book Summaries/ folder)
+- `book-summary` — AI-generated book summary (Learning/Books/ folder)
 - `book-summary-index` — Index/dashboard for book summaries
 - `daily` — Daily journal notes
 - `research` — Research notes created via /research
@@ -48,7 +48,7 @@ The vault uses these standard tags. When auditing, classify notes into the appro
 3. **Wait for approval** before making any changes.
 
 4. **If approved**, update the frontmatter tags. Rules:
-   - Book Summaries: Keep `book-summary` and ADD one topic tag (e.g., `tags: [book-summary, investing]`)
+   - Learning/Books: Keep `book-summary` and ADD one topic tag (e.g., `tags: [book-summary, investing]`)
    - Work docs: Add appropriate content type tag + topic tag
    - Never remove existing valid tags, only add or standardize
    - NEVER modify WeRead/ files

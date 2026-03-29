@@ -100,7 +100,6 @@ system/
 ├── registry.md            # Dataview 控制中心仪表盘
 └── modules/               # 模块清单（每个功能一个文件夹）
     ├── zettelkasten/module.md
-    ├── inbox/module.md
     ├── work/module.md
     ├── learning/module.md
     ├── feeds-ai-digest/module.md
