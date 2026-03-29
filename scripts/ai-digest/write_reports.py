@@ -33,7 +33,7 @@ CATEGORY_LABEL = {
     "other": "Other",
 }
 
-RANK_EMOJI = {1: "🥇", 2: "🥈", 3: "🥉"}
+RANK_EMOJI = {1: "1️⃣", 2: "2️⃣", 3: "3️⃣", 4: "4️⃣", 5: "5️⃣"}
 
 
 def rank_str(rank: int) -> str:
