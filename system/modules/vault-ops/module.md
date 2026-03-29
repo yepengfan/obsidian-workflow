@@ -7,7 +7,7 @@ enabled: true
 created: 2026-03-29
 updated: 2026-03-29
 depends_on: []
-commands: [organize, tag-audit, summarize, backup, research]
+commands: [organize, tag-audit, summarize, backup, research, module-toggle]
 templates: []
 scripts: []
 hooks: []
@@ -18,6 +18,7 @@ config_files:
   - .claude/commands/vault-ops/summarize.md
   - .claude/commands/vault-ops/backup.md
   - .claude/commands/vault-ops/research.md
+  - .claude/commands/module-toggle.md
 tags: [system/module]
 ---
 

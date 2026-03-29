@@ -22,8 +22,8 @@ updated: 2026-03-29
 | `module` | 唯一标识符 | `zettelkasten` |
 | `label` | 显示名称 | `Zettelkasten 永久笔记` |
 | `type` | 类型分类 | `knowledge` / `work` / `feed` / `utility` / `profile` |
-| `status` | 运行状态 | `active` / `inactive` / `deprecated` |
-| `enabled` | 模块开关 | `true` / `false` |
+| `status` | 生命周期状态 | `active`（维护中）/ `inactive`（暂停开发）/ `deprecated`（计划移除） |
+| `enabled` | 运行时开关 | `true`（命令可用）/ `false`（命令拒绝执行） |
 | `depends_on` | 依赖的其他模块 | `[inbox]` |
 | `commands` | 关联的 slash 命令 | `[zettel, retro, backlink]` |
 | `templates` | 使用的模板 | `[Templates/Zettel.md]` |
@@ -42,6 +42,19 @@ updated: 2026-03-29
 ## 模块开关
 
 > [!tip] 用 `/module-toggle <name>` 切换模块的启停状态
+
+### `status` vs `enabled` 的区别
+
+| 字段 | 含义 | 类比 |
+|------|------|------|
+| `status` | **生命周期**：这个模块还在维护吗？ | 一台机器是"正在使用"还是"已报废" |
+| `enabled` | **运行时开关**：这个模块现在要不要跑？ | 同一台机器的电源开关 |
+
+典型组合：
+- `active` + `enabled: true` — 正常运行（默认）
+- `active` + `enabled: false` — 暂时关掉（如休假期间关 daily）
+- `deprecated` + `enabled: false` — 计划移除，已关闭
+- `inactive` + `enabled: false` — 暂停开发且关闭
 
 每个 module 的 `enabled` 字段控制启停：
 

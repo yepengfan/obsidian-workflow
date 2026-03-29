@@ -27,7 +27,7 @@ PYTHON="$SCRIPT_DIR/.venv/bin/python"
 
 # ── Module toggle guard ─────────────────────────────────────────────
 MODULE_FILE="$VAULT_DIR/system/modules/feeds-ai-digest/module.md"
-if grep -q "enabled: false" "$MODULE_FILE" 2>&1; then
+if [ -f "$MODULE_FILE" ] && grep -q "enabled: false" "$MODULE_FILE"; then
     echo "[digest] Module feeds-ai-digest is disabled, skipping." >&2
     exit 0
 fi

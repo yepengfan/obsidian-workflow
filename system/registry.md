@@ -121,11 +121,25 @@ const modules = dv.pages('"system/modules"')
   .where(p => p.module && p.commands)
   .sort(p => p.module);
 
+// Module name → command subdirectory mapping
+const cmdDir = {
+  "zettelkasten": "zettelkasten",
+  "work": "work",
+  "learning": "learning",
+  "feeds-ai-digest": "feeds",
+  "feeds-github-trending": "feeds",
+  "brownbag": "brownbag",
+  "vault-ops": "vault-ops"
+};
+
 let cmdMap = [];
 for (const m of modules) {
   const cmds = Array.isArray(m.commands) ? m.commands : [];
+  const dir = cmdDir[m.module] || m.module;
   for (const cmd of cmds) {
-    cmdMap.push(["`/" + cmd + "`", m.file.link, m.label || m.module]);
+    // module-toggle is a root-level command (no subdirectory)
+    const path = cmd === "module-toggle" ? "/" + cmd : "/" + dir + "/" + cmd;
+    cmdMap.push(["`" + path + "`", m.file.link, m.label || m.module]);
   }
 }
 

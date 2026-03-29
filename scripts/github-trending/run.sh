@@ -25,7 +25,7 @@ REPORT_FILE="$FEED_DIR/$TODAY.md"
 
 # ── Module toggle guard ─────────────────────────────────────────────
 MODULE_FILE="$VAULT_DIR/system/modules/feeds-github-trending/module.md"
-if grep -q "enabled: false" "$MODULE_FILE" 2>&1; then
+if [ -f "$MODULE_FILE" ] && grep -q "enabled: false" "$MODULE_FILE"; then
     echo "[trending] Module feeds-github-trending is disabled, skipping." >&2
     exit 0
 fi
