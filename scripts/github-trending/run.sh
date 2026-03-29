@@ -23,6 +23,13 @@ TODAY=$(date +%Y-%m-%d)
 FEED_DIR="$VAULT_DIR/Feeds/GitHub-Trending"
 REPORT_FILE="$FEED_DIR/$TODAY.md"
 
+# ── Module toggle guard ─────────────────────────────────────────────
+MODULE_FILE="$VAULT_DIR/system/modules/feeds-github-trending/module.md"
+if grep -q "enabled: false" "$MODULE_FILE" 2>&1; then
+    echo "[trending] Module feeds-github-trending is disabled, skipping." >&2
+    exit 0
+fi
+
 # ── Pre-flight checks ───────────────────────────────────────────────
 if [ -f "$REPORT_FILE" ]; then
     echo "[trending] Today's report already exists: $REPORT_FILE"

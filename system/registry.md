@@ -20,13 +20,15 @@ const modules = dv.pages('"system/modules"')
 const active = modules.where(p => p.status === "active").length;
 const inactive = modules.where(p => p.status === "inactive").length;
 const deprecated = modules.where(p => p.status === "deprecated").length;
+const enabled = modules.where(p => p.enabled === true).length;
+const disabled = modules.where(p => p.enabled === false).length;
 const totalCmds = modules.array().reduce((sum, p) => {
   const cmds = p.commands;
   return sum + (Array.isArray(cmds) ? cmds.length : 0);
 }, 0);
 
 dv.paragraph(
-  `> **${active}** active · **${inactive}** inactive · **${deprecated}** deprecated · **${totalCmds}** commands total`
+  `> **${active}** active · **${inactive}** inactive · **${deprecated}** deprecated · **${totalCmds}** commands total\n> ✅ **${enabled}** enabled · ❌ **${disabled}** disabled`
 );
 ```
 
@@ -52,23 +54,40 @@ const modules = dv.pages('"system/modules"')
   .sort(p => p.type);
 
 dv.table(
-  ["状态", "模块", "类型", "命令", "依赖", "脚本", "Hooks"],
+  ["Enabled", "状态", "模块", "类型", "命令", "依赖"],
   modules.map(p => {
     const cmds = Array.isArray(p.commands) ? p.commands : [];
     const deps = Array.isArray(p.depends_on) ? p.depends_on : [];
-    const scripts = Array.isArray(p.scripts) ? p.scripts : [];
-    const hooks = Array.isArray(p.hooks) ? p.hooks : [];
+    const enabledIcon = p.enabled === false ? "❌" : "✅";
     return [
+      enabledIcon,
       statusStyle[p.status] || "❓",
       p.file.link,
       (typeEmoji[p.type] || "❓") + " " + (p.type || "—"),
       cmds.length > 0 ? cmds.map(c => "`/" + c + "`").join(" ") : "—",
-      deps.length > 0 ? deps.map(d => "`" + d + "`").join(" ") : "—",
-      scripts.length > 0 ? scripts.length + " files" : "—",
-      hooks.length > 0 ? hooks.join(", ") : "—"
+      deps.length > 0 ? deps.map(d => "`" + d + "`").join(" ") : "—"
     ];
   })
 );
+```
+
+## ⚠️ 已禁用模块
+
+```dataviewjs
+const disabled = dv.pages('"system/modules"')
+  .where(p => p.module && p.enabled === false);
+
+if (disabled.length > 0) {
+  for (const m of disabled) {
+    const cmds = Array.isArray(m.commands) ? m.commands : [];
+    const cmdStr = cmds.length > 0
+      ? cmds.map(c => "`/" + c + "`").join(", ")
+      : "无命令";
+    dv.paragraph(`> [!warning] **${m.label || m.module}** 已禁用\n> 以下命令不可用：${cmdStr}\n> 启用：\`/module-toggle ${m.module}\``);
+  }
+} else {
+  dv.paragraph("*所有模块均已启用。*");
+}
 ```
 
 ## 依赖关系
