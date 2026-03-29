@@ -13,6 +13,14 @@ import json, re, sys, os
 
 
 def main():
+    # ── Module toggle guard ─────────────────────────────────────────
+    module_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+        "../../system/modules/zettelkasten/module.md")
+    if os.path.exists(module_path):
+        with open(module_path, "r", encoding="utf-8") as mf:
+            if "enabled: false" in mf.read():
+                sys.exit(0)
+
     try:
         data = json.load(sys.stdin)
     except (json.JSONDecodeError, ValueError):

@@ -25,6 +25,13 @@ FEED_DIR="$VAULT_DIR/Feeds/AI-Daily"
 DIGEST_FILE="$FEED_DIR/$TODAY.md"
 PYTHON="$SCRIPT_DIR/.venv/bin/python"
 
+# ── Module toggle guard ─────────────────────────────────────────────
+MODULE_FILE="$VAULT_DIR/system/modules/feeds-ai-digest/module.md"
+if [ -f "$MODULE_FILE" ] && grep -q "enabled: false" "$MODULE_FILE"; then
+    echo "[digest] Module feeds-ai-digest is disabled, skipping." >&2
+    exit 0
+fi
+
 # ── Pre-flight checks ───────────────────────────────────────────────
 if [ -f "$DIGEST_FILE" ]; then
     echo "[digest] Today's digest already exists: $DIGEST_FILE"

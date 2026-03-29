@@ -1,22 +1,17 @@
 # ── Content (synced via S3/iCloud, not git) ──
+Archive/
 Attachments/
-Books/*/
-Entertainment/
 system-design-primer/
-Excalidraw/
+Kanban/
 Instapaper Notes/*
 !Instapaper Notes/Instapaper Index.md
-Kanban/
 Matter/*
 !Matter/Matter Index.md
 Thoughts/
 Learning/
-Training/
 WeRead/
 Work/
-Book Summaries/
 Inbox/
-Note/
 Zettelkasten/*
 !Zettelkasten/Zettelkasten Index.md
 Profile/

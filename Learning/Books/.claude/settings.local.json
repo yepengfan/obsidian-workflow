@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)",
+      "WebSearch",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(gh repo:*)",
+      "Bash(gh api:*)",
+      "Bash(gh pr:*)",
+      "Bash(bash:*)",
+      "Bash(echo \"exit: $?\")",
+      "Read(~/.dotfiles/claude/.claude/**)",
+      "Bash(claude:*)"
+    ]
+  }
+}

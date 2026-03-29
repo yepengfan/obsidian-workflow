@@ -909,6 +909,103 @@ const { panels: fPanels } = createTabGroup(dv, [
 
 ---
 
+## Learning
+
+```dataviewjs
+function isoWeekLabel(d) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+function lastNWeeks(n) {
+  const result = [];
+  const now = new Date();
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i * 7);
+    result.push(isoWeekLabel(d));
+  }
+  return result;
+}
+
+const WEEKS = lastNWeeks(10);
+const currentWeek = WEEKS[WEEKS.length - 1];
+const plans = dv.pages('"Learning"').where(p => p.file.name === "00_plan" && p.status === "active");
+const allLogs = dv.pages('"Learning"').where(p => p.week !== undefined);
+
+const container = dv.el("div", "");
+
+if (plans.length === 0) {
+  container.createEl("p", { text: "No active plans — run /learning-init to start one.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
+} else {
+  for (const p of plans) {
+    const code = p.file.folder.split("/").pop();
+    const planLogs = allLogs.filter(l => l.code === code);
+    const logMap = {};
+    for (const l of planLogs) logMap[l.week] = l;
+    const weeksElapsed = p.started
+      ? Math.floor((new Date() - p.started.toJSDate()) / (7 * 24 * 60 * 60 * 1000)) + 1
+      : null;
+    const currentPhase = p.phase || 1;
+
+    // Card
+    const card = container.createEl("div", {
+      attr: { style: "display:flex;gap:0;margin-bottom:8px;border:1px solid var(--background-modifier-border);border-radius:8px;overflow:hidden;background:var(--background-secondary);" }
+    });
+
+    // Left accent bar
+    card.createEl("div", { attr: { style: "width:3px;background:var(--color-accent);flex-shrink:0;" } });
+
+    const body = card.createEl("div", { attr: { style: "flex:1;min-width:0;padding:9px 12px;" } });
+
+    // Row 1: code badge + phase pill + week stat
+    const row1 = body.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;margin-bottom:5px;" } });
+    row1.innerHTML += `<a class="internal-link" data-href="${p.file.path}" style="font-weight:700;font-size:0.75em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;text-decoration:none;white-space:nowrap;flex-shrink:0;">${code}</a>`;
+    row1.createEl("span", {
+      text: `Phase ${currentPhase}`,
+      attr: { style: "font-size:0.7em;padding:1px 7px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
+    });
+    if (weeksElapsed !== null) {
+      row1.createEl("span", {
+        text: `Wk ${weeksElapsed}`,
+        attr: { style: "font-size:0.7em;color:var(--text-faint);white-space:nowrap;" }
+      });
+    }
+
+    // Row 2: target text
+    if (p.target) {
+      body.createEl("div", {
+        text: p.target,
+        attr: { style: "font-size:0.8em;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" }
+      });
+    }
+
+    // Right: 10-week activity squares
+    const dotsWrap = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:3px;padding:0 12px;flex-shrink:0;" } });
+    for (const w of [...WEEKS].reverse()) {
+      if (logMap[w]) {
+        dotsWrap.createEl("a", {
+          attr: { class: "internal-link", "data-href": logMap[w].file.path, title: w, style: "width:10px;height:10px;border-radius:2px;background:var(--color-accent);display:inline-block;opacity:0.85;" }
+        });
+      } else {
+        const isCurrent = w === currentWeek;
+        dotsWrap.createEl("div", {
+          attr: { title: w, style: `width:10px;height:10px;border-radius:2px;${isCurrent ? "border:1.5px dashed var(--color-accent);opacity:0.7;" : "background:var(--background-modifier-border);opacity:0.5;"}` }
+        });
+      }
+    }
+  }
+
+  container.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
+    `<a class="internal-link" data-href="Learning/Dashboard.md">Full dashboard →</a>`;
+}
+```
+
+---
+
 ## Brownbag Sessions
 
 ```dataviewjs
@@ -1112,7 +1209,7 @@ if (pages.length === 0) {
 }
 
 readContainer.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
-  `<a class="internal-link" data-href="Books/Books Index">Open Books Index →</a>`;
+  `<a class="internal-link" data-href="Learning/Books/Books Index">Open Books Index →</a>`;
 ```
 
 ### Articles
@@ -1154,113 +1251,6 @@ const instapaper = dv.pages('"Instapaper Notes"').where(p => p.file.name !== "In
 
 renderSection(grid, "Matter", matter, "Matter/Matter Index");
 renderSection(grid, "Instapaper", instapaper, "Instapaper Notes/Instapaper Index");
-```
-
----
-
-## Learning
-
-```dataviewjs
-function isoWeekLabel(d) {
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const day = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
-}
-function lastNWeeks(n) {
-  const result = [];
-  const now = new Date();
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i * 7);
-    result.push(isoWeekLabel(d));
-  }
-  return result;
-}
-
-const WEEKS = lastNWeeks(10);
-const currentWeek = WEEKS[WEEKS.length - 1];
-const plans = dv.pages('"Learning"').where(p => p.file.name === "00_plan" && p.status === "active");
-const allLogs = dv.pages('"Learning"').where(p => p.week !== undefined);
-
-const container = dv.el("div", "");
-
-if (plans.length === 0) {
-  container.createEl("p", { text: "No active plans — run /learning-init to start one.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
-} else {
-  for (const p of plans) {
-    const code = p.file.folder.split("/").pop();
-    const planLogs = allLogs.filter(l => l.code === code);
-    const logMap = {};
-    for (const l of planLogs) logMap[l.week] = l;
-    const weeksElapsed = p.started
-      ? Math.floor((new Date() - p.started.toJSDate()) / (7 * 24 * 60 * 60 * 1000)) + 1
-      : null;
-    const currentPhase = p.phase || 1;
-
-    // Card
-    const card = container.createEl("div", {
-      attr: { style: "display:flex;gap:0;margin-bottom:8px;border:1px solid var(--background-modifier-border);border-radius:8px;overflow:hidden;background:var(--background-secondary);" }
-    });
-
-    // Left accent bar
-    card.createEl("div", { attr: { style: "width:3px;background:var(--color-accent);flex-shrink:0;" } });
-
-    const body = card.createEl("div", { attr: { style: "flex:1;min-width:0;padding:9px 12px;" } });
-
-    // Row 1: code badge + phase pill + week stat
-    const row1 = body.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;margin-bottom:5px;" } });
-    row1.innerHTML += `<a class="internal-link" data-href="${p.file.path}" style="font-weight:700;font-size:0.75em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;text-decoration:none;white-space:nowrap;flex-shrink:0;">${code}</a>`;
-    row1.createEl("span", {
-      text: `Phase ${currentPhase}`,
-      attr: { style: "font-size:0.7em;padding:1px 7px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
-    });
-    if (weeksElapsed !== null) {
-      row1.createEl("span", {
-        text: `Wk ${weeksElapsed}`,
-        attr: { style: "font-size:0.7em;color:var(--text-faint);white-space:nowrap;" }
-      });
-    }
-
-    // Row 2: target text
-    if (p.target) {
-      body.createEl("div", {
-        text: p.target,
-        attr: { style: "font-size:0.8em;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" }
-      });
-    }
-
-    // Right: 10-week activity squares
-    const dotsWrap = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:3px;padding:0 12px;flex-shrink:0;" } });
-    for (const w of [...WEEKS].reverse()) {
-      if (logMap[w]) {
-        dotsWrap.createEl("a", {
-          attr: { class: "internal-link", "data-href": logMap[w].file.path, title: w, style: "width:10px;height:10px;border-radius:2px;background:var(--color-accent);display:inline-block;opacity:0.85;" }
-        });
-      } else {
-        const isCurrent = w === currentWeek;
-        dotsWrap.createEl("div", {
-          attr: { title: w, style: `width:10px;height:10px;border-radius:2px;${isCurrent ? "border:1.5px dashed var(--color-accent);opacity:0.7;" : "background:var(--background-modifier-border);opacity:0.5;"}` }
-        });
-      }
-    }
-  }
-
-  container.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
-    `<a class="internal-link" data-href="Learning/Dashboard.md">Full dashboard →</a>`;
-}
-```
-
----
-
-## Entertainment
-
-```dataview
-LIST
-FROM "Entertainment"
-SORT file.mtime DESC
 ```
 
 ---
