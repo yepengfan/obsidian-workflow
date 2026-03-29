@@ -8,7 +8,7 @@ tags: [index]
 
 ```dataview
 TABLE author AS "Author", date AS "Saved"
-FROM "Reading/Instapaper"
+FROM "Instapaper Notes"
 WHERE file.name != "Instapaper Index"
 SORT file.mtime DESC
 ```

@@ -1149,11 +1149,11 @@ const grid = container.createEl("div", {
   attr: { style: "display:flex;gap:20px;flex-wrap:wrap;" }
 });
 
-const matter = dv.pages('"Reading/Matter"').where(p => p.file.name !== "Matter Index");
-const instapaper = dv.pages('"Reading/Instapaper"').where(p => p.file.name !== "Instapaper Index");
+const matter = dv.pages('"Matter"').where(p => p.file.name !== "Matter Index");
+const instapaper = dv.pages('"Instapaper Notes"').where(p => p.file.name !== "Instapaper Index");
 
-renderSection(grid, "Matter", matter, "Reading/Matter/Matter Index");
-renderSection(grid, "Instapaper", instapaper, "Reading/Instapaper/Instapaper Index");
+renderSection(grid, "Matter", matter, "Matter/Matter Index");
+renderSection(grid, "Instapaper", instapaper, "Instapaper Notes/Instapaper Index");
 ```
 
 ---

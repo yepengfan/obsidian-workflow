@@ -6,7 +6,8 @@ sorting-spec: |
   Profile
   Work
   Learning
-  Reading
+  Matter
+  Instapaper Notes
   Feeds
   Note
   WeRead

@@ -8,7 +8,7 @@ tags: [index]
 
 ```dataview
 TABLE author AS "Author", publisher AS "Publisher"
-FROM "Reading/Matter"
+FROM "Matter"
 WHERE file.name != "Matter Index"
 SORT file.mtime DESC
 ```
