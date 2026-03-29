@@ -6,9 +6,6 @@ banner_x: 0.5
 banner_y: 0
 ---
 
-> 🚀 [[GETTING_STARTED|Getting Started]] · 📊 [[system/registry|Registry]] · 📖 [[system/README|Module Docs]]
-
-## Work
 
 ```dataviewjs
 // Tab factory: creates pill/segment tab group, returns { panels, topBar }
@@ -1282,3 +1279,7 @@ renderSection(grid, "Instapaper", instapaper, "Instapaper Notes/Instapaper Index
 const folders = dv.pages('').groupBy(p => p.file.folder.split('/')[0]).sort(g => g.rows.length, 'desc');
 dv.table(["Folder", "Notes"], folders.map(g => [g.key || "Root", g.rows.length]));
 ```
+
+---
+
+<small>🚀 [[GETTING_STARTED|Getting Started]] · 📊 [[system/registry|Registry]] · 📖 [[system/README|Module Docs]]</small>
