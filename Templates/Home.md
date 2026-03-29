@@ -1,7 +1,7 @@
 ---
 tags: template
 for: Home
-updated: 2026-03-18
+updated: 2026-03-29
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
@@ -29,6 +29,11 @@ updated: 2026-03-18
 > - **Why**: The Generate button relied on the Shell Commands plugin to invoke `run.sh` as a detached background process (`&`). Obsidian's stripped environment prevented the `claude` CLI from authenticating, causing the pipeline to silently fail after Step 0. Errors were invisible since the background process output is not captured.
 > - **Change**: Replaced the button + polling + spinner block with a static placeholder message directing users to run `/ai-digest` in Claude Code instead.
 > - **Supersedes**: The 2026-03-18 timeout note (timeout logic removed along with the button).
+
+> [!note] 2026-03-29 — Skills tab practice tracker links
+> - **What**: Added a data-driven practice links section between the radar chart legend and the footer in the Skills tab.
+> - **How**: Reads `tracker` field from each skill entry in `Profile/Skill Radar.md` frontmatter. Skills with a `tracker` path get a `📐 Name → Tracker →` row. Skills without `tracker` are skipped.
+> - **Scalable**: Adding a new skill with a `tracker:` field in Skill Radar frontmatter automatically surfaces its link in the Skills tab — no Home.md edit needed.
 
 > [!note] 2026-03-13 — Automatic carryover in navToday button
 > - **Problem**: The create button generated clean daily notes without checking for unfinished tasks from the previous day. The `/daily` skill had carryover logic, but clicking the Home.md button did not.
