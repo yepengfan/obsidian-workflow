@@ -1096,13 +1096,96 @@ if (sessions.length === 0) {
 
 ---
 
-## Recent Updates
+## Reading
 
-```dataview
-TABLE file.mtime AS "Modified"
-FROM ""
-SORT file.mtime DESC
-LIMIT 5
+### Currently Reading
+
+```dataviewjs
+const pages = dv.pages('"WeRead"')
+  .where(p => p.author && p.doc_type === "weread-highlights-reviews")
+  .where(p => {
+    const s = p.readingStatus || "";
+    const prog = p.progress || "0%";
+    const num = parseInt(String(prog));
+    return (s === "在读" || (num > 0 && num < 100 && prog !== "-1")) && s !== "读完";
+  })
+  .sort(p => p.lastReadDate, "desc")
+  .limit(8);
+
+const readContainer = dv.el("div", "");
+const grid = readContainer.createEl("div", {
+  attr: { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:8px;" }
+});
+
+for (const p of pages) {
+  const title = p.file.name.replace(/-CB_.*$/, "").replace(/-\d+$/, "");
+  const cover = p.cover || "";
+  const progress = p.progress || "0%";
+
+  const card = grid.createEl("div", {
+    attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;overflow:hidden;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);" }
+  });
+
+  if (cover) {
+    card.createEl("img", { attr: { src: cover, style: "width:100%;height:130px;object-fit:cover;" } });
+  }
+
+  const body = card.createEl("div", { attr: { style: "padding:8px;" } });
+  const titleEl = body.createEl("div", { attr: { style: "font-weight:600;font-size:0.8em;margin-bottom:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;" } });
+  titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${title}</a>`;
+  if (p.author) {
+    body.createEl("div", { text: p.author, attr: { style: "font-size:0.7em;color:var(--text-muted);margin-bottom:4px;" } });
+  }
+  // Progress bar
+  const barBg = body.createEl("div", { attr: { style: "height:4px;background:var(--background-modifier-border);border-radius:2px;overflow:hidden;" } });
+  const num = parseInt(String(progress)) || 0;
+  barBg.createEl("div", { attr: { style: `height:100%;width:${num}%;background:var(--interactive-accent);border-radius:2px;` } });
+  body.createEl("div", { text: progress, attr: { style: "font-size:0.68em;color:var(--text-faint);margin-top:2px;" } });
+}
+
+if (pages.length === 0) {
+  readContainer.createEl("div", { text: "No books currently in progress.", attr: { style: "color:var(--text-muted);font-style:italic;" } });
+}
+
+readContainer.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
+  `<a class="internal-link" data-href="Learning/Books/Books Index">Open Books Index →</a>`;
+```
+
+### Articles
+
+```dataviewjs
+const container = dv.el("div", "");
+
+const matter = dv.pages('"Matter"').where(p => p.file.name !== "Matter Index");
+const instapaper = dv.pages('"Instapaper Notes"').where(p => p.file.name !== "Instapaper Index");
+const all = [...matter, ...instapaper].sort((a, b) => b.file.mtime - a.file.mtime);
+
+// Header with count badge
+const header = container.createEl("div", { attr: { style: "display:flex;align-items:center;gap:8px;margin-bottom:8px;" } });
+header.createEl("span", { text: "Recent", attr: { style: "font-weight:600;font-size:0.85em;" } });
+header.createEl("span", {
+  text: String(all.length),
+  attr: { style: "font-size:0.65em;padding:1px 7px;border-radius:10px;background:var(--background-primary);color:var(--text-muted);border:1px solid var(--background-modifier-border);" }
+});
+
+// Unified article list
+const list = container.createEl("div", "");
+const recent = all.slice(0, 10);
+for (const p of recent) {
+  const source = p.file.path.startsWith("Matter/") ? "Matter" : "Instapaper";
+  const row = list.createEl("div", { attr: { style: "display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid var(--background-modifier-border);" } });
+  const link = row.createEl("div", { attr: { style: "font-size:0.82em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;" } });
+  link.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${p.file.name}</a>`;
+  row.createEl("span", {
+    text: source,
+    attr: { style: "font-size:0.65em;padding:1px 6px;border-radius:8px;background:var(--background-primary);color:var(--text-muted);border:1px solid var(--background-modifier-border);white-space:nowrap;flex-shrink:0;" }
+  });
+}
+
+// Footer links
+container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.8em;display:flex;gap:12px;" } }).innerHTML =
+  `<a class="internal-link" data-href="Matter/Matter Index" style="color:var(--text-faint);">All Matter →</a>` +
+  `<a class="internal-link" data-href="Instapaper Notes/Instapaper Index" style="color:var(--text-faint);">All Instapaper →</a>`;
 ```
 
 ---
@@ -1174,100 +1257,13 @@ container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.85em;" } 
 
 ---
 
-## Reading
+## Recent Updates
 
-### Currently Reading
-
-```dataviewjs
-const pages = dv.pages('"WeRead"')
-  .where(p => p.author && p.doc_type === "weread-highlights-reviews")
-  .where(p => {
-    const s = p.readingStatus || "";
-    const prog = p.progress || "0%";
-    const num = parseInt(String(prog));
-    return (s === "在读" || (num > 0 && num < 100 && prog !== "-1")) && s !== "读完";
-  })
-  .sort(p => p.lastReadDate, "desc")
-  .limit(8);
-
-const readContainer = dv.el("div", "");
-const grid = readContainer.createEl("div", {
-  attr: { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:8px;" }
-});
-
-for (const p of pages) {
-  const title = p.file.name.replace(/-CB_.*$/, "").replace(/-\d+$/, "");
-  const cover = p.cover || "";
-  const progress = p.progress || "0%";
-
-  const card = grid.createEl("div", {
-    attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;overflow:hidden;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);" }
-  });
-
-  if (cover) {
-    card.createEl("img", { attr: { src: cover, style: "width:100%;height:130px;object-fit:cover;" } });
-  }
-
-  const body = card.createEl("div", { attr: { style: "padding:8px;" } });
-  const titleEl = body.createEl("div", { attr: { style: "font-weight:600;font-size:0.8em;margin-bottom:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;" } });
-  titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${title}</a>`;
-  if (p.author) {
-    body.createEl("div", { text: p.author, attr: { style: "font-size:0.7em;color:var(--text-muted);margin-bottom:4px;" } });
-  }
-  // Progress bar
-  const barBg = body.createEl("div", { attr: { style: "height:4px;background:var(--background-modifier-border);border-radius:2px;overflow:hidden;" } });
-  const num = parseInt(String(progress)) || 0;
-  barBg.createEl("div", { attr: { style: `height:100%;width:${num}%;background:var(--interactive-accent);border-radius:2px;` } });
-  body.createEl("div", { text: progress, attr: { style: "font-size:0.68em;color:var(--text-faint);margin-top:2px;" } });
-}
-
-if (pages.length === 0) {
-  readContainer.createEl("div", { text: "No books currently in progress.", attr: { style: "color:var(--text-muted);font-style:italic;" } });
-}
-
-readContainer.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
-  `<a class="internal-link" data-href="Learning/Books/Books Index">Open Books Index →</a>`;
-```
-
-### Articles
-
-```dataviewjs
-function renderSection(container, title, pages, indexPath) {
-  const section = container.createEl("div", { attr: { style: "flex:1;min-width:200px;" } });
-
-  // Header with count badge
-  const header = section.createEl("div", { attr: { style: "display:flex;align-items:center;gap:8px;margin-bottom:8px;" } });
-  const titleEl = header.createEl("span", { attr: { style: "font-weight:600;font-size:0.85em;" } });
-  titleEl.innerHTML = `<a class="internal-link" data-href="${indexPath}" style="text-decoration:none;">${title}</a>`;
-  header.createEl("span", {
-    text: String(pages.length),
-    attr: { style: "font-size:0.65em;padding:1px 7px;border-radius:10px;background:var(--background-primary);color:var(--text-muted);border:1px solid var(--background-modifier-border);" }
-  });
-
-  // Article list
-  const list = section.createEl("div", "");
-  const recent = pages.sort(p => p.file.mtime, "desc").limit(8);
-  for (const p of recent) {
-    const row = list.createEl("div", { attr: { style: "padding:5px 0;border-bottom:1px solid var(--background-modifier-border);" } });
-    const link = row.createEl("div", { attr: { style: "font-size:0.82em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
-    link.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${p.file.name}</a>`;
-  }
-
-  // "All articles →" link
-  section.createEl("div", { attr: { style: "margin-top:6px;font-size:0.8em;" } }).innerHTML =
-    `<a class="internal-link" data-href="${indexPath}" style="color:var(--text-faint);">All ${title.toLowerCase()} →</a>`;
-}
-
-const container = dv.el("div", "");
-const grid = container.createEl("div", {
-  attr: { style: "display:flex;gap:20px;flex-wrap:wrap;" }
-});
-
-const matter = dv.pages('"Matter"').where(p => p.file.name !== "Matter Index");
-const instapaper = dv.pages('"Instapaper Notes"').where(p => p.file.name !== "Instapaper Index");
-
-renderSection(grid, "Matter", matter, "Matter/Matter Index");
-renderSection(grid, "Instapaper", instapaper, "Instapaper Notes/Instapaper Index");
+```dataview
+TABLE file.mtime AS "Modified"
+FROM ""
+SORT file.mtime DESC
+LIMIT 5
 ```
 
 ---
