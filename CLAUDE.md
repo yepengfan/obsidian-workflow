@@ -20,6 +20,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
   - `ai-digest/` — Hybrid Python + Claude Code RSS digest pipeline. Python fetches 92 Karpathy-curated feeds and deduplicates (`fetch.py`), then Claude Code CLI scores and summarizes bilingually (`prompts/score.md`, `prompts/summarize.md`), and Python assembles Obsidian markdown reports (`write_reports.py`). Run via `bash scripts/ai-digest/run.sh`.
   - `github-trending/` — GitHub trending repos pipeline. Python fetches trending repos via GitHub Search API (`fetch.py`), Claude Haiku categorizes and scores with bilingual one-liners (`enrich.py`, `prompts/enrich.md`), and Python assembles Obsidian markdown reports (`write_reports.py`). Run via `bash scripts/github-trending/run.sh`.
 - **Profile/** — Personal assessment and self-development. Contains `Personal Baseball Card.md` (Ray Dalio-inspired Baseball Card with PrinciplesYou assessment + self-evaluation + cross-validation), PrinciplesYou assessment PDF, and profile photo. The Baseball Card is displayed on `Home.md` via a radar chart in the Work section's Card tab.
+- **system/** — Module registry and control center. Each vault feature is a "module" with a standardized manifest in `system/modules/`. The `system/registry.md` is a Dataview-powered dashboard showing all modules, their status, commands, dependencies, and configuration locations. **When adding a new feature, create a module file first** — see `system/README.md` for the workflow.
 - **Training/** — Legacy learning resources (being migrated to `Learning/`)
 - **WeRead/** — Book highlights synced from WeRead (微信读书). **DO NOT MODIFY** — this folder is auto-synced and must remain untouched.
 - **Work/** — Work documentation, organized by year and project
@@ -62,6 +63,21 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 
 Dataview, Kanban, Calendar, Excalidraw, Tag Wrangler, Table Editor, Footnotes, Mind Map, Homepage, Hider, Style Settings, URL into Selection, WeRead, Plugin Update Tracker, Custom File Explorer Sorting, Spaced Repetition, Shell Commands
 
+## Module System
+
+All vault features are tracked as modules in `system/modules/`. See `system/registry.md` for the live dashboard.
+
+**When adding a new feature:**
+1. Create a module file in `system/modules/<name>.md` with standardized frontmatter
+2. Implement the feature (commands, templates, scripts, etc.)
+3. The registry auto-discovers the module via Dataview
+4. Update this file (CLAUDE.md) if the feature affects vault structure
+
+**When modifying an existing feature:**
+1. Check `system/registry.md` for dependency/impact analysis
+2. Make changes
+3. Update the module file's frontmatter (`updated` date, any changed fields)
+
 ## Rules
 
 1. **NEVER modify anything in the `WeRead/` folder** — it is synced externally
@@ -69,6 +85,7 @@ Dataview, Kanban, Calendar, Excalidraw, Tag Wrangler, Table Editor, Footnotes, M
 3. When adding wikilinks, only link to notes that exist or that you are creating
 4. Keep the vault organized — use existing folders before creating new ones
 5. Match the language of the source content (English or Chinese)
+6. **New features must have a module file** in `system/modules/` — create it before or alongside implementation
 
 ## Book Learning System
 
