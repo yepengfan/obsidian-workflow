@@ -1,3 +1,4 @@
+<!-- wrapper: feeds-ai-digest, feeds-github-trending -->
 Run all daily feed pipelines in parallel.
 
 This is a convenience wrapper that runs both feed pipelines at once:
@@ -27,4 +28,4 @@ Both pipelines are independent and idempotent.
 
 4. **Highlights** — after reporting results, read any newly generated Chinese digest/report files and give a brief combined summary:
    - AI Digest: 2-3 sentences on today's `📝 今日看点`
-   - GitHub Trending: 2-3 sentences on the top 3 repos (🥇🥈🥉)
+   - GitHub Trending: 2-3 sentences on the top 5 repos (1️⃣–5️⃣)

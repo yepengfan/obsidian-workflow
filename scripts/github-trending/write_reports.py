@@ -34,7 +34,7 @@ CATEGORY_LABEL = {
     "other": "Other",
 }
 
-RANK_EMOJI = {1: "🥇", 2: "🥈", 3: "🥉"}
+RANK_EMOJI = {1: "1️⃣", 2: "2️⃣", 3: "3️⃣", 4: "4️⃣", 5: "5️⃣"}
 
 CATEGORY_ORDER = ["ai-ml", "devtools", "web", "systems", "data", "security", "other"]
 
