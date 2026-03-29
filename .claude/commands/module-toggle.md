@@ -64,8 +64,9 @@ Toggle a module's enabled state.
      ```bash
      echo "${<VAR_NAME>:+set}"
      ```
-     - ✅ set → show (masked)
-     - ⚠️ not set → warn with description from the manifest
+     - Check the description string for `(required)` or `(optional)` prefix:
+       - `(required)`: ✅ set → show (masked), ❌ not set → hard failure
+       - `(optional)` or no prefix: ✅ set → show (masked), ⚠️ not set → soft warning
 
      **f. `depends_on`** — Module dependencies:
      - Read each dependency's module.md

@@ -50,7 +50,7 @@ updated: 2026-03-29
 | `python` | Python 最低版本 | `">=3.13"` |
 | `pip` | Python 包 | `[aiohttp]` |
 | `plugins` | Obsidian 插件 ID | `[dataview, obsidian-shellcommands]` |
-| `env` | 环境变量（key = 名称, value = 说明） | `{ANTHROPIC_API_KEY: "Claude API key"}` |
+| `env` | 环境变量（key = 名称, value = 说明，前缀 `(required)` 或 `(optional)` 区分硬/软检查） | `{ANTHROPIC_API_KEY: "(required) Claude API key"}` |
 
 `/module-toggle` 在启用模块时会自动检查所有 `requires` 字段，报告缺失项。
 

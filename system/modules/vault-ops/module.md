@@ -39,7 +39,7 @@ Vault 级别的维护和辅助工具集合。不属于特定领域，为整个 v
 | `/backup` | Git 同步 + 推送：运行 `~/obsidian-config/sync.sh` | Git 仓库 |
 | `/research <topic>` | 网络搜索 → Inbox 结构化笔记 | 创建 Inbox/ 新笔记 |
 
-### Quick Start
+## Quick Start
 
 按需使用，无需日常流程：
 - **整理检查** → `/vault-ops/organize` — 扫描文件组织问题（错位笔记、孤儿文件、缺失链接）

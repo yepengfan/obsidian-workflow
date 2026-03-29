@@ -67,7 +67,7 @@ pip install aiohttp
 
 ```
 .
-├── Home.md              ← 你现在在这里（主仪表盘）
+├── Home.md              ← 主仪表盘（Obsidian 启动时自动打开）
 ├── system/
 │   ├── registry.md      ← 📊 所有模块的状态总览
 │   ├── README.md        ← 📖 模块系统文档

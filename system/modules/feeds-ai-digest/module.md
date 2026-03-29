@@ -13,7 +13,7 @@ requires:
   pip: [aiohttp]
   plugins: [dataview, obsidian-shellcommands]
   env:
-    ANTHROPIC_API_KEY: "Claude API key for Haiku scoring/summarization"
+    ANTHROPIC_API_KEY: "(required) Claude API key for Haiku scoring/summarization"
 commands: [ai-digest]
 templates: []
 scripts:
