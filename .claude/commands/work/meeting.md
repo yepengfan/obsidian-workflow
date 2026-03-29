@@ -7,7 +7,7 @@ Create a meeting note for: $ARGUMENTS
 
 ## Steps
 
-1. Create a new note in `Work/2026/` named `[YYYY-MM-DD] [Meeting Title].md` using today's date and the meeting title from the arguments.
+1. Create a new note in `Work/<current year>/` named `[YYYY-MM-DD] [Meeting Title].md` using today's date and the meeting title from the arguments.
 
 2. Use this template:
 

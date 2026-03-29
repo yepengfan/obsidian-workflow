@@ -7,7 +7,7 @@ Record a decision for: $ARGUMENTS
 
 ## Steps
 
-1. Create a new note in `Work/2026/` named `Decision - [Short Title].md`.
+1. Create a new note in `Work/<current year>/` named `Decision - [Short Title].md`.
 
 2. Use this template:
 
