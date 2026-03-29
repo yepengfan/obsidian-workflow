@@ -80,4 +80,4 @@ Phase 4: archive (>14 天报告归档)
 | 摘要提示词 | `scripts/ai-digest/prompts/summarize.md` |
 | Shell Command | `.obsidian/plugins/obsidian-shellcommands/data.json` |
 | 权限 | `.claude/settings.json` (Bash allow list) |
-| slash 命令 | `.claude/commands/ai-digest.md` |
+| slash 命令 | `.claude/commands/feeds/ai-digest.md` |

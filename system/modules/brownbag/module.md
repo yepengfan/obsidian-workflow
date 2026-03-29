@@ -42,6 +42,6 @@ Work/Brownbag Sessions/
 ## 配置位置
 | 组件 | 位置 |
 |------|------|
-| 命令定义 | `.claude/commands/brownbag.md` |
+| 命令定义 | `.claude/commands/brownbag/brownbag.md` |
 | 模板 | `Templates/Brownbag Session.md` |
 | 索引 | `Work/Brownbag Sessions/Brownbag Sessions.md` |

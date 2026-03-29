@@ -49,7 +49,7 @@ Zettelkasten/
 ## 配置位置
 | 组件 | 位置 |
 |------|------|
-| 命令定义 | `.claude/commands/{zettel,retro,backlink}.md` |
+| 命令定义 | `.claude/commands/zettelkasten/{zettel,retro,backlink,inbox-review,project-retro}.md` |
 | 自动升级脚本 | `.claude/scripts/upgrade-zettel-status.py` |
 | Hook 配置 | `.claude/settings.json` → PostToolUse |
 | 模板 | `Templates/Zettel.md` |

@@ -53,6 +53,6 @@ Learning/
 ## 配置位置
 | 组件 | 位置 |
 |------|------|
-| 命令定义 | `.claude/commands/learning-{init,log,review}.md` |
+| 命令定义 | `.claude/commands/learning/{learning-init,learning-log,learning-review}.md` |
 | 计划模板 | `Templates/Learning Plan.md` |
 | 周记模板 | `Templates/Learning Week.md` |

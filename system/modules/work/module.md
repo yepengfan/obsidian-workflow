@@ -57,7 +57,7 @@ Work/
 ## 配置位置
 | 组件 | 位置 |
 |------|------|
-| 命令定义 | `.claude/commands/{daily,project,decision-log,meeting}.md` |
+| 命令定义 | `.claude/commands/work/{daily,project,decision-log,meeting}.md` |
 | 日记模板 | `Templates/Work Daily.md` |
 | 项目模板 | `Templates/Work Project.md` |
 | 仪表盘 | `Work/Work Dashboard.md` |

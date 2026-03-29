@@ -46,5 +46,5 @@ Vault 级别的维护和辅助工具集合。不属于特定领域，为整个 v
 ## 配置位置
 | 组件 | 位置 |
 |------|------|
-| 命令定义 | `.claude/commands/{organize,tag-audit,summarize,backup,research}.md` |
+| 命令定义 | `.claude/commands/vault-ops/{organize,tag-audit,summarize,backup,research}.md` |
 | 备份脚本 | `~/obsidian-config/sync.sh`（vault 外部） |
