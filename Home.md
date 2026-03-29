@@ -6,7 +6,6 @@ banner_x: 0.5
 banner_y: 0
 ---
 
-
 ```dataviewjs
 // Tab factory: creates pill/segment tab group, returns { panels, topBar }
 function createTabGroup(dvRef, tabs, defaultId) {
