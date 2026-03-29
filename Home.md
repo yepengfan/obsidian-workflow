@@ -759,7 +759,7 @@ if (srPage && srPage.skills) {
         attr: { style: "display:flex;justify-content:space-between;align-items:center;padding:3px 0;" }
       });
       row.createEl("span", {
-        text: `📐 ${String(sk.name || "")}`,
+        text: `${String(sk.icon || "🎯")} ${String(sk.name || "")}`,
         attr: { style: "font-size:0.72em;color:var(--text-normal);" }
       });
       row.createEl("span", { attr: { style: "font-size:0.7em;" } }).innerHTML =
