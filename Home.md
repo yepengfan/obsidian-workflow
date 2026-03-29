@@ -748,6 +748,25 @@ if (srPage && srPage.skills) {
     li.createEl("span", { text: label });
   }
 
+  // Practice links (skills with tracker field)
+  const tracked = skills.filter(sk => sk.tracker);
+  if (tracked.length > 0) {
+    const prWrap = srWrap.createEl("div", {
+      attr: { style: "margin-top:10px;padding:0 4px;" }
+    });
+    for (const sk of tracked) {
+      const row = prWrap.createEl("div", {
+        attr: { style: "display:flex;justify-content:space-between;align-items:center;padding:3px 0;" }
+      });
+      row.createEl("span", {
+        text: `📐 ${String(sk.name || "")}`,
+        attr: { style: "font-size:0.72em;color:var(--text-normal);" }
+      });
+      row.createEl("span", { attr: { style: "font-size:0.7em;" } }).innerHTML =
+        `<a class="internal-link" data-href="${String(sk.tracker)}">Tracker →</a>`;
+    }
+  }
+
   // Footer
   const srFoot = srWrap.createEl("div", {
     attr: { style: "margin-top:8px;display:flex;justify-content:space-between;align-items:center;padding:0 4px;" }
