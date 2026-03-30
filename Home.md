@@ -268,7 +268,7 @@ navToday.addEventListener("click", async () => {
 
   // Add a heading for each active project
   for (const p of projects) {
-    content += `### ${p}\n\n- [ ] \n\n`;
+    content += `### ${p}\n\n`;
   }
 
   content += "## Notes\n\n";
