@@ -29,7 +29,6 @@ from xml.etree import ElementTree as ET
 
 from feeds import RSS_FEEDS
 
-CONCURRENCY_NOTE = "Sequential fetching (stdlib only, no aiohttp dependency)"
 TIMEOUT_S = 15
 HOURS_DEFAULT = 72  # wider window since company blogs post less frequently
 
@@ -45,8 +44,6 @@ DATE_FORMATS = [
     "%Y-%m-%d",
 ]
 
-HISTORY_PATH = Path(__file__).parent / "history.json"
-DECAY_WINDOW_DAYS = 7
 
 
 # ── Data model ──────────────────────────────────────────────────────
@@ -58,46 +55,6 @@ class Article:
     pub_date: datetime
     description: str
     source_name: str
-
-
-# ── History management ──────────────────────────────────────────────
-
-def load_history() -> dict:
-    if HISTORY_PATH.exists():
-        try:
-            return json.loads(HISTORY_PATH.read_text())
-        except (json.JSONDecodeError, OSError):
-            print("[fetch] Warning: history.json corrupted, starting fresh.", file=sys.stderr)
-    return {"featured": {}}
-
-
-def save_history(history: dict, selected: list, today: date) -> None:
-    featured = history.get("featured", {})
-    featured[today.isoformat()] = [a.get("link", "") for a in selected if a.get("link")]
-
-    cutoff = (today - timedelta(days=14)).isoformat()
-    featured = {d: links for d, links in featured.items() if d >= cutoff}
-
-    history = {"featured": featured}
-    HISTORY_PATH.write_text(json.dumps(history, ensure_ascii=False, indent=2))
-    print(f"[fetch] History saved ({len(featured)} days).", file=sys.stderr)
-
-
-def count_appearances(link: str, featured: dict, today: date) -> int:
-    cutoff = (today - timedelta(days=DECAY_WINDOW_DAYS)).isoformat()
-    count = 0
-    for date_str, links in featured.items():
-        if date_str >= cutoff and link in links:
-            count += 1
-    return count
-
-
-def get_decay(appearances: int) -> float:
-    if appearances == 0:
-        return 1.0
-    if appearances == 1:
-        return 0.3
-    return 0.1
 
 
 # ── Parsing helpers ─────────────────────────────────────────────────
@@ -126,6 +83,7 @@ def _parse_feed(xml_bytes: bytes, source_name: str) -> list[Article]:
     try:
         root = ET.fromstring(xml_bytes)
     except ET.ParseError:
+        print(f"[fetch] {source_name}: XML parse error", file=sys.stderr)
         return []
 
     # Atom feed
@@ -183,14 +141,13 @@ def _fetch_via_curl(url: str, name: str) -> bytes | None:
     return None
 
 
-def fetch_feed(feed: dict) -> list[Article]:
+def fetch_feed(feed: dict, ssl_ctx: ssl.SSLContext) -> list[Article]:
     """Fetch and parse a single RSS feed. Falls back to curl on SSL errors."""
     url = feed["xmlUrl"]
     name = feed["name"]
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "ObsidianVault/1.0"})
-        ctx = ssl.create_default_context()
-        with urllib.request.urlopen(req, timeout=TIMEOUT_S, context=ctx) as resp:
+        with urllib.request.urlopen(req, timeout=TIMEOUT_S, context=ssl_ctx) as resp:
             if resp.status != 200:
                 print(f"[fetch] {name}: HTTP {resp.status}", file=sys.stderr)
                 return []
@@ -212,11 +169,12 @@ def fetch_feed(feed: dict) -> list[Article]:
 def fetch_all_feeds(hours: int) -> tuple[list[Article], int]:
     """Fetch all feeds sequentially, filter by time window."""
     cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+    ssl_ctx = ssl.create_default_context()
     all_articles = []
     feeds_ok = 0
 
     for feed in RSS_FEEDS:
-        articles = fetch_feed(feed)
+        articles = fetch_feed(feed, ssl_ctx)
         if articles:
             feeds_ok += 1
         filtered = [a for a in articles if a.pub_date >= cutoff]

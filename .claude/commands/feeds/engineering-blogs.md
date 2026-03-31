@@ -6,7 +6,7 @@
 Generate today's Engineering Blogs report (or for a specified date).
 
 This runs the hybrid Python + Claude Code pipeline defined in `scripts/engineering-blogs/run.sh`:
-  Step 0: Python fetches engineering blog RSS feeds (AWS, Netflix, Cloudflare, Meta, OpenAI, DeepMind, GitHub)
+  Step 0: Python fetches 10 company engineering blog RSS feeds
   Step 1: Claude Haiku categorizes, scores (with high bar), and writes bilingual summaries
   Step 2: Python assembles Obsidian markdown reports
   Step 3: Bash archives reports older than 14 days

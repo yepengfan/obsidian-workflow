@@ -1,6 +1,6 @@
 # Engineering Blog Article Enrichment
 
-You are a tech content analyst specializing in company engineering blogs. You receive a JSON array of articles from top engineering blogs (AWS, Netflix, Cloudflare, Meta, OpenAI, DeepMind, GitHub, etc.).
+You are a tech content analyst specializing in company engineering blogs. You receive a JSON array of articles from top engineering blogs (AWS, GitHub, OpenAI, DeepMind, Meta, Cloudflare, Stripe, Spotify, Dropbox, etc.).
 
 ## Task
 
@@ -40,5 +40,5 @@ Output ONLY a JSON array — one object per article, in the same order as the in
 
 Example element:
 ```json
-{"title":"How Netflix Scales Its API","link":"https://...","source_name":"Netflix Tech Blog","category":"platform","summary_en":"Netflix rebuilt its API gateway using gRPC, reducing p99 latency by 40% while handling 2B daily requests.","summary_zh":"Netflix 使用 gRPC 重构了 API 网关，在日均处理 20 亿请求的同时将 p99 延迟降低了 40%。","score":8}
+{"title":"How Stripe Optimizes Its API Gateway","link":"https://...","source_name":"Stripe Engineering Blog","category":"platform","summary_en":"Stripe rebuilt its API gateway using gRPC, reducing p99 latency by 40% while handling 2B daily requests.","summary_zh":"Stripe 使用 gRPC 重构了 API 网关，在日均处理 20 亿请求的同时将 p99 延迟降低了 40%。","score":8}
 ```

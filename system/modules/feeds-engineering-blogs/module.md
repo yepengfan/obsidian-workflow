@@ -31,7 +31,7 @@ tags: [system/module]
 # Engineering Blogs
 
 ## Overview
-每日大厂工程博客精选。RSS 抓取 AWS、Netflix、Cloudflare、Meta、OpenAI、DeepMind、GitHub 等工程博客，Claude Haiku 分类评分 + 双语摘要。
+每日大厂工程博客精选。RSS 抓取 AWS、GitHub、OpenAI、DeepMind、Meta、Cloudflare、Stripe、Spotify、Dropbox 等工程博客，Claude Haiku 分类评分 + 双语摘要。
 
 依赖: [[system/modules/dashboard/module|dashboard]]
 
