@@ -36,8 +36,10 @@ updated: 2026-03-31
 > - **Scalable**: Adding a new skill with a `tracker:` field in Skill Radar frontmatter automatically surfaces its link in the Skills tab — no Home.md edit needed.
 
 > [!note] 2026-03-31 — Fix baseball card tilt on fast mouse entry
-> - **Problem**: When the mouse enters the card quickly, the horizontal tilt animation fails. Slow entry works fine. Root cause: `animation = "none"` cancels the `bc-float` keyframe mid-cycle, snapping the computed transform to a ghost value. The immediately following `mousemove` then tries to transition FROM that ghost state, causing a broken tilt.
-> - **Fix**: (1) In `startInteraction()`, explicitly set `transform` to neutral, momentarily disable transitions, force a reflow (`void card.offsetHeight`), then re-enable transitions. This ensures the transition always starts from `(0,0)`. (2) Gate the first `mousemove` through `requestAnimationFrame` so the browser fully commits the neutral state before the first tilt frame renders.
+> - **Problem**: Two independent bugs. (A) Chromium 3D hit testing triggers spurious `mouseleave` on `cardWrap` when the card tilts — the rotated card surface no longer aligns with the wrapper's 2D bounding box, so the browser thinks the cursor left. (B) `endInteraction()`'s 600ms animation-restart timer is never cancelled — re-entering within 600ms causes the old timer to re-apply `bc-float`, overriding the tilt transform.
+> - **Fix A**: Guard `mouseleave` with a bounding-rect check — verify `e.clientX/Y` is actually outside `cardWrap`'s rect before calling `endInteraction()`. Spurious leaves (cursor still inside) are ignored.
+> - **Fix B**: Store the timer ID in `floatTimer`, clear it in `startInteraction()` on re-entry. Timer callback also nulls `floatTimer`.
+> - **Also (v1)**: Snap transform to neutral + disable transitions + force reflow before re-enabling on entry. First `mousemove` deferred via `requestAnimationFrame`.
 
 > [!note] 2026-03-13 — Automatic carryover in navToday button
 > - **Problem**: The create button generated clean daily notes without checking for unfinished tasks from the previous day. The `/daily` skill had carryover logic, but clicking the Home.md button did not.

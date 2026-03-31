@@ -616,7 +616,9 @@ if (bcPage) {
   }
 
   let isFirstMove = false;
+  let floatTimer = null;
   function startInteraction() {
+    if (floatTimer) { clearTimeout(floatTimer); floatTimer = null; }
     card.style.animation = "none";
     card.style.transform = "rotateY(0deg) rotateX(0deg)";
     card.style.transition = "none";
@@ -633,7 +635,10 @@ if (bcPage) {
     card.style.borderLeftColor = "var(--background-modifier-border)";
     card.style.borderRightColor = "var(--background-modifier-border)";
     card.style.backgroundImage = "none";
-    setTimeout(() => { card.style.animation = "bc-float 4s ease-in-out infinite"; }, 600);
+    floatTimer = setTimeout(() => {
+      card.style.animation = "bc-float 4s ease-in-out infinite";
+      floatTimer = null;
+    }, 600);
   }
 
   // Mouse events
@@ -646,7 +651,14 @@ if (bcPage) {
     }
   });
   cardWrap.addEventListener("mouseenter", startInteraction);
-  cardWrap.addEventListener("mouseleave", endInteraction);
+  cardWrap.addEventListener("mouseleave", (e) => {
+    const rect = cardWrap.getBoundingClientRect();
+    if (e.clientX >= rect.left && e.clientX <= rect.right &&
+        e.clientY >= rect.top && e.clientY <= rect.bottom) {
+      return;
+    }
+    endInteraction();
+  });
 
   // Touch events — only on card body, not footer links
   let touching = false;
