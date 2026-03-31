@@ -30,7 +30,7 @@ TOP_N = 15       # articles to select after global ranking
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
     "--model", "haiku",
-    "--max-budget-usd", "0.25",
+    "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
 ]

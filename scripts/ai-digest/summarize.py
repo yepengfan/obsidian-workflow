@@ -24,7 +24,7 @@ BATCH_SIZE = 3  # articles per parallel call (5 batches for 15 articles)
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
     "--model", "haiku",
-    "--max-budget-usd", "0.25",
+    "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
 ]
