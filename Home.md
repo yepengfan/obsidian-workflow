@@ -628,6 +628,7 @@ if (bcPage) {
   }
 
   function endInteraction() {
+    isFirstMove = false;
     card.style.transition = "transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease, border-color 0.4s ease, background-image 0.4s ease";
     card.style.transform = "rotateY(0deg) rotateX(0deg)";
     card.style.boxShadow = "0 2px 6px rgba(0,0,0,0.08)";
