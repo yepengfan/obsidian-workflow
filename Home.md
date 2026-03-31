@@ -833,6 +833,7 @@ function createTabGroup(dvRef, tabs, defaultId) {
 const { panels: fPanels } = createTabGroup(dv, [
   { id: "ai", label: "AI Digest" },
   { id: "gh", label: "GitHub Trending" },
+  { id: "eng", label: "Eng Blogs" },
 ], "ai");
 
 // ========== AI DIGEST TAB ==========
@@ -946,6 +947,61 @@ const { panels: fPanels } = createTabGroup(dv, [
   }
   p.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } }).innerHTML =
     '<a class="internal-link" data-href="Feeds/GitHub-Trending/Dashboard">All reports →</a>';
+}
+
+// ========== ENGINEERING BLOGS TAB ==========
+{
+  const p = fPanels["eng"];
+  const today = dv.date("today").toFormat("yyyy-MM-dd");
+  const zhPath = `Feeds/Engineering-Blogs/${today}.md`;
+  const enPath = `Feeds/Engineering-Blogs/${today}-en.md`;
+  const zhFile = app.vault.getAbstractFileByPath(zhPath);
+  const enFile = app.vault.getAbstractFileByPath(enPath);
+  const reportFile = enFile || zhFile;
+
+  if (reportFile) {
+    const isEn = !!enFile;
+    const reportPath = isEn ? enPath : zhPath;
+    const page = dv.page(reportPath);
+    const content = await app.vault.read(reportFile);
+    const lines = content.split("\n");
+
+    const postLines = lines
+      .filter(l => l.startsWith("> [!tip]"))
+      .slice(0, 5);
+
+    const row = p.createEl("div", {
+      attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
+    });
+    const scanned = page.articles_scanned || "?";
+    const selected = page.articles_selected || "?";
+    row.createEl("span", {
+      text: `🏗️ ${selected}/${scanned} posts`,
+      attr: { style: "font-size:0.78em;color:var(--text-muted);" }
+    });
+    const links = row.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
+    links.createEl("a", { text: "中文", cls: "internal-link", attr: { "data-href": zhPath, style: "font-size:0.82em;" } });
+    if (enFile) {
+      links.createEl("a", { text: "EN", cls: "internal-link", attr: { "data-href": enPath, style: "font-size:0.82em;" } });
+    }
+
+    if (postLines.length > 0) {
+      const preview = p.createEl("div", {
+        attr: { style: "font-size:0.85em;line-height:1.8;padding:10px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--interactive-accent);" }
+      });
+      for (const line of postLines) {
+        const cleaned = line.replace(/^>\s*\[!tip\]\s*/, "");
+        preview.createEl("div", { text: cleaned });
+      }
+    }
+  } else {
+    p.createEl("div", {
+      text: "No engineering blogs report for today yet. Run /engineering-blogs in Claude Code to generate.",
+      attr: { style: "font-size:0.85em;color:var(--text-muted);padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
+    });
+  }
+  p.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } }).innerHTML =
+    '<a class="internal-link" data-href="Feeds/Engineering-Blogs/Dashboard">All reports →</a>';
 }
 ```
 
