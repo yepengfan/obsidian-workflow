@@ -615,12 +615,20 @@ if (bcPage) {
     card.style.backgroundColor = "#faf6f0";
   }
 
+  let isFirstMove = false;
+  let floatTimer = null;
   function startInteraction() {
+    if (floatTimer) { clearTimeout(floatTimer); floatTimer = null; }
     card.style.animation = "none";
+    card.style.transform = "rotateY(0deg) rotateX(0deg)";
+    card.style.transition = "none";
+    void card.offsetHeight;
     card.style.transition = "transform 0.1s ease, box-shadow 0.1s ease";
+    isFirstMove = true;
   }
 
   function endInteraction() {
+    isFirstMove = false;
     card.style.transition = "transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.4s ease, border-color 0.4s ease, background-image 0.4s ease";
     card.style.transform = "rotateY(0deg) rotateX(0deg)";
     card.style.boxShadow = "0 2px 6px rgba(0,0,0,0.08)";
@@ -628,13 +636,30 @@ if (bcPage) {
     card.style.borderLeftColor = "var(--background-modifier-border)";
     card.style.borderRightColor = "var(--background-modifier-border)";
     card.style.backgroundImage = "none";
-    setTimeout(() => { card.style.animation = "bc-float 4s ease-in-out infinite"; }, 600);
+    floatTimer = setTimeout(() => {
+      card.style.animation = "bc-float 4s ease-in-out infinite";
+      floatTimer = null;
+    }, 600);
   }
 
   // Mouse events
-  cardWrap.addEventListener("mousemove", (e) => applyHoloEffect(e.clientX, e.clientY));
+  cardWrap.addEventListener("mousemove", (e) => {
+    if (isFirstMove) {
+      isFirstMove = false;
+      requestAnimationFrame(() => applyHoloEffect(e.clientX, e.clientY));
+    } else {
+      applyHoloEffect(e.clientX, e.clientY);
+    }
+  });
   cardWrap.addEventListener("mouseenter", startInteraction);
-  cardWrap.addEventListener("mouseleave", endInteraction);
+  cardWrap.addEventListener("mouseleave", (e) => {
+    const rect = cardWrap.getBoundingClientRect();
+    if (e.clientX >= rect.left && e.clientX <= rect.right &&
+        e.clientY >= rect.top && e.clientY <= rect.bottom) {
+      return;
+    }
+    endInteraction();
+  });
 
   // Touch events — only on card body, not footer links
   let touching = false;

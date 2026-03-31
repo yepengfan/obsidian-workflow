@@ -1,7 +1,7 @@
 ---
 tags: template
 for: Home
-updated: 2026-03-29
+updated: 2026-03-31
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
@@ -34,6 +34,12 @@ updated: 2026-03-29
 > - **What**: Added a data-driven practice links section between the radar chart legend and the footer in the Skills tab.
 > - **How**: Reads `tracker` field from each skill entry in `Profile/Skill Radar.md` frontmatter. Skills with a `tracker` path get a `📐 Name → Tracker →` row. Skills without `tracker` are skipped.
 > - **Scalable**: Adding a new skill with a `tracker:` field in Skill Radar frontmatter automatically surfaces its link in the Skills tab — no Home.md edit needed.
+
+> [!note] 2026-03-31 — Fix baseball card tilt on fast mouse entry
+> - **Problem**: Two independent bugs. (A) Chromium 3D hit testing triggers spurious `mouseleave` on `cardWrap` when the card tilts — the rotated card surface no longer aligns with the wrapper's 2D bounding box, so the browser thinks the cursor left. (B) `endInteraction()`'s 600ms animation-restart timer is never cancelled — re-entering within 600ms causes the old timer to re-apply `bc-float`, overriding the tilt transform.
+> - **Fix A**: Guard `mouseleave` with a bounding-rect check — verify `e.clientX/Y` is actually outside `cardWrap`'s rect before calling `endInteraction()`. Spurious leaves (cursor still inside) are ignored.
+> - **Fix B**: Store the timer ID in `floatTimer`, clear it in `startInteraction()` on re-entry. Timer callback also nulls `floatTimer`.
+> - **Also (v1)**: Snap transform to neutral + disable transitions + force reflow before re-enabling on entry. First `mousemove` deferred via `requestAnimationFrame`.
 
 > [!note] 2026-03-13 — Automatic carryover in navToday button
 > - **Problem**: The create button generated clean daily notes without checking for unfinished tasks from the previous day. The `/daily` skill had carryover logic, but clicking the Home.md button did not.
