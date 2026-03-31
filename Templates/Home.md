@@ -1,7 +1,7 @@
 ---
 tags: template
 for: Home
-updated: 2026-03-29
+updated: 2026-03-31
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
@@ -34,6 +34,10 @@ updated: 2026-03-29
 > - **What**: Added a data-driven practice links section between the radar chart legend and the footer in the Skills tab.
 > - **How**: Reads `tracker` field from each skill entry in `Profile/Skill Radar.md` frontmatter. Skills with a `tracker` path get a `📐 Name → Tracker →` row. Skills without `tracker` are skipped.
 > - **Scalable**: Adding a new skill with a `tracker:` field in Skill Radar frontmatter automatically surfaces its link in the Skills tab — no Home.md edit needed.
+
+> [!note] 2026-03-31 — Fix baseball card tilt on fast mouse entry
+> - **Problem**: When the mouse enters the card quickly, the horizontal tilt animation fails. Slow entry works fine. Root cause: `animation = "none"` cancels the `bc-float` keyframe mid-cycle, snapping the computed transform to a ghost value. The immediately following `mousemove` then tries to transition FROM that ghost state, causing a broken tilt.
+> - **Fix**: (1) In `startInteraction()`, explicitly set `transform` to neutral, momentarily disable transitions, force a reflow (`void card.offsetHeight`), then re-enable transitions. This ensures the transition always starts from `(0,0)`. (2) Gate the first `mousemove` through `requestAnimationFrame` so the browser fully commits the neutral state before the first tilt frame renders.
 
 > [!note] 2026-03-13 — Automatic carryover in navToday button
 > - **Problem**: The create button generated clean daily notes without checking for unfinished tasks from the previous day. The `/daily` skill had carryover logic, but clicking the Home.md button did not.

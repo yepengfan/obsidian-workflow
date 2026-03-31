@@ -615,9 +615,14 @@ if (bcPage) {
     card.style.backgroundColor = "#faf6f0";
   }
 
+  let isFirstMove = false;
   function startInteraction() {
     card.style.animation = "none";
+    card.style.transform = "rotateY(0deg) rotateX(0deg)";
+    card.style.transition = "none";
+    void card.offsetHeight;
     card.style.transition = "transform 0.1s ease, box-shadow 0.1s ease";
+    isFirstMove = true;
   }
 
   function endInteraction() {
@@ -632,7 +637,14 @@ if (bcPage) {
   }
 
   // Mouse events
-  cardWrap.addEventListener("mousemove", (e) => applyHoloEffect(e.clientX, e.clientY));
+  cardWrap.addEventListener("mousemove", (e) => {
+    if (isFirstMove) {
+      isFirstMove = false;
+      requestAnimationFrame(() => applyHoloEffect(e.clientX, e.clientY));
+    } else {
+      applyHoloEffect(e.clientX, e.clientY);
+    }
+  });
   cardWrap.addEventListener("mouseenter", startInteraction);
   cardWrap.addEventListener("mouseleave", endInteraction);
 
