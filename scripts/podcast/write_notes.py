@@ -127,9 +127,9 @@ ct.addEventListener("click", (e) => {
 def build_episode_note(ep: dict) -> str:
     """Render a complete Obsidian episode note as a markdown string."""
     slug = ep.get("slug", "unknown")
-    podcast_name = ep.get("podcast_name", "")
-    episode_number = ep.get("episode_number", "")
-    title = ep.get("title", "Untitled")
+    podcast_name = ep.get("podcast_name", "").replace('"', '\\"')
+    episode_number = ep.get("episode_number", "").replace('"', '\\"')
+    title = ep.get("title", "Untitled").replace('"', '\\"')
     publish_date = ep.get("publish_date", ep.get("date", ""))
     duration = ep.get("duration", "")
     score = ep.get("score", 0)

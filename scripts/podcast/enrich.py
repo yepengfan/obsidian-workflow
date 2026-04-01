@@ -27,6 +27,7 @@ SUMMARIZE_PROMPT = (SCRIPT_DIR / "prompts" / "summarize.md").read_text()
 
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
+    "--model", "haiku",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
 ]
@@ -53,8 +54,8 @@ def extract_json_object(raw: str) -> dict:
 
     Tries direct parse first, then attempts common repairs:
     - Trailing commas before } or ]
-    - Single quotes → double quotes
     - Unescaped newlines inside string values
+    - Balanced-brace extraction as last resort
     """
     raw = _strip_fences(raw)
     start = raw.find("{")

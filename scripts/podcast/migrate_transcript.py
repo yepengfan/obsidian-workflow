@@ -21,6 +21,7 @@ SCRIPT_DIR = Path(__file__).parent
 DEFAULT_VAULT = SCRIPT_DIR.parent.parent
 
 # Import the canonical dataviewjs block from write_notes.py
+sys.path.insert(0, str(SCRIPT_DIR))
 from write_notes import DATAVIEWJS_TRANSCRIPT
 
 
