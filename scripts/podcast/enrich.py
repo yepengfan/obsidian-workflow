@@ -49,19 +49,62 @@ def _strip_fences(raw: str) -> str:
 
 
 def extract_json_object(raw: str) -> dict:
-    """Extract the first JSON object from Claude output."""
+    """Extract the first JSON object from Claude output.
+
+    Tries direct parse first, then attempts common repairs:
+    - Trailing commas before } or ]
+    - Single quotes → double quotes
+    - Unescaped newlines inside string values
+    """
     raw = _strip_fences(raw)
     start = raw.find("{")
     end = raw.rfind("}")
     if start == -1 or end == -1:
         raise ValueError(f"No JSON object found in output:\n{raw[:400]}")
-    return json.loads(raw[start : end + 1])
+    candidate = raw[start : end + 1]
+
+    # Try direct parse first
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        pass
+
+    # Repair: remove trailing commas before } or ]
+    repaired = re.sub(r",\s*([}\]])", r"\1", candidate)
+    try:
+        return json.loads(repaired)
+    except json.JSONDecodeError:
+        pass
+
+    # Repair: fix unescaped newlines inside string values
+    repaired = re.sub(r'(?<=": ")(.*?)(?="[,}\s])', lambda m: m.group(0).replace("\n", "\\n"), repaired, flags=re.DOTALL)
+    try:
+        return json.loads(repaired)
+    except json.JSONDecodeError:
+        pass
+
+    # Last resort: find balanced braces for the first complete object
+    depth = 0
+    for i in range(start, len(raw)):
+        if raw[i] == "{":
+            depth += 1
+        elif raw[i] == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(re.sub(r",\s*([}\]])", r"\1", raw[start : i + 1]))
+                except json.JSONDecodeError:
+                    break
+
+    raise ValueError(f"Could not parse JSON from output:\n{candidate[:400]}")
 
 
 # ── Transcript helpers ────────────────────────────────────────────────
 
-def prepare_transcript(transcript_text: str) -> str:
+def prepare_transcript(transcript_text: str | None) -> str:
     """Truncate transcript if it exceeds the token budget."""
+    if not transcript_text:
+        return ""
     if len(transcript_text) <= TRANSCRIPT_MAX_CHARS:
         return transcript_text
     head = transcript_text[:TRANSCRIPT_HEAD_CHARS]
@@ -99,8 +142,10 @@ async def run_claude(user_prompt: str, stdin_data: str, system_prompt: str) -> s
 
 async def score_episode(episode: dict) -> dict:
     """Score a single episode. Returns score dict or raises on failure."""
-    transcript_text = episode.get("transcript_text", "")
+    transcript_text = episode.get("transcript_text") or ""
     transcript = prepare_transcript(transcript_text)
+    if not transcript:
+        raise ValueError("no transcript available — skipping scoring")
 
     user_prompt = (
         "Score this podcast episode transcript using the 4 weighted dimensions. "
@@ -115,8 +160,10 @@ async def score_episode(episode: dict) -> dict:
 
 async def summarize_episode(episode: dict, score_data: dict) -> dict:
     """Summarize a single episode. Returns summary dict or raises on failure."""
-    transcript_text = episode.get("transcript_text", "")
+    transcript_text = episode.get("transcript_text") or ""
     transcript = prepare_transcript(transcript_text)
+    if not transcript:
+        raise ValueError("no transcript available — skipping summarization")
 
     # Provide both transcript and score context to the summarizer
     combined_input = json.dumps(

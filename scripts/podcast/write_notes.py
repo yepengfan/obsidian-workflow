@@ -30,31 +30,96 @@ SCORE_GROUPS = [
 ]
 
 
-# ── Transcript formatting ─────────────────────────────────────────────
+# ── Synced transcript (dataviewjs) ────────────────────────────────────
 
-def format_segments(segments: list) -> str:
-    """Convert transcript segments to timestamped markdown lines.
+DATAVIEWJS_TRANSCRIPT = r"""```dataviewjs
+// ── Synced Podcast Transcript ──────────────────────────────────
+// Reads .srt, syncs highlight to audio playback, click-to-seek.
 
-    Each segment is expected to have 'start' (seconds float) and 'text'.
-    Output format: **[HH:MM:SS]** text
+const slug = dv.current().file.name;
+const srtPath = `Podcasts/audio/${slug}.srt`;
+const srtFile = app.vault.getAbstractFileByPath(srtPath);
+if (!srtFile) { dv.paragraph("_No transcript file found._"); return; }
 
-    Click-to-seek is handled by Media Extended's transcript panel (loads .srt).
-    The markdown transcript serves as a readable fallback and permanent archive.
-    """
-    if not segments:
-        return "_No transcript available._"
-    lines = []
-    for seg in segments:
-        start = seg.get("start", 0)
-        text = seg.get("text", "").strip()
-        if not text:
-            continue
-        hours = int(start // 3600)
-        minutes = int((start % 3600) // 60)
-        seconds = int(start % 60)
-        timestamp = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-        lines.append(f"**[{timestamp}]** {text}")
-    return "\n\n".join(lines) if lines else "_No transcript available._"
+const raw = await app.vault.read(srtFile);
+const segs = [];
+for (const block of raw.trim().split(/\n\n+/)) {
+  const lines = block.split('\n');
+  if (lines.length < 3) continue;
+  const m = lines[1].match(/(\d{2}):(\d{2}):(\d{2}),(\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2}),(\d{3})/);
+  if (!m) continue;
+  const start = +m[1]*3600 + +m[2]*60 + +m[3] + +m[4]/1000;
+  const end   = +m[5]*3600 + +m[6]*60 + +m[7] + +m[8]/1000;
+  const text  = lines.slice(2).join(' ').trim();
+  if (text) segs.push({ start, end, text });
+}
+if (!segs.length) { dv.paragraph("_Transcript is empty._"); return; }
+
+const ct = dv.container.createEl("div", { cls: "podcast-transcript" });
+const segEls = segs.map((seg, i) => {
+  const row = ct.createEl("div", { cls: "tx-seg", attr: { "data-i": String(i) } });
+  const hh = String(Math.floor(seg.start / 3600)).padStart(2, '0');
+  const mm = String(Math.floor((seg.start % 3600) / 60)).padStart(2, '0');
+  const ss = String(Math.floor(seg.start % 60)).padStart(2, '0');
+  row.createEl("span", { cls: "tx-ts", text: `${hh}:${mm}:${ss}` });
+  row.createEl("span", { cls: "tx-text", text: seg.text });
+  return row;
+});
+
+// Find <audio> inside Media Extended's open shadow DOM
+function findAudio() {
+  const view = ct.closest('.markdown-preview-view') || ct.closest('.view-content');
+  if (!view) return null;
+  const host = view.querySelector('.mx-media-embed .mx-player-shadow-root');
+  if (!host?.shadowRoot) return null;
+  return host.shadowRoot.querySelector('audio') || host.shadowRoot.querySelector('video');
+}
+
+let audio = findAudio();
+if (!audio) {
+  await new Promise(resolve => {
+    let tries = 0;
+    const iv = setInterval(() => {
+      audio = findAudio();
+      if (audio || ++tries > 20) { clearInterval(iv); resolve(); }
+    }, 500);
+  });
+}
+if (!audio) {
+  ct.createEl("div", { cls: "tx-notice", text: "Audio player not detected — transcript is read-only." });
+}
+
+// Sync: highlight active segment + auto-scroll
+if (audio) {
+  let activeIdx = -1;
+  audio.addEventListener("timeupdate", () => {
+    const t = audio.currentTime;
+    // Binary search for the last segment whose start <= t
+    let lo = 0, hi = segs.length - 1, idx = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (segs[mid].start <= t) { idx = mid; lo = mid + 1; } else { hi = mid - 1; }
+    }
+    if (idx === activeIdx) return;
+    if (activeIdx >= 0 && segEls[activeIdx]) segEls[activeIdx].removeClass("tx-active");
+    if (idx >= 0 && segEls[idx]) {
+      segEls[idx].addClass("tx-active");
+      segEls[idx].scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    activeIdx = idx;
+  });
+}
+
+// Click-to-seek
+ct.addEventListener("click", (e) => {
+  const row = e.target.closest(".tx-seg");
+  if (!row || !audio) return;
+  const i = +row.dataset.i;
+  if (isNaN(i) || !segs[i]) return;
+  audio.currentTime = segs[i].start;
+  if (audio.paused) audio.play();
+});
+```"""
 
 
 # ── Episode note generation ───────────────────────────────────────────
@@ -92,8 +157,8 @@ def build_episode_note(ep: dict) -> str:
     else:
         zettel_md = "> [!tip] 可转化为 Zettel 的观点\n> _No Zettel candidates identified._"
 
-    # Transcript section
-    transcript_md = format_segments(transcript_segments)
+    # Transcript section — dynamic dataviewjs block if transcript exists
+    has_transcript = bool(transcript_segments)
 
     note = f"""---
 type: podcast-episode
@@ -133,7 +198,7 @@ tags: {tags_yaml}
 
 ## Transcript
 
-{transcript_md}
+{DATAVIEWJS_TRANSCRIPT if has_transcript else "_No transcript available._"}
 
 ## My Notes
 

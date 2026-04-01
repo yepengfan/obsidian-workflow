@@ -27,7 +27,7 @@ from pathlib import Path
 
 # ── Whisper configuration ─────────────────────────────────────────────
 
-MODEL_NAME = "mlx-community/whisper-large-v3"
+MODEL_NAME = "mlx-community/whisper-large-v3-turbo"
 WORD_TIMESTAMPS = True
 
 
