@@ -26,7 +26,7 @@ DECAY_WINDOW_DAYS = 7
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
     "--model", "haiku",
-    "--max-budget-usd", "0.50",
+    "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
 ]
