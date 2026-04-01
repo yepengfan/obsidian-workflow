@@ -866,8 +866,8 @@ const { panels: fPanels } = createTabGroup(dv, [
     const row = p.createEl("div", {
       attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
     });
-    const scanned = page.articles_scanned || "?";
-    const selected = page.articles_selected || "?";
+    const scanned = page?.articles_scanned || "?";
+    const selected = page?.articles_selected || "?";
     row.createEl("span", {
       text: `📰 ${selected}/${scanned} articles`,
       attr: { style: "font-size:0.78em;color:var(--text-muted);" }
@@ -973,8 +973,8 @@ const { panels: fPanels } = createTabGroup(dv, [
     const row = p.createEl("div", {
       attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
     });
-    const scanned = page.articles_scanned || "?";
-    const selected = page.articles_selected || "?";
+    const scanned = page?.articles_scanned || "?";
+    const selected = page?.articles_selected || "?";
     row.createEl("span", {
       text: `🏗️ ${selected}/${scanned} posts`,
       attr: { style: "font-size:0.78em;color:var(--text-muted);" }
@@ -996,7 +996,7 @@ const { panels: fPanels } = createTabGroup(dv, [
     }
   } else {
     p.createEl("div", {
-      text: "No engineering blogs report for today yet. Run /engineering-blogs in Claude Code to generate.",
+      text: "No engineering blogs report for today yet. Run /feeds/engineering-blogs in Claude Code to generate.",
       attr: { style: "font-size:0.85em;color:var(--text-muted);padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
     });
   }
