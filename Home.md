@@ -7,6 +7,8 @@ banner_y: 0
 ---
 
 ```dataviewjs
+const isMobile = app.isMobile;
+
 // Tab factory: creates pill/segment tab group, returns { panels, topBar }
 function createTabGroup(dvRef, tabs, defaultId) {
   const topBar = dvRef.el("div", "", {
@@ -14,19 +16,22 @@ function createTabGroup(dvRef, tabs, defaultId) {
   });
   const panels = {};
   const btns = {};
+  const tabPad = isMobile ? "3px 8px" : "4px 14px";
+  const tabFont = isMobile ? "0.72em" : "0.82em";
+  const segGap = isMobile ? "1px" : "2px";
   for (const t of tabs) {
     panels[t.id] = dvRef.el("div", "", { attr: { style: "display:none;" } });
   }
   function activate(id) {
     for (const k of Object.keys(panels)) {
       panels[k].style.display = k === id ? "block" : "none";
-      btns[k].style.cssText = "padding:4px 14px;border-radius:7px;border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.15s;" + (k === id
+      btns[k].style.cssText = `padding:${tabPad};border-radius:7px;border:none;cursor:pointer;font-size:${tabFont};font-weight:600;transition:all 0.15s;` + (k === id
         ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
         : "background:transparent;color:var(--text-muted);box-shadow:none;");
     }
   }
   const seg = topBar.createEl("div", {
-    attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);" }
+    attr: { style: `display:inline-flex;gap:${segGap};padding:2px;border-radius:9px;background:var(--background-secondary);` }
   });
   for (const t of tabs) {
     btns[t.id] = seg.createEl("button", { text: t.label });
@@ -45,18 +50,20 @@ const { panels, topBar } = createTabGroup(dv, [
 
 // ========== WORK TAB ==========
 // Action buttons always inside Work panel, separate row from segment
+const btnPad = isMobile ? "6px 10px" : "8px 18px";
+const btnFont = isMobile ? "0.8em" : "0.88em";
 const row = panels["work"].createEl("div", { attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
 
 // Navigation buttons
 const navDash = row.createEl("button", {
   text: "Work Dashboard",
-  attr: { style: "padding:8px 18px;border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.88em;" }
+  attr: { style: `padding:${btnPad};border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:${btnFont};` }
 });
 navDash.addEventListener("click", () => app.workspace.openLinkText("Work/Work Dashboard", "", false));
 
 const navToday = row.createEl("button", {
   text: dv.date("today").toFormat("yyyy-MM-dd"),
-  attr: { style: "padding:8px 18px;border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:0.88em;" }
+  attr: { style: `padding:${btnPad};border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:${btnFont};` }
 });
 navToday.addEventListener("click", async () => {
   const today = dv.date("today");
@@ -352,7 +359,7 @@ navToday.addEventListener("click", async () => {
 const btn = row.createEl("button", {
   text: "+ Zettel",
   attr: {
-    style: "margin-left:auto;padding:8px 18px;background:var(--interactive-accent);color:var(--text-on-accent);border-radius:8px;font-weight:600;font-size:0.88em;border:none;cursor:pointer;white-space:nowrap;"
+    style: `margin-left:auto;padding:${btnPad};background:var(--interactive-accent);color:var(--text-on-accent);border-radius:8px;font-weight:600;font-size:${btnFont};border:none;cursor:pointer;white-space:nowrap;`
   }
 });
 btn.addEventListener("click", async () => {
@@ -415,8 +422,10 @@ function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway
   }
 
   // Counts — always show all metrics for consistent layout; dim zeros
-  // display:inline-block + width:4.8em reserves space for 2-digit numbers and keeps columns aligned
-  const countStyle = "display:inline-block;width:4.8em;font-size:0.75em;padding:1px 4px;border-radius:4px;white-space:nowrap;text-align:center;box-sizing:border-box;";
+  // On mobile: drop total column, use auto width + tighter padding
+  const countStyle = isMobile
+    ? "display:inline-block;width:auto;font-size:0.65em;padding:1px 3px;border-radius:4px;white-space:nowrap;text-align:center;box-sizing:border-box;"
+    : "display:inline-block;width:4.8em;font-size:0.75em;padding:1px 4px;border-radius:4px;white-space:nowrap;text-align:center;box-sizing:border-box;";
   const dim = "color:var(--text-faint);background:var(--background-primary);opacity:0.35;";
   if (total === 0) {
     rowEl.createEl("span", { text: "no tasks", attr: { style: countStyle + "color:var(--text-faint);" } });
@@ -425,14 +434,17 @@ function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway
     rowEl.createEl("span", { text: `${carriedAway} ⬆️`, attr: { style: countStyle + (carriedAway > 0 ? "color:var(--color-yellow);background:var(--background-primary);"    : dim) } });
     rowEl.createEl("span", { text: `${carriedIn} ➡️`,   attr: { style: countStyle + (carriedIn  > 0 ? "color:var(--text-faint);background:var(--background-primary);"        : dim) } });
     rowEl.createEl("span", { text: `${done} done`,      attr: { style: countStyle + (done        > 0 ? "color:var(--interactive-accent);background:var(--background-primary);" : dim) } });
-    rowEl.createEl("span", { text: `${total} total`,    attr: { style: countStyle + "color:var(--text-faint);background:var(--background-primary);" } });
+    if (!isMobile) {
+      rowEl.createEl("span", { text: `${total} total`,    attr: { style: countStyle + "color:var(--text-faint);background:var(--background-primary);" } });
+    }
   }
 }
 
 // Always show a Today row at the top — ghost row if note doesn't exist yet
+const rowGap = isMobile ? "6px" : "10px";
 if (!hasTodayNote) {
   const ghostRow = wkView.createEl("div", {
-    attr: { style: "display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px dashed var(--interactive-accent);opacity:0.6;cursor:pointer;" }
+    attr: { style: `display:flex;align-items:center;gap:${rowGap};padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px dashed var(--interactive-accent);opacity:0.6;cursor:pointer;` }
   });
   ghostRow.createEl("span", {
     text: "Today",
@@ -480,7 +492,7 @@ for (const page of pages) {
   const total = open + done + carriedAway + carriedIn;
 
   const row = wkView.createEl("div", {
-    attr: { style: `display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px solid ${isToday ? "var(--interactive-accent)" : "var(--background-modifier-border)"};` }
+    attr: { style: `display:flex;align-items:center;gap:${rowGap};padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px solid ${isToday ? "var(--interactive-accent)" : "var(--background-modifier-border)"};` }
   });
   renderRow(row, isToday ? "Today" : dateStr, isToday, open, done, carriedIn, carriedAway, total, page.file.path);
 }
@@ -803,6 +815,8 @@ if (srPage && srPage.skills) {
 ## Feeds
 
 ```dataviewjs
+const isMobile = app.isMobile;
+
 // Tab factory (same as Work section — each dataviewjs block has its own scope)
 function createTabGroup(dvRef, tabs, defaultId) {
   const topBar = dvRef.el("div", "", {
@@ -810,17 +824,20 @@ function createTabGroup(dvRef, tabs, defaultId) {
   });
   const panels = {};
   const btns = {};
+  const tabPad = isMobile ? "3px 8px" : "4px 14px";
+  const tabFont = isMobile ? "0.72em" : "0.82em";
+  const segGap = isMobile ? "1px" : "2px";
   for (const t of tabs) panels[t.id] = dvRef.el("div", "", { attr: { style: "display:none;" } });
   function activate(id) {
     for (const k of Object.keys(panels)) {
       panels[k].style.display = k === id ? "block" : "none";
-      btns[k].style.cssText = "padding:4px 14px;border-radius:7px;border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.15s;" + (k === id
+      btns[k].style.cssText = `padding:${tabPad};border-radius:7px;border:none;cursor:pointer;font-size:${tabFont};font-weight:600;transition:all 0.15s;` + (k === id
         ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
         : "background:transparent;color:var(--text-muted);box-shadow:none;");
     }
   }
   const seg = topBar.createEl("div", {
-    attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);" }
+    attr: { style: `display:inline-flex;gap:${segGap};padding:2px;border-radius:9px;background:var(--background-secondary);` }
   });
   for (const t of tabs) {
     btns[t.id] = seg.createEl("button", { text: t.label });
@@ -1068,6 +1085,8 @@ const { panels: fPanels } = createTabGroup(dv, [
 ## Learning
 
 ```dataviewjs
+const isMobile = app.isMobile;
+
 function isoWeekLabel(d) {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const day = date.getUTCDay() || 7;
@@ -1087,7 +1106,7 @@ function lastNWeeks(n) {
   return result;
 }
 
-const WEEKS = lastNWeeks(10);
+const WEEKS = lastNWeeks(isMobile ? 6 : 10);
 const currentWeek = WEEKS[WEEKS.length - 1];
 const plans = dv.pages('"Learning"').where(p => p.file.name === "00_plan" && p.status === "active");
 const allLogs = dv.pages('"Learning"').where(p => p.week !== undefined);
@@ -1139,17 +1158,19 @@ if (plans.length === 0) {
       });
     }
 
-    // Right: 10-week activity squares
-    const dotsWrap = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:3px;padding:0 12px;flex-shrink:0;" } });
+    // Activity squares (6 weeks on mobile, 10 on desktop)
+    const dotSize = isMobile ? "8px" : "10px";
+    const dotGap = isMobile ? "2px" : "3px";
+    const dotsWrap = card.createEl("div", { attr: { style: `display:flex;align-items:center;gap:${dotGap};padding:0 12px;flex-shrink:0;` } });
     for (const w of [...WEEKS].reverse()) {
       if (logMap[w]) {
         dotsWrap.createEl("a", {
-          attr: { class: "internal-link", "data-href": logMap[w].file.path, title: w, style: "width:10px;height:10px;border-radius:2px;background:var(--color-accent);display:inline-block;opacity:0.85;" }
+          attr: { class: "internal-link", "data-href": logMap[w].file.path, title: w, style: `width:${dotSize};height:${dotSize};border-radius:2px;background:var(--color-accent);display:inline-block;opacity:0.85;` }
         });
       } else {
         const isCurrent = w === currentWeek;
         dotsWrap.createEl("div", {
-          attr: { title: w, style: `width:10px;height:10px;border-radius:2px;${isCurrent ? "border:1.5px dashed var(--color-accent);opacity:0.7;" : "background:var(--background-modifier-border);opacity:0.5;"}` }
+          attr: { title: w, style: `width:${dotSize};height:${dotSize};border-radius:2px;${isCurrent ? "border:1.5px dashed var(--color-accent);opacity:0.7;" : "background:var(--background-modifier-border);opacity:0.5;"}` }
         });
       }
     }
