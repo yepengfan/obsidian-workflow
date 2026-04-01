@@ -15,6 +15,7 @@ Inbox/
 Zettelkasten/*
 !Zettelkasten/Zettelkasten Index.md
 Profile/
+Note/
 Feeds/*
 !Feeds/AI-Daily/
 Feeds/AI-Daily/*
@@ -22,6 +23,20 @@ Feeds/AI-Daily/*
 !Feeds/GitHub-Trending/
 Feeds/GitHub-Trending/*
 !Feeds/GitHub-Trending/Dashboard.md
+!Feeds/Engineering-Blogs/
+Feeds/Engineering-Blogs/*
+!Feeds/Engineering-Blogs/Dashboard.md
+
+# ── Podcast content (audio, episodes, dashboard) ──
+Podcasts/audio/
+Podcasts/episodes/
+Podcasts/Podcasts.md
+
+# ── Pipeline runtime state ──
+scripts/podcast/state.json
+scripts/ai-digest/history.json
+scripts/github-trending/history.json
+scripts/engineering-blogs/history.json
 
 # ── Local config (machine-specific paths) ──
 .bookrc

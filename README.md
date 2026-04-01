@@ -41,6 +41,11 @@ Profile/          # Personal assessment & self-development
 Feeds/            # Auto-generated content feeds
   AI-Daily/       # Daily AI news digest (中英文), generated on Obsidian startup
   GitHub-Trending/ # Daily GitHub trending repos digest (中英文)
+Podcasts/         # Podcast episodes — AI-scored notes + audio + synced transcripts
+  Feeds.md        # RSS subscription config (edit in Obsidian, supports Apple Podcasts URLs)
+  Podcasts.md     # AI recommendation dashboard (auto-generated)
+  episodes/       # Per-episode notes (summary, transcript, audio embed)
+  audio/          # .mp3 + .srt files (Media Extended synced playback on desktop)
 scripts/
   ai-digest/      # Hybrid Python + Claude Code RSS digest pipeline
     digest/       # Core module (fetch → dedup → score → summarize → report)
@@ -50,6 +55,13 @@ scripts/
     enrich.py     # Single Haiku call: categorize, score, bilingual one-liners
     write_reports.py  # Obsidian markdown report assembler
     run.sh        # Idempotent orchestrator with 14-day archive rotation
+  podcast/        # Podcast pipeline (RSS → Whisper transcribe → Claude score/summarize)
+    fetch.py      # RSS feed parser + audio downloader (reads Podcasts/Feeds.md)
+    transcribe.py # mlx-whisper local transcription → .srt + transcript JSON
+    enrich.py     # Claude Haiku scoring (4 dimensions) + bilingual summarization
+    write_notes.py # Obsidian episode notes + recommendation dashboard generator
+    lifecycle.py  # Audio archive (30d) + cleanup (90d) lifecycle manager
+    setup.sh      # One-command bootstrap (venv + mlx-whisper + feedparser)
 Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week, Brownbag Session
 CLAUDE.md         # Vault-level Claude Code instructions
 Home.md           # Dashboard — tabbed sections (Work/Card, AI Digest/GitHub Trending)
@@ -65,8 +77,9 @@ graph TD
     SYS[GitHub repo<br/>templates, commands] -->|git clone| Vault
     DIGEST[scripts/ai-digest] -->|Shell Commands<br/>on startup| Vault
     GHTREND[scripts/github-trending] -->|Claude Code skill| Vault
+    POD[scripts/podcast] -->|Claude Code skill<br/>Whisper local| Vault
 
-    Vault["🗃️ Obsidian Vault<br/>Home · Books · Work · Profile<br/>Inbox · Zettelkasten · Feeds"]
+    Vault["🗃️ Obsidian Vault<br/>Home · Books · Work · Profile<br/>Inbox · Zettelkasten · Feeds · Podcasts"]
 
     Vault <-->|Remotely Save| S3V[S3: vault-sync]
     EBOOKS[~/Library/ebooks] -->|launchd| S3E[S3: ebook-library]
@@ -200,6 +213,7 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 |---------|------------|
 | `ai-digest` | Generate today's AI daily digest from 92 RSS feeds |
 | `github-trending` | Generate today's GitHub trending repos report |
+| `podcast` | Process new podcast episodes — download, transcribe, score, generate notes |
 
 #### Vault Maintenance
 
@@ -275,6 +289,43 @@ GitHub Search API (2 queries: new hot + active popular)
 - **Cost**: ~$0.06/day (single Haiku enrichment call)
 - **Time**: ~30-60s
 - **Dependencies**: stdlib only (no pip install needed), requires `claude` CLI on PATH
+
+## Podcast Pipeline
+
+A local-first podcast learning system in `scripts/podcast/` — Apple Podcasts for discovery, Obsidian for deep consumption:
+
+```
+Podcasts/Feeds.md (RSS subscriptions, editable in Obsidian)
+  → feedparser fetch + audio download
+  → mlx-whisper local transcription (Apple Silicon GPU, ~3 min/1h episode)
+  → .srt subtitle file (Media Extended synced playback)
+  → Claude Haiku scoring (4 weighted dimensions) + bilingual summary
+  → Obsidian episode notes + AI recommendation dashboard
+  → Audio lifecycle: listened → archive (30d) → delete (90d)
+```
+
+- **Trigger**: Claude Code skill command (`/feeds/podcast`)
+- **Output**: `Podcasts/episodes/{slug}.md` (notes) + `Podcasts/audio/{slug}.mp3 + .srt` (audio + subtitles) + `Podcasts/Podcasts.md` (dashboard)
+- **Desktop**: Media Extended plugin provides click-to-seek timestamp + synced subtitle playback
+- **Mobile**: Native audio player + markdown transcript (no click-to-seek)
+- **Cost**: Free transcription (local Whisper) + ~$0.02/episode (Haiku scoring + summarization)
+- **Time**: ~5-10 min per 1h episode (download + transcribe + score)
+
+### Scoring dimensions
+
+| Dimension | Weight | What it measures |
+|-----------|--------|-----------------|
+| Information Density | 30% | Substance vs. filler ratio |
+| Novelty | 25% | New ideas, perspectives, or information |
+| Actionability | 25% | Concrete takeaways, frameworks to apply |
+| Interest Match | 20% | Relevance to AI/tech/engineering/growth |
+
+### Audio lifecycle
+
+```
+unlistened → listened (user marks) → archived (30d, audio moved) → deleted (90d, audio removed)
+                                      └── .srt + episode note preserved permanently
+```
 
 ## Setup (new machine)
 
@@ -412,7 +463,45 @@ Optional: set `GITHUB_TOKEN` for higher API rate limits (30 req/min authenticate
 
 Output: `Feeds/GitHub-Trending/YYYY-MM-DD.md` (中文) and `YYYY-MM-DD-en.md` (English).
 
-### 9. NAS backup (optional)
+### 9. Podcast Pipeline
+
+The podcast pipeline lives in `scripts/podcast/` and uses local Whisper transcription + Claude Haiku for scoring.
+
+#### 9a. Install the pipeline
+
+```bash
+cd scripts/podcast && bash setup.sh
+```
+
+This creates a `.venv` and installs dependencies (`mlx-whisper`, `feedparser`), checks for `ffmpeg` and `claude` CLI, and pre-downloads the Whisper model (~1.5 GB, cached in `~/.cache/huggingface/`).
+
+#### 9b. Install Media Extended plugin
+
+1. Obsidian → Settings → Community Plugins → Browse → Search **Media Extended**
+2. Install and enable
+3. This provides: audio playback with synced `.srt` subtitles, click-to-seek timestamps
+
+#### 9c. Add podcast subscriptions
+
+Edit `Podcasts/Feeds.md` in Obsidian — add feeds as markdown links:
+
+```markdown
+- [Podcast Name](https://example.com/feed.xml)
+```
+
+Apple Podcasts URLs (`podcasts.apple.com/...`) are automatically resolved to RSS feeds.
+
+#### 9d. Run the pipeline
+
+```bash
+bash scripts/podcast/run.sh
+```
+
+Or use the Claude Code skill command: `/feeds/podcast`
+
+First run downloads audio + transcribes + scores all new episodes (~5-10 min per 1h episode). Subsequent runs only process new episodes (idempotent via `state.json`).
+
+### 10. NAS backup (optional)
 
 Synology NAS can pull from S3 as an offline backup via **Cloud Sync**:
 
