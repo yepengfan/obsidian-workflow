@@ -68,7 +68,7 @@ Multiple queries to cast a wide net:
 - Only repos with ≥ 2 stars OR created within last 30 days (avoids abandoned forks)
 - Per repo: name, description, stars, forks, last push date, topics, language, README (first 2000 chars)
 
-**Auth:** Uses `GITHUB_TOKEN` environment variable (optional but recommended for rate limits). Same as github-trending feed.
+**Auth:** Uses `GITHUB_TOKEN` environment variable (optional but recommended for rate limits). Same as github-trending feed. Without token: unauthenticated rate limit is 10 requests/min — sufficient for 4 search queries + a handful of README fetches, but `run.sh` should log a warning suggesting the user set `GITHUB_TOKEN` for reliability.
 
 ### npm Registry (version tracking)
 
@@ -265,7 +265,7 @@ CC Plugins gets its own **standalone section** on Home.md, separate from the dai
 - Finds the **latest** `Feeds/CC-Plugins/YYYY-WXX.md` by sorting (not by today's date)
 - Reads frontmatter: `plugins_new`, `plugins_updated`, `week`
 - Parses content sections: extracts 🆕 and 📦 entries
-- Shows top 3–5 entries per subsection
+- Shows top 5 entries per subsection (fewer if not enough qualify)
 - Score color coding: ≥ 8 accent color, ≥ 6 normal, < 6 muted
 - "All reports →" link to `Feeds/CC-Plugins/Dashboard.md`
 
