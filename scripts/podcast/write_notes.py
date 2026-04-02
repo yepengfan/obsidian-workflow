@@ -67,7 +67,8 @@ if (!document.getElementById('tx-inline-css')) {
       padding:var(--size-2-3) var(--size-4-3); cursor:pointer;
       border-left:3px solid transparent; transition:background-color .15s,border-color .15s; }
     .tx-seg:hover { background:var(--background-modifier-hover); }
-    .tx-seg.tx-active { background:color-mix(in srgb,var(--interactive-accent) 12%,transparent);
+    .tx-seg.tx-active { background:var(--background-modifier-hover);
+      background:color-mix(in srgb,var(--interactive-accent) 12%,transparent);
       border-left-color:var(--interactive-accent); }
     .tx-ts { flex-shrink:0; font-family:var(--font-monospace); font-size:var(--font-ui-smaller);
       color:var(--text-muted); min-width:5.5em; user-select:none; }
