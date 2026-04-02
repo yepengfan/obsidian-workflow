@@ -55,6 +55,31 @@ for (const block of raw.trim().split(/\n\n+/)) {
 }
 if (!segs.length) { dv.paragraph("_Transcript is empty._"); return; }
 
+// Inject inline styles so transcript works without the CSS snippet (e.g. mobile)
+if (!document.getElementById('tx-inline-css')) {
+  const style = document.createElement('style');
+  style.id = 'tx-inline-css';
+  style.textContent = `
+    .podcast-transcript { max-height:60vh; overflow-y:auto; scroll-behavior:smooth;
+      border:1px solid var(--background-modifier-border); border-radius:var(--radius-s);
+      padding:var(--size-4-2) 0; background:var(--background-primary); }
+    .tx-seg { display:flex; align-items:baseline; gap:var(--size-4-3);
+      padding:var(--size-2-3) var(--size-4-3); cursor:pointer;
+      border-left:3px solid transparent; transition:background-color .15s,border-color .15s; }
+    .tx-seg:hover { background:var(--background-modifier-hover); }
+    .tx-seg.tx-active { background:var(--background-modifier-hover);
+      background:color-mix(in srgb,var(--interactive-accent) 12%,transparent);
+      border-left-color:var(--interactive-accent); }
+    .tx-ts { flex-shrink:0; font-family:var(--font-monospace); font-size:var(--font-ui-smaller);
+      color:var(--text-muted); min-width:5.5em; user-select:none; }
+    .tx-seg.tx-active .tx-ts { color:var(--interactive-accent); font-weight:var(--font-semibold); }
+    .tx-text { color:var(--text-normal); line-height:var(--line-height-normal); }
+    .tx-seg.tx-active .tx-text { font-weight:var(--font-medium); }
+    .tx-notice { text-align:center; padding:var(--size-4-2); color:var(--text-muted);
+      font-size:var(--font-ui-smaller); font-style:italic; }`;
+  document.head.appendChild(style);
+}
+
 const ct = dv.container.createEl("div", { cls: "podcast-transcript" });
 const segEls = segs.map((seg, i) => {
   const row = ct.createEl("div", { cls: "tx-seg", attr: { "data-i": String(i) } });
@@ -66,13 +91,23 @@ const segEls = segs.map((seg, i) => {
   return row;
 });
 
-// Find <audio> inside Media Extended's open shadow DOM
+// Find <audio>: try Media Extended (desktop), then native embed (mobile)
 function findAudio() {
   const view = ct.closest('.markdown-preview-view') || ct.closest('.view-content');
-  if (!view) return null;
-  const host = view.querySelector('.mx-media-embed .mx-player-shadow-root');
-  if (!host?.shadowRoot) return null;
-  return host.shadowRoot.querySelector('audio') || host.shadowRoot.querySelector('video');
+  // Strategy 1: Media Extended shadow DOM (desktop)
+  if (view) {
+    const host = view.querySelector('.mx-media-embed .mx-player-shadow-root');
+    if (host?.shadowRoot) {
+      const el = host.shadowRoot.querySelector('audio') || host.shadowRoot.querySelector('video');
+      if (el) return el;
+    }
+  }
+  // Strategy 2: Obsidian native audio embed (mobile / no Media Extended)
+  // Search in view first, then fall back to the active leaf container,
+  // because on mobile the audio element may be injected asynchronously
+  // in a sibling section that view.querySelector can still reach.
+  const scope = view || ct.closest('.workspace-leaf') || document;
+  return scope.querySelector('.internal-embed audio') || scope.querySelector('audio');
 }
 
 let audio = findAudio();
