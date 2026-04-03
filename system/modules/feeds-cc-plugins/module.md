@@ -8,7 +8,7 @@ created: 2026-04-03
 updated: 2026-04-03
 depends_on: [dashboard]
 requires:
-  cli: [claude, python3, curl]
+  cli: [claude, python3]
   python: ">=3.13"
   pip: []
   plugins: [dataview]

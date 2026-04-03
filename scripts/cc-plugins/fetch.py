@@ -183,22 +183,6 @@ def fetch_npm_info(package_name: str) -> dict | None:
 
 # ── README fetching ────────────────────────────────────────────────
 
-def fetch_readme_excerpt(full_name: str, headers: dict, max_chars: int = 2000) -> str:
-    """Fetch first N chars of a repo's README."""
-    url = f"{GITHUB_API_BASE}/repos/{full_name}/readme"
-    try:
-        data = api_get(url, {**headers, "Accept": "application/vnd.github.raw+json"})
-        # When using raw accept, response is the raw text
-        if isinstance(data, dict):
-            # Fallback: sometimes returns JSON with content field
-            import base64
-            content = data.get("content", "")
-            return base64.b64decode(content).decode("utf-8", errors="replace")[:max_chars]
-        return ""
-    except Exception:
-        return ""
-
-
 def fetch_readme_raw(full_name: str, max_chars: int = 2000) -> str:
     """Fetch raw README content via raw.githubusercontent.com."""
     for readme_name in ["README.md", "readme.md", "README.rst", "README"]:

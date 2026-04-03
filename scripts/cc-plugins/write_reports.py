@@ -70,14 +70,23 @@ def npm_stats(plugin: dict) -> str:
 
 # ── Report builders (Chinese) ──────────────────────────────────────
 
+def npm_link(plugin: dict) -> str:
+    """Build npm link if package info is available."""
+    npm = plugin.get("npm_info")
+    if npm and npm.get("npm_package"):
+        return f" \u00b7 [npm](https://www.npmjs.com/package/{npm['npm_package']})"
+    return ""
+
+
 def build_new_callout_zh(plugin: dict) -> str:
     cat_emoji = CATEGORY_EMOJI.get(plugin["category"], "\U0001f4e6")
     cat_label = CATEGORY_LABEL.get(plugin["category"], "Other")
     npm = npm_stats(plugin)
     npm_line = f" \u00b7 {npm}" if npm else ""
+    npm_lnk = npm_link(plugin)
     tags = ", ".join(plugin.get("tags", []))
     return f"""> [!tip] {rank_str(plugin["rank"])} {plugin["name"]} {score_badge(plugin["score"])} \u00b7 {cat_emoji} {cat_label}
-> [GitHub]({plugin["repo_url"]}){npm_line} \u00b7 \u2b50 {plugin["stars"]}
+> [GitHub]({plugin["repo_url"]}){npm_lnk}{npm_line} \u00b7 \u2b50 {plugin["stars"]}
 > `{plugin.get("install_cmd", "")}`
 >
 > {plugin.get("summary_zh", "")}
@@ -90,7 +99,7 @@ def build_updated_callout_zh(plugin: dict) -> str:
     prev = plugin.get("previous_version", "?")
     curr = plugin.get("npm_info", {}).get("latest_version", "?")
     return f"""> [!info] {plugin["name"]} `{prev}` \u2192 `{curr}` \u00b7 {cat_emoji} {CATEGORY_LABEL.get(plugin["category"], "Other")}
-> [GitHub]({plugin["repo_url"]})
+> [GitHub]({plugin["repo_url"]}) \u00b7 [Changelog]({plugin["repo_url"]}/releases)
 >
 > {plugin.get("summary_zh", "")}"""
 
@@ -102,9 +111,10 @@ def build_new_callout_en(plugin: dict) -> str:
     cat_label = CATEGORY_LABEL.get(plugin["category"], "Other")
     npm = npm_stats(plugin)
     npm_line = f" \u00b7 {npm}" if npm else ""
+    npm_lnk = npm_link(plugin)
     tags = ", ".join(plugin.get("tags", []))
     return f"""> [!tip] {rank_str(plugin["rank"])} {plugin["name"]} {score_badge(plugin["score"])} \u00b7 {cat_emoji} {cat_label}
-> [GitHub]({plugin["repo_url"]}){npm_line} \u00b7 \u2b50 {plugin["stars"]}
+> [GitHub]({plugin["repo_url"]}){npm_lnk}{npm_line} \u00b7 \u2b50 {plugin["stars"]}
 > `{plugin.get("install_cmd", "")}`
 >
 > {plugin.get("summary_en", "")}
@@ -117,7 +127,7 @@ def build_updated_callout_en(plugin: dict) -> str:
     prev = plugin.get("previous_version", "?")
     curr = plugin.get("npm_info", {}).get("latest_version", "?")
     return f"""> [!info] {plugin["name"]} `{prev}` \u2192 `{curr}` \u00b7 {cat_emoji} {CATEGORY_LABEL.get(plugin["category"], "Other")}
-> [GitHub]({plugin["repo_url"]})
+> [GitHub]({plugin["repo_url"]}) \u00b7 [Changelog]({plugin["repo_url"]}/releases)
 >
 > {plugin.get("summary_en", "")}"""
 
@@ -225,24 +235,7 @@ generator: claude-code
 # ── Dashboard ──────────────────────────────────────────────────────
 
 def write_dashboard(today: str, feed_dir: Path) -> None:
-    """Rebuild Dashboard.md from existing weekly report files."""
-    weeks = set()
-    for f in feed_dir.glob("*.md"):
-        name = f.stem
-        if name == "Dashboard" or name.endswith("-en"):
-            continue
-        # Match YYYY-WXX format
-        if len(name) >= 7 and name[4] == "-" and name[5] == "W":
-            weeks.add(name)
-
-    sorted_weeks = sorted(weeks, reverse=True)[:14]
-
-    if not sorted_weeks:
-        return
-
-    latest = sorted_weeks[0]
-    rows = "\n".join(f"| {w} | [[{w}]] | [[{w}-en]] |" for w in sorted_weeks)
-
+    """Write Dashboard.md with Dataview query for auto-updating report index."""
     dashboard = f"""---
 date: {today}
 tags: [cc-plugins, dashboard]
@@ -250,16 +243,27 @@ tags: [cc-plugins, dashboard]
 
 # Claude Code Plugins
 
-## Quick Links
+```dataviewjs
+const pages = dv.pages('"Feeds/CC-Plugins"')
+  .where(p => p.file.name !== "Dashboard" && !p.file.name.endsWith("-en") && !p.file.path.includes("archive") && p.lang === "zh")
+  .sort(p => p.week, "desc");
 
-- Latest: [[{latest}]]
-- Latest (EN): [[{latest}-en]]
+if (pages.length > 0) {{
+  dv.paragraph("**Latest:** " + dv.fileLink(pages[0].file.name));
+}}
 
-## Weekly Reports
-
-| Week | ZH | EN |
-|------|----|----|
-{rows}
+dv.table(
+  ["Week", "ZH", "EN", "New", "Updated", "Scanned"],
+  pages.map(p => [
+    p.week,
+    dv.fileLink(p.file.name),
+    dv.fileLink(p.file.name + "-en"),
+    p.plugins_new || 0,
+    p.plugins_updated || 0,
+    p.plugins_discovered || 0,
+  ])
+);
+```
 """
     (feed_dir / "Dashboard.md").write_text(dashboard, encoding="utf-8")
 
