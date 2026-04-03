@@ -285,7 +285,7 @@ commands:
   - /feeds/cc-plugins
 output: Feeds/CC-Plugins/
 requires:
-  cli: [claude, git, python3, curl]
+  cli: [claude, python3]
   python: ">=3.13"
   pip: []
   plugins: [dataview]
