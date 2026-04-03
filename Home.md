@@ -1080,6 +1080,133 @@ const { panels: fPanels } = createTabGroup(dv, [
 }
 ```
 
+## CC Plugins <span style="float:right;font-size:0.75em;color:var(--text-muted);">Weekly 📦</span>
+
+```dataviewjs
+const isMobile = app.isMobile;
+
+// Find latest weekly report by sorting YYYY-WXX filenames descending
+const reports = dv.pages('"Feeds/CC-Plugins"')
+  .where(p => p.file.name !== "Dashboard" && !p.file.name.endsWith("-en") && !p.file.path.includes("archive"))
+  .sort(p => p.file.name, "desc");
+
+if (reports.length === 0) {
+  dv.el("div", "No CC Plugins reports yet. Run /feeds/cc-plugins to generate.", {
+    attr: { style: "font-size:0.85em;color:var(--text-muted);padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
+  });
+} else {
+  const latest = reports[0];
+  const week = latest.week || latest.file.name;
+  const newCount = latest.plugins_new || 0;
+  const updatedCount = latest.plugins_updated || 0;
+  const discovered = latest.plugins_discovered || 0;
+
+  // Header line
+  const hdr = dv.el("div", "", {
+    attr: { style: "display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;" }
+  });
+  hdr.createEl("span", {
+    text: `${week} · ${newCount} new · ${updatedCount} updated`,
+    attr: { style: "font-size:0.85em;color:var(--text-muted);" }
+  });
+
+  // Read the raw file content to extract plugin entries
+  const content = await dv.io.load(latest.file.path);
+  const lines = content.split("\n");
+
+  // Parse callout blocks: > [!tip] or > [!info]
+  const newPlugins = [];
+  const updatedPlugins = [];
+  let currentSection = null;
+  let currentEntry = [];
+
+  for (const line of lines) {
+    if (line.startsWith("## 🆕")) { currentSection = "new"; continue; }
+    if (line.startsWith("## 📦")) { currentSection = "updated"; continue; }
+    if (line.startsWith("## 📊") || line.startsWith("---")) {
+      if (currentEntry.length > 0 && currentSection) {
+        (currentSection === "new" ? newPlugins : updatedPlugins).push(currentEntry.join("\n"));
+        currentEntry = [];
+      }
+      currentSection = line.startsWith("## 📊") ? null : currentSection;
+      continue;
+    }
+    if (currentSection && line.startsWith("> [!tip]")) {
+      if (currentEntry.length > 0) {
+        newPlugins.push(currentEntry.join("\n"));
+      }
+      currentEntry = [line];
+    } else if (currentSection && line.startsWith("> [!info]")) {
+      if (currentEntry.length > 0) {
+        updatedPlugins.push(currentEntry.join("\n"));
+      }
+      currentEntry = [line];
+    } else if (currentSection && (line.startsWith(">") || line === "")) {
+      if (line === "" && currentEntry.length > 0) {
+        (currentSection === "new" ? newPlugins : updatedPlugins).push(currentEntry.join("\n"));
+        currentEntry = [];
+      } else if (line.startsWith(">")) {
+        currentEntry.push(line);
+      }
+    }
+  }
+  if (currentEntry.length > 0 && currentSection) {
+    (currentSection === "new" ? newPlugins : updatedPlugins).push(currentEntry.join("\n"));
+  }
+
+  // Render new discoveries (top 5)
+  const maxShow = 5;
+  const fontSize = isMobile ? "0.78em" : "0.85em";
+  const gap = isMobile ? "4px" : "6px";
+
+  if (newPlugins.length > 0) {
+    dv.el("div", "🆕 New Discoveries", {
+      attr: { style: `font-size:${fontSize};font-weight:600;margin:8px 0 4px 0;` }
+    });
+    const list = dv.el("div", "", { attr: { style: `display:flex;flex-direction:column;gap:${gap};` } });
+    for (const entry of newPlugins.slice(0, maxShow)) {
+      // Extract name, score, summary from callout
+      const tipMatch = entry.match(/>\s*\[!tip\]\s*(?:\S+)\s+(\S+)\s+⭐\s*([\d.]+)\s*·\s*(\S+)\s+(.*)/);
+      const summaryMatch = entry.match(/>\s*>\s*(.+)/);
+      const summary = summaryMatch ? summaryMatch[1] : "";
+      if (tipMatch) {
+        const [, name, score, catEmoji, catLabel] = tipMatch;
+        const scoreNum = parseFloat(score);
+        const scoreColor = scoreNum >= 8 ? "var(--text-accent)" : scoreNum >= 6 ? "var(--text-normal)" : "var(--text-muted)";
+        const row = list.createEl("div", {
+          attr: { style: `font-size:${fontSize};padding:4px 0;border-bottom:1px solid var(--background-modifier-border);` }
+        });
+        row.innerHTML = `<span style="color:${scoreColor};font-weight:600;">⭐ ${score}</span> <strong>${name}</strong> <span style="color:var(--text-muted);">${catEmoji}</span> <span style="font-size:0.9em;color:var(--text-muted);">— ${summary.substring(0, 60)}${summary.length > 60 ? "…" : ""}</span>`;
+      }
+    }
+  }
+
+  // Render version updates (top 5)
+  if (updatedPlugins.length > 0) {
+    dv.el("div", "📦 Version Updates", {
+      attr: { style: `font-size:${fontSize};font-weight:600;margin:10px 0 4px 0;` }
+    });
+    const uList = dv.el("div", "", { attr: { style: `display:flex;flex-direction:column;gap:${gap};` } });
+    for (const entry of updatedPlugins.slice(0, maxShow)) {
+      const infoMatch = entry.match(/>\s*\[!info\]\s*(\S+)\s+`([^`]+)`\s*→\s*`([^`]+)`/);
+      const summaryMatch = entry.match(/>\s*>\s*(.+)/);
+      const summary = summaryMatch ? summaryMatch[1] : "";
+      if (infoMatch) {
+        const [, name, oldVer, newVer] = infoMatch;
+        const row = uList.createEl("div", {
+          attr: { style: `font-size:${fontSize};padding:4px 0;border-bottom:1px solid var(--background-modifier-border);` }
+        });
+        row.innerHTML = `<strong>${name}</strong> <code style="font-size:0.85em;">${oldVer}</code> → <code style="font-size:0.85em;">${newVer}</code> <span style="font-size:0.9em;color:var(--text-muted);">— ${summary.substring(0, 50)}${summary.length > 50 ? "…" : ""}</span>`;
+      }
+    }
+  }
+
+  // Footer link
+  dv.el("div", "", { attr: { style: "margin-top:8px;font-size:0.82em;" } }).innerHTML =
+    '<a class="internal-link" data-href="Feeds/CC-Plugins/Dashboard">All reports →</a>';
+}
+```
+
 ---
 
 ## Learning
