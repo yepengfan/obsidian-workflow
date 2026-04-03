@@ -14,6 +14,7 @@ sorting-spec: |
   WeRead
   Attachments
   Archive
+  docs
   scripts
   system
   Templates
