@@ -18,6 +18,7 @@ sorting-spec: |
   scripts
   system
   Templates
+  Excalidraw
   CLAUDE
   README
   sortspec
