@@ -242,6 +242,10 @@ ct.addEventListener("click", (e) => {
 
 
 # ── Highlights summary (dataviewjs) ──────────────────────────────────
+# IMPORTANT: The paragraph grouping logic (gap > 1.5s, dur > 35s) and
+# fmtTsFull() MUST stay in sync with DATAVIEWJS_TRANSCRIPT above.
+# The highlights summary uses fmtTsFull timestamps as join keys against
+# the frontmatter highlights array.
 
 DATAVIEWJS_HIGHLIGHTS = r"""```dataviewjs
 // ── Highlights Summary ──────────────────────────────────────────
@@ -270,8 +274,9 @@ for (const block of raw.trim().split(/\n\n+/)) {
   const text  = lines.slice(2).join(' ').trim();
   if (text) segs.push({ start, end, text });
 }
+if (!segs.length) { dv.paragraph("_Transcript is empty._"); return; }
 
-// Rebuild paragraphs (same grouping as transcript)
+// Rebuild paragraphs (same grouping as transcript — keep in sync!)
 const paras = [];
 let cur = { segs: [segs[0]] };
 for (let i = 1; i < segs.length; i++) {
