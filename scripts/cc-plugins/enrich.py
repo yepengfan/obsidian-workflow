@@ -10,13 +10,14 @@ Output (stdout): enriched JSON { "week": "...", "enriched": [...], "stats": {...
 """
 
 import json
-import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
+sys.path.insert(0, str(SCRIPT_DIR.parent))
+from shared.json_helpers import extract_json_array  # noqa: E402
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "enrich.md").read_text()
 
 CLAUDE_BIN = shutil.which("claude") or "claude"
@@ -25,34 +26,8 @@ CLAUDE_FLAGS = [
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
+    "--bare",
 ]
-
-
-# ── JSON helpers ───────────────────────────────────────────────────
-
-def _strip_fences(raw: str) -> str:
-    raw = raw.strip()
-    raw = re.sub(r"^\s*```(?:json)?\s*\n", "", raw)
-    raw = re.sub(r"\n\s*```\s*$", "", raw)
-    return raw
-
-
-def extract_json_array(raw: str) -> list:
-    raw = _strip_fences(raw)
-    start = raw.find("[")
-    if start != -1:
-        end = raw.rfind("]")
-        if end != -1:
-            return json.loads(raw[start : end + 1])
-    # Might be wrapped in an object
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start != -1 and end != -1:
-        obj = json.loads(raw[start : end + 1])
-        for key in ("enriched", "plugins", "results"):
-            if key in obj:
-                return obj[key]
-    raise ValueError(f"No JSON array found:\n{raw[:400]}")
 
 
 # ── Claude subprocess runner ───────────────────────────────────────
@@ -102,7 +77,7 @@ def enrich_plugins(plugins: list) -> list:
     )
     print(f"[enrich] Sending {len(slim)} repos to Claude for classification + enrichment...", file=sys.stderr)
     raw = run_claude(user_prompt, json.dumps(slim, ensure_ascii=False))
-    result = extract_json_array(raw)
+    result = extract_json_array(raw, fallback_keys=("enriched", "plugins", "results"))
     print(f"[enrich] Received {len(result)} enrichment records.", file=sys.stderr)
     return result
 

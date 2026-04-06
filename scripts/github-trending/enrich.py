@@ -48,7 +48,9 @@ def run_claude(user_prompt: str, stdin_data: str) -> str:
         err = result.stderr.decode().strip()
         raise RuntimeError(f"claude exited {result.returncode}: {err}")
     raw = result.stdout.decode()
-    # --output-format json wraps the response in {"result": "..."}
+    # --output-format json wraps the response in {"result": "..."}.
+    # --bare suppresses preamble text but does NOT disable the JSON envelope,
+    # so we still need to unwrap it here.
     try:
         envelope = safe_json_loads(raw)
         if isinstance(envelope, dict) and "result" in envelope:
