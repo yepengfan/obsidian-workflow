@@ -95,18 +95,37 @@ def _strip_fences(raw: str) -> str:
     return raw
 
 
+def _fix_json_escapes(s: str) -> str:
+    """Fix invalid backslash escapes that LLMs sometimes produce.
+
+    JSON only allows: \\\" \\\\ \\/ \\b \\f \\n \\r \\t \\uXXXX.
+    Lone backslashes before other characters (e.g. \\: \\' \\.) cause
+    ``json.loads()`` to raise ``Invalid \\escape``.  Replace them with
+    the character itself (drop the backslash).
+    """
+    return re.sub(r'\\(?!["\\/bfnrtu])', "", s)
+
+
+def _safe_json_loads(s: str):
+    """json.loads with automatic invalid-escape repair."""
+    try:
+        return json.loads(s)
+    except json.JSONDecodeError:
+        return json.loads(_fix_json_escapes(s))
+
+
 def extract_json_array(raw: str) -> list:
     raw = _strip_fences(raw)
     start = raw.find("[")
     if start != -1:
         end = raw.rfind("]")
         if end != -1:
-            return json.loads(raw[start : end + 1])
+            return _safe_json_loads(raw[start : end + 1])
     # Might be wrapped: {"top_articles": [...]}
     start = raw.find("{")
     end = raw.rfind("}")
     if start != -1 and end != -1:
-        obj = json.loads(raw[start : end + 1])
+        obj = _safe_json_loads(raw[start : end + 1])
         if "top_articles" in obj:
             return obj["top_articles"]
     raise ValueError(f"No JSON array found:\n{raw[:400]}")

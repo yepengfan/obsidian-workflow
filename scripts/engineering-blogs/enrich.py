@@ -29,6 +29,7 @@ CLAUDE_FLAGS = [
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
+    "--bare",
 ]
 
 
