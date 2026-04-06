@@ -10,7 +10,6 @@ Output (stdout): enriched JSON { "date": "...", "enriched": [...], "stats": {...
 """
 
 import json
-import re
 import shutil
 import subprocess
 import sys
@@ -18,6 +17,8 @@ from datetime import date
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
+sys.path.insert(0, str(SCRIPT_DIR.parent))
+from shared.json_helpers import extract_json_array, safe_json_loads  # noqa: E402
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "enrich.md").read_text()
 
 TOP_N = 15
@@ -27,34 +28,9 @@ CLAUDE_FLAGS = [
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
+    "--output-format", "json",
+    "--bare",
 ]
-
-
-# ── JSON helpers ─────────────────────────────────────────────────────
-
-def _strip_fences(raw: str) -> str:
-    raw = raw.strip()
-    raw = re.sub(r"^\s*```(?:json)?\s*\n", "", raw)
-    raw = re.sub(r"\n\s*```\s*$", "", raw)
-    return raw
-
-
-def extract_json_array(raw: str) -> list:
-    raw = _strip_fences(raw)
-    start = raw.find("[")
-    if start != -1:
-        end = raw.rfind("]")
-        if end != -1:
-            return json.loads(raw[start : end + 1])
-    # Might be wrapped in an object
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start != -1 and end != -1:
-        obj = json.loads(raw[start : end + 1])
-        for key in ("enriched", "repos", "results"):
-            if key in obj:
-                return obj[key]
-    raise ValueError(f"No JSON array found:\n{raw[:400]}")
 
 
 # ── Claude subprocess runner ─────────────────────────────────────────
@@ -66,12 +42,22 @@ def run_claude(user_prompt: str, stdin_data: str) -> str:
          *CLAUDE_FLAGS],
         input=stdin_data.encode(),
         capture_output=True,
-        timeout=120,
+        timeout=240,
     )
     if result.returncode != 0:
         err = result.stderr.decode().strip()
         raise RuntimeError(f"claude exited {result.returncode}: {err}")
-    return result.stdout.decode()
+    raw = result.stdout.decode()
+    # --output-format json wraps the response in {"result": "..."}.
+    # --bare suppresses preamble text but does NOT disable the JSON envelope,
+    # so we still need to unwrap it here.
+    try:
+        envelope = safe_json_loads(raw)
+        if isinstance(envelope, dict) and "result" in envelope:
+            return envelope["result"]
+    except (json.JSONDecodeError, KeyError):
+        pass
+    return raw
 
 
 # ── Enrichment ───────────────────────────────────────────────────────
@@ -82,12 +68,13 @@ def enrich_repos(repos: list) -> list:
         f"Enrich ALL {len(repos)} repos in this list. "
         "For each repo, assign a category, write a bilingual one-sentence summary, "
         "and score it 1–10 based on innovation, community interest, and practical utility. "
-        "Output ONLY a JSON array — one enriched object per repo, in the same order as input, "
-        "no markdown fences, no wrapper object."
+        "CRITICAL: Your ENTIRE response must be a valid JSON array and nothing else. "
+        "Start your response with '[' and end with ']'. "
+        "No markdown, no explanation, no preamble, no summary — ONLY the JSON array."
     )
     print(f"[enrich] Sending {len(repos)} repos to Claude for enrichment...", file=sys.stderr)
     raw = run_claude(user_prompt, json.dumps(repos, ensure_ascii=False))
-    result = extract_json_array(raw)
+    result = extract_json_array(raw, fallback_keys=("enriched", "repos", "results"))
     print(f"[enrich] Received {len(result)} enriched records", file=sys.stderr)
     return result
 
@@ -115,7 +102,7 @@ def main() -> None:
     try:
         enrichment_records = enrich_repos(repos)
     except subprocess.TimeoutExpired:
-        print("[enrich] ERROR: Claude CLI timed out after 120s", file=sys.stderr)
+        print("[enrich] ERROR: Claude CLI timed out after 240s", file=sys.stderr)
         sys.exit(1)
     except RuntimeError as e:
         print(f"[enrich] ERROR: Claude CLI failed — {e}", file=sys.stderr)

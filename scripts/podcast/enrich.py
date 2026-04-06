@@ -16,12 +16,13 @@ Output (stdout): {"episodes": [...enriched], "stats": {...}}
 
 import asyncio
 import json
-import re
 import shutil
 import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
+sys.path.insert(0, str(SCRIPT_DIR.parent))
+from shared.json_helpers import extract_json_object  # noqa: E402
 SCORE_PROMPT = (SCRIPT_DIR / "prompts" / "score.md").read_text()
 SUMMARIZE_PROMPT = (SCRIPT_DIR / "prompts" / "summarize.md").read_text()
 
@@ -30,6 +31,7 @@ CLAUDE_FLAGS = [
     "--model", "haiku",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
+    "--bare",
 ]
 
 # Transcript truncation limits (characters)
@@ -37,67 +39,6 @@ TRANSCRIPT_MAX_CHARS = 100_000
 TRANSCRIPT_HEAD_CHARS = 80_000
 TRANSCRIPT_TAIL_CHARS = 20_000
 TRANSCRIPT_TRUNCATION_MARKER = "\n\n[...transcript truncated...]\n\n"
-
-
-# ── JSON helpers ─────────────────────────────────────────────────────
-
-def _strip_fences(raw: str) -> str:
-    """Remove markdown code fences from Claude output."""
-    raw = raw.strip()
-    raw = re.sub(r"^\s*```(?:json)?\s*\n", "", raw)
-    raw = re.sub(r"\n\s*```\s*$", "", raw)
-    return raw
-
-
-def extract_json_object(raw: str) -> dict:
-    """Extract the first JSON object from Claude output.
-
-    Tries direct parse first, then attempts common repairs:
-    - Trailing commas before } or ]
-    - Unescaped newlines inside string values
-    - Balanced-brace extraction as last resort
-    """
-    raw = _strip_fences(raw)
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start == -1 or end == -1:
-        raise ValueError(f"No JSON object found in output:\n{raw[:400]}")
-    candidate = raw[start : end + 1]
-
-    # Try direct parse first
-    try:
-        return json.loads(candidate)
-    except json.JSONDecodeError:
-        pass
-
-    # Repair: remove trailing commas before } or ]
-    repaired = re.sub(r",\s*([}\]])", r"\1", candidate)
-    try:
-        return json.loads(repaired)
-    except json.JSONDecodeError:
-        pass
-
-    # Repair: fix unescaped newlines inside string values
-    repaired = re.sub(r'(?<=": ")(.*?)(?="[,}\s])', lambda m: m.group(0).replace("\n", "\\n"), repaired, flags=re.DOTALL)
-    try:
-        return json.loads(repaired)
-    except json.JSONDecodeError:
-        pass
-
-    # Last resort: find balanced braces for the first complete object
-    depth = 0
-    for i in range(start, len(raw)):
-        if raw[i] == "{":
-            depth += 1
-        elif raw[i] == "}":
-            depth -= 1
-            if depth == 0:
-                try:
-                    return json.loads(re.sub(r",\s*([}\]])", r"\1", raw[start : i + 1]))
-                except json.JSONDecodeError:
-                    break
-
-    raise ValueError(f"Could not parse JSON from output:\n{candidate[:400]}")
 
 
 # ── Transcript helpers ────────────────────────────────────────────────

@@ -10,7 +10,6 @@ Output (stdout): enriched JSON { "date": "...", "enriched": [...], "stats": {...
 """
 
 import json
-import re
 import shutil
 import subprocess
 import sys
@@ -18,6 +17,8 @@ from datetime import date, timedelta
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
+sys.path.insert(0, str(SCRIPT_DIR.parent))
+from shared.json_helpers import extract_json_array, safe_json_loads  # noqa: E402
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "enrich.md").read_text()
 HISTORY_PATH = SCRIPT_DIR / "history.json"
 
@@ -29,6 +30,7 @@ CLAUDE_FLAGS = [
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
+    "--bare",
 ]
 
 
@@ -69,32 +71,6 @@ def save_history(history: dict, selected: list, today: date) -> None:
     HISTORY_PATH.write_text(json.dumps(history, ensure_ascii=False, indent=2))
 
 
-# ── JSON helpers ────────────────────────────────────────────────────
-
-def _strip_fences(raw: str) -> str:
-    raw = raw.strip()
-    raw = re.sub(r"^\s*```(?:json)?\s*\n", "", raw)
-    raw = re.sub(r"\n\s*```\s*$", "", raw)
-    return raw
-
-
-def extract_json_array(raw: str) -> list:
-    raw = _strip_fences(raw)
-    start = raw.find("[")
-    if start != -1:
-        end = raw.rfind("]")
-        if end != -1:
-            return json.loads(raw[start : end + 1])
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start != -1 and end != -1:
-        obj = json.loads(raw[start : end + 1])
-        for key in ("enriched", "articles", "results"):
-            if key in obj:
-                return obj[key]
-    raise ValueError(f"No JSON array found:\n{raw[:400]}")
-
-
 # ── Claude subprocess runner ────────────────────────────────────────
 
 def run_claude(user_prompt: str, stdin_data: str) -> str:
@@ -104,7 +80,7 @@ def run_claude(user_prompt: str, stdin_data: str) -> str:
          *CLAUDE_FLAGS],
         input=stdin_data.encode(),
         capture_output=True,
-        timeout=120,
+        timeout=240,
     )
     if result.returncode != 0:
         err = result.stderr.decode().strip()
@@ -141,10 +117,10 @@ def main() -> None:
 
     try:
         raw = run_claude(user_prompt, json.dumps(articles, ensure_ascii=False))
-        enrichment_records = extract_json_array(raw)
+        enrichment_records = extract_json_array(raw, fallback_keys=("enriched", "articles", "results"))
         print(f"[enrich] Received {len(enrichment_records)} enriched records", file=sys.stderr)
     except subprocess.TimeoutExpired:
-        print("[enrich] ERROR: Claude CLI timed out after 120s", file=sys.stderr)
+        print("[enrich] ERROR: Claude CLI timed out after 240s", file=sys.stderr)
         sys.exit(1)
     except RuntimeError as e:
         print(f"[enrich] ERROR: Claude CLI failed — {e}", file=sys.stderr)

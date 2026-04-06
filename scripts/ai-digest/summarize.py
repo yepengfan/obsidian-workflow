@@ -12,12 +12,13 @@ Output (stdout): summaries JSON  { "trend_zh": "...", "trend_en": "...", "summar
 
 import asyncio
 import json
-import re
 import shutil
 import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
+sys.path.insert(0, str(SCRIPT_DIR.parent))
+from shared.json_helpers import extract_json_array, extract_json_object  # noqa: E402
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "summarize.md").read_text()
 
 BATCH_SIZE = 3  # articles per parallel call (5 batches for 15 articles)
@@ -27,42 +28,8 @@ CLAUDE_FLAGS = [
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
+    "--bare",
 ]
-
-
-# ── JSON helpers ─────────────────────────────────────────────────────
-
-def _strip_fences(raw: str) -> str:
-    raw = raw.strip()
-    raw = re.sub(r"^\s*```(?:json)?\s*\n", "", raw)
-    raw = re.sub(r"\n\s*```\s*$", "", raw)
-    return raw
-
-
-def extract_json_array(raw: str) -> list:
-    raw = _strip_fences(raw)
-    start = raw.find("[")
-    if start != -1:
-        end = raw.rfind("]")
-        if end != -1:
-            return json.loads(raw[start : end + 1])
-    # Fallback: might be wrapped in an object
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start != -1 and end != -1:
-        obj = json.loads(raw[start : end + 1])
-        if "summaries" in obj:
-            return obj["summaries"]
-    raise ValueError(f"No JSON array found in output:\n{raw[:400]}")
-
-
-def extract_json_object(raw: str) -> dict:
-    raw = _strip_fences(raw)
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start == -1 or end == -1:
-        raise ValueError(f"No JSON object found in output:\n{raw[:400]}")
-    return json.loads(raw[start : end + 1])
 
 
 # ── Claude subprocess runner ─────────────────────────────────────────
@@ -80,11 +47,11 @@ async def run_claude(user_prompt: str, stdin_data: str) -> str:
     try:
         stdout, stderr = await asyncio.wait_for(
             proc.communicate(input=stdin_data.encode()),
-            timeout=120,
+            timeout=300,
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise RuntimeError("claude timed out after 120s")
+        raise RuntimeError("claude timed out after 300s")
     if proc.returncode != 0:
         err = stderr.decode().strip()
         raise RuntimeError(f"claude exited {proc.returncode}: {err}")
@@ -93,29 +60,60 @@ async def run_claude(user_prompt: str, stdin_data: str) -> str:
 
 # ── Phase tasks ──────────────────────────────────────────────────────
 
-async def summarize_batch(articles: list, batch_idx: int) -> list:
-    """Summarize one batch of articles in parallel. Returns summary dicts."""
+async def summarize_batch(articles: list, batch_idx: int, max_retries: int = 2) -> list:
+    """Summarize one batch of articles in parallel. Returns summary dicts.
+
+    Retries up to *max_retries* times when the LLM returns malformed output.
+    """
     user_prompt = (
         f"Summarize these {len(articles)} articles.\n"
         "Output ONLY a JSON array — no wrapper object, no trend fields, no markdown fences.\n"
         "Each element must have exactly: rank, title, title_zh, summary_zh, reason_zh, "
         "summary_en, reason_en."
     )
-    raw = await run_claude(user_prompt, json.dumps(articles, ensure_ascii=False))
-    result = extract_json_array(raw)
-    print(f"[summarize] Batch {batch_idx + 1}: {len(result)} summaries", file=sys.stderr)
-    return result
+    stdin_data = json.dumps(articles, ensure_ascii=False)
+    last_err: Exception = RuntimeError("no attempts made")
+    for attempt in range(1 + max_retries):
+        try:
+            raw = await run_claude(user_prompt, stdin_data)
+            result = extract_json_array(raw, fallback_keys=("summaries",))
+            print(f"[summarize] Batch {batch_idx + 1}: {len(result)} summaries", file=sys.stderr)
+            return result
+        except (ValueError, json.JSONDecodeError, RuntimeError) as e:
+            last_err = e
+            if attempt < max_retries:
+                print(
+                    f"[summarize] Batch {batch_idx + 1} attempt {attempt + 1} failed "
+                    f"({e}), retrying...",
+                    file=sys.stderr,
+                )
+    raise last_err
 
 
-async def generate_trend(summaries: list) -> dict:
-    """Generate trend_zh and trend_en after all batches complete."""
+async def generate_trend(summaries: list, max_retries: int = 2) -> dict:
+    """Generate trend_zh and trend_en after all batches complete.
+
+    Retries up to *max_retries* times when the LLM returns malformed output.
+    """
     user_prompt = (
         "Based on these article summaries, write the Today's Highlights section.\n"
         "Output ONLY a JSON object with exactly two fields: trend_zh and trend_en.\n"
         "3–5 sentences each. Synthesize macro themes — do NOT list articles one by one."
     )
-    raw = await run_claude(user_prompt, json.dumps(summaries, ensure_ascii=False))
-    return extract_json_object(raw)
+    stdin_data = json.dumps(summaries, ensure_ascii=False)
+    last_err: Exception = RuntimeError("no attempts made")
+    for attempt in range(1 + max_retries):
+        try:
+            raw = await run_claude(user_prompt, stdin_data)
+            return extract_json_object(raw)
+        except (ValueError, json.JSONDecodeError, RuntimeError) as e:
+            last_err = e
+            if attempt < max_retries:
+                print(
+                    f"[summarize] Trend attempt {attempt + 1} failed ({e}), retrying...",
+                    file=sys.stderr,
+                )
+    raise last_err
 
 
 # ── Main ─────────────────────────────────────────────────────────────
