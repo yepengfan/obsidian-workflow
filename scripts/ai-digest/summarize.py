@@ -12,12 +12,13 @@ Output (stdout): summaries JSON  { "trend_zh": "...", "trend_en": "...", "summar
 
 import asyncio
 import json
-import re
 import shutil
 import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
+sys.path.insert(0, str(SCRIPT_DIR.parent))
+from shared.json_helpers import extract_json_array, extract_json_object  # noqa: E402
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "summarize.md").read_text()
 
 BATCH_SIZE = 3  # articles per parallel call (5 batches for 15 articles)
@@ -27,61 +28,8 @@ CLAUDE_FLAGS = [
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
+    "--bare",
 ]
-
-
-# ── JSON helpers ─────────────────────────────────────────────────────
-
-def _strip_fences(raw: str) -> str:
-    raw = raw.strip()
-    raw = re.sub(r"^\s*```(?:json)?\s*\n", "", raw)
-    raw = re.sub(r"\n\s*```\s*$", "", raw)
-    return raw
-
-
-def _fix_json_escapes(s: str) -> str:
-    """Fix invalid backslash escapes that LLMs sometimes produce.
-
-    JSON only allows: \\\" \\\\ \\/ \\b \\f \\n \\r \\t \\uXXXX.
-    Lone backslashes before other characters (e.g. \\: \\' \\.) cause
-    ``json.loads()`` to raise ``Invalid \\escape``.  Replace them with
-    the character itself (drop the backslash).
-    """
-    return re.sub(r'\\(?!["\\/bfnrtu])', "", s)
-
-
-def _safe_json_loads(s: str):
-    """json.loads with automatic invalid-escape repair."""
-    try:
-        return json.loads(s)
-    except json.JSONDecodeError:
-        return json.loads(_fix_json_escapes(s))
-
-
-def extract_json_array(raw: str) -> list:
-    raw = _strip_fences(raw)
-    start = raw.find("[")
-    if start != -1:
-        end = raw.rfind("]")
-        if end != -1:
-            return _safe_json_loads(raw[start : end + 1])
-    # Fallback: might be wrapped in an object
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start != -1 and end != -1:
-        obj = _safe_json_loads(raw[start : end + 1])
-        if "summaries" in obj:
-            return obj["summaries"]
-    raise ValueError(f"No JSON array found in output:\n{raw[:400]}")
-
-
-def extract_json_object(raw: str) -> dict:
-    raw = _strip_fences(raw)
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start == -1 or end == -1:
-        raise ValueError(f"No JSON object found in output:\n{raw[:400]}")
-    return _safe_json_loads(raw[start : end + 1])
 
 
 # ── Claude subprocess runner ─────────────────────────────────────────
@@ -124,11 +72,11 @@ async def summarize_batch(articles: list, batch_idx: int, max_retries: int = 2) 
         "summary_en, reason_en."
     )
     stdin_data = json.dumps(articles, ensure_ascii=False)
-    last_err: Exception | None = None
+    last_err: Exception = RuntimeError("no attempts made")
     for attempt in range(1 + max_retries):
         try:
             raw = await run_claude(user_prompt, stdin_data)
-            result = extract_json_array(raw)
+            result = extract_json_array(raw, fallback_keys=("summaries",))
             print(f"[summarize] Batch {batch_idx + 1}: {len(result)} summaries", file=sys.stderr)
             return result
         except (ValueError, json.JSONDecodeError, RuntimeError) as e:
@@ -139,7 +87,7 @@ async def summarize_batch(articles: list, batch_idx: int, max_retries: int = 2) 
                     f"({e}), retrying...",
                     file=sys.stderr,
                 )
-    raise last_err  # type: ignore[misc]
+    raise last_err
 
 
 async def generate_trend(summaries: list, max_retries: int = 2) -> dict:
@@ -153,7 +101,7 @@ async def generate_trend(summaries: list, max_retries: int = 2) -> dict:
         "3–5 sentences each. Synthesize macro themes — do NOT list articles one by one."
     )
     stdin_data = json.dumps(summaries, ensure_ascii=False)
-    last_err: Exception | None = None
+    last_err: Exception = RuntimeError("no attempts made")
     for attempt in range(1 + max_retries):
         try:
             raw = await run_claude(user_prompt, stdin_data)
@@ -165,7 +113,7 @@ async def generate_trend(summaries: list, max_retries: int = 2) -> dict:
                     f"[summarize] Trend attempt {attempt + 1} failed ({e}), retrying...",
                     file=sys.stderr,
                 )
-    raise last_err  # type: ignore[misc]
+    raise last_err
 
 
 # ── Main ─────────────────────────────────────────────────────────────

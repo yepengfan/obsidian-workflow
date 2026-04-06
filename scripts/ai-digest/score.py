@@ -16,13 +16,14 @@ Output (stdout): scored JSON  { "top_articles": [...] }  — same contract as be
 
 import asyncio
 import json
-import re
 import shutil
 import sys
 from datetime import date, timedelta
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
+sys.path.insert(0, str(SCRIPT_DIR.parent))
+from shared.json_helpers import extract_json_array  # noqa: E402
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "score.md").read_text()
 
 BATCH_SIZE = 4   # articles per parallel call (~4 batches for 14-16 articles)
@@ -33,6 +34,7 @@ CLAUDE_FLAGS = [
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
+    "--bare",
 ]
 
 HISTORY_PATH = SCRIPT_DIR / "history.json"
@@ -86,51 +88,6 @@ def get_decay(appearances: int) -> float:
     return 0.1  # 2+ days
 
 
-# ── JSON helpers ─────────────────────────────────────────────────────
-
-def _strip_fences(raw: str) -> str:
-    raw = raw.strip()
-    raw = re.sub(r"^\s*```(?:json)?\s*\n", "", raw)
-    raw = re.sub(r"\n\s*```\s*$", "", raw)
-    return raw
-
-
-def _fix_json_escapes(s: str) -> str:
-    """Fix invalid backslash escapes that LLMs sometimes produce.
-
-    JSON only allows: \\\" \\\\ \\/ \\b \\f \\n \\r \\t \\uXXXX.
-    Lone backslashes before other characters (e.g. \\: \\' \\.) cause
-    ``json.loads()`` to raise ``Invalid \\escape``.  Replace them with
-    the character itself (drop the backslash).
-    """
-    return re.sub(r'\\(?!["\\/bfnrtu])', "", s)
-
-
-def _safe_json_loads(s: str):
-    """json.loads with automatic invalid-escape repair."""
-    try:
-        return json.loads(s)
-    except json.JSONDecodeError:
-        return json.loads(_fix_json_escapes(s))
-
-
-def extract_json_array(raw: str) -> list:
-    raw = _strip_fences(raw)
-    start = raw.find("[")
-    if start != -1:
-        end = raw.rfind("]")
-        if end != -1:
-            return _safe_json_loads(raw[start : end + 1])
-    # Might be wrapped: {"top_articles": [...]}
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start != -1 and end != -1:
-        obj = _safe_json_loads(raw[start : end + 1])
-        if "top_articles" in obj:
-            return obj["top_articles"]
-    raise ValueError(f"No JSON array found:\n{raw[:400]}")
-
-
 # ── Claude subprocess runner ─────────────────────────────────────────
 
 async def run_claude(user_prompt: str, stdin_data: str) -> str:
@@ -145,11 +102,11 @@ async def run_claude(user_prompt: str, stdin_data: str) -> str:
     try:
         stdout, stderr = await asyncio.wait_for(
             proc.communicate(input=stdin_data.encode()),
-            timeout=120,
+            timeout=300,
         )
     except asyncio.TimeoutError:
         proc.kill()
-        raise RuntimeError("claude timed out after 120s")
+        raise RuntimeError("claude timed out after 300s")
     if proc.returncode != 0:
         err = stderr.decode().strip()
         raise RuntimeError(f"claude exited {proc.returncode}: {err}")
@@ -158,8 +115,11 @@ async def run_claude(user_prompt: str, stdin_data: str) -> str:
 
 # ── Scoring task ─────────────────────────────────────────────────────
 
-async def score_batch(articles: list, batch_idx: int) -> list:
-    """Score a batch of articles. Returns all articles with scores attached."""
+async def score_batch(articles: list, batch_idx: int, max_retries: int = 2) -> list:
+    """Score a batch of articles. Returns all articles with scores attached.
+
+    Retries up to *max_retries* times when the LLM returns malformed output.
+    """
     user_prompt = (
         f"Score ALL {len(articles)} articles in this batch using the scoring dimensions "
         "from the system prompt. "
@@ -168,10 +128,23 @@ async def score_batch(articles: list, batch_idx: int) -> list:
         "Each element must have: title, link, pub_date, description, source_name, "
         "scores (relevance, quality, timeliness, bonus, total), category, keywords."
     )
-    raw = await run_claude(user_prompt, json.dumps(articles, ensure_ascii=False))
-    result = extract_json_array(raw)
-    print(f"[score] Batch {batch_idx + 1}: {len(result)} articles scored", file=sys.stderr)
-    return result
+    stdin_data = json.dumps(articles, ensure_ascii=False)
+    last_err: Exception = RuntimeError("no attempts made")
+    for attempt in range(1 + max_retries):
+        try:
+            raw = await run_claude(user_prompt, stdin_data)
+            result = extract_json_array(raw, fallback_keys=("top_articles",))
+            print(f"[score] Batch {batch_idx + 1}: {len(result)} articles scored", file=sys.stderr)
+            return result
+        except (ValueError, json.JSONDecodeError, RuntimeError) as e:
+            last_err = e
+            if attempt < max_retries:
+                print(
+                    f"[score] Batch {batch_idx + 1} attempt {attempt + 1} failed "
+                    f"({e}), retrying...",
+                    file=sys.stderr,
+                )
+    raise last_err
 
 
 # ── Main ─────────────────────────────────────────────────────────────
