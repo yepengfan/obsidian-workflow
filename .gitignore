@@ -1,6 +1,7 @@
 # ── Content (synced via S3/iCloud, not git) ──
 Archive/
 Attachments/
+Excalidraw/
 system-design-primer/
 Kanban/
 Instapaper Notes/*
@@ -28,6 +29,10 @@ scripts/podcast/state.json
 scripts/ai-digest/history.json
 scripts/github-trending/history.json
 scripts/engineering-blogs/history.json
+scripts/cc-plugins/state.json
+
+# ── Plugin runtime state ──
+.omc/
 
 # ── Local config (machine-specific paths) ──
 .bookrc
