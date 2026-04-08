@@ -24,10 +24,13 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR.parent))
 from shared.json_helpers import extract_json_array  # noqa: E402
+from shared.claude_runner import run_claude  # noqa: E402
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "score.md").read_text()
 
 BATCH_SIZE = 4   # articles per parallel call (~4 batches for 14-16 articles)
 TOP_N = 15       # articles to select after global ranking
+MAX_CONCURRENCY = 3  # max parallel claude CLI calls to avoid rate limits
+STAGGER_DELAY = 1.0  # seconds between batch launches (lower than summarize — smaller batches)
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
     "--model", "haiku",
@@ -88,38 +91,17 @@ def get_decay(appearances: int) -> float:
     return 0.1  # 2+ days
 
 
-# ── Claude subprocess runner ─────────────────────────────────────────
-
-async def run_claude(user_prompt: str, stdin_data: str) -> str:
-    proc = await asyncio.create_subprocess_exec(
-        CLAUDE_BIN, "-p", user_prompt,
-        "--system-prompt", SYSTEM_PROMPT,
-        *CLAUDE_FLAGS,
-        stdin=asyncio.subprocess.PIPE,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    try:
-        stdout, stderr = await asyncio.wait_for(
-            proc.communicate(input=stdin_data.encode()),
-            timeout=300,
-        )
-    except asyncio.TimeoutError:
-        proc.kill()
-        raise RuntimeError("claude timed out after 300s")
-    if proc.returncode != 0:
-        err = stderr.decode().strip()
-        raise RuntimeError(f"claude exited {proc.returncode}: {err}")
-    return stdout.decode()
-
-
 # ── Scoring task ─────────────────────────────────────────────────────
 
-async def score_batch(articles: list, batch_idx: int, max_retries: int = 2) -> list:
+async def score_batch(
+    articles: list, batch_idx: int, *, semaphore: asyncio.Semaphore, max_retries: int = 3,
+) -> list:
     """Score a batch of articles. Returns all articles with scores attached.
 
     Retries up to *max_retries* times when the LLM returns malformed output.
     """
+    # Stagger launch to spread initial burst; semaphore independently caps concurrency
+    await asyncio.sleep(batch_idx * STAGGER_DELAY)
     user_prompt = (
         f"Score ALL {len(articles)} articles in this batch using the scoring dimensions "
         "from the system prompt. "
@@ -132,7 +114,13 @@ async def score_batch(articles: list, batch_idx: int, max_retries: int = 2) -> l
     last_err: Exception = RuntimeError("no attempts made")
     for attempt in range(1 + max_retries):
         try:
-            raw = await run_claude(user_prompt, stdin_data)
+            raw = await run_claude(
+                user_prompt, stdin_data,
+                system_prompt=SYSTEM_PROMPT,
+                claude_bin=CLAUDE_BIN,
+                claude_flags=CLAUDE_FLAGS,
+                semaphore=semaphore,
+            )
             result = extract_json_array(raw, fallback_keys=("top_articles",))
             print(f"[score] Batch {batch_idx + 1}: {len(result)} articles scored", file=sys.stderr)
             return result
@@ -144,6 +132,7 @@ async def score_batch(articles: list, batch_idx: int, max_retries: int = 2) -> l
                     f"({e}), retrying...",
                     file=sys.stderr,
                 )
+                await asyncio.sleep(2 * (attempt + 1))  # linear backoff: 2s, 4s, 6s
     raise last_err
 
 
@@ -168,17 +157,41 @@ async def main() -> None:
         file=sys.stderr,
     )
 
-    # All batches score concurrently
-    try:
-        batch_results = await asyncio.gather(
-            *[score_batch(batch, i) for i, batch in enumerate(batches)]
-        )
-    except Exception as e:
-        print(f"[score] ERROR: Batch scoring failed — {e}", file=sys.stderr)
+    if not batches:
+        print("[score] ERROR: No articles to score.", file=sys.stderr)
         sys.exit(1)
 
-    # Merge all scored articles
-    all_scored = [art for batch in batch_results for art in batch]
+    # All batches score concurrently — tolerate partial failures
+    sem = asyncio.Semaphore(MAX_CONCURRENCY)
+    batch_results = await asyncio.gather(
+        *[score_batch(batch, i, semaphore=sem) for i, batch in enumerate(batches)],
+        return_exceptions=True,
+    )
+
+    # Merge successful batches, log failures
+    all_scored = []
+    failed_count = 0
+    for i, result in enumerate(batch_results):
+        if isinstance(result, BaseException):
+            failed_count += 1
+            print(f"[score] Batch {i + 1} failed permanently: {result}", file=sys.stderr)
+        else:
+            all_scored.extend(result)
+
+    if failed_count:
+        print(
+            f"[score] {failed_count}/{len(batches)} batches failed; "
+            f"{len(all_scored)} articles scored successfully.",
+            file=sys.stderr,
+        )
+
+    if len(all_scored) < TOP_N:
+        print(
+            f"[score] ERROR: Only {len(all_scored)} articles scored, "
+            f"need at least {TOP_N}. Too many batches failed.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     # Apply history-based decay
     history = load_history()
