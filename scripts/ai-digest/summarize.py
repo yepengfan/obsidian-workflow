@@ -22,6 +22,8 @@ from shared.json_helpers import extract_json_array, extract_json_object  # noqa:
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "summarize.md").read_text()
 
 BATCH_SIZE = 3  # articles per parallel call (5 batches for 15 articles)
+MAX_CONCURRENCY = 3  # max simultaneous claude processes
+STAGGER_DELAY = 2.0  # seconds between batch launches to avoid bursts
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
     "--model", "haiku",
@@ -34,37 +36,52 @@ CLAUDE_FLAGS = [
 
 # ── Claude subprocess runner ─────────────────────────────────────────
 
+_claude_sem: asyncio.Semaphore | None = None
+
+
 async def run_claude(user_prompt: str, stdin_data: str) -> str:
     """Spawn a claude -p subprocess, feed it stdin_data, return stdout."""
-    proc = await asyncio.create_subprocess_exec(
-        CLAUDE_BIN, "-p", user_prompt,
-        "--system-prompt", SYSTEM_PROMPT,
-        *CLAUDE_FLAGS,
-        stdin=asyncio.subprocess.PIPE,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    try:
-        stdout, stderr = await asyncio.wait_for(
-            proc.communicate(input=stdin_data.encode()),
-            timeout=300,
+    global _claude_sem
+    if _claude_sem is None:
+        _claude_sem = asyncio.Semaphore(MAX_CONCURRENCY)
+
+    async with _claude_sem:
+        proc = await asyncio.create_subprocess_exec(
+            CLAUDE_BIN, "-p", user_prompt,
+            "--system-prompt", SYSTEM_PROMPT,
+            *CLAUDE_FLAGS,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
-    except asyncio.TimeoutError:
-        proc.kill()
-        raise RuntimeError("claude timed out after 300s")
-    if proc.returncode != 0:
-        err = stderr.decode().strip()
-        raise RuntimeError(f"claude exited {proc.returncode}: {err}")
-    return stdout.decode()
+        try:
+            stdout, stderr = await asyncio.wait_for(
+                proc.communicate(input=stdin_data.encode()),
+                timeout=300,
+            )
+        except asyncio.TimeoutError:
+            proc.kill()
+            raise RuntimeError("claude timed out after 300s")
+        if proc.returncode != 0:
+            err = stderr.decode().strip()
+            raise RuntimeError(f"claude exited {proc.returncode}: {err}")
+        result = stdout.decode()
+        if not result.strip():
+            err = stderr.decode().strip()
+            raise RuntimeError(f"claude returned empty output (stderr: {err[:200]})")
+        return result
 
 
 # ── Phase tasks ──────────────────────────────────────────────────────
 
-async def summarize_batch(articles: list, batch_idx: int, max_retries: int = 2) -> list:
+async def summarize_batch(articles: list, batch_idx: int, max_retries: int = 3) -> list:
     """Summarize one batch of articles in parallel. Returns summary dicts.
 
     Retries up to *max_retries* times when the LLM returns malformed output.
+    Uses stagger delay to avoid burst-related empty responses.
     """
+    # Stagger batch launches to avoid burst-related empty responses
+    await asyncio.sleep(batch_idx * STAGGER_DELAY)
     user_prompt = (
         f"Summarize these {len(articles)} articles.\n"
         "Output ONLY a JSON array — no wrapper object, no trend fields, no markdown fences.\n"
@@ -87,6 +104,7 @@ async def summarize_batch(articles: list, batch_idx: int, max_retries: int = 2) 
                     f"({e}), retrying...",
                     file=sys.stderr,
                 )
+                await asyncio.sleep(2 * (attempt + 1))  # backoff: 2s, 4s, 6s
     raise last_err
 
 
@@ -129,17 +147,34 @@ async def main() -> None:
         file=sys.stderr,
     )
 
-    # All batches run concurrently
-    try:
-        batch_results = await asyncio.gather(
-            *[summarize_batch(batch, i) for i, batch in enumerate(batches)]
+    # All batches run concurrently — tolerate partial failures
+    batch_results = await asyncio.gather(
+        *[summarize_batch(batch, i) for i, batch in enumerate(batches)],
+        return_exceptions=True,
+    )
+
+    # Merge successful batches, log failures
+    all_summaries = []
+    failed_count = 0
+    for i, result in enumerate(batch_results):
+        if isinstance(result, BaseException):
+            failed_count += 1
+            print(f"[summarize] Batch {i + 1} failed permanently: {result}", file=sys.stderr)
+        else:
+            all_summaries.extend(result)
+
+    if failed_count:
+        print(
+            f"[summarize] {failed_count}/{len(batches)} batches failed; "
+            f"{len(all_summaries)} summaries collected.",
+            file=sys.stderr,
         )
-    except Exception as e:
-        print(f"[summarize] ERROR: Batch summarization failed — {e}", file=sys.stderr)
+
+    if not all_summaries:
+        print("[summarize] ERROR: All batches failed — no summaries collected.", file=sys.stderr)
         sys.exit(1)
 
-    # Flatten and restore original rank order
-    all_summaries = [s for batch in batch_results for s in batch]
+    # Restore original rank order
     all_summaries.sort(key=lambda x: x.get("rank", 999))
 
     # Trend is sequential (needs full picture)
