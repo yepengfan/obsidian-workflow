@@ -35,7 +35,6 @@ CLAUDE_FLAGS = [
 ]
 
 
-
 # ── Phase tasks ──────────────────────────────────────────────────────
 
 async def summarize_batch(
@@ -126,6 +125,10 @@ async def main() -> None:
         f"(batch size {BATCH_SIZE})",
         file=sys.stderr,
     )
+
+    if not batches:
+        print("[summarize] ERROR: No articles to summarize.", file=sys.stderr)
+        sys.exit(1)
 
     # All batches run concurrently — tolerate partial failures
     sem = asyncio.Semaphore(MAX_CONCURRENCY)

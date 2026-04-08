@@ -157,6 +157,10 @@ async def main() -> None:
         file=sys.stderr,
     )
 
+    if not batches:
+        print("[score] ERROR: No articles to score.", file=sys.stderr)
+        sys.exit(1)
+
     # All batches score concurrently — tolerate partial failures
     sem = asyncio.Semaphore(MAX_CONCURRENCY)
     batch_results = await asyncio.gather(

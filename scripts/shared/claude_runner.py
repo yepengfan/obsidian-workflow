@@ -19,7 +19,7 @@ async def run_claude(
     claude_bin: str,
     claude_flags: list[str],
     semaphore: asyncio.Semaphore | None = None,
-    timeout: int = 300,
+    timeout: float = 300,
 ) -> str:
     """Spawn ``claude -p`` as a subprocess and return its stdout.
 
@@ -38,7 +38,7 @@ async def run_claude(
     semaphore : asyncio.Semaphore | None
         Optional concurrency limiter.  When provided the subprocess is only
         started after the semaphore is acquired.
-    timeout : int
+    timeout : float
         Maximum seconds to wait for the process (default 300).
 
     Raises
@@ -63,6 +63,7 @@ async def run_claude(
             )
         except asyncio.TimeoutError:
             proc.kill()
+            await proc.wait()
             raise RuntimeError(f"claude timed out after {timeout}s")
         if proc.returncode != 0:
             err = stderr.decode().strip()
