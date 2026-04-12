@@ -119,12 +119,21 @@ def enrich_plugins(plugins: list) -> list:
     )
 
     all_records = []
+    failed_batches = 0
     for i, batch in enumerate(batches, 1):
         records = _enrich_batch(batch, i)
+        if not records:
+            failed_batches += 1
         all_records.extend(records)
         if i < total_batches:
             time.sleep(2)  # brief pause between batches
 
+    if failed_batches:
+        print(
+            f"[enrich] WARNING: {failed_batches}/{total_batches} batch(es) failed — "
+            f"up to {failed_batches * BATCH_SIZE} repos may be missing from output.",
+            file=sys.stderr,
+        )
     print(f"[enrich] Total: {len(all_records)} enrichment records.", file=sys.stderr)
     return all_records
 
