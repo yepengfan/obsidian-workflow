@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Enrich Claude Code plugin repos via a single Claude Haiku call.
+"""Enrich Claude Code plugin repos via batched Claude Haiku calls.
 
-Reads plugin JSON from stdin (output of fetch.py), sends all repos to Claude
-for classification, scoring, and bilingual summary, filters out non-plugins,
-and outputs enriched JSON to stdout.
+Reads plugin JSON from stdin (output of fetch.py), sends repos to Claude
+in batches for classification, scoring, and bilingual summary, filters out
+non-plugins, and outputs enriched JSON to stdout.
 
 Input  (stdin): JSON from fetch.py
 Output (stdout): enriched JSON { "week": "...", "enriched": [...], "stats": {...} }
@@ -13,6 +13,7 @@ import json
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
@@ -29,6 +30,10 @@ CLAUDE_FLAGS = [
     "--bare",
 ]
 
+BATCH_SIZE = 50  # repos per Haiku call (50 is proven reliable)
+MAX_RETRIES = 3
+RETRY_DELAY = 4  # seconds between retries
+
 
 # ── Claude subprocess runner ───────────────────────────────────────
 
@@ -39,7 +44,7 @@ def run_claude(user_prompt: str, stdin_data: str) -> str:
          *CLAUDE_FLAGS],
         input=stdin_data.encode(),
         capture_output=True,
-        timeout=180,
+        timeout=240,
     )
     if result.returncode != 0:
         err = result.stderr.decode().strip()
@@ -49,37 +54,88 @@ def run_claude(user_prompt: str, stdin_data: str) -> str:
 
 # ── Enrichment ─────────────────────────────────────────────────────
 
-def enrich_plugins(plugins: list) -> list:
-    """Send all plugins to Claude in a single call and return enrichment records."""
-    # Prepare a slimmed-down payload for Haiku (skip large readme excerpts)
-    slim = []
-    for p in plugins:
-        slim.append({
-            "repo_url": p["repo_url"],
-            "name": p["name"],
-            "full_name": p["full_name"],
-            "description": p["description"],
-            "stars": p["stars"],
-            "forks": p["forks"],
-            "language": p["language"],
-            "topics": p["topics"],
-            "pushed_at": p["pushed_at"],
-            "age_days": p["age_days"],
-            "readme_excerpt": p.get("readme_excerpt", "")[:500],
-            "npm_info": p.get("npm_info"),
-        })
+def _slim_plugin(p: dict) -> dict:
+    """Prepare a slimmed-down plugin payload for Haiku."""
+    return {
+        "repo_url": p["repo_url"],
+        "name": p["name"],
+        "full_name": p["full_name"],
+        "description": p["description"],
+        "stars": p["stars"],
+        "forks": p["forks"],
+        "language": p["language"],
+        "topics": p["topics"],
+        "pushed_at": p["pushed_at"],
+        "age_days": p["age_days"],
+        "readme_excerpt": p.get("readme_excerpt", "")[:500],
+        "npm_info": p.get("npm_info"),
+    }
 
+
+def _enrich_batch(slim_batch: list, batch_num: int) -> list:
+    """Enrich a single batch with retries."""
     user_prompt = (
-        f"Classify and enrich ALL {len(slim)} repos in this list. "
+        f"Classify and enrich ALL {len(slim_batch)} repos in this list. "
         "For each repo, first determine if it's a real Claude Code plugin (is_plugin). "
         "For real plugins, score across 4 dimensions, categorize, and write bilingual summaries. "
         "Output ONLY a JSON array — one object per repo, in the same order as input."
     )
-    print(f"[enrich] Sending {len(slim)} repos to Claude for classification + enrichment...", file=sys.stderr)
-    raw = run_claude(user_prompt, json.dumps(slim, ensure_ascii=False))
-    result = extract_json_array(raw, fallback_keys=("enriched", "plugins", "results"))
-    print(f"[enrich] Received {len(result)} enrichment records.", file=sys.stderr)
-    return result
+
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            raw = run_claude(user_prompt, json.dumps(slim_batch, ensure_ascii=False))
+            result = extract_json_array(raw, fallback_keys=("enriched", "plugins", "results"))
+            print(f"[enrich] Batch {batch_num}: {len(result)} records", file=sys.stderr)
+            return result
+        except (subprocess.TimeoutExpired, RuntimeError, ValueError) as e:
+            msg = str(e)[:80]
+            if attempt < MAX_RETRIES:
+                delay = RETRY_DELAY * attempt
+                print(
+                    f"[enrich] Batch {batch_num} attempt {attempt} failed ({msg}), "
+                    f"retrying in {delay}s...",
+                    file=sys.stderr,
+                )
+                time.sleep(delay)
+            else:
+                print(
+                    f"[enrich] Batch {batch_num} failed after {MAX_RETRIES} attempts ({msg})",
+                    file=sys.stderr,
+                )
+                return []  # graceful degradation: skip this batch
+
+
+def enrich_plugins(plugins: list) -> list:
+    """Send plugins to Claude in batches and return enrichment records."""
+    slim = [_slim_plugin(p) for p in plugins]
+
+    # Split into batches
+    batches = [slim[i:i + BATCH_SIZE] for i in range(0, len(slim), BATCH_SIZE)]
+    total_batches = len(batches)
+    print(
+        f"[enrich] {len(slim)} repos → {total_batches} batch(es) "
+        f"(batch size {BATCH_SIZE})",
+        file=sys.stderr,
+    )
+
+    all_records = []
+    failed_batches = 0
+    for i, batch in enumerate(batches, 1):
+        records = _enrich_batch(batch, i)
+        if not records:
+            failed_batches += 1
+        all_records.extend(records)
+        if i < total_batches:
+            time.sleep(2)  # brief pause between batches
+
+    if failed_batches:
+        print(
+            f"[enrich] WARNING: {failed_batches}/{total_batches} batch(es) failed — "
+            f"up to {failed_batches * BATCH_SIZE} repos may be missing from output.",
+            file=sys.stderr,
+        )
+    print(f"[enrich] Total: {len(all_records)} enrichment records.", file=sys.stderr)
+    return all_records
 
 
 # ── Main ───────────────────────────────────────────────────────────
@@ -100,16 +156,10 @@ def main() -> None:
 
     print(f"[enrich] {len(plugins)} repos loaded from stdin.", file=sys.stderr)
 
-    try:
-        enrichment_records = enrich_plugins(plugins)
-    except subprocess.TimeoutExpired:
-        print("[enrich] ERROR: Claude CLI timed out after 180s.", file=sys.stderr)
-        sys.exit(1)
-    except RuntimeError as e:
-        print(f"[enrich] ERROR: Claude CLI failed — {e}", file=sys.stderr)
-        sys.exit(1)
-    except ValueError as e:
-        print(f"[enrich] ERROR: JSON parsing failed — {e}", file=sys.stderr)
+    enrichment_records = enrich_plugins(plugins)
+
+    if not enrichment_records:
+        print("[enrich] ERROR: All batches failed, no enrichment data.", file=sys.stderr)
         sys.exit(1)
 
     # Build lookup by repo_url

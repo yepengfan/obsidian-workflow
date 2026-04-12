@@ -35,9 +35,12 @@ STATE_PATH = SCRIPT_DIR / "state.json"
 # Search queries to cast a wide net for Claude Code plugins
 SEARCH_QUERIES = [
     'topic:claude-code-plugin',
+    'topic:claude-code topic:plugin',
     '"claude-code" in:name,description',
     '"claude/plugins" OR ".claude/plugins" in:readme',
     '"claude-code" plugin in:readme',
+    '"claude-code" skill OR hook in:readme',
+    'topic:mcp-server claude in:readme',
 ]
 
 # Minimum stars threshold (repos below this AND older than 30 days are skipped)
@@ -83,8 +86,8 @@ def build_headers() -> dict:
     else:
         print(
             "[fetch] Warning: GITHUB_TOKEN not set. Unauthenticated rate limit "
-            "is 10 req/min — sufficient for this pipeline but set GITHUB_TOKEN "
-            "for reliability.",
+            "is 10 req/min. With 7 queries x up to 4 pages each, set GITHUB_TOKEN "
+            "(30 req/min) to avoid rate-limit errors.",
             file=sys.stderr,
         )
     return headers
@@ -105,13 +108,13 @@ def api_get(url: str, headers: dict, timeout: int = 30) -> dict:
         raise
 
 
-MAX_PLUGINS = 50  # limit output to top N by stars (keeps Haiku call manageable)
+MAX_PLUGINS = 100  # limit output to top N by stars (keeps Haiku call manageable)
 
 
 def search_github(query: str, headers: dict) -> list[dict]:
     """Run a single GitHub search query, returning all items (up to 60)."""
     items = []
-    for page in range(1, 3):  # max 2 pages (60 results) to stay under rate limits
+    for page in range(1, 5):  # max 4 pages (120 results) to cast a wider net
         params = (
             f"q={urllib.request.quote(query)}"
             f"&sort=stars&order=desc&per_page=30&page={page}"
@@ -131,7 +134,7 @@ def search_github(query: str, headers: dict) -> list[dict]:
 
         if len(page_items) < 30:
             break
-        time.sleep(1)  # rate limit courtesy
+        time.sleep(6)  # rate limit: 10 req/min unauthenticated → ≥6s between pages
 
     return items
 
