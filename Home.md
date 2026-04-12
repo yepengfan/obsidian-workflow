@@ -1101,14 +1101,22 @@ if (reports.length === 0) {
   const updatedCount = latest.plugins_updated || 0;
   const discovered = latest.plugins_discovered || 0;
 
-  // Header line
+  // Header line with 中文/EN links
+  const enPath = `Feeds/CC-Plugins/${latest.file.name}-en.md`;
+  const enFile = app.vault.getAbstractFileByPath(enPath);
+
   const hdr = dv.el("div", "", {
-    attr: { style: "display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;" }
+    attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
   });
   hdr.createEl("span", {
-    text: `${week} · ${newCount} new · ${updatedCount} updated`,
-    attr: { style: "font-size:0.85em;color:var(--text-muted);" }
+    text: `📦 ${week} · ${newCount} new · ${updatedCount} updated`,
+    attr: { style: "font-size:0.78em;color:var(--text-muted);" }
   });
+  const links = hdr.createEl("div", { attr: { style: "margin-left:auto;display:flex;gap:8px;" } });
+  links.createEl("a", { text: "中文", cls: "internal-link", attr: { "data-href": latest.file.path, style: "font-size:0.82em;" } });
+  if (enFile) {
+    links.createEl("a", { text: "EN", cls: "internal-link", attr: { "data-href": enPath, style: "font-size:0.82em;" } });
+  }
 
   // Read the raw file content to extract plugin entries
   const content = await dv.io.load(latest.file.path);
