@@ -18,7 +18,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR.parent))
-from shared.json_helpers import extract_json_array, safe_json_loads  # noqa: E402
+from shared.json_helpers import extract_json_array, unwrap_claude_envelope  # noqa: E402
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "enrich.md").read_text()
 
 TOP_N = 15
@@ -51,13 +51,7 @@ def run_claude(user_prompt: str, stdin_data: str) -> str:
     # --output-format json wraps the response in {"result": "..."}.
     # --bare suppresses preamble text but does NOT disable the JSON envelope,
     # so we still need to unwrap it here.
-    try:
-        envelope = safe_json_loads(raw)
-        if isinstance(envelope, dict) and "result" in envelope:
-            return envelope["result"]
-    except (json.JSONDecodeError, KeyError):
-        pass
-    return raw
+    return unwrap_claude_envelope(raw)
 
 
 # ── Enrichment ───────────────────────────────────────────────────────
