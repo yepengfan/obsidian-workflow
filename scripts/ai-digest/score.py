@@ -33,7 +33,8 @@ MAX_CONCURRENCY = 3  # max parallel claude CLI calls to avoid rate limits
 STAGGER_DELAY = 1.0  # seconds between batch launches (lower than summarize — smaller batches)
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
-    "--model", "haiku",
+    "--model", "sonnet",
+    "--effort", "low",
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",

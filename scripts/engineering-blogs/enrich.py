@@ -29,7 +29,8 @@ MAX_RETRIES = 3
 RETRY_DELAY = 4  # seconds between retries
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
-    "--model", "haiku",
+    "--model", "sonnet",
+    "--effort", "low",
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",

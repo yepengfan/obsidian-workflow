@@ -27,7 +27,8 @@ MAX_CONCURRENCY = 3  # max simultaneous claude processes
 STAGGER_DELAY = 2.0  # seconds between batch launches (higher than score — heavier LLM workload)
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
-    "--model", "haiku",
+    "--model", "sonnet",
+    "--effort", "low",
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",

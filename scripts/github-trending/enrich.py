@@ -24,7 +24,8 @@ SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "enrich.md").read_text()
 TOP_N = 15
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
-    "--model", "haiku",
+    "--model", "sonnet",
+    "--effort", "low",
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
