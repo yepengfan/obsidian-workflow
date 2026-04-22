@@ -13,23 +13,27 @@ import json
 import shutil
 import subprocess
 import sys
+import time
 from datetime import date, timedelta
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR.parent))
-from shared.json_helpers import extract_json_array, safe_json_loads  # noqa: E402
+from shared.json_helpers import extract_json_array, unwrap_claude_envelope  # noqa: E402
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "enrich.md").read_text()
 HISTORY_PATH = SCRIPT_DIR / "history.json"
 
 TOP_N = 10
 DECAY_WINDOW_DAYS = 7
+MAX_RETRIES = 3
+RETRY_DELAY = 4  # seconds between retries
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
     "--model", "haiku",
     "--max-budget-usd", "1.00",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
+    "--output-format", "json",
     "--bare",
 ]
 
@@ -85,7 +89,11 @@ def run_claude(user_prompt: str, stdin_data: str) -> str:
     if result.returncode != 0:
         err = result.stderr.decode().strip()
         raise RuntimeError(f"claude exited {result.returncode}: {err}")
-    return result.stdout.decode()
+    raw = result.stdout.decode()
+    # --output-format json wraps the response in {"result": "..."}.
+    # --bare suppresses preamble text but does NOT disable the JSON envelope,
+    # so we still need to unwrap it here.
+    return unwrap_claude_envelope(raw)
 
 
 # ── Main ────────────────────────────────────────────────────────────
@@ -115,18 +123,29 @@ def main() -> None:
     )
     print(f"[enrich] Sending {len(articles)} articles to Claude...", file=sys.stderr)
 
-    try:
-        raw = run_claude(user_prompt, json.dumps(articles, ensure_ascii=False))
-        enrichment_records = extract_json_array(raw, fallback_keys=("enriched", "articles", "results"))
-        print(f"[enrich] Received {len(enrichment_records)} enriched records", file=sys.stderr)
-    except subprocess.TimeoutExpired:
-        print("[enrich] ERROR: Claude CLI timed out after 240s", file=sys.stderr)
-        sys.exit(1)
-    except RuntimeError as e:
-        print(f"[enrich] ERROR: Claude CLI failed — {e}", file=sys.stderr)
-        sys.exit(1)
-    except ValueError as e:
-        print(f"[enrich] ERROR: JSON parsing failed — {e}", file=sys.stderr)
+    enrichment_records = None
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            raw = run_claude(user_prompt, json.dumps(articles, ensure_ascii=False))
+            enrichment_records = extract_json_array(raw, fallback_keys=("enriched", "articles", "results"))
+            print(f"[enrich] Received {len(enrichment_records)} enriched records", file=sys.stderr)
+            break
+        except (subprocess.TimeoutExpired, RuntimeError, ValueError) as e:
+            msg = str(e)[:80]
+            if attempt < MAX_RETRIES:
+                delay = RETRY_DELAY * attempt
+                print(
+                    f"[enrich] Attempt {attempt} failed ({msg}), "
+                    f"retrying in {delay}s...",
+                    file=sys.stderr,
+                )
+                time.sleep(delay)
+            else:
+                print(f"[enrich] ERROR: All {MAX_RETRIES} attempts failed ({msg})", file=sys.stderr)
+                sys.exit(1)
+
+    if not enrichment_records:
+        print("[enrich] ERROR: No enrichment data received.", file=sys.stderr)
         sys.exit(1)
 
     # Build lookup and merge

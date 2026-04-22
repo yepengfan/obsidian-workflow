@@ -56,25 +56,144 @@ def safe_json_loads(s: str) -> Any:
         return json.loads(fix_json_escapes(s))
 
 
+def unwrap_claude_envelope(raw: str) -> str:
+    """Unwrap the ``{"result": "..."}`` envelope from ``--output-format json``.
+
+    The Claude CLI ``--output-format json`` flag wraps model output in a JSON
+    envelope: ``{"result": "<escaped-content>"}``.  When the inner content
+    contains literal newlines (common with LLM output), the envelope itself
+    becomes invalid JSON because bare ``\\n`` inside a JSON string value is
+    illegal.
+
+    Strategy (in order):
+    1. Standard ``json.loads`` — works when the envelope is well-formed.
+    2. Escape bare newlines inside the envelope string before parsing.
+    3. Regex extraction of the ``result`` field value, then unescape.
+    4. Fall through and return *raw* unchanged so the caller can still
+       attempt ``extract_json_array`` on whatever came back.
+    """
+    stripped = raw.strip()
+
+    # 1. Direct parse
+    try:
+        envelope = json.loads(stripped)
+        if isinstance(envelope, dict) and "result" in envelope:
+            return envelope["result"]
+    except (json.JSONDecodeError, ValueError):
+        pass
+
+    # 2. Fix bare newlines inside JSON string values.
+    #    Replace literal \n (and \r) that are NOT already escaped.
+    fixed = stripped.replace("\r\n", "\\n").replace("\r", "\\n")
+    fixed = re.sub(r'(?<!\\)\n', r'\\n', fixed)
+    try:
+        envelope = json.loads(fixed)
+        if isinstance(envelope, dict) and "result" in envelope:
+            return envelope["result"]
+    except (json.JSONDecodeError, ValueError):
+        pass
+
+    # 3. Regex: extract everything between "result":" and the last "}
+    m = re.search(r'"result"\s*:\s*"(.*)"', stripped, re.DOTALL)
+    if m:
+        inner = m.group(1)
+        # Unescape JSON string escapes (\\n -> \n, \\" -> ", etc.)
+        try:
+            return json.loads(f'"{inner}"')
+        except (json.JSONDecodeError, ValueError):
+            # Manual unescape for the most common cases
+            inner = inner.replace('\\"', '"').replace("\\n", "\n")
+            inner = inner.replace("\\t", "\t").replace("\\\\", "\\")
+            return inner
+
+    # 4. Not an envelope — return as-is
+    return raw
+
+
+def _try_parse_array(candidate: str) -> list | None:
+    """Attempt to parse *candidate* as a JSON array with cascading repairs."""
+    # 1. Direct parse
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        pass
+
+    # 2. Fix invalid backslash escapes
+    repaired = fix_json_escapes(candidate)
+    try:
+        return json.loads(repaired)
+    except json.JSONDecodeError:
+        pass
+
+    # 3. Remove trailing commas
+    repaired = _remove_trailing_commas(repaired)
+    try:
+        return json.loads(repaired)
+    except json.JSONDecodeError:
+        pass
+
+    # 4. Fix unescaped newlines inside string values
+    repaired = _fix_unescaped_newlines(repaired)
+    try:
+        return json.loads(repaired)
+    except json.JSONDecodeError:
+        pass
+
+    return None
+
+
+def _salvage_truncated_array(raw: str, arr_start: int) -> list | None:
+    """Recover complete JSON objects from a truncated array.
+
+    When the LLM output is cut off mid-stream, the closing ``]`` is missing.
+    Walk backwards from the end to find the last complete ``}``, append ``]``,
+    and try to parse.  This progressively strips trailing incomplete objects
+    until a valid array is recovered.
+    """
+    # Find the last '}' that could close an array element
+    pos = len(raw) - 1
+    while pos > arr_start:
+        pos = raw.rfind("}", arr_start, pos + 1)
+        if pos == -1:
+            break
+        candidate = raw[arr_start : pos + 1] + "]"
+        result = _try_parse_array(candidate)
+        if result is not None and len(result) > 0:
+            return result
+        pos -= 1
+    return None
+
+
 def extract_json_array(raw: str, fallback_keys: tuple[str, ...] = ()) -> list:
     """Extract a JSON array from possibly messy LLM output.
 
     Tries, in order:
-    1. Direct ``[...]`` extraction.
-    2. Unwrap ``{key: [...]}`` using *fallback_keys* (first match wins).
-    3. Raise ``ValueError`` with a diagnostic snippet.
+    1. Direct ``[...]`` extraction with cascading repairs.
+    2. Truncation recovery — salvage complete objects from cut-off output.
+    3. Unwrap ``{key: [...]}`` using *fallback_keys* (first match wins).
+    4. Raise ``ValueError`` with a diagnostic snippet.
     """
     raw = strip_fences(raw)
     start = raw.find("[")
     if start != -1:
         end = raw.rfind("]")
-        if end != -1:
-            return safe_json_loads(raw[start : end + 1])
+        if end != -1 and end > start:
+            candidate = raw[start : end + 1]
+            result = _try_parse_array(candidate)
+            if result is not None:
+                return result
+        # No closing ']' or parsing failed — try truncation recovery
+        salvaged = _salvage_truncated_array(raw, start)
+        if salvaged is not None:
+            return salvaged
     # Might be wrapped in an object
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start != -1 and end != -1:
-        obj = safe_json_loads(raw[start : end + 1])
+    obj_start = raw.find("{")
+    obj_end = raw.rfind("}")
+    if obj_start != -1 and obj_end != -1:
+        try:
+            obj = safe_json_loads(raw[obj_start : obj_end + 1])
+        except (json.JSONDecodeError, ValueError):
+            obj = {}
         for key in fallback_keys:
             if key in obj and isinstance(obj[key], list):
                 return obj[key]
