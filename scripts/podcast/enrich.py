@@ -28,7 +28,8 @@ SUMMARIZE_PROMPT = (SCRIPT_DIR / "prompts" / "summarize.md").read_text()
 
 CLAUDE_BIN = shutil.which("claude") or "claude"
 CLAUDE_FLAGS = [
-    "--model", "haiku",
+    "--model", "sonnet",
+    "--effort", "low",
     "--permission-mode", "bypassPermissions",
     "--no-session-persistence",
     "--bare",
