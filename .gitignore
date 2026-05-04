@@ -35,11 +35,9 @@ scripts/cc-plugins/state.json
 .claudian/
 .omc/
 
-# ── Local config (machine-specific paths) ──
+# ── Claude Code config ──
+.claude/
 .bookrc
-.claude/settings.local.json
-.claude/claudian-settings.json
-.claude/sessions/
 
 # ── Obsidian internals ──
 .obsidian/
