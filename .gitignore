@@ -19,13 +19,7 @@ Profile/
 Note/
 Feeds/
 
-# ── Podcast content (audio, episodes, dashboard) ──
-Podcasts/audio/
-Podcasts/episodes/
-Podcasts/Podcasts.md
-
 # ── Pipeline runtime state ──
-scripts/podcast/state.json
 scripts/ai-digest/history.json
 scripts/github-trending/history.json
 scripts/engineering-blogs/history.json
