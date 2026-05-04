@@ -34,6 +34,7 @@ CLAUDE_FLAGS = [
 BATCH_SIZE = 50  # repos per Haiku call (50 is proven reliable)
 MAX_RETRIES = 3
 RETRY_DELAY = 4  # seconds between retries
+SUBPROCESS_TIMEOUT = 480  # seconds; 240 was too tight for 50-repo batches via Bedrock
 
 
 # ── Claude subprocess runner ───────────────────────────────────────
@@ -45,12 +46,16 @@ def run_claude(user_prompt: str, stdin_data: str) -> str:
          *CLAUDE_FLAGS],
         input=stdin_data.encode(),
         capture_output=True,
-        timeout=240,
+        timeout=SUBPROCESS_TIMEOUT,
     )
     if result.returncode != 0:
         err = result.stderr.decode().strip()
-        raise RuntimeError(f"claude exited {result.returncode}: {err}")
-    return result.stdout.decode()
+        raise RuntimeError(f"claude exited {result.returncode}: {err[:500]}")
+    out = result.stdout.decode()
+    if not out.strip():
+        err = result.stderr.decode().strip()
+        raise RuntimeError(f"claude returned empty output (stderr: {err[:300]})")
+    return out
 
 
 # ── Enrichment ─────────────────────────────────────────────────────
@@ -89,7 +94,7 @@ def _enrich_batch(slim_batch: list, batch_num: int) -> list:
             print(f"[enrich] Batch {batch_num}: {len(result)} records", file=sys.stderr)
             return result
         except (subprocess.TimeoutExpired, RuntimeError, ValueError) as e:
-            msg = str(e)[:80]
+            msg = str(e)[:200]
             if attempt < MAX_RETRIES:
                 delay = RETRY_DELAY * attempt
                 print(
