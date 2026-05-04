@@ -851,7 +851,6 @@ const { panels: fPanels } = createTabGroup(dv, [
   { id: "ai", label: "AI Digest" },
   { id: "gh", label: "GitHub Trending" },
   { id: "eng", label: "Eng Blogs" },
-  { id: "pod", label: "Podcasts" },
 ], "ai");
 
 // ========== AI DIGEST TAB ==========
@@ -1022,62 +1021,6 @@ const { panels: fPanels } = createTabGroup(dv, [
     '<a class="internal-link" data-href="Feeds/Engineering-Blogs/Dashboard">All reports →</a>';
 }
 
-// ========== PODCASTS TAB ==========
-{
-  const p = fPanels["pod"];
-  const eps = dv.pages('"Podcasts/episodes"')
-    .where(ep => ep.type === "podcast-episode")
-    .sort(ep => ep.date, "desc")
-    .limit(5);
-
-  if (eps.length > 0) {
-    const stats = dv.pages('"Podcasts/episodes"').where(ep => ep.type === "podcast-episode");
-    const unlistened = stats.where(ep => ep.status === "unlistened").length;
-    const total = stats.length;
-    const row = p.createEl("div", {
-      attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
-    });
-    row.createEl("span", {
-      text: `🎧 ${unlistened} unlistened / ${total} total`,
-      attr: { style: "font-size:0.78em;color:var(--text-muted);" }
-    });
-
-    const list = p.createEl("div", {
-      attr: { style: "display:flex;flex-direction:column;gap:6px;" }
-    });
-    for (const ep of eps) {
-      const card = list.createEl("div", {
-        attr: { style: "display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid " + (ep.score >= 7 ? "var(--interactive-accent)" : "var(--background-modifier-border)") + ";" }
-      });
-      // Score badge
-      card.createEl("span", {
-        text: ep.score != null ? String(ep.score) : "–",
-        attr: { style: "flex-shrink:0;width:2.2em;text-align:center;font-size:0.82em;font-weight:700;color:" + (ep.score >= 7 ? "var(--interactive-accent)" : "var(--text-muted)") + ";" }
-      });
-      // Info column
-      const info = card.createEl("div", { attr: { style: "flex:1;min-width:0;overflow:hidden;" } });
-      const titleEl = info.createEl("div", { attr: { style: "font-size:0.85em;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" } });
-      titleEl.innerHTML = `<a class="internal-link" data-href="${ep.file.path}">${ep.title || ep.file.name}</a>`;
-      info.createEl("div", {
-        text: `${ep.podcast || ""} · ${ep.date || ""} · ${ep.duration || ""}`,
-        attr: { style: "font-size:0.75em;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" }
-      });
-      // Status icon
-      const statusIcon = ep.status === "listened" ? "✅" : ep.status === "archived" ? "🗄️" : "📥";
-      card.createEl("span", {
-        text: statusIcon,
-        attr: { style: "flex-shrink:0;font-size:0.85em;" }
-      });
-    }
-  } else {
-    p.createEl("div", {
-      text: "No podcast episodes yet. Run /feeds/podcast to fetch.",
-      attr: { style: "font-size:0.85em;color:var(--text-muted);padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
-    });
-  }
-  p.createEl("div", { attr: { style: "margin-top:8px;font-size:0.82em;" } }).innerHTML =
-    '<a class="internal-link" data-href="Podcasts/Podcasts">All episodes →</a>';
-}
 ```
 
 ## CC Plugins <span style="float:right;font-size:0.75em;color:var(--text-muted);">Weekly 📦</span>
