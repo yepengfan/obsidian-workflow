@@ -30,7 +30,9 @@ scripts/cc-plugins/state.json
 .omc/
 
 # ── Claude Code config ──
-.claude/
+.claude/*
+!.claude/commands/
+!.claude/CLAUDE.md
 .bookrc
 
 # ── Obsidian internals ──
