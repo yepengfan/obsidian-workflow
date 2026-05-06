@@ -1165,97 +1165,187 @@ if (reports.length === 0) {
 ```dataviewjs
 const isMobile = app.isMobile;
 
-function isoWeekLabel(d) {
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const day = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
-}
-function lastNWeeks(n) {
-  const result = [];
-  const now = new Date();
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i * 7);
-    result.push(isoWeekLabel(d));
+// Tab factory
+function createTabGroup(dvRef, tabs, defaultId) {
+  const topBar = dvRef.el("div", "", {
+    attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;" }
+  });
+  const panels = {};
+  const btns = {};
+  const tabPad = isMobile ? "3px 8px" : "4px 14px";
+  const tabFont = isMobile ? "0.72em" : "0.82em";
+  const segGap = isMobile ? "1px" : "2px";
+  for (const t of tabs) panels[t.id] = dvRef.el("div", "", { attr: { style: "display:none;" } });
+  function activate(id) {
+    for (const k of Object.keys(panels)) {
+      panels[k].style.display = k === id ? "block" : "none";
+      btns[k].style.cssText = `padding:${tabPad};border-radius:7px;border:none;cursor:pointer;font-size:${tabFont};font-weight:500;transition:all 0.15s;`
+        + (k === id
+          ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
+          : "background:transparent;color:var(--text-muted);box-shadow:none;");
+    }
   }
-  return result;
+  const seg = topBar.createEl("div", {
+    attr: { style: `display:inline-flex;gap:${segGap};padding:2px;border-radius:9px;background:var(--background-secondary);` }
+  });
+  for (const t of tabs) {
+    btns[t.id] = seg.createEl("button", { text: t.label });
+    btns[t.id].addEventListener("click", () => activate(t.id));
+  }
+  activate(defaultId);
+  return { panels, topBar };
 }
 
-const WEEKS = lastNWeeks(isMobile ? 6 : 10);
-const currentWeek = WEEKS[WEEKS.length - 1];
-const plans = dv.pages('"Learning"').where(p => p.file.name === "00_plan" && p.status === "active");
-const allLogs = dv.pages('"Learning"').where(p => p.week !== undefined);
+const { panels: lPanels } = createTabGroup(dv, [
+  { id: "plans", label: "Plans" },
+  { id: "algo", label: "Algorithm" },
+], "plans");
 
-const container = dv.el("div", "");
+// ========== PLANS TAB ==========
+{
+  const container = lPanels["plans"];
 
-if (plans.length === 0) {
-  container.createEl("p", { text: "No active plans — run /learning-init to start one.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
-} else {
-  for (const p of plans) {
-    const code = p.file.folder.split("/").pop();
-    const planLogs = allLogs.filter(l => l.code === code);
-    const logMap = {};
-    for (const l of planLogs) logMap[l.week] = l;
-    const weeksElapsed = p.started
-      ? Math.floor((new Date() - p.started.toJSDate()) / (7 * 24 * 60 * 60 * 1000)) + 1
-      : null;
-    const currentPhase = p.phase || 1;
+  function isoWeekLabel(d) {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const day = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - day);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+  }
+  function lastNWeeks(n) {
+    const result = [];
+    const now = new Date();
+    for (let i = n - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i * 7);
+      result.push(isoWeekLabel(d));
+    }
+    return result;
+  }
 
-    // Card
-    const card = container.createEl("div", {
-      attr: { style: "display:flex;gap:0;margin-bottom:8px;border:1px solid var(--background-modifier-border);border-radius:8px;overflow:hidden;background:var(--background-secondary);" }
-    });
+  const WEEKS = lastNWeeks(isMobile ? 6 : 10);
+  const currentWeek = WEEKS[WEEKS.length - 1];
+  const plans = dv.pages('"Learning"').where(p => p.file.name === "00_plan" && p.status === "active");
+  const allLogs = dv.pages('"Learning"').where(p => p.week !== undefined);
 
-    // Left accent bar
-    card.createEl("div", { attr: { style: "width:3px;background:var(--color-accent);flex-shrink:0;" } });
+  if (plans.length === 0) {
+    container.createEl("p", { text: "No active plans — run /learning-init to start one.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
+  } else {
+    for (const p of plans) {
+      const code = p.file.folder.split("/").pop();
+      const planLogs = allLogs.filter(l => l.code === code);
+      const logMap = {};
+      for (const l of planLogs) logMap[l.week] = l;
+      const weeksElapsed = p.started
+        ? Math.floor((new Date() - p.started.toJSDate()) / (7 * 24 * 60 * 60 * 1000)) + 1
+        : null;
+      const currentPhase = p.phase || 1;
 
-    const body = card.createEl("div", { attr: { style: "flex:1;min-width:0;padding:9px 12px;" } });
+      // Card
+      const card = container.createEl("div", {
+        attr: { style: "display:flex;gap:0;margin-bottom:8px;border:1px solid var(--background-modifier-border);border-radius:8px;overflow:hidden;background:var(--background-secondary);" }
+      });
 
-    // Row 1: code badge + phase pill + week stat
-    const row1 = body.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;margin-bottom:5px;" } });
-    row1.innerHTML += `<a class="internal-link" data-href="${p.file.path}" style="font-weight:700;font-size:0.75em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;text-decoration:none;white-space:nowrap;flex-shrink:0;">${code}</a>`;
-    row1.createEl("span", {
-      text: `Phase ${currentPhase}`,
-      attr: { style: "font-size:0.7em;padding:1px 7px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
-    });
-    if (weeksElapsed !== null) {
+      // Left accent bar
+      card.createEl("div", { attr: { style: "width:3px;background:var(--color-accent);flex-shrink:0;" } });
+
+      const body = card.createEl("div", { attr: { style: "flex:1;min-width:0;padding:9px 12px;" } });
+
+      // Row 1: code badge + phase pill + week stat
+      const row1 = body.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;margin-bottom:5px;" } });
+      row1.innerHTML += `<a class="internal-link" data-href="${p.file.path}" style="font-weight:700;font-size:0.75em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;text-decoration:none;white-space:nowrap;flex-shrink:0;">${code}</a>`;
       row1.createEl("span", {
-        text: `Wk ${weeksElapsed}`,
-        attr: { style: "font-size:0.7em;color:var(--text-faint);white-space:nowrap;" }
+        text: `Phase ${currentPhase}`,
+        attr: { style: "font-size:0.7em;padding:1px 7px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
       });
-    }
-
-    // Row 2: target text
-    if (p.target) {
-      body.createEl("div", {
-        text: p.target,
-        attr: { style: "font-size:0.8em;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" }
-      });
-    }
-
-    // Activity squares (6 weeks on mobile, 10 on desktop)
-    const dotSize = isMobile ? "8px" : "10px";
-    const dotGap = isMobile ? "2px" : "3px";
-    const dotsWrap = card.createEl("div", { attr: { style: `display:flex;align-items:center;gap:${dotGap};padding:0 12px;flex-shrink:0;` } });
-    for (const w of [...WEEKS].reverse()) {
-      if (logMap[w]) {
-        dotsWrap.createEl("a", {
-          attr: { class: "internal-link", "data-href": logMap[w].file.path, title: w, style: `width:${dotSize};height:${dotSize};border-radius:2px;background:var(--color-accent);display:inline-block;opacity:0.85;` }
-        });
-      } else {
-        const isCurrent = w === currentWeek;
-        dotsWrap.createEl("div", {
-          attr: { title: w, style: `width:${dotSize};height:${dotSize};border-radius:2px;${isCurrent ? "border:1.5px dashed var(--color-accent);opacity:0.7;" : "background:var(--background-modifier-border);opacity:0.5;"}` }
+      if (weeksElapsed !== null) {
+        row1.createEl("span", {
+          text: `Wk ${weeksElapsed}`,
+          attr: { style: "font-size:0.7em;color:var(--text-faint);white-space:nowrap;" }
         });
       }
+
+      // Row 2: target text
+      if (p.target) {
+        body.createEl("div", {
+          text: p.target,
+          attr: { style: "font-size:0.8em;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" }
+        });
+      }
+
+      // Activity squares (6 weeks on mobile, 10 on desktop)
+      const dotSize = isMobile ? "8px" : "10px";
+      const dotGap = isMobile ? "2px" : "3px";
+      const dotsWrap = card.createEl("div", { attr: { style: `display:flex;align-items:center;gap:${dotGap};padding:0 12px;flex-shrink:0;` } });
+      for (const w of [...WEEKS].reverse()) {
+        if (logMap[w]) {
+          dotsWrap.createEl("a", {
+            attr: { class: "internal-link", "data-href": logMap[w].file.path, title: w, style: `width:${dotSize};height:${dotSize};border-radius:2px;background:var(--color-accent);display:inline-block;opacity:0.85;` }
+          });
+        } else {
+          const isCurrent = w === currentWeek;
+          dotsWrap.createEl("div", {
+            attr: { title: w, style: `width:${dotSize};height:${dotSize};border-radius:2px;${isCurrent ? "border:1.5px dashed var(--color-accent);opacity:0.7;" : "background:var(--background-modifier-border);opacity:0.5;"}` }
+          });
+        }
+      }
     }
+
+    container.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
+      `<a class="internal-link" data-href="Learning/Dashboard.md">Full dashboard →</a>`;
+  }
+}
+
+// ========== ALGORITHM TAB ==========
+{
+  const p = lPanels["algo"];
+
+  // Stats
+  const patterns = dv.pages('"Learning/Algorithm/Patterns"').where(x => x.file.tags.includes("#leetcode/pattern"));
+  const logs = dv.pages('"Learning/Algorithm/Log"').where(x => x.file.tags.includes("#leetcode/log"));
+
+  const totalPatterns = patterns.length;
+  const pArr = patterns.array();
+  const totalProblems = pArr.reduce((sum, x) => sum + (x.problems ? (Array.isArray(x.problems) ? x.problems.length : 1) : 0), 0);
+
+  const weekAgo = dv.date("today").minus({ days: 7 });
+  const monthAgo = dv.date("today").minus({ days: 30 });
+  const lArr = logs.array();
+  const weekProblems = lArr.filter(l => dv.date(l.date) >= weekAgo).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
+  const monthProblems = lArr.filter(l => dv.date(l.date) >= monthAgo).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
+
+  const statsLine = p.createEl("div", {
+    attr: { style: "font-size:0.85em;padding:8px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--color-accent);margin-bottom:10px;" }
+  });
+  statsLine.innerHTML = `<strong>${totalPatterns}</strong> patterns · <strong>${totalProblems}</strong> problems · 本周 <strong>${weekProblems}</strong> 题 · 本月 <strong>${monthProblems}</strong> 题`;
+
+  // Low confidence patterns
+  const lowConf = pArr.filter(x => x.confidence && x.confidence <= 2).sort((a, b) => (a.confidence || 0) - (b.confidence || 0));
+
+  if (lowConf.length > 0) {
+    p.createEl("div", { text: "🔴 需要复习", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:4px;color:var(--text-muted);" } });
+    const table = p.createEl("table", { attr: { style: "width:100%;font-size:0.8em;border-collapse:collapse;" } });
+    const thead = table.createEl("thead");
+    const hr = thead.createEl("tr");
+    for (const h of ["Pattern", "Category", "Confidence"]) {
+      hr.createEl("th", { text: h, attr: { style: "text-align:left;padding:4px 8px;border-bottom:1px solid var(--background-modifier-border);color:var(--text-muted);font-weight:500;" } });
+    }
+    const tbody = table.createEl("tbody");
+    for (const pat of lowConf) {
+      const tr = tbody.createEl("tr");
+      const td1 = tr.createEl("td", { attr: { style: "padding:3px 8px;" } });
+      td1.innerHTML = `<a class="internal-link" data-href="${pat.file.path}">${pat.title || pat.file.name}</a>`;
+      tr.createEl("td", { text: pat.category || "-", attr: { style: "padding:3px 8px;color:var(--text-muted);" } });
+      tr.createEl("td", { text: "⭐".repeat(pat.confidence || 1), attr: { style: "padding:3px 8px;" } });
+    }
+  } else {
+    p.createEl("div", { text: "✅ 所有 patterns confidence ≥ 3", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
   }
 
-  container.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
-    `<a class="internal-link" data-href="Learning/Dashboard.md">Full dashboard →</a>`;
+  // Link to full dashboard
+  p.createEl("div", { attr: { style: "margin-top:10px;font-size:0.85em;" } }).innerHTML =
+    '<a class="internal-link" data-href="Learning/Algorithm/00_index.md">All patterns →</a>';
 }
 ```
 
