@@ -1320,6 +1320,49 @@ const { panels: lPanels } = createTabGroup(dv, [
   });
   statsLine.innerHTML = `<strong>${totalPatterns}</strong> patterns · <strong>${totalProblems}</strong> problems · 本周 <strong>${weekProblems}</strong> 题 · 本月 <strong>${monthProblems}</strong> 题`;
 
+  // Category distribution bars
+  const catCount = {};
+  for (const x of pArr) { const c = x.category || "Other"; catCount[c] = (catCount[c] || 0) + 1; }
+  const catEntries = Object.entries(catCount).sort((a, b) => b[1] - a[1]);
+  const maxCat = catEntries.length > 0 ? catEntries[0][1] : 1;
+
+  const catWrap = p.createEl("div", { attr: { style: "margin-bottom:10px;" } });
+  catWrap.createEl("div", { text: "📊 Category 分布", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:4px;color:var(--text-muted);" } });
+  for (const [cat, count] of catEntries) {
+    const row = catWrap.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;margin-bottom:2px;" } });
+    row.createEl("div", { text: cat, attr: { style: `font-size:0.72em;color:var(--text-muted);width:${isMobile ? "80px" : "140px"};text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;` } });
+    const barOuter = row.createEl("div", { attr: { style: "flex:1;height:8px;background:var(--background-modifier-border);border-radius:4px;overflow:hidden;" } });
+    barOuter.createEl("div", { attr: { style: `width:${(count / maxCat) * 100}%;height:100%;background:var(--color-accent);border-radius:4px;opacity:0.8;` } });
+    row.createEl("div", { text: String(count), attr: { style: "font-size:0.72em;color:var(--text-faint);width:18px;flex-shrink:0;" } });
+  }
+
+  // Recent activity (last 7 log entries)
+  const recentLogs = lArr
+    .filter(l => l.date)
+    .sort((a, b) => dv.date(b.date).ts - dv.date(a.date).ts)
+    .slice(0, 7);
+
+  if (recentLogs.length > 0) {
+    const actWrap = p.createEl("div", { attr: { style: "margin-bottom:10px;" } });
+    actWrap.createEl("div", { text: "📝 最近做题", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:4px;color:var(--text-muted);" } });
+    for (const log of recentLogs) {
+      const d = dv.date(log.date).toFormat("MM-dd");
+      const solved = log.problems_solved ? (Array.isArray(log.problems_solved) ? log.problems_solved : [log.problems_solved]) : [];
+      const row = actWrap.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;padding:2px 0;" } });
+      row.createEl("span", { text: d, attr: { style: "font-size:0.72em;color:var(--text-faint);width:36px;flex-shrink:0;" } });
+      const pills = row.createEl("div", { attr: { style: "display:flex;gap:3px;flex-wrap:wrap;" } });
+      for (const num of solved) {
+        const pill = pills.createEl("a", {
+          text: `LC ${num}`,
+          attr: { class: "internal-link", "data-href": log.file.path, style: "font-size:0.7em;padding:1px 6px;border-radius:4px;background:var(--background-secondary);border:1px solid var(--background-modifier-border);text-decoration:none;white-space:nowrap;" }
+        });
+      }
+      if (solved.length === 0) {
+        pills.createEl("span", { text: "—", attr: { style: "font-size:0.72em;color:var(--text-faint);" } });
+      }
+    }
+  }
+
   // Low confidence patterns
   const lowConf = pArr.filter(x => x.confidence && x.confidence <= 2).sort((a, b) => (a.confidence || 0) - (b.confidence || 0));
 
