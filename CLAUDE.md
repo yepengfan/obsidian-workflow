@@ -10,7 +10,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Attachments/** — Media files (images, etc.) for general vault notes. Also contains `Excalidraw/` (drawings and diagrams). Each Learning plan manages its own attachments under `Learning/<CODE>/Attachments/`
 - **Inbox/** — Fleeting notes capture. Quick thoughts from any source (reading, work, life). Processed weekly into Zettelkasten or deleted.
 - **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `topics` (list of keywords for filtering).
-- **Learning/** — Structured learning plans, book reading, and skill training. Each plan lives in a subfolder named by its code (e.g. `Learning/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier — used as shorthand in all commands (`/learning-log AISA`). Also contains `Books/` (book reading workflow — see `Learning/Books/CLAUDE.md`), `Training/` (skill builder resources, related to Home Skills tab in the Work section), and `Algorithm/` (LeetCode pattern library and daily practice — `Patterns/` has one file per algorithm pattern with frontmatter-driven Dataview, `Log/` has daily solving records, `Legacy/` holds pre-migration reference files; see `Learning/Algorithm/CLAUDE.md`). Managed via `/learning/learning-init`, `/learning/learning-log`, `/learning/learning-review`, `/algorithm/solve`, `/algorithm/review`, `/algorithm/migrate`.
+- **Learning/** — Structured learning plans, book reading, and skill training. Each plan lives in a subfolder named by its code (e.g. `Learning/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier — used as shorthand in all commands (`/learning-log AISA`). Also contains `Books/` (book reading workflow — see `Learning/Books/CLAUDE.md`), `Training/` (skill builder resources, related to Home Skills tab in the Work section), and `Algorithm/` (LeetCode pattern library and daily practice — `Patterns/` has one file per algorithm pattern with frontmatter-driven Dataview, `Log/` has daily solving records, `Legacy/` holds pre-migration reference files; see `Learning/Algorithm/CLAUDE.md`). Managed via `/learning/learning-init`, `/learning/learning-log`, `/learning/learning-review`, `/algorithm/solve`, `/algorithm/review`.
 - **Note/** — Persistent quick-reference notes (credentials, demo setups, etc.). Unlike Inbox (which is processed weekly), these stay as-is for easy access.
 - **Matter/** — Article notes from Matter app. **DO NOT MODIFY / DO NOT MOVE** — synced by Matter plugin, folder path is fixed.
 - **Instapaper Notes/** — Saved article highlights from Instapaper. **DO NOT MODIFY / DO NOT MOVE** — synced by Instapaper plugin, folder path is fixed.
@@ -136,3 +136,51 @@ Each module declares external dependencies via the `requires` frontmatter field:
 
 See `Learning/Books/CLAUDE.md` for the full reading workflow.
 When working inside the `Learning/Books/` folder, that file takes precedence for all book-related tasks.
+
+## Algorithm System
+
+LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Algorithm/CLAUDE.md`。
+
+### Directory Structure
+
+| Path | Purpose |
+|------|---------|
+| `Learning/Algorithm/Patterns/` | Pattern card（一个 pattern 一个 .md，含模板代码 + 关联题目） |
+| `Learning/Algorithm/Log/` | 每日解题记录（`YYYY-MM-DD.md`） |
+| `Learning/Algorithm/Legacy/` | 迁移前原始文件（只读存档） |
+| `Learning/Algorithm/00_index.md` | Dataview dashboard |
+
+### Commands
+
+**`/algorithm/solve <题号或题名>`** — 做题全流程：
+
+1. **引导解题** — 给 hints + pseudocode，不给代码。说「给我看代码」/「我放弃」才给
+2. **代码审核** — 贴代码后审正确性、edge cases、复杂度、风格
+3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
+
+```
+/algorithm/solve 15
+/algorithm/solve two sum
+/algorithm/solve LC 200 岛屿数量
+```
+
+**`/algorithm/review`** — 复习排序 + 统计：
+
+1. 扫描所有 Pattern card，按 confidence↑ + updated↑ 排序
+2. 输出 review 表：🔴 confidence ≤ 2 需重点复习、🟡 = 3 建议巩固、🟢 ≥ 4 良好
+3. 可 drill-down 复习某 pattern、做新题、更新 confidence
+4. 统计：总 pattern 数、confidence 分布、最久未更新 top 3、本周/月做题数
+
+### Daily Workflow
+
+```
+做题 → /algorithm/solve 42
+         ↓
+    Phase 1: hints 引导
+    Phase 2: 贴代码审核
+    Phase 3: 沉淀 pattern + log
+         ↓
+复习 → /algorithm/review
+         ↓
+    挑 confidence 低的 pattern 再做一题 → 循环
+```

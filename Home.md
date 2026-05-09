@@ -1478,7 +1478,10 @@ const pages = dv.pages('"WeRead"')
     const s = p.readingStatus;
     // readingStatus: 2="在读", 4="读完" (plugin uses numeric codes)
     const isReading = s === "在读" || s === 2;
-    return isReading;
+    if (!isReading) return false;
+    // Exclude books with 100% progress (effectively finished)
+    const prog = parseInt(String(p.progress)) || 0;
+    return prog < 100;
   })
   .sort(p => p.lastReadDate, "desc")
   .limit(8);
@@ -1521,8 +1524,12 @@ if (pages.length === 0) {
   readContainer.createEl("div", { text: "No books currently in progress.", attr: { style: "color:var(--text-muted);font-style:italic;" } });
 }
 
-readContainer.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
-  `<a class="internal-link" data-href="Learning/Books/Books Index">Open Books Index →</a>`;
+const linkWrap = readContainer.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } });
+const bookLink = linkWrap.createEl("a", { text: "Open Books Index →", cls: "internal-link", attr: { style: "cursor:pointer;" } });
+bookLink.addEventListener("click", (e) => {
+  e.preventDefault();
+  app.commands.executeCommandById("obsidian-weread-plugin:open-weread-bookshelf-view");
+});
 ```
 
 ### Articles
