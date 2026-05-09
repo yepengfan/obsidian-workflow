@@ -1475,10 +1475,10 @@ if (sessions.length === 0) {
 const pages = dv.pages('"WeRead"')
   .where(p => p.author && p.doc_type === "weread-highlights-reviews")
   .where(p => {
-    const s = p.readingStatus || "";
-    const prog = p.progress || "0%";
-    const num = parseInt(String(prog));
-    return (s === "在读" || (num > 0 && num < 100 && prog !== "-1")) && s !== "读完";
+    const s = p.readingStatus;
+    // readingStatus: 2="在读", 4="读完" (plugin uses numeric codes)
+    const isReading = s === "在读" || s === 2;
+    return isReading;
   })
   .sort(p => p.lastReadDate, "desc")
   .limit(8);
@@ -1491,7 +1491,11 @@ const grid = readContainer.createEl("div", {
 for (const p of pages) {
   const title = p.file.name.replace(/-CB_.*$/, "").replace(/-\d+$/, "");
   const cover = p.cover || "";
-  const progress = p.progress || "0%";
+  const rawProg = p.progress || "0%";
+  // Sanitize: treat "-1" or negative as 0%, clamp to 0-100
+  const parsedNum = parseInt(String(rawProg)) || 0;
+  const clampedNum = Math.max(0, Math.min(100, parsedNum));
+  const progress = clampedNum + "%";
 
   const card = grid.createEl("div", {
     attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;overflow:hidden;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);" }
@@ -1509,8 +1513,7 @@ for (const p of pages) {
   }
   // Progress bar
   const barBg = body.createEl("div", { attr: { style: "height:4px;background:var(--background-modifier-border);border-radius:2px;overflow:hidden;" } });
-  const num = parseInt(String(progress)) || 0;
-  barBg.createEl("div", { attr: { style: `height:100%;width:${num}%;background:var(--interactive-accent);border-radius:2px;` } });
+  barBg.createEl("div", { attr: { style: `height:100%;width:${clampedNum}%;background:var(--interactive-accent);border-radius:2px;` } });
   body.createEl("div", { text: progress, attr: { style: "font-size:0.68em;color:var(--text-faint);margin-top:2px;" } });
 }
 
