@@ -68,22 +68,27 @@ def fetch_progress(book_id: str, cookie_str: str) -> int | None:
         return None
 
 
-def update_frontmatter(file: Path, old_prog: str, new_prog: int) -> bool:
+def update_frontmatter(file: Path, new_prog: int) -> bool:
+    """Replace the progress field only within the YAML frontmatter block."""
     text = file.read_text("utf-8")
-    new_prog_str = f"{new_prog}%"
-
-    if f"progress: {old_prog}" in text:
-        text = text.replace(f"progress: {old_prog}", f"progress: {new_prog_str}", 1)
-    elif re.search(r"^progress:.*$", text, re.MULTILINE):
-        text = re.sub(r"^progress:.*$", f"progress: {new_prog_str}", text, count=1, flags=re.MULTILINE)
-    else:
+    fm_match = re.match(r"^(---\n)(.*?)(\n---)", text, re.DOTALL)
+    if not fm_match:
         return False
 
+    prefix, fm, suffix = fm_match.group(1), fm_match.group(2), fm_match.group(3)
+    new_fm, count = re.subn(
+        r"^progress:.*$", f"progress: {new_prog}%", fm, count=1, flags=re.MULTILINE
+    )
+    if count == 0:
+        return False
+
+    text = prefix + new_fm + suffix + text[fm_match.end() :]
     file.write_text(text, "utf-8")
     return True
 
 
 def _field(fm: str, key: str) -> str | None:
+    # key is always a hardcoded safe literal — no regex injection risk
     m = re.search(rf'^{key}:\s*["\']?([^"\'\n]*)["\']?', fm, re.MULTILINE)
     return m.group(1).strip() if m else None
 
@@ -96,6 +101,7 @@ def main():
     print(f"Found {len(books)} books with 在读 status\n")
 
     updated = 0
+    stale = 0
     for book in books:
         api_prog = fetch_progress(book["book_id"], cookie_str)
         title = (book["title"] or book["file"].stem)[:35]
@@ -111,20 +117,17 @@ def main():
             continue
 
         if apply:
-            ok = update_frontmatter(book["file"], book["old_prog"], api_prog)
+            ok = update_frontmatter(book["file"], api_prog)
             status = "updated" if ok else "FAILED"
             print(f"  🔄 {title}: {old} → {new} ({status})")
             if ok:
                 updated += 1
         else:
             print(f"  ❌ {title}: {old} → {new} (dry-run)")
+            stale += 1
 
-    print(f"\n{'Updated' if apply else 'Would update'}: {updated}/{len(books)} books")
-    if not apply and updated == 0 and any(
-        fetch_progress(b["book_id"], cookie_str) is not None
-        and f'{fetch_progress(b["book_id"], cookie_str)}%' != b["old_prog"]
-        for b in books[:1]
-    ):
+    print(f"\n{'Updated' if apply else 'Would update'}: {updated if apply else stale}/{len(books)} books")
+    if not apply and stale > 0:
         print("Run with --apply to write changes.")
 
 
