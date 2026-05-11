@@ -41,6 +41,11 @@ Learning/         # Structured learning plans (folder name = plan code)
     Log/          # Daily solving records (YYYY-MM-DD.md)
     Legacy/       # Pre-migration reference files (read-only)
     00_index.md   # Dataview dashboard
+  System-Design/  # System design pattern library + practice (parallel to Algorithm)
+    Patterns/     # One .md per pattern (design framework + linked problems)
+    Log/          # Practice records (YYYY-MM-DD.md)
+    Courses/      # Course notes (Hello Interview, etc.)
+    00_index.md   # Dataview dashboard
 Profile/          # Personal assessment & self-development
   Personal Baseball Card.md  # Ray Dalio-inspired Baseball Card (PrinciplesYou + self-eval)
 Feeds/            # Auto-generated content feeds
@@ -55,7 +60,7 @@ scripts/
     enrich.py     # Single Haiku call: categorize, score, bilingual one-liners
     write_reports.py  # Obsidian markdown report assembler
     run.sh        # Idempotent orchestrator with 14-day archive rotation
-Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week, Algorithm Pattern, Algorithm Log, Brownbag Session
+Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week, Algorithm Pattern, Algorithm Log, SD Pattern, SD Log, Brownbag Session
 CLAUDE.md         # Vault-level Claude Code instructions
 Home.md           # Dashboard — tabbed sections (Work/Card, AI Digest/GitHub Trending)
 sortspec.md       # Custom file explorer sort order (Custom File Explorer Sorting plugin)
@@ -212,6 +217,18 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
 
 `/algorithm/review` 输出 review 表：🔴 confidence ≤ 2 需重点复习、🟡 = 3 建议巩固、🟢 ≥ 4 良好。可 drill-down 复习某 pattern 或做新题。
+
+#### System Design
+
+| Command | When to use |
+|---------|------------|
+| `/system-design/solve <题目>` | 做题全流程：7 步框架引导 → 方案审核 → 沉淀 pattern card + log |
+| `/system-design/review` | 复习排序：按 confidence↑ + updated↑ 展示所有 pattern，统计做题数 |
+
+`/system-design/solve` 三阶段：
+1. **引导设计** — 按 7 步框架引导（Requirements → Estimation → API → Data Model → High-Level → Deep Dive → Trade-offs），不给完整方案（说「给我看方案」/「我放弃」才给）
+2. **方案审核** — 审需求覆盖、可扩展性、trade-offs、单点故障、成本
+3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
 
 #### Feeds
 
