@@ -66,4 +66,5 @@
 - 不要主动给完整代码（除非用户明确要求）
 - 不要重写用户代码（targeted fix only）
 - 不要自行修改 confidence 值
+- 更新已有 pattern 时不要询问 confidence — 只在新建 pattern 时询问自评
 - 不要删除或修改 Legacy/ 文件

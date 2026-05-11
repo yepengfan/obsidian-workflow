@@ -80,6 +80,7 @@ Commands are organized by module in `.claude/commands/`:
 ├── learning/        # /learning/learning-init, ...
 ├── feeds/           # /feeds/ai-digest, /feeds/github-trending
 ├── brownbag/        # /brownbag/brownbag
+├── system-design/   # /system-design/solve, /system-design/review
 ├── vault-ops/       # /vault-ops/organize, /vault-ops/backup, ...
 └── module-toggle.md # /module-toggle (global)
 ```
@@ -184,3 +185,52 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Algorithm/CLAUD
          ↓
     挑 confidence 低的 pattern 再做一题 → 循环
 ```
+
+## System Design System
+
+系统设计刷题 + 模式沉淀系统（类似 Algorithm）。详细规则见 `Learning/System-Design/CLAUDE.md`。
+
+### Directory Structure
+
+| Path | Purpose |
+|------|---------|
+| `Learning/System-Design/Patterns/` | Pattern card（一个 pattern 一个 .md，含设计框架 + 关联题目） |
+| `Learning/System-Design/Log/` | 每次练习记录（`YYYY-MM-DD.md`） |
+| `Learning/System-Design/Courses/` | 课程笔记（Hello Interview 等） |
+| `Learning/System-Design/00_index.md` | Dataview dashboard |
+
+### Commands
+
+**`/system-design/solve <题目>`** — 做题全流程：
+
+1. **引导设计** — 按 7 步框架引导（Requirements → Estimation → API → Data Model → High-Level → Deep Dive → Trade-offs），不给完整方案。说「给我看方案」/「我放弃」才给
+2. **方案审核** — 审需求覆盖、可扩展性、trade-offs、单点故障、成本
+3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
+
+```
+/system-design/solve Design YouTube
+/system-design/solve Design URL Shortener
+/system-design/solve 设计聊天系统
+```
+
+**`/system-design/review`** — 复习排序 + 统计（同 Algorithm review 逻辑）
+
+### Daily Workflow
+
+```
+做题 → /system-design/solve Design YouTube
+         ↓
+    Phase 1: 7 步框架引导
+    Phase 2: 方案审核
+    Phase 3: 沉淀 pattern + log
+         ↓
+复习 → /system-design/review
+         ↓
+    挑 confidence 低的 pattern 再做一题 → 循环
+```
+
+### 与 SYSD 的关系
+
+- **System Design 模块**（本模块）: 理论 + 刷题，模式化练习
+- **SYSD (Learning Plan)**: 实战项目，Docker POC + 生产深度
+- 两者并行互补，目标一致：成为分布式系统架构专家

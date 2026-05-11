@@ -1,0 +1,49 @@
+---
+module: system-design
+label: "System Design 系统设计练习"
+type: knowledge
+status: active
+enabled: true
+created: 2026-05-12
+updated: 2026-05-12
+depends_on: []
+requires:
+  cli: [claude]
+  plugins: [dataview]
+commands: [solve, review]
+templates: [Templates/SD Pattern.md, Templates/SD Log.md]
+scripts: []
+hooks: []
+folders: [Learning/System-Design/, Learning/System-Design/Patterns/, Learning/System-Design/Log/, Learning/System-Design/Courses/]
+config_files:
+  - .claude/commands/system-design/solve.md
+  - .claude/commands/system-design/review.md
+  - Learning/System-Design/CLAUDE.md
+tags: [system/module]
+---
+
+## Overview
+
+System Design 练习模块。交互式设计引导 → 方案审核 → Pattern Card 沉淀。类似 Algorithm 模块的永续练习系统。
+
+## 架构
+
+- **Patterns/**: 一个 pattern 一个文件，frontmatter 驱动 Dataview
+- **Log/**: 每次练习记录
+- **Courses/**: 课程笔记（Hello Interview 等）
+
+### 数据流
+
+- **输入**: `/system-design/solve <题目>` → 引导设计（7 步框架） → 方案审核 → 沉淀 card + log
+- **回顾**: `/system-design/review` → 按 confidence 排序展示薄弱 patterns
+
+### 与其他模块关系
+
+- **SYSD (Learning Plan)**: 实战计划，专注 Docker POC + 项目经验积累
+- **Algorithm**: LeetCode 刷题，训练编码能力
+- 三者互补：理论模式（System Design）+ 编码能力（Algorithm）+ 实战经验（SYSD）
+
+## Quick Start
+
+1. `/system-design/solve Design YouTube` — 开始练题
+2. `/system-design/review` — 复习薄弱 pattern

@@ -53,7 +53,7 @@ Learning/
 | 代码 | 名称 | 阶段 | 状态 |
 |------|------|------|------|
 | AISA | AI Solutions Architect | Phase 2 | 进行中 |
-| SYSD | System Design | - | 待启动 |
+| SYSD | System Design (实战: Docker POC + 项目) | - | 待启动 |
 
 ## Quick Start
 
