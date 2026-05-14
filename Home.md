@@ -1321,67 +1321,105 @@ const { panels: lPanels } = createTabGroup(dv, [
   });
   statsLine.innerHTML = `<strong>${totalPatterns}</strong> patterns · <strong>${totalProblems}</strong> problems · 本周 <strong>${weekProblems}</strong> 题 · 本月 <strong>${monthProblems}</strong> 题`;
 
-  // Category distribution bars
+  // Category distribution — Donut Chart
   const catCount = {};
   for (const x of pArr) { const c = x.category || "Other"; catCount[c] = (catCount[c] || 0) + 1; }
   const catEntries = Object.entries(catCount).sort((a, b) => b[1] - a[1]);
-  const maxCat = catEntries.length > 0 ? catEntries[0][1] : 1;
+  const catColors = ["#7C6EF6","#E8674A","#4CAF7D","#F5A623","#5B9BD5","#D45DBF","#45B7AA","#F07171","#8E8CD8","#6ABE5F","#E09C3F","#5ECCC9","#C97AB5","#7FB069"];
+  const R = 70, SW = 28, CX = 100, CY = 100, CIRC = 2 * Math.PI * R;
 
   const catWrap = p.createEl("div", { attr: { style: "margin-bottom:10px;" } });
   catWrap.createEl("div", { text: "📊 Category 分布", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:4px;color:var(--text-muted);" } });
-  for (const [cat, count] of catEntries) {
-    const row = catWrap.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;margin-bottom:2px;" } });
-    row.createEl("div", { text: cat, attr: { style: `font-size:0.72em;color:var(--text-muted);width:${isMobile ? "80px" : "140px"};text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;` } });
-    const barOuter = row.createEl("div", { attr: { style: "flex:1;height:8px;background:var(--background-modifier-border);border-radius:4px;overflow:hidden;" } });
-    barOuter.createEl("div", { attr: { style: `width:${(count / maxCat) * 100}%;height:100%;background:var(--color-accent);border-radius:4px;opacity:0.8;` } });
-    row.createEl("div", { text: String(count), attr: { style: "font-size:0.72em;color:var(--text-faint);width:18px;flex-shrink:0;" } });
-  }
+  const chartRow = catWrap.createEl("div", { attr: { style: `display:flex;${isMobile ? "flex-direction:column;" : ""}align-items:center;gap:${isMobile ? "8" : "16"}px;` } });
 
-  // Recent activity (last 7 log entries)
-  const recentLogs = lArr
-    .filter(l => l.date)
-    .sort((a, b) => dv.date(b.date).ts - dv.date(a.date).ts)
-    .slice(0, 7);
+  let arcs = "", arcOff = 0;
+  catEntries.forEach(([, count], i) => {
+    const seg = (count / (totalPatterns || 1)) * CIRC;
+    arcs += `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${catColors[i % catColors.length]}" stroke-width="${SW}" stroke-dasharray="${seg} ${CIRC - seg}" stroke-dashoffset="-${arcOff}" transform="rotate(-90 ${CX} ${CY})"/>`;
+    arcOff += seg;
+  });
+  if (!arcs) arcs = `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--background-modifier-border)" stroke-width="${SW}"/>`;
 
-  if (recentLogs.length > 0) {
+  const donutSz = isMobile ? "120px" : "140px";
+  const svgEl = chartRow.createEl("div", { attr: { style: `flex-shrink:0;width:${donutSz};height:${donutSz};` } });
+  svgEl.innerHTML = `<svg viewBox="0 0 200 200" style="width:100%;height:100%"><g>${arcs}</g><text x="${CX}" y="${CY - 6}" text-anchor="middle" fill="var(--text-normal)" font-size="28" font-weight="700">${totalPatterns}</text><text x="${CX}" y="${CY + 14}" text-anchor="middle" fill="var(--text-muted)" font-size="12">patterns</text></svg>`;
+
+  const legend = chartRow.createEl("div", { attr: { style: `display:flex;flex-direction:column;gap:2px;${isMobile ? "" : "flex:1;"}` } });
+  catEntries.forEach(([cat, count], i) => {
+    const item = legend.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;" } });
+    item.createEl("div", { attr: { style: `width:8px;height:8px;border-radius:2px;background:${catColors[i % catColors.length]};flex-shrink:0;` } });
+    item.createEl("div", { text: cat, attr: { style: "font-size:0.7em;color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+    item.createEl("div", { text: String(count), attr: { style: "font-size:0.7em;color:var(--text-faint);flex-shrink:0;" } });
+  });
+
+  // Weekly activity bar chart (last 12 weeks)
+  {
     const actWrap = p.createEl("div", { attr: { style: "margin-bottom:10px;" } });
-    actWrap.createEl("div", { text: "📝 最近做题", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:4px;color:var(--text-muted);" } });
-    for (const log of recentLogs) {
-      const d = dv.date(log.date).toFormat("MM-dd");
-      const solved = log.problems_solved ? (Array.isArray(log.problems_solved) ? log.problems_solved : [log.problems_solved]) : [];
-      const row = actWrap.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;padding:2px 0;" } });
-      row.createEl("span", { text: d, attr: { style: "font-size:0.72em;color:var(--text-faint);width:36px;flex-shrink:0;" } });
-      const pills = row.createEl("div", { attr: { style: "display:flex;gap:3px;flex-wrap:wrap;" } });
-      for (const num of solved) {
-        const pill = pills.createEl("a", {
-          text: `LC ${num}`,
-          attr: { class: "internal-link", "data-href": log.file.path, style: "font-size:0.7em;padding:1px 6px;border-radius:4px;background:var(--background-secondary);border:1px solid var(--background-modifier-border);text-decoration:none;white-space:nowrap;" }
-        });
+    actWrap.createEl("div", { text: "📝 最近做题", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:6px;color:var(--text-muted);" } });
+
+    const today = dv.date("today");
+    const bw = isMobile ? 16 : 22;
+    const bgap = isMobile ? 3 : 4;
+    const maxH = isMobile ? 56 : 72;
+    const nWeeks = 12;
+
+    // Current week's Monday
+    const todayDow = today.weekday;
+    const thisMon = todayDow === 1 ? today : today.minus({ days: todayDow - 1 });
+
+    // Aggregate problems per week
+    const weeks = [];
+    for (let w = nWeeks - 1; w >= 0; w--) {
+      const ws = thisMon.minus({ weeks: w });
+      const we = ws.plus({ days: 6 });
+      let cnt = 0;
+      for (const l of lArr) {
+        if (!l.date) continue;
+        const ld = dv.date(l.date);
+        if (ld.ts >= ws.ts && ld.ts <= we.ts) {
+          cnt += l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0;
+        }
       }
-      if (solved.length === 0) {
-        pills.createEl("span", { text: "—", attr: { style: "font-size:0.72em;color:var(--text-faint);" } });
+      weeks.push({ start: ws, count: cnt });
+    }
+    const maxCnt = Math.max(3, ...weeks.map(w => w.count));
+
+    // Accent RGB for empty bar tint
+    const _ac = getComputedStyle(document.body).getPropertyValue('--color-accent').trim();
+    let _r = 124, _g = 110, _b = 246;
+    if (_ac.startsWith('#')) { const h = _ac.slice(1); _r = parseInt(h.substring(0,2),16); _g = parseInt(h.substring(2,4),16); _b = parseInt(h.substring(4,6),16); }
+    else if (_ac.startsWith('rgb')) { const m = _ac.match(/(\d+)/g); if (m && m.length >= 3) { _r = +m[0]; _g = +m[1]; _b = +m[2]; } }
+
+    const colH = maxH + 30;
+    const chart = actWrap.createEl("div", { attr: { style: `display:flex;gap:${bgap}px;` } });
+
+    for (const wk of weeks) {
+      const col = chart.createEl("div", { attr: { style: `display:flex;flex-direction:column;align-items:center;width:${bw}px;height:${colH}px;` } });
+      col.createEl("div", { attr: { style: "flex:1;" } });
+      if (wk.count > 0) {
+        col.createEl("div", { text: String(wk.count), attr: { style: "font-size:0.6em;color:var(--text-faint);margin-bottom:2px;" } });
       }
+      const barH = wk.count > 0 ? Math.max(6, Math.round((wk.count / maxCnt) * maxH)) : 3;
+      const barBg = wk.count > 0 ? "var(--color-accent)" : `rgba(${_r},${_g},${_b},0.1)`;
+      col.createEl("div", { attr: { style: `width:${bw - 4}px;height:${barH}px;border-radius:3px;background:${barBg};` } });
+      col.createEl("div", { text: wk.start.toFormat("M/d"), attr: { style: "font-size:0.5em;color:var(--text-faint);margin-top:3px;white-space:nowrap;" } });
     }
   }
 
-  // Low confidence patterns
+  // Low confidence patterns — card layout
   const lowConf = pArr.filter(x => x.confidence && x.confidence <= 2).sort((a, b) => (a.confidence || 0) - (b.confidence || 0));
 
   if (lowConf.length > 0) {
-    p.createEl("div", { text: "🔴 需要复习", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:4px;color:var(--text-muted);" } });
-    const table = p.createEl("table", { attr: { style: "width:100%;font-size:0.8em;border-collapse:collapse;" } });
-    const thead = table.createEl("thead");
-    const hr = thead.createEl("tr");
-    for (const h of ["Pattern", "Category", "Confidence"]) {
-      hr.createEl("th", { text: h, attr: { style: "text-align:left;padding:4px 8px;border-bottom:1px solid var(--background-modifier-border);color:var(--text-muted);font-weight:500;" } });
-    }
-    const tbody = table.createEl("tbody");
+    p.createEl("div", { text: "🔴 需要复习", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:6px;color:var(--text-muted);" } });
+    const cardList = p.createEl("div", { attr: { style: "display:flex;flex-direction:column;gap:6px;" } });
     for (const pat of lowConf) {
-      const tr = tbody.createEl("tr");
-      const td1 = tr.createEl("td", { attr: { style: "padding:3px 8px;" } });
-      td1.innerHTML = `<a class="internal-link" data-href="${pat.file.path}">${pat.title || pat.file.name}</a>`;
-      tr.createEl("td", { text: pat.category || "-", attr: { style: "padding:3px 8px;color:var(--text-muted);" } });
-      tr.createEl("td", { text: "⭐".repeat(pat.confidence || 1), attr: { style: "padding:3px 8px;" } });
+      const confColor = (pat.confidence || 1) <= 1 ? "#E8674A" : "#F5A623";
+      const card = cardList.createEl("div", { attr: { style: `display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid ${confColor};` } });
+      const info = card.createEl("div", { attr: { style: "flex:1;min-width:0;" } });
+      const nameEl = info.createEl("div", { attr: { style: "font-size:0.8em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+      nameEl.innerHTML = `<a class="internal-link" data-href="${pat.file.path}">${pat.title || pat.file.name}</a>`;
+      info.createEl("div", { text: pat.category || "-", attr: { style: "font-size:0.65em;color:var(--text-faint);margin-top:1px;" } });
+      card.createEl("div", { text: "⭐".repeat(pat.confidence || 1), attr: { style: "font-size:0.75em;flex-shrink:0;" } });
     }
   } else {
     p.createEl("div", { text: "✅ 所有 patterns confidence ≥ 3", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
