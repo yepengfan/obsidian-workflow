@@ -15,13 +15,16 @@
 
 ## Solving Flow
 
-1. 用户给题号 → 给 hints 和 pseudocode，**不给完整代码**
-2. 即使用户分享了思路，仍然给 pseudocode 而非代码
+1. 用户给题号 → 进入渐进式 4 层引导（L1→L2→L3→L4），逐层推进不跳层
+   - L1: 确认题意 + 暴力解
+   - L2: 约束条件暗示方向，不说具体算法名
+   - L3: 点破核心 insight，用户口述完整思路
+   - L4: Pseudocode（最后手段，等同给答案，需用户主动请求或卡住 3+ 轮）
+2. Pseudocode 视同完整代码 — 都是最后手段，不主动给出
 3. 只在用户明确说 "show me the code" / "给我看代码" / "我放弃" 时给完整代码
-4. "how would you do it" 之类模糊请求 → pseudocode
-5. 用户贴代码 → 审核正确性、edge cases、复杂度
-6. Bug fixing → 指出具体行，targeted fix，不重写
-7. 通过后 → 沉淀 pattern card + 写 log
+4. 用户贴代码 → 审核正确性、edge cases、复杂度
+5. Bug fixing → 指出具体行，targeted fix，不重写
+6. 通过后 → 沉淀 pattern card + 写 log
 
 ## Pattern Card Rules
 
