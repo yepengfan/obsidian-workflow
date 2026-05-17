@@ -37,8 +37,8 @@ if [ -f "$REPORT_FILE" ]; then
     exit 2
 fi
 
-if ! command -v claude &>/dev/null; then
-    echo "[cc-plugins] ERROR: 'claude' CLI not found on PATH." >&2
+if [ -z "${ANTHROPIC_API_KEY:-}" ] && [ -z "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
+    echo "[cc-plugins] ERROR: Neither ANTHROPIC_API_KEY nor ANTHROPIC_AUTH_TOKEN is set." >&2
     exit 1
 fi
 
@@ -65,7 +65,7 @@ FETCHED=$(python3 "$SCRIPT_DIR/fetch.py" --vault-path "$VAULT_DIR") || {
 }
 echo "[cc-plugins] Step 0 complete."
 
-# ── Step 1: Enrich via Claude Haiku (Python) ────────────────────────
+# ── Step 1: Enrich via Anthropic API (Python) ───────────────────────
 echo "[cc-plugins] Step 1: Classifying and enriching plugins..."
 ENRICHED=$(echo "$FETCHED" | python3 "$SCRIPT_DIR/enrich.py") || {
     echo "[cc-plugins] ERROR: Step 1 (enrichment) failed." >&2
