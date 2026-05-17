@@ -10,6 +10,7 @@ Output (stdout): enriched JSON { "week": "...", "enriched": [...], "stats": {...
 """
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -21,7 +22,10 @@ sys.path.insert(0, str(SCRIPT_DIR.parent))
 from shared.json_helpers import extract_json_array  # noqa: E402
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "enrich.md").read_text()
 
-MODEL = "claude-sonnet-4-20250514"
+# Model defaults: proxy (ANTHROPIC_AUTH_TOKEN) vs direct API (ANTHROPIC_API_KEY)
+_DEFAULT_MODEL_PROXY = "anthropic.claude-4-6-sonnet"
+_DEFAULT_MODEL_DIRECT = "claude-sonnet-4-6-20250514"
+MODEL = os.environ.get("CC_PLUGINS_MODEL")  # explicit override takes priority
 MAX_TOKENS = 16384
 API_TIMEOUT = 480.0  # seconds; matches previous subprocess timeout
 
@@ -36,10 +40,33 @@ _client: anthropic.Anthropic | None = None
 
 
 def _get_client() -> anthropic.Anthropic:
-    """Lazy-init the Anthropic client (reads ANTHROPIC_API_KEY from env)."""
-    global _client
+    """Lazy-init the Anthropic client.
+
+    Auth resolution (in priority order):
+      1. ANTHROPIC_API_KEY   → standard x-api-key header (direct Anthropic API)
+      2. ANTHROPIC_AUTH_TOKEN → Bearer auth header (Claudian / corporate LiteLLM proxy)
+
+    Base URL: ANTHROPIC_BASE_URL is picked up automatically by the SDK.
+    Model: auto-selected based on auth method unless CC_PLUGINS_MODEL is set.
+    """
+    global _client, MODEL
     if _client is None:
-        _client = anthropic.Anthropic(timeout=API_TIMEOUT)
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        auth_token = os.environ.get("ANTHROPIC_AUTH_TOKEN")
+        if api_key:
+            _client = anthropic.Anthropic(api_key=api_key, timeout=API_TIMEOUT)
+            if MODEL is None:
+                MODEL = _DEFAULT_MODEL_DIRECT
+        elif auth_token:
+            _client = anthropic.Anthropic(auth_token=auth_token, timeout=API_TIMEOUT)
+            if MODEL is None:
+                MODEL = _DEFAULT_MODEL_PROXY
+        else:
+            raise RuntimeError(
+                "Neither ANTHROPIC_API_KEY nor ANTHROPIC_AUTH_TOKEN is set. "
+                "Set one of these environment variables to use the Anthropic API."
+            )
+        print(f"[enrich] Using model: {MODEL}", file=sys.stderr)
     return _client
 
 

@@ -37,8 +37,8 @@ if [ -f "$REPORT_FILE" ]; then
     exit 2
 fi
 
-if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
-    echo "[cc-plugins] ERROR: ANTHROPIC_API_KEY not set. Required for enrichment." >&2
+if [ -z "${ANTHROPIC_API_KEY:-}" ] && [ -z "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
+    echo "[cc-plugins] ERROR: Neither ANTHROPIC_API_KEY nor ANTHROPIC_AUTH_TOKEN is set." >&2
     exit 1
 fi
 
