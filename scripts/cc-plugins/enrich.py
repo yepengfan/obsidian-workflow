@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Enrich Claude Code plugin repos via batched Claude Haiku calls.
+"""Enrich Claude Code plugin repos via batched Anthropic API calls.
 
 Reads plugin JSON from stdin (output of fetch.py), sends repos to Claude
 in batches for classification, scoring, and bilingual summary, filters out
@@ -10,52 +10,59 @@ Output (stdout): enriched JSON { "week": "...", "enriched": [...], "stats": {...
 """
 
 import json
-import shutil
-import subprocess
 import sys
 import time
 from pathlib import Path
+
+import anthropic
 
 SCRIPT_DIR = Path(__file__).parent
 sys.path.insert(0, str(SCRIPT_DIR.parent))
 from shared.json_helpers import extract_json_array  # noqa: E402
 SYSTEM_PROMPT = (SCRIPT_DIR / "prompts" / "enrich.md").read_text()
 
-CLAUDE_BIN = shutil.which("claude") or "claude"
-CLAUDE_FLAGS = [
-    "--model", "sonnet",
-    "--effort", "low",
-    "--max-budget-usd", "1.00",
-    "--permission-mode", "bypassPermissions",
-    "--no-session-persistence",
-    "--bare",
-]
+MODEL = "claude-sonnet-4-20250514"
+MAX_TOKENS = 16384
+API_TIMEOUT = 480.0  # seconds; matches previous subprocess timeout
 
-BATCH_SIZE = 50  # repos per Haiku call (50 is proven reliable)
+BATCH_SIZE = 50  # repos per API call (50 is proven reliable)
 MAX_RETRIES = 3
 RETRY_DELAY = 4  # seconds between retries
-SUBPROCESS_TIMEOUT = 480  # seconds; 240 was too tight for 50-repo batches via Bedrock
 
 
-# ── Claude subprocess runner ───────────────────────────────────────
+# ── Anthropic SDK client ──────────────────────────────────────────
+
+_client: anthropic.Anthropic | None = None
+
+
+def _get_client() -> anthropic.Anthropic:
+    """Lazy-init the Anthropic client (reads ANTHROPIC_API_KEY from env)."""
+    global _client
+    if _client is None:
+        _client = anthropic.Anthropic(timeout=API_TIMEOUT)
+    return _client
+
 
 def run_claude(user_prompt: str, stdin_data: str) -> str:
-    result = subprocess.run(
-        [CLAUDE_BIN, "-p", user_prompt,
-         "--system-prompt", SYSTEM_PROMPT,
-         *CLAUDE_FLAGS],
-        input=stdin_data.encode(),
-        capture_output=True,
-        timeout=SUBPROCESS_TIMEOUT,
+    """Call the Anthropic Messages API and return the text response."""
+    client = _get_client()
+    message = client.messages.create(
+        model=MODEL,
+        max_tokens=MAX_TOKENS,
+        system=SYSTEM_PROMPT,
+        messages=[
+            {
+                "role": "user",
+                "content": f"{user_prompt}\n\n{stdin_data}",
+            }
+        ],
     )
-    if result.returncode != 0:
-        err = result.stderr.decode().strip()
-        raise RuntimeError(f"claude exited {result.returncode}: {err[:500]}")
-    out = result.stdout.decode()
-    if not out.strip():
-        err = result.stderr.decode().strip()
-        raise RuntimeError(f"claude returned empty output (stderr: {err[:300]})")
-    return out
+    # Extract text from response content blocks
+    text_parts = [block.text for block in message.content if block.type == "text"]
+    result = "\n".join(text_parts)
+    if not result.strip():
+        raise RuntimeError("Anthropic API returned empty text response")
+    return result
 
 
 # ── Enrichment ─────────────────────────────────────────────────────
@@ -93,7 +100,7 @@ def _enrich_batch(slim_batch: list, batch_num: int) -> list:
             result = extract_json_array(raw, fallback_keys=("enriched", "plugins", "results"))
             print(f"[enrich] Batch {batch_num}: {len(result)} records", file=sys.stderr)
             return result
-        except (subprocess.TimeoutExpired, RuntimeError, ValueError) as e:
+        except (anthropic.APITimeoutError, anthropic.APIError, RuntimeError, ValueError) as e:
             msg = str(e)[:200]
             if attempt < MAX_RETRIES:
                 delay = RETRY_DELAY * attempt

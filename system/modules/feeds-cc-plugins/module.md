@@ -8,12 +8,12 @@ created: 2026-04-03
 updated: 2026-04-03
 depends_on: [dashboard]
 requires:
-  cli: [claude, python3]
+  cli: [python3]
   python: ">=3.13"
-  pip: []
+  pip: [anthropic]
   plugins: [dataview]
   env:
-    ANTHROPIC_API_KEY: "(required) Claude API key for Haiku enrichment"
+    ANTHROPIC_API_KEY: "(required) Anthropic API key for plugin enrichment"
     GITHUB_TOKEN: "(optional) Higher API rate limit — 30 req/min vs 10 req/min"
 commands: [cc-plugins]
 templates: []
@@ -43,7 +43,7 @@ tags: [system/module]
 scripts/cc-plugins/
 ├── run.sh              # 编排器（3 步骤 + 归档）
 ├── fetch.py            # Step 0: GitHub Search + npm 版本查询
-├── enrich.py           # Step 1: Haiku 分类 + 评分 + 双语描述
+├── enrich.py           # Step 1: Anthropic API 分类 + 评分 + 双语描述
 ├── write_reports.py    # Step 2: 组装 Obsidian 周报 + 更新状态
 ├── prompts/
 │   └── enrich.md       # 分类门控 + 评分提示词
@@ -54,7 +54,7 @@ scripts/cc-plugins/
 ```
 Step 0: fetch.py (GitHub Search + npm Registry → JSON)
   ↓
-Step 1: enrich.py (Claude Haiku → classify + score + bilingual summaries)
+Step 1: enrich.py (Anthropic API → classify + score + bilingual summaries)
   ↓
 Step 2: write_reports.py (→ Obsidian weekly markdown + state update)
   ↓
@@ -93,7 +93,7 @@ Step 3: archive (>14 周报告归档)
 
 ## Quick Start
 
-1. **无需额外 pip 包** — Python 标准库即可（pipeline 需要 `ANTHROPIC_API_KEY`）
+1. **安装依赖** — `pip install anthropic`（pipeline 需要 `ANTHROPIC_API_KEY`）
 2. **手动运行** → `/feeds/cc-plugins` — 生成本周 Claude Code 插件摘要（中英文双版）
 3. **(可选)** → 设置 `GITHUB_TOKEN` 环境变量以提高 API 速率限制
 4. **查看结果** → `Feeds/CC-Plugins/` 目录下的 `YYYY-WXX.md`（中文）和 `YYYY-WXX-en.md`（英文）
