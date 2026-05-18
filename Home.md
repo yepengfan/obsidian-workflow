@@ -486,8 +486,8 @@ for (const page of pages) {
     ? t => t.line > carryoverLine && t.line < carryoverEndLine
     : () => false;
   const open        = page.file.tasks.where(t => t.status === " "  && inTasksSection(t)).length;
-  const done        = page.file.tasks.where(t => t.completed        && inTasksSection(t)).length;
-  const carriedAway = page.file.tasks.where(t => t.status === ">"  && inTasksSection(t)).length;
+  const done        = page.file.tasks.where(t => t.completed        && (inTasksSection(t) || inCarryoverSection(t))).length;
+  const carriedAway = page.file.tasks.where(t => t.status === ">"  && (inTasksSection(t) || inCarryoverSection(t))).length;
   const carriedIn   = page.file.tasks.where(t => t.status === " "  && inCarryoverSection(t)).length;
   const total = open + done + carriedAway + carriedIn;
 
