@@ -1614,7 +1614,7 @@ const pages = dv.pages('"WeRead"')
   .where(p => {
     const s = p.readingStatus;
     // readingStatus: 2="在读", 4="读完" (plugin uses numeric codes)
-    const isReading = s === "在读" || s === 2;
+    const isReading = s === "在读" || s == 2;
     if (!isReading) return false;
     // Exclude books with 100% progress (effectively finished)
     const prog = parseInt(String(p.progress)) || 0;
