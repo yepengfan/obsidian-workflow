@@ -847,6 +847,123 @@ function createTabGroup(dvRef, tabs, defaultId) {
   return { panels, topBar };
 }
 
+// ========== GENERATE FEEDS BUTTON + STATUS ==========
+{
+  const genRow = dv.el("div", "", {
+    attr: { style: "display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;" }
+  });
+
+  const genBtn = genRow.createEl("button", { text: "Generate Feeds ▶" });
+  genBtn.style.cssText = [
+    "padding:4px 12px", "border-radius:8px", "border:1px solid var(--interactive-accent)",
+    "background:var(--interactive-accent)", "color:var(--text-on-accent)",
+    "font-size:0.78em", "font-weight:600", "cursor:pointer", "transition:all 0.15s",
+  ].join(";");
+  genBtn.addEventListener("mouseenter", () => { genBtn.style.opacity = "0.85"; });
+  genBtn.addEventListener("mouseleave", () => { genBtn.style.opacity = "1"; });
+
+  const statusArea = genRow.createEl("div", {
+    attr: { style: "display:flex;gap:6px;align-items:center;flex-wrap:wrap;" }
+  });
+
+  // Feed display config
+  const feedLabels = {
+    "ai-digest": "AI Digest",
+    "github-trending": "GitHub",
+    "engineering-blogs": "Eng Blogs",
+    "cc-plugins": "CC Plugins",
+  };
+  const statusEmoji = {
+    pending: "⏳", running: "🔄", success: "✅",
+    skipped: "⏭️", failed: "❌", disabled: "⛔",
+  };
+
+  function renderBadges(feeds) {
+    statusArea.empty();
+    for (const [name, label] of Object.entries(feedLabels)) {
+      const f = feeds[name] || {};
+      const emoji = statusEmoji[f.status] || "⏳";
+      const badge = statusArea.createEl("span", { text: `${emoji} ${label}` });
+      badge.style.cssText = [
+        "font-size:0.72em", "padding:2px 6px", "border-radius:5px",
+        "background:var(--background-secondary)", "color:var(--text-muted)",
+        "white-space:nowrap",
+      ].join(";");
+      if (f.status === "running") badge.style.color = "var(--text-accent)";
+      if (f.status === "success") badge.style.color = "var(--color-green)";
+      if (f.status === "failed") badge.style.color = "var(--color-red)";
+    }
+  }
+
+  // Poll status file
+  let pollTimer = null;
+  const STATUS_PATH = "Feeds/.feed-status.json";
+  const POLL_MS = 3000;
+  const MAX_POLL_MS = 720000; // 12 min safety
+
+  function stopPolling() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    genBtn.disabled = false;
+    genBtn.textContent = "Generate Feeds ▶";
+    genBtn.style.opacity = "1";
+  }
+
+  async function pollStatus() {
+    try {
+      const file = app.vault.getAbstractFileByPath(STATUS_PATH);
+      if (!file) return;
+      const raw = await app.vault.adapter.read(STATUS_PATH);
+      const data = JSON.parse(raw);
+      const feeds = data.feeds || {};
+      renderBadges(feeds);
+      // Stop if all terminal
+      const statuses = Object.values(feeds).map(f => f.status);
+      const allDone = statuses.length > 0 && statuses.every(
+        s => ["success", "skipped", "failed", "disabled"].includes(s)
+      );
+      if (allDone) stopPolling();
+    } catch (e) { /* file not ready yet */ }
+  }
+
+  // Check for in-progress run on load
+  (async () => {
+    try {
+      const file = app.vault.getAbstractFileByPath(STATUS_PATH);
+      if (!file) return;
+      const raw = await app.vault.adapter.read(STATUS_PATH);
+      const data = JSON.parse(raw);
+      if (!data.completed_at && data.started_at) {
+        const age = Date.now() - new Date(data.started_at).getTime();
+        if (age < MAX_POLL_MS) {
+          renderBadges(data.feeds || {});
+          genBtn.disabled = true;
+          genBtn.textContent = "Running...";
+          genBtn.style.opacity = "0.6";
+          pollTimer = setInterval(pollStatus, POLL_MS);
+          setTimeout(stopPolling, MAX_POLL_MS - age);
+        }
+      } else if (data.completed_at) {
+        // Show last run results
+        renderBadges(data.feeds || {});
+      }
+    } catch (e) { /* no status file */ }
+  })();
+
+  genBtn.addEventListener("click", async () => {
+    if (genBtn.disabled) return;
+    genBtn.disabled = true;
+    genBtn.textContent = "Running...";
+    genBtn.style.opacity = "0.6";
+    statusArea.empty();
+    // Trigger Shell Command
+    app.commands.executeCommandById("obsidian-shellcommands:shell-command-shf4gf2026");
+    // Start polling after a brief delay
+    await new Promise(r => setTimeout(r, 1500));
+    pollTimer = setInterval(pollStatus, POLL_MS);
+    setTimeout(stopPolling, MAX_POLL_MS);
+  });
+}
+
 const { panels: fPanels } = createTabGroup(dv, [
   { id: "ai", label: "AI Digest" },
   { id: "gh", label: "GitHub Trending" },
