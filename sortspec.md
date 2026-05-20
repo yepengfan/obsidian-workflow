@@ -6,7 +6,6 @@ sorting-spec: |
   Profile
   Work
   Learning
-  Podcasts
   Matter
   Instapaper Notes
   Feeds
