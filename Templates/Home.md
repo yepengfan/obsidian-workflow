@@ -1,7 +1,7 @@
 ---
 tags: template
 for: Home
-updated: 2026-05-21
+updated: 2026-05-22
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
@@ -47,6 +47,12 @@ updated: 2026-05-21
 > - **Status polling**: Button writes `Feeds/.feed-status.json` atomically (tmp+rename). Home.md polls every 3s via `app.vault.adapter.read()`, renders per-feed emoji badges (⏳/🔄/✅/⏭️/❌/⛔). Auto-stops when all feeds reach terminal state or 12-min timeout.
 > - **Concurrent lock**: `StatusReporter.check_concurrent_lock()` refuses to start if running feeds < 15 min old in `.feed-status.json`.
 > - **Supersedes**: 2026-03-18 removal note — button is back with a robust solution.
+
+> [!note] 2026-05-21 — Split feeds into Daily + CC Plugins buttons
+> - **Why**: cc-plugins is a weekly feed; the other 3 (ai-digest, github-trending, engineering-blogs) are daily. One button conflated cadences — users clicking "Generate Feeds" daily would unnecessarily re-run cc-plugins (which skips via idempotency check, but wastes an Agent SDK turn).
+> - **Change**: Split into two buttons: "Daily Feeds ▶" (`shf4gf2026 --feeds ai-digest,github-trending,engineering-blogs`) and "CC Plugins ▶" (`shf5cp2026 --feeds cc-plugins`). Each triggers its own Shell Command with `--feeds` arg.
+> - **Implementation**: `main.py` accepts `--feeds` (comma-separated). `StatusReporter` accepts `feed_names` param — `write_initial()` only initializes the active subset. Home.md uses a shared `createFeedButton()` factory; each button tracks only its own feeds' badges.
+> - **Backwards compatible**: Running without `--feeds` still processes all 4 (default behavior).
 
 > [!note] 2026-03-13 — Automatic carryover in navToday button
 > - **Problem**: The create button generated clean daily notes without checking for unfinished tasks from the previous day. The `/daily` skill had carryover logic, but clicking the Home.md button did not.

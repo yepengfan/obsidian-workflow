@@ -9,8 +9,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VAULT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Source login shell env
-[ -f "$HOME/.zshrc" ] && source "$HOME/.zshrc" 2>/dev/null || true
+# Extract only export lines from zshrc (sourcing full zshrc hangs in non-interactive bash)
+if [ -f "$HOME/.zshrc" ]; then
+  eval "$(grep '^export ' "$HOME/.zshrc" 2>/dev/null)" 2>/dev/null || true
+fi
 
 # Fallback: vault-level .env file
 [ -f "$VAULT_DIR/.env" ] && set -a && source "$VAULT_DIR/.env" && set +a || true

@@ -1,62 +1,41 @@
-"""Feed Orchestrator — Agent SDK entry point.
+"""Feed Orchestrator — direct Python pipeline.
 
-Runs a Claude agent that orchestrates all 4 feed pipelines using custom tools.
-The agent checks module status, fetches data, enriches via Haiku, writes reports,
-and archives old files — then returns a human-readable summary.
+Runs all feed pipelines sequentially: check → fetch → enrich → write → archive.
+No Agent SDK / Claude Code CLI dependency. Enrichment uses Anthropic SDK directly.
 
 Usage:
     python main.py --vault-path /path/to/vault
+    python main.py --vault-path /path/to/vault --feeds ai-digest,github-trending,engineering-blogs
+    python main.py --vault-path /path/to/vault --feeds cc-plugins
     bash load-env.sh  # (from Obsidian Shell Commands)
 """
 
 import argparse
 import asyncio
+import json
 import sys
+import traceback
 from pathlib import Path
 
-import anyio
-from claude_agent_sdk import (
-    query,
-    ClaudeAgentOptions,
-    AssistantMessage,
-    ResultMessage,
+from feeds import (
+    get_feed_config,
+    check_module_enabled,
+    check_report_exists,
+    run_fetch,
+    run_enrich,
+    run_write_reports,
+    archive_old_reports,
+    ReportExistsError,
+    FetchError,
 )
-
-from tools import init_context, create_feed_tools_server, CONTEXT
 from status import StatusReporter
 
-ORCHESTRATOR_PROMPT = """\
-You are a feed orchestrator for an Obsidian vault. Your job is to generate all 4 feed reports.
-
-## Feeds to Generate
-
-1. **ai-digest** (daily) — AI/ML news from 92 RSS feeds
-2. **github-trending** (daily) — Trending GitHub repositories
-3. **engineering-blogs** (daily) — Top company engineering blog posts
-4. **cc-plugins** (weekly) — Claude Code plugin discoveries
-
-## Workflow
-
-For EACH feed, follow these steps IN ORDER:
-
-1. `check_module_status(feed_name)` — Skip if disabled
-2. `check_existing_report(feed_name)` — Skip if report already exists
-3. `fetch_feed(feed_name)` — Fetch raw data from sources
-4. `enrich_feed(feed_name)` — Score and enrich with AI
-5. `write_report(feed_name)` — Generate Obsidian markdown report
-6. `archive_old_reports(feed_name)` — Clean up old reports
-
-IMPORTANT: Process all 4 feeds. Do not stop after the first one.
-
-If a feed is disabled or already exists, note it and move to the next feed.
-If a feed fails at any step, log the error and continue with the remaining feeds.
-
-## Output
-
-After processing all feeds, provide a brief summary:
-- For each feed: ✅ success (with file path), ⏭️ skipped, ⛔ disabled, or ❌ failed (with reason)
-- Total: X generated, Y skipped, Z failed
-"""
+ALL_FEEDS = {
+    "ai-digest": "(daily) — AI/ML news from 92 RSS feeds",
+    "github-trending": "(daily) — Trending GitHub repositories",
+    "engineering-blogs": "(daily) — Top company engineering blog posts",
+    "cc-plugins": "(weekly) — Claude Code plugin discoveries",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -67,7 +46,102 @@ def parse_args() -> argparse.Namespace:
         required=True,
         help="Path to the Obsidian vault root",
     )
+    parser.add_argument(
+        "--feeds",
+        type=str,
+        default=None,
+        help="Comma-separated feed names to run (default: all). "
+        "E.g. --feeds ai-digest,github-trending,engineering-blogs",
+    )
     return parser.parse_args()
+
+
+async def run_feed(
+    feed_name: str,
+    config: dict,
+    vault_path: Path,
+    reporter: StatusReporter,
+) -> str:
+    """Run a single feed pipeline. Returns status emoji + message."""
+
+    # 1. Check module enabled
+    enabled = check_module_enabled(vault_path, config["module"])
+    if not enabled:
+        reporter.update_feed(feed_name, "disabled", message="Module disabled")
+        return f"⛔ {feed_name}: disabled"
+
+    # 2. Check existing report
+    existing = check_report_exists(config)
+    if existing:
+        reporter.update_feed(
+            feed_name, "skipped",
+            message="Report already exists",
+            output_path=str(existing),
+        )
+        return f"⏭️ {feed_name}: skipped (exists: {existing})"
+
+    # 3. Fetch
+    reporter.update_feed(feed_name, "running", message="Fetching...")
+    try:
+        fetched_json = await run_fetch(feed_name, config, vault_path)
+    except ReportExistsError:
+        reporter.update_feed(feed_name, "skipped", message="Report exists (fetcher check)")
+        return f"⏭️ {feed_name}: skipped"
+    except (FetchError, Exception) as e:
+        reporter.update_feed(feed_name, "failed", error=str(e))
+        return f"❌ {feed_name}: fetch failed — {e}"
+
+    data = json.loads(fetched_json)
+    items = data.get("articles", data.get("repos", []))
+    print(f"[{feed_name}] Fetched {len(items)} items", file=sys.stderr)
+    reporter.update_feed(feed_name, "running", message=f"Fetched {len(items)} items")
+
+    # 4. Enrich
+    reporter.update_feed(feed_name, "running", message="Enriching...")
+    try:
+        enriched_json = await run_enrich(feed_name, config, fetched_json)
+    except Exception as e:
+        tb = traceback.format_exc()
+        print(f"[{feed_name}] Enrich error:\n{tb}", file=sys.stderr)
+        reporter.update_feed(feed_name, "failed", error=str(e))
+        return f"❌ {feed_name}: enrich failed — {e}"
+
+    # Parse enrichment stats
+    enriched = json.loads(enriched_json)
+    if feed_name == "ai-digest":
+        scored = json.loads(enriched.get("scored", "{}"))
+        enrich_count = len(scored.get("top_articles", []))
+    else:
+        enrich_count = len(enriched.get("enriched", []))
+    print(f"[{feed_name}] Enriched {enrich_count} items", file=sys.stderr)
+    reporter.update_feed(feed_name, "running", message=f"Enriched {enrich_count}")
+
+    # 5. Write report
+    reporter.update_feed(feed_name, "running", message="Writing report...")
+    try:
+        report_path = await run_write_reports(
+            feed_name, config, vault_path, fetched_json, enriched_json
+        )
+    except Exception as e:
+        reporter.update_feed(feed_name, "failed", error=str(e))
+        return f"❌ {feed_name}: write failed — {e}"
+
+    reporter.update_feed(
+        feed_name, "success",
+        message="Done",
+        output_path=report_path,
+    )
+    print(f"[{feed_name}] ✅ {report_path}", file=sys.stderr)
+
+    # 6. Archive old reports
+    try:
+        archived = archive_old_reports(config)
+        if archived:
+            print(f"[{feed_name}] Archived {len(archived)} old reports", file=sys.stderr)
+    except Exception as e:
+        print(f"[{feed_name}] Archive warning: {e}", file=sys.stderr)
+
+    return f"✅ {feed_name}: {report_path}"
 
 
 async def main() -> int:
@@ -78,9 +152,19 @@ async def main() -> int:
         print(f"ERROR: Vault path does not exist: {vault_path}", file=sys.stderr)
         return 1
 
-    # Initialize shared context
-    init_context(vault_path)
-    reporter: StatusReporter = CONTEXT["reporter"]
+    # Parse --feeds (default: all)
+    if args.feeds:
+        feed_names = [f.strip() for f in args.feeds.split(",") if f.strip()]
+        invalid = [f for f in feed_names if f not in ALL_FEEDS]
+        if invalid:
+            print(f"ERROR: Unknown feeds: {invalid}. Valid: {list(ALL_FEEDS)}", file=sys.stderr)
+            return 1
+    else:
+        feed_names = list(ALL_FEEDS)
+
+    # Initialize
+    configs = get_feed_config(vault_path)
+    reporter = StatusReporter(vault_path, feed_names=feed_names)
 
     # Check concurrent run lock
     if reporter.check_concurrent_lock():
@@ -88,71 +172,32 @@ async def main() -> int:
         return 1
 
     reporter.write_initial()
-    print("[orchestrator] Starting feed generation...", file=sys.stderr)
+    print(f"[orchestrator] Starting {feed_names}...", file=sys.stderr)
 
-    # Create MCP server with feed tools
-    feed_server = create_feed_tools_server()
+    # Run each feed sequentially
+    results = []
+    for name in feed_names:
+        try:
+            result = await run_feed(name, configs[name], vault_path, reporter)
+            results.append(result)
+        except Exception as e:
+            reporter.update_feed(name, "failed", error=str(e))
+            results.append(f"❌ {name}: unexpected error — {e}")
+            print(f"[{name}] Unexpected: {traceback.format_exc()}", file=sys.stderr)
 
-    # Tool names follow mcp__servername__toolname pattern
-    tool_names = [
-        "mcp__feed_tools__check_module_status",
-        "mcp__feed_tools__check_existing_report",
-        "mcp__feed_tools__fetch_feed",
-        "mcp__feed_tools__enrich_feed",
-        "mcp__feed_tools__write_report",
-        "mcp__feed_tools__archive_old_reports",
-        "mcp__feed_tools__update_status",
-    ]
+    # Summary
+    generated = sum(1 for r in results if r.startswith("✅"))
+    skipped = sum(1 for r in results if r.startswith("⏭️"))
+    failed = sum(1 for r in results if r.startswith("❌"))
 
-    options = ClaudeAgentOptions(
-        mcp_servers={"feed_tools": feed_server},
-        allowed_tools=tool_names,
-        max_turns=40,
-        permission_mode="acceptEdits",
-        system_prompt=(
-            "You are a feed pipeline orchestrator. Use the provided tools to "
-            "generate feed reports. Be systematic: process each feed completely "
-            "before moving to the next. Report results concisely."
-        ),
-    )
+    summary_lines = results + [f"\nTotal: {generated} generated, {skipped} skipped, {failed} failed"]
+    summary = "\n".join(summary_lines)
 
-    summary = ""
-    try:
-        async for message in query(prompt=ORCHESTRATOR_PROMPT, options=options):
-            if isinstance(message, AssistantMessage):
-                # Log assistant reasoning to stderr for debugging
-                for block in message.content:
-                    if hasattr(block, "text") and block.text:
-                        print(f"[agent] {block.text[:200]}", file=sys.stderr)
-            elif isinstance(message, ResultMessage):
-                if message.is_error:
-                    summary = f"Agent error: {message.subtype}"
-                    if message.errors:
-                        summary += f" — {'; '.join(message.errors)}"
-                    print(f"[orchestrator] {summary}", file=sys.stderr)
-                else:
-                    summary = message.result or "Completed (no summary)"
-                    cost = message.total_cost_usd or 0
-                    turns = message.num_turns
-                    print(
-                        f"[orchestrator] Done in {turns} turns, ${cost:.4f}",
-                        file=sys.stderr,
-                    )
-    except KeyboardInterrupt:
-        summary = "Interrupted by user"
-        print(f"\n[orchestrator] {summary}", file=sys.stderr)
-    except Exception as e:
-        summary = f"Orchestrator error: {e}"
-        print(f"[orchestrator] {summary}", file=sys.stderr)
-
-    # Finalize status
     reporter.write_final(summary)
-
-    # Print summary to stderr (Shell Commands captures this as notification)
     print(f"\n{summary}", file=sys.stderr)
 
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(anyio.run(main))
+    sys.exit(asyncio.run(main()))

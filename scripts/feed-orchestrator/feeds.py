@@ -21,7 +21,10 @@ import anthropic
 
 # ── Feed Configuration ──────────────────────────────────────────────
 
-HAIKU_MODEL = "claude-3-5-haiku-latest"
+# Model auto-detection: proxy (LiteLLM) needs "anthropic." prefix
+_MODEL_DIRECT = "claude-sonnet-4-6-20250514"
+_MODEL_PROXY = "anthropic.claude-4-6-sonnet"
+HAIKU_MODEL: str | None = os.environ.get("FEED_HAIKU_MODEL")  # explicit override
 MAX_CONCURRENT = 3
 STAGGER_DELAY = 0.5  # seconds between batch launches
 
@@ -257,6 +260,7 @@ async def _enrich_single_call(
 
     # Extract the items array from the fetched data
     items = data.get("repos", data.get("articles", []))
+    print(f"[enrich] {wrap_key}: fetched data keys={list(data.keys())}, items count={len(items)}", file=sys.stderr)
     if not items:
         return json.dumps({wrap_key: []})
 
@@ -266,16 +270,24 @@ async def _enrich_single_call(
     if len(items) > 30:
         return await _enrich_batched(items, system_prompt, wrap_key)
 
+    print(f"[enrich] {wrap_key}: sending {len(items)} items to model", file=sys.stderr)
     result = await _call_haiku(
         system=system_prompt,
         user=json.dumps(items, ensure_ascii=False),
     )
+    print(f"[enrich] {wrap_key}: raw response length={len(result)}, first 200 chars: {result[:200]}", file=sys.stderr)
     parsed = _parse_json_response(result)
+    print(f"[enrich] {wrap_key}: parsed type={type(parsed).__name__}, len={len(parsed) if isinstance(parsed, (list, dict)) else 'N/A'}", file=sys.stderr)
     if isinstance(parsed, list):
         enriched = parsed
     elif isinstance(parsed, dict) and wrap_key in parsed:
         enriched = parsed[wrap_key]
+    elif isinstance(parsed, dict) and any(k in parsed for k in ("title", "full_name", "link")):
+        # Model returned a single item instead of an array — wrap it
+        print(f"[enrich] {wrap_key}: single object returned, wrapping as array", file=sys.stderr)
+        enriched = [parsed]
     else:
+        print(f"[enrich] {wrap_key}: FALLBACK to empty — parsed keys={list(parsed.keys()) if isinstance(parsed, dict) else 'not dict'}", file=sys.stderr)
         enriched = parsed if isinstance(parsed, list) else []
 
     return json.dumps(
@@ -445,10 +457,30 @@ _client: anthropic.AsyncAnthropic | None = None
 
 
 def get_client() -> anthropic.AsyncAnthropic:
-    """Lazy-init Anthropic async client."""
-    global _client
+    """Lazy-init Anthropic async client.
+
+    Auth resolution (same pattern as cc-plugins/enrich.py):
+      1. ANTHROPIC_API_KEY   → direct Anthropic API
+      2. ANTHROPIC_AUTH_TOKEN → Bearer auth (LiteLLM proxy)
+    Model auto-selected based on auth method unless FEED_HAIKU_MODEL is set.
+    """
+    global _client, HAIKU_MODEL
     if _client is None:
-        _client = anthropic.AsyncAnthropic()
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        auth_token = os.environ.get("ANTHROPIC_AUTH_TOKEN")
+        if api_key:
+            _client = anthropic.AsyncAnthropic(api_key=api_key)
+            if HAIKU_MODEL is None:
+                HAIKU_MODEL = _MODEL_DIRECT
+        elif auth_token:
+            _client = anthropic.AsyncAnthropic(auth_token=auth_token)
+            if HAIKU_MODEL is None:
+                HAIKU_MODEL = _MODEL_PROXY
+        else:
+            raise RuntimeError(
+                "Neither ANTHROPIC_API_KEY nor ANTHROPIC_AUTH_TOKEN is set."
+            )
+        print(f"[enrich] Using model: {HAIKU_MODEL}", file=sys.stderr)
     return _client
 
 
@@ -459,7 +491,7 @@ async def _call_haiku(system: str, user: str, retries: int = 3) -> str:
         try:
             response = await client.messages.create(
                 model=HAIKU_MODEL,
-                max_tokens=8192,
+                max_tokens=16384,
                 system=system,
                 messages=[{"role": "user", "content": user}],
             )
@@ -486,29 +518,78 @@ def _parse_json_response(raw: str) -> Any:
     text = re.sub(r"\n?```\s*$", "", text)
     text = text.strip()
 
-    # Fix trailing commas before } or ]
-    text = re.sub(r",(\s*[}\]])", r"\1", text)
-
+    # Try parsing as-is first (preserves strings with commas)
     try:
         return json.loads(text)
-    except json.JSONDecodeError:
-        # Try extracting first JSON structure
-        for start_char, end_char in [("[", "]"), ("{", "}")]:
-            start = text.find(start_char)
-            if start == -1:
-                continue
+    except json.JSONDecodeError as e:
+        print(f"[parse] Direct parse failed: {e}", file=sys.stderr)
+
+    # Fix trailing commas before } or ] and retry
+    fixed = re.sub(r",(\s*[}\]])", r"\1", text)
+    try:
+        return json.loads(fixed)
+    except json.JSONDecodeError as e:
+        print(f"[parse] Trailing-comma fix also failed: {e}", file=sys.stderr)
+
+    # Fallback: extract JSON structures from surrounding text
+    # Try array first
+    arr_start = text.find("[")
+    if arr_start != -1:
+        depth = 0
+        for i in range(arr_start, len(text)):
+            if text[i] == "[":
+                depth += 1
+            elif text[i] == "]":
+                depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(text[arr_start : i + 1])
+                except json.JSONDecodeError:
+                    break
+
+    # Array parse failed — extract individual {...} objects (recovers partial results)
+    objects = []
+    i = 0
+    while i < len(text):
+        if text[i] == "{":
             depth = 0
-            for i in range(start, len(text)):
-                if text[i] == start_char:
+            in_string = False
+            escape = False
+            for j in range(i, len(text)):
+                c = text[j]
+                if escape:
+                    escape = False
+                    continue
+                if c == "\\":
+                    escape = True
+                    continue
+                if c == '"' and not escape:
+                    in_string = not in_string
+                    continue
+                if in_string:
+                    continue
+                if c == "{":
                     depth += 1
-                elif text[i] == end_char:
+                elif c == "}":
                     depth -= 1
                 if depth == 0:
                     try:
-                        return json.loads(text[start : i + 1])
+                        obj = json.loads(text[i : j + 1])
+                        objects.append(obj)
                     except json.JSONDecodeError:
-                        break
-        raise ValueError(f"Cannot parse JSON from LLM response: {text[:200]}")
+                        pass
+                    i = j + 1
+                    break
+            else:
+                break  # unterminated object
+        else:
+            i += 1
+
+    if objects:
+        print(f"[parse] Recovered {len(objects)} objects from broken JSON", file=sys.stderr)
+        return objects
+
+    raise ValueError(f"Cannot parse JSON from LLM response: {text[:200]}")
 
 
 # ── Utilities ───────────────────────────────────────────────────────

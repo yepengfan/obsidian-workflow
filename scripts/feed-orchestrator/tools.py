@@ -41,11 +41,11 @@ CONTEXT: dict[str, Any] = {
 VALID_FEEDS = ["ai-digest", "github-trending", "engineering-blogs", "cc-plugins"]
 
 
-def init_context(vault_path: str | Path) -> None:
+def init_context(vault_path: str | Path, feed_names: list[str] | None = None) -> None:
     """Initialize shared context. Called by main.py."""
     vp = Path(vault_path)
     CONTEXT["vault_path"] = vp
-    CONTEXT["reporter"] = StatusReporter(vp)
+    CONTEXT["reporter"] = StatusReporter(vp, feed_names=feed_names)
     CONTEXT["configs"] = get_feed_config(vp)
     CONTEXT["data"] = {}
 

@@ -14,15 +14,18 @@ from typing import Any, Literal
 
 StatusValue = Literal["pending", "running", "success", "skipped", "failed", "disabled"]
 
-FEED_NAMES = ["ai-digest", "github-trending", "engineering-blogs", "cc-plugins"]
+ALL_FEED_NAMES = ["ai-digest", "github-trending", "engineering-blogs", "cc-plugins"]
 
 
 class StatusReporter:
     """Manages Feeds/.feed-status.json for live UI polling."""
 
-    def __init__(self, vault_path: str | Path) -> None:
+    def __init__(
+        self, vault_path: str | Path, feed_names: list[str] | None = None
+    ) -> None:
         self.vault_path = Path(vault_path)
         self.status_file = self.vault_path / "Feeds" / ".feed-status.json"
+        self.feed_names = feed_names or ALL_FEED_NAMES
         self._state: dict[str, Any] = {}
 
     # ── Public API ──────────────────────────────────────────────────
@@ -61,7 +64,7 @@ class StatusReporter:
                     "output_path": None,
                     "message": None,
                 }
-                for name in FEED_NAMES
+                for name in self.feed_names
             },
         }
         self._flush()
