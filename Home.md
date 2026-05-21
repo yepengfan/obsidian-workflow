@@ -847,6 +847,19 @@ function createTabGroup(dvRef, tabs, defaultId) {
   return { panels, topBar };
 }
 
+// ── Parse YAML frontmatter from file content (avoids dv.page race condition) ──
+function parseFM(content) {
+  const lines = content.split("\n");
+  const fm = {};
+  if (lines[0] !== "---") return fm;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i] === "---") break;
+    const m = lines[i].match(/^([\w_]+):\s*(.+)/);
+    if (m) fm[m[1]] = m[2].trim();
+  }
+  return fm;
+}
+
 // ========== GENERATE FEEDS BUTTONS + STATUS ==========
 {
   const STATUS_PATH = "Feeds/.feed-status.json";
@@ -863,19 +876,6 @@ function createTabGroup(dvRef, tabs, defaultId) {
     "github-trending": "GitHub",
     "engineering-blogs": "Eng Blogs",
   };
-  // ── Parse YAML frontmatter from file content (avoids dv.page race condition) ──
-  function parseFM(content) {
-    const lines = content.split("\n");
-    const fm = {};
-    if (lines[0] !== "---") return fm;
-    for (let i = 1; i < lines.length; i++) {
-      if (lines[i] === "---") break;
-      const m = lines[i].match(/^([\w_]+):\s*(.+)/);
-      if (m) fm[m[1]] = m[2].trim();
-    }
-    return fm;
-  }
-
   // ── Animations (injected once) ──
   if (!document.getElementById("feed-fx-style")) {
     const style = document.createElement("style");
