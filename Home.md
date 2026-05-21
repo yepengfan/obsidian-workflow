@@ -1143,8 +1143,8 @@ const { panels: fPanels } = createTabGroup(dv, [
     const row = p.createEl("div", {
       attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
     });
-    const scanned = page.repos_scanned || "?";
-    const selected = page.repos_selected || "?";
+    const scanned = page?.repos_scanned || "?";
+    const selected = page?.repos_selected || "?";
     row.createEl("span", {
       text: `📦 ${selected}/${scanned} repos`,
       attr: { style: "font-size:0.78em;color:var(--text-muted);" }
