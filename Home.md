@@ -863,11 +863,16 @@ function createTabGroup(dvRef, tabs, defaultId) {
     "github-trending": "GitHub",
     "engineering-blogs": "Eng Blogs",
   };
-  // ── Pulse animation (injected once) ──
-  if (!document.getElementById("feed-pulse-style")) {
+  // ── Animations (injected once) ──
+  if (!document.getElementById("feed-fx-style")) {
     const style = document.createElement("style");
-    style.id = "feed-pulse-style";
-    style.textContent = `@keyframes feed-pulse{0%,100%{opacity:.85}50%{opacity:.5}}`;
+    style.id = "feed-fx-style";
+    style.textContent = [
+      `@keyframes feed-pulse{0%,100%{opacity:.85}50%{opacity:.5}}`,
+      `@keyframes feed-badge-in{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}`,
+      `@keyframes feed-bounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-3px)}}`,
+      `@keyframes feed-shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`,
+    ].join("\n");
     document.head.appendChild(style);
   }
 
@@ -884,9 +889,9 @@ function createTabGroup(dvRef, tabs, defaultId) {
     return btn;
   }
 
-  function setBtnRunning(btn) {
+  function setBtnRunning(btn, text) {
     btn.disabled = true;
-    btn.textContent = "Running...";
+    btn.textContent = text || "Running...";
     btn.style.animation = "feed-pulse 1.5s ease-in-out infinite";
     btn.style.opacity = "1";
   }
@@ -898,71 +903,107 @@ function createTabGroup(dvRef, tabs, defaultId) {
     btn.style.opacity = "1";
   }
 
+  function setBtnDone(btn, label, hasFail) {
+    btn.disabled = false;
+    btn.style.animation = "feed-bounce 0.4s ease";
+    const flashColor = hasFail ? "var(--color-orange)" : "var(--color-green)";
+    btn.style.background = flashColor;
+    btn.style.borderColor = flashColor;
+    btn.textContent = hasFail ? "Done (with errors)" : "Done ✓";
+    setTimeout(() => {
+      btn.style.background = "var(--interactive-accent)";
+      btn.style.borderColor = "var(--interactive-accent)";
+      btn.textContent = label;
+      btn.style.animation = "none";
+    }, 1500);
+  }
+
   function renderPendingBadges(area, feedLabels) {
     area.empty();
     for (const [, label] of Object.entries(feedLabels)) {
       const badge = area.createEl("span", { text: `⏳ ${label}` });
-      badge.style.cssText = [
-        "font-size:0.72em", "padding:2px 6px", "border-radius:5px",
-        "background:var(--background-secondary)", "color:var(--text-muted)",
-        "white-space:nowrap",
-      ].join(";");
+      badge.style.cssText = "font-size:0.72em;padding:2px 6px;border-radius:5px;background:var(--background-secondary);color:var(--text-muted);white-space:nowrap;animation:feed-badge-in 0.3s ease;";
     }
   }
 
-  function renderBadges(area, feedLabels, feeds) {
-    area.empty();
-    for (const [name, label] of Object.entries(feedLabels)) {
+  function renderBadges(area, feedLabels, feeds, prevStatuses) {
+    // prevStatuses: {name: "status"} — for detecting changes
+    const entries = Object.entries(feedLabels);
+    // Rebuild only if child count mismatch (first render or count changed)
+    if (area.childElementCount !== entries.length) area.empty();
+
+    entries.forEach(([name, label], i) => {
       const f = feeds[name];
-      if (!f) continue;
+      if (!f) return;
       const emoji = statusEmoji[f.status] || "⏳";
-      const badge = area.createEl("span", { text: `${emoji} ${label}` });
-      badge.style.cssText = [
-        "font-size:0.72em", "padding:2px 6px", "border-radius:5px",
-        "background:var(--background-secondary)", "color:var(--text-muted)",
-        "white-space:nowrap",
-      ].join(";");
-      if (f.status === "running") badge.style.color = "var(--text-accent)";
-      if (f.status === "success") badge.style.color = "var(--color-green)";
-      if (f.status === "failed") badge.style.color = "var(--color-red)";
-    }
+      const changed = !prevStatuses[name] || prevStatuses[name] !== f.status;
+
+      let badge = area.children[i];
+      if (!badge) {
+        badge = area.createEl("span");
+        badge.style.cssText = "font-size:0.72em;padding:2px 6px;border-radius:5px;white-space:nowrap;transition:color 0.3s,background 0.3s;";
+      }
+
+      badge.textContent = `${emoji} ${label}`;
+
+      if (f.status === "running") {
+        badge.style.background = "linear-gradient(90deg,var(--background-secondary) 40%,var(--background-modifier-border) 50%,var(--background-secondary) 60%)";
+        badge.style.backgroundSize = "200% 100%";
+        badge.style.color = "var(--text-accent)";
+        if (changed) { badge.style.animation = "none"; badge.offsetHeight; badge.style.animation = "feed-shimmer 2s linear infinite"; }
+      } else {
+        badge.style.background = "var(--background-secondary)";
+        badge.style.backgroundSize = "";
+        badge.style.color = f.status === "success" ? "var(--color-green)" : f.status === "failed" ? "var(--color-red)" : "var(--text-muted)";
+        if (changed) { badge.style.animation = "none"; badge.offsetHeight; badge.style.animation = "feed-badge-in 0.3s ease"; }
+      }
+    });
   }
 
   function createFeedButton({ row, btn, label, statusArea, feedLabels, shellCmdId }) {
     let pollTimer = null;
-
-    function stopPolling() {
-      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-      setBtnIdle(btn, label);
-    }
+    const prevStatuses = {};  // {feedName: "status"} for change detection
 
     async function pollStatus() {
       try {
-        const file = app.vault.getAbstractFileByPath(STATUS_PATH);
-        if (!file) return;
         const raw = await app.vault.adapter.read(STATUS_PATH);
         const data = JSON.parse(raw);
         const feeds = data.feeds || {};
-        renderBadges(statusArea, feedLabels, feeds);
-        // Stop if all tracked feeds are terminal
+
+        // Update badges
+        renderBadges(statusArea, feedLabels, feeds, prevStatuses);
+
+        // Update button text with current step
         const tracked = Object.keys(feedLabels);
+        const running = tracked.find(n => (feeds[n] || {}).status === "running");
+        if (running) {
+          const msg = feeds[running].message || "Running...";
+          btn.textContent = msg.length > 28 ? msg.slice(0, 26) + "…" : msg;
+        }
+
+        // Save current statuses for next diff
+        tracked.forEach(n => { if (feeds[n]) prevStatuses[n] = feeds[n].status; });
+
+        // Check completion
         const statuses = tracked.map(n => (feeds[n] || {}).status).filter(Boolean);
-        const allDone = statuses.length > 0 && statuses.every(
-          s => ["success", "skipped", "failed", "disabled"].includes(s)
-        );
-        if (allDone) stopPolling();
-      } catch (e) { /* file not ready yet */ }
+        const terminal = ["success", "skipped", "failed", "disabled"];
+        const allDone = statuses.length > 0 && statuses.every(s => terminal.includes(s));
+        if (allDone) {
+          if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+          const hasFail = tracked.some(n => (feeds[n] || {}).status === "failed");
+          setBtnDone(btn, label, hasFail);
+        }
+      } catch (e) {
+        // Status file not ready yet — ignore
+      }
     }
 
     // Check for in-progress run on load
     (async () => {
       try {
-        const file = app.vault.getAbstractFileByPath(STATUS_PATH);
-        if (!file) return;
         const raw = await app.vault.adapter.read(STATUS_PATH);
         const data = JSON.parse(raw);
         const feeds = data.feeds || {};
-        // Only show badges if this button's feeds are present
         const tracked = Object.keys(feedLabels);
         const hasOurFeeds = tracked.some(n => feeds[n]);
         if (!hasOurFeeds) return;
@@ -970,25 +1011,27 @@ function createTabGroup(dvRef, tabs, defaultId) {
         if (!data.completed_at && data.started_at) {
           const age = Date.now() - new Date(data.started_at).getTime();
           if (age < MAX_POLL_MS) {
-            renderBadges(statusArea, feedLabels, feeds);
-            setBtnRunning(btn);
-            pollTimer = setInterval(pollStatus, POLL_MS);
-            setTimeout(stopPolling, MAX_POLL_MS - age);
+            renderBadges(statusArea, feedLabels, feeds, prevStatuses);
+            tracked.forEach(n => { if (feeds[n]) prevStatuses[n] = feeds[n].status; });
+            setBtnRunning(btn, "Resuming...");
+            pollTimer = setInterval(pollStatus, 2000);
+            setTimeout(() => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; setBtnIdle(btn, label); } }, MAX_POLL_MS - age);
           }
         } else if (data.completed_at) {
-          renderBadges(statusArea, feedLabels, feeds);
+          renderBadges(statusArea, feedLabels, feeds, {});
         }
       } catch (e) { /* no status file */ }
     })();
 
     btn.addEventListener("click", async () => {
       if (btn.disabled) return;
-      setBtnRunning(btn);
+      setBtnRunning(btn, "Starting...");
       renderPendingBadges(statusArea, feedLabels);
+      Object.keys(prevStatuses).forEach(k => delete prevStatuses[k]);
       app.commands.executeCommandById("obsidian-shellcommands:shell-command-" + shellCmdId);
-      await new Promise(r => setTimeout(r, 1500));
-      pollTimer = setInterval(pollStatus, POLL_MS);
-      setTimeout(stopPolling, MAX_POLL_MS);
+      await new Promise(r => setTimeout(r, 1000));
+      pollTimer = setInterval(pollStatus, 2000);
+      setTimeout(() => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; setBtnIdle(btn, label); } }, MAX_POLL_MS);
     });
   }
 
@@ -1189,51 +1232,84 @@ const { panels: fPanels } = createTabGroup(dv, [
 ```dataviewjs
 const isMobile = app.isMobile;
 
-// ── CC Plugins Generate Button ──
+// ── CC Plugins Generate Button (with micro-interactions) ──
 {
   const STATUS_PATH = "Feeds/.feed-status.json";
   const POLL_MS = 3000;
   const MAX_POLL_MS = 720000;
   const EMOJI = { pending:"⏳", running:"🔄", success:"✅", skipped:"⏭️", failed:"❌", disabled:"⛔" };
+  const LABEL = "Generate ▶";
 
-  if (!document.getElementById("feed-pulse-style")) {
+  // Inject animations if not already present (may load before Feeds section)
+  if (!document.getElementById("feed-fx-style")) {
     const s = document.createElement("style");
-    s.id = "feed-pulse-style";
-    s.textContent = `@keyframes feed-pulse{0%,100%{opacity:.85}50%{opacity:.5}}`;
+    s.id = "feed-fx-style";
+    s.textContent = [
+      `@keyframes feed-pulse{0%,100%{opacity:.85}50%{opacity:.5}}`,
+      `@keyframes feed-badge-in{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}`,
+      `@keyframes feed-bounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-3px)}}`,
+      `@keyframes feed-shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}`,
+    ].join("\n");
     document.head.appendChild(s);
   }
 
   const row = dv.el("div", "", {
     attr: { style: "display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;" }
   });
-  const btn = row.createEl("button", { text: "Generate ▶" });
+  const btn = row.createEl("button", { text: LABEL });
   btn.style.cssText = [
     "padding:3px 10px", "border-radius:8px", "border:1px solid var(--interactive-accent)",
     "background:var(--interactive-accent)", "color:var(--text-on-accent)",
-    "font-size:0.72em", "font-weight:600", "cursor:pointer", "transition:all 0.15s",
+    "font-size:0.72em", "font-weight:600", "cursor:pointer", "transition:all 0.15s,background 0.3s,border-color 0.3s",
   ].join(";");
   btn.addEventListener("mouseenter", () => { if (!btn.disabled) btn.style.opacity = "0.85"; });
   btn.addEventListener("mouseleave", () => { if (!btn.disabled) btn.style.opacity = "1"; });
-  const badge = row.createEl("span", { attr: { style: "font-size:0.72em;color:var(--text-muted);" } });
+  const badge = row.createEl("span", { attr: { style: "font-size:0.72em;color:var(--text-muted);transition:color 0.3s;" } });
 
   let pollTimer = null;
-  function stop() {
-    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-    btn.disabled = false; btn.textContent = "Generate ▶";
-    btn.style.animation = "none"; btn.style.opacity = "1";
+  let prevStatus = null;
+
+  function renderBadge(f) {
+    if (!f) return;
+    const e = EMOJI[f.status] || "⏳";
+    const changed = prevStatus !== f.status;
+    badge.textContent = `${e} ${f.message || f.status}`;
+    badge.style.color = f.status === "success" ? "var(--color-green)" : f.status === "failed" ? "var(--color-red)" : f.status === "running" ? "var(--text-accent)" : "var(--text-muted)";
+    if (changed && f.status === "running") {
+      badge.style.animation = "none"; badge.offsetHeight;
+      badge.style.animation = "feed-badge-in 0.3s ease";
+    }
+    prevStatus = f.status;
   }
+
+  function finish(f) {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    const hasFail = f && f.status === "failed";
+    btn.disabled = false;
+    btn.style.animation = "feed-bounce 0.4s ease";
+    const flashColor = hasFail ? "var(--color-orange)" : "var(--color-green)";
+    btn.style.background = flashColor; btn.style.borderColor = flashColor;
+    btn.textContent = hasFail ? "Error ✗" : "Done ✓";
+    setTimeout(() => {
+      btn.style.background = "var(--interactive-accent)";
+      btn.style.borderColor = "var(--interactive-accent)";
+      btn.textContent = LABEL;
+      btn.style.animation = "none";
+    }, 1500);
+  }
+
   async function poll() {
     try {
       const raw = await app.vault.adapter.read(STATUS_PATH);
       const data = JSON.parse(raw);
       const f = (data.feeds || {})["cc-plugins"];
       if (!f) return;
-      const e = EMOJI[f.status] || "⏳";
-      badge.textContent = `${e} ${f.status}`;
-      badge.style.color = f.status === "success" ? "var(--color-green)" : f.status === "failed" ? "var(--color-red)" : f.status === "running" ? "var(--text-accent)" : "var(--text-muted)";
-      if (["success","skipped","failed","disabled"].includes(f.status)) stop();
+      renderBadge(f);
+      if (f.status === "running") btn.textContent = f.message || "Running...";
+      if (["success","skipped","failed","disabled"].includes(f.status)) finish(f);
     } catch (e) {}
   }
+
   // Check for in-progress on load
   (async () => {
     try {
@@ -1244,27 +1320,28 @@ const isMobile = app.isMobile;
       if (!data.completed_at && data.started_at) {
         const age = Date.now() - new Date(data.started_at).getTime();
         if (age < MAX_POLL_MS) {
-          badge.textContent = `${EMOJI[f.status]||"⏳"} ${f.status}`;
-          btn.disabled = true; btn.textContent = "Running...";
+          renderBadge(f);
+          btn.disabled = true; btn.textContent = f.message || "Running...";
           btn.style.animation = "feed-pulse 1.5s ease-in-out infinite";
           pollTimer = setInterval(poll, POLL_MS);
-          setTimeout(stop, MAX_POLL_MS - age);
+          setTimeout(() => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; btn.disabled = false; btn.textContent = LABEL; btn.style.animation = "none"; } }, MAX_POLL_MS - age);
         }
       } else if (data.completed_at && f.status) {
-        badge.textContent = `${EMOJI[f.status]} ${f.status}`;
-        badge.style.color = f.status === "success" ? "var(--color-green)" : "var(--text-muted)";
+        renderBadge(f);
       }
     } catch (e) {}
   })();
+
   btn.addEventListener("click", async () => {
     if (btn.disabled) return;
-    btn.disabled = true; btn.textContent = "Running...";
+    btn.disabled = true; btn.textContent = "Starting...";
     btn.style.animation = "feed-pulse 1.5s ease-in-out infinite";
-    badge.textContent = "⏳ pending";
+    badge.textContent = "⏳ pending"; badge.style.animation = "feed-badge-in 0.3s ease";
+    prevStatus = null;
     app.commands.executeCommandById("obsidian-shellcommands:shell-command-shf5cp2026");
     await new Promise(r => setTimeout(r, 1500));
     pollTimer = setInterval(poll, POLL_MS);
-    setTimeout(stop, MAX_POLL_MS);
+    setTimeout(() => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; btn.disabled = false; btn.textContent = LABEL; btn.style.animation = "none"; } }, MAX_POLL_MS);
   });
 }
 
