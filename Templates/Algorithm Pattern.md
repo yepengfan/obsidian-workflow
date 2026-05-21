@@ -5,7 +5,6 @@ category: "{{category}}"
 tags: [leetcode/pattern]
 problems: []
 difficulty: medium
-confidence: 3
 created: {{date}}
 updated: {{date}}
 ---

@@ -847,6 +847,167 @@ function createTabGroup(dvRef, tabs, defaultId) {
   return { panels, topBar };
 }
 
+// ========== GENERATE FEEDS BUTTONS + STATUS ==========
+{
+  const STATUS_PATH = "Feeds/.feed-status.json";
+  const POLL_MS = 3000;
+  const MAX_POLL_MS = 720000; // 12 min safety
+
+  const statusEmoji = {
+    pending: "⏳", running: "🔄", success: "✅",
+    skipped: "⏭️", failed: "❌", disabled: "⛔",
+  };
+
+  const DAILY_FEEDS = {
+    "ai-digest": "AI Digest",
+    "github-trending": "GitHub",
+    "engineering-blogs": "Eng Blogs",
+  };
+  // ── Pulse animation (injected once) ──
+  if (!document.getElementById("feed-pulse-style")) {
+    const style = document.createElement("style");
+    style.id = "feed-pulse-style";
+    style.textContent = `@keyframes feed-pulse{0%,100%{opacity:.85}50%{opacity:.5}}`;
+    document.head.appendChild(style);
+  }
+
+  // ── Shared helpers ──
+  function makeBtn(parent, text) {
+    const btn = parent.createEl("button", { text });
+    btn.style.cssText = [
+      "padding:4px 12px", "border-radius:8px", "border:1px solid var(--interactive-accent)",
+      "background:var(--interactive-accent)", "color:var(--text-on-accent)",
+      "font-size:0.78em", "font-weight:600", "cursor:pointer", "transition:all 0.15s",
+    ].join(";");
+    btn.addEventListener("mouseenter", () => { if (!btn.disabled) btn.style.opacity = "0.85"; });
+    btn.addEventListener("mouseleave", () => { if (!btn.disabled) btn.style.opacity = "1"; });
+    return btn;
+  }
+
+  function setBtnRunning(btn) {
+    btn.disabled = true;
+    btn.textContent = "Running...";
+    btn.style.animation = "feed-pulse 1.5s ease-in-out infinite";
+    btn.style.opacity = "1";
+  }
+
+  function setBtnIdle(btn, label) {
+    btn.disabled = false;
+    btn.textContent = label;
+    btn.style.animation = "none";
+    btn.style.opacity = "1";
+  }
+
+  function renderPendingBadges(area, feedLabels) {
+    area.empty();
+    for (const [, label] of Object.entries(feedLabels)) {
+      const badge = area.createEl("span", { text: `⏳ ${label}` });
+      badge.style.cssText = [
+        "font-size:0.72em", "padding:2px 6px", "border-radius:5px",
+        "background:var(--background-secondary)", "color:var(--text-muted)",
+        "white-space:nowrap",
+      ].join(";");
+    }
+  }
+
+  function renderBadges(area, feedLabels, feeds) {
+    area.empty();
+    for (const [name, label] of Object.entries(feedLabels)) {
+      const f = feeds[name];
+      if (!f) continue;
+      const emoji = statusEmoji[f.status] || "⏳";
+      const badge = area.createEl("span", { text: `${emoji} ${label}` });
+      badge.style.cssText = [
+        "font-size:0.72em", "padding:2px 6px", "border-radius:5px",
+        "background:var(--background-secondary)", "color:var(--text-muted)",
+        "white-space:nowrap",
+      ].join(";");
+      if (f.status === "running") badge.style.color = "var(--text-accent)";
+      if (f.status === "success") badge.style.color = "var(--color-green)";
+      if (f.status === "failed") badge.style.color = "var(--color-red)";
+    }
+  }
+
+  function createFeedButton({ row, btn, label, statusArea, feedLabels, shellCmdId }) {
+    let pollTimer = null;
+
+    function stopPolling() {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      setBtnIdle(btn, label);
+    }
+
+    async function pollStatus() {
+      try {
+        const file = app.vault.getAbstractFileByPath(STATUS_PATH);
+        if (!file) return;
+        const raw = await app.vault.adapter.read(STATUS_PATH);
+        const data = JSON.parse(raw);
+        const feeds = data.feeds || {};
+        renderBadges(statusArea, feedLabels, feeds);
+        // Stop if all tracked feeds are terminal
+        const tracked = Object.keys(feedLabels);
+        const statuses = tracked.map(n => (feeds[n] || {}).status).filter(Boolean);
+        const allDone = statuses.length > 0 && statuses.every(
+          s => ["success", "skipped", "failed", "disabled"].includes(s)
+        );
+        if (allDone) stopPolling();
+      } catch (e) { /* file not ready yet */ }
+    }
+
+    // Check for in-progress run on load
+    (async () => {
+      try {
+        const file = app.vault.getAbstractFileByPath(STATUS_PATH);
+        if (!file) return;
+        const raw = await app.vault.adapter.read(STATUS_PATH);
+        const data = JSON.parse(raw);
+        const feeds = data.feeds || {};
+        // Only show badges if this button's feeds are present
+        const tracked = Object.keys(feedLabels);
+        const hasOurFeeds = tracked.some(n => feeds[n]);
+        if (!hasOurFeeds) return;
+
+        if (!data.completed_at && data.started_at) {
+          const age = Date.now() - new Date(data.started_at).getTime();
+          if (age < MAX_POLL_MS) {
+            renderBadges(statusArea, feedLabels, feeds);
+            setBtnRunning(btn);
+            pollTimer = setInterval(pollStatus, POLL_MS);
+            setTimeout(stopPolling, MAX_POLL_MS - age);
+          }
+        } else if (data.completed_at) {
+          renderBadges(statusArea, feedLabels, feeds);
+        }
+      } catch (e) { /* no status file */ }
+    })();
+
+    btn.addEventListener("click", async () => {
+      if (btn.disabled) return;
+      setBtnRunning(btn);
+      renderPendingBadges(statusArea, feedLabels);
+      app.commands.executeCommandById("obsidian-shellcommands:shell-command-" + shellCmdId);
+      await new Promise(r => setTimeout(r, 1500));
+      pollTimer = setInterval(pollStatus, POLL_MS);
+      setTimeout(stopPolling, MAX_POLL_MS);
+    });
+  }
+
+  // ── Daily Feeds button ──
+  const dailyRow = dv.el("div", "", {
+    attr: { style: "display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;" }
+  });
+  const dailyBtn = makeBtn(dailyRow, "Daily Feeds ▶");
+  const dailyStatus = dailyRow.createEl("div", {
+    attr: { style: "display:flex;gap:6px;align-items:center;flex-wrap:wrap;" }
+  });
+  createFeedButton({
+    row: dailyRow, btn: dailyBtn, label: "Daily Feeds ▶",
+    statusArea: dailyStatus, feedLabels: DAILY_FEEDS,
+    shellCmdId: "shf4gf2026",
+  });
+
+}
+
 const { panels: fPanels } = createTabGroup(dv, [
   { id: "ai", label: "AI Digest" },
   { id: "gh", label: "GitHub Trending" },
@@ -1027,6 +1188,85 @@ const { panels: fPanels } = createTabGroup(dv, [
 
 ```dataviewjs
 const isMobile = app.isMobile;
+
+// ── CC Plugins Generate Button ──
+{
+  const STATUS_PATH = "Feeds/.feed-status.json";
+  const POLL_MS = 3000;
+  const MAX_POLL_MS = 720000;
+  const EMOJI = { pending:"⏳", running:"🔄", success:"✅", skipped:"⏭️", failed:"❌", disabled:"⛔" };
+
+  if (!document.getElementById("feed-pulse-style")) {
+    const s = document.createElement("style");
+    s.id = "feed-pulse-style";
+    s.textContent = `@keyframes feed-pulse{0%,100%{opacity:.85}50%{opacity:.5}}`;
+    document.head.appendChild(s);
+  }
+
+  const row = dv.el("div", "", {
+    attr: { style: "display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;" }
+  });
+  const btn = row.createEl("button", { text: "Generate ▶" });
+  btn.style.cssText = [
+    "padding:3px 10px", "border-radius:8px", "border:1px solid var(--interactive-accent)",
+    "background:var(--interactive-accent)", "color:var(--text-on-accent)",
+    "font-size:0.72em", "font-weight:600", "cursor:pointer", "transition:all 0.15s",
+  ].join(";");
+  btn.addEventListener("mouseenter", () => { if (!btn.disabled) btn.style.opacity = "0.85"; });
+  btn.addEventListener("mouseleave", () => { if (!btn.disabled) btn.style.opacity = "1"; });
+  const badge = row.createEl("span", { attr: { style: "font-size:0.72em;color:var(--text-muted);" } });
+
+  let pollTimer = null;
+  function stop() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    btn.disabled = false; btn.textContent = "Generate ▶";
+    btn.style.animation = "none"; btn.style.opacity = "1";
+  }
+  async function poll() {
+    try {
+      const raw = await app.vault.adapter.read(STATUS_PATH);
+      const data = JSON.parse(raw);
+      const f = (data.feeds || {})["cc-plugins"];
+      if (!f) return;
+      const e = EMOJI[f.status] || "⏳";
+      badge.textContent = `${e} ${f.status}`;
+      badge.style.color = f.status === "success" ? "var(--color-green)" : f.status === "failed" ? "var(--color-red)" : f.status === "running" ? "var(--text-accent)" : "var(--text-muted)";
+      if (["success","skipped","failed","disabled"].includes(f.status)) stop();
+    } catch (e) {}
+  }
+  // Check for in-progress on load
+  (async () => {
+    try {
+      const raw = await app.vault.adapter.read(STATUS_PATH);
+      const data = JSON.parse(raw);
+      const f = (data.feeds || {})["cc-plugins"];
+      if (!f) return;
+      if (!data.completed_at && data.started_at) {
+        const age = Date.now() - new Date(data.started_at).getTime();
+        if (age < MAX_POLL_MS) {
+          badge.textContent = `${EMOJI[f.status]||"⏳"} ${f.status}`;
+          btn.disabled = true; btn.textContent = "Running...";
+          btn.style.animation = "feed-pulse 1.5s ease-in-out infinite";
+          pollTimer = setInterval(poll, POLL_MS);
+          setTimeout(stop, MAX_POLL_MS - age);
+        }
+      } else if (data.completed_at && f.status) {
+        badge.textContent = `${EMOJI[f.status]} ${f.status}`;
+        badge.style.color = f.status === "success" ? "var(--color-green)" : "var(--text-muted)";
+      }
+    } catch (e) {}
+  })();
+  btn.addEventListener("click", async () => {
+    if (btn.disabled) return;
+    btn.disabled = true; btn.textContent = "Running...";
+    btn.style.animation = "feed-pulse 1.5s ease-in-out infinite";
+    badge.textContent = "⏳ pending";
+    app.commands.executeCommandById("obsidian-shellcommands:shell-command-shf5cp2026");
+    await new Promise(r => setTimeout(r, 1500));
+    pollTimer = setInterval(poll, POLL_MS);
+    setTimeout(stop, MAX_POLL_MS);
+  });
+}
 
 // Find latest weekly report by sorting YYYY-WXX filenames descending
 const reports = dv.pages('"Feeds/CC-Plugins"')

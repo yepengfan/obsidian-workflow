@@ -167,10 +167,10 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Algorithm/CLAUD
 
 **`/algorithm/review`** — 复习排序 + 统计：
 
-1. 扫描所有 Pattern card，按 confidence↑ + updated↑ 排序
-2. 输出 review 表：🔴 confidence ≤ 2 需重点复习、🟡 = 3 建议巩固、🟢 ≥ 4 良好
-3. 可 drill-down 复习某 pattern、做新题、更新 confidence
-4. 统计：总 pattern 数、confidence 分布、最久未更新 top 3、本周/月做题数
+1. 扫描所有 Pattern card，按 `updated` 排序（最久未更新优先）
+2. 输出 review 表，标注最久未更新的 pattern
+3. 可 drill-down 复习某 pattern、做新题
+4. 统计：总 pattern 数、最久未更新 top 3、本周/月做题数
 
 ### Daily Workflow
 
@@ -183,7 +183,7 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Algorithm/CLAUD
          ↓
 复习 → /algorithm/review
          ↓
-    挑 confidence 低的 pattern 再做一题 → 循环
+    挑最久未更新的 pattern 再做一题 → 循环
 ```
 
 ## System Design System
@@ -226,7 +226,7 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Algorithm/CLAUD
          ↓
 复习 → /system-design/review
          ↓
-    挑 confidence 低的 pattern 再做一题 → 循环
+    挑最久未更新的 pattern 再做一题 → 循环
 ```
 
 ### 与 SYSD 的关系
