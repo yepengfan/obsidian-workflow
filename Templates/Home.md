@@ -60,3 +60,7 @@ updated: 2026-05-22
 > - **Task block logic**: Tasks are grouped into blocks (top-level + indented subtasks). Only blocks where the top-level task is incomplete are carried. Within a carried block, only `- [ ]` subtasks are included (completed `- [x]` subtasks are dropped).
 > - **Code fence safety**: Uses the existing `fence` variable (`String.fromCharCode(96).repeat(3)`) to detect and skip code blocks when scanning headings and tasks, preventing false matches inside dataviewjs blocks.
 
+> [!note] 2026-05-22 — Feed status badges reset daily
+> - **Problem**: Status badges (✅ AI Digest, ✅ GitHub, ✅ Eng Blogs) persisted from yesterday's run. The on-load check only tested `data.completed_at` existence, not whether it was from today. New day showed stale green checkmarks despite no digest existing yet.
+> - **Solution**: Compare `completed_at` date against today (using `sv-SE` locale for ISO format). Only render badges if the status is from today's run. Otherwise badges stay hidden until the user triggers a new run.
+
