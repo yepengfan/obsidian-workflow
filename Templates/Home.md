@@ -60,7 +60,9 @@ updated: 2026-05-22
 > - **Task block logic**: Tasks are grouped into blocks (top-level + indented subtasks). Only blocks where the top-level task is incomplete are carried. Within a carried block, only `- [ ]` subtasks are included (completed `- [x]` subtasks are dropped).
 > - **Code fence safety**: Uses the existing `fence` variable (`String.fromCharCode(96).repeat(3)`) to detect and skip code blocks when scanning headings and tasks, preventing false matches inside dataviewjs blocks.
 
-> [!note] 2026-05-22 — Feed status badges reset daily
-> - **Problem**: Status badges (✅ AI Digest, ✅ GitHub, ✅ Eng Blogs) persisted from yesterday's run. The on-load check only tested `data.completed_at` existence, not whether it was from today. New day showed stale green checkmarks despite no digest existing yet.
-> - **Solution**: Compare `completed_at` date against today (using `sv-SE` locale for ISO format). Only render badges if the status is from today's run. Otherwise badges stay hidden until the user triggers a new run.
+> [!note] 2026-05-22 — Feed status badges reset daily + frontmatter race fix
+> - **Problem 1**: Status badges persisted from yesterday's run — on-load check only tested `completed_at` existence, not date.
+> - **Problem 2**: Article/repo counts showed `?/?` because `dv.page()` races with Dataview indexing on newly created files.
+> - **Problem 3**: Badges could show stale intermediate state if Dataview re-rendered the block during a feed run.
+> - **Solution**: (1) Compare `completed_at` date against today before rendering badges. (2) Replace `dv.page()` with `parseFM(content)` — parses YAML frontmatter directly from file content already read via `app.vault.read()`, eliminating Dataview dependency. (3) Added final re-read of status file on completion to ensure badges reflect latest state.
 
