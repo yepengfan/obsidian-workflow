@@ -1018,7 +1018,11 @@ function createTabGroup(dvRef, tabs, defaultId) {
             setTimeout(() => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; setBtnIdle(btn, label); } }, MAX_POLL_MS - age);
           }
         } else if (data.completed_at) {
-          renderBadges(statusArea, feedLabels, feeds, {});
+          const completedDate = new Date(data.completed_at).toLocaleDateString("sv-SE");
+          const todayDate = new Date().toLocaleDateString("sv-SE");
+          if (completedDate === todayDate) {
+            renderBadges(statusArea, feedLabels, feeds, {});
+          }
         }
       } catch (e) { /* no status file */ }
     })();
