@@ -854,7 +854,7 @@ function parseFM(content) {
   if (lines[0] !== "---") return fm;
   for (let i = 1; i < lines.length; i++) {
     if (lines[i] === "---") break;
-    const m = lines[i].match(/^([\w_]+):\s*(.+)/);
+    const m = lines[i].match(/^([\w_-]+):\s*(.+)/);
     if (m) fm[m[1]] = m[2].trim();
   }
   return fm;
@@ -897,6 +897,7 @@ function parseFM(content) {
     }
     return patched;
   }
+
   // ── Animations (injected once) ──
   if (!document.getElementById("feed-fx-style")) {
     const style = document.createElement("style");
@@ -1026,12 +1027,13 @@ function parseFM(content) {
           if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
           // Final re-read to ensure badges reflect the latest state
           // (guards against Dataview re-renders orphaning earlier badge updates)
+          let finalFeeds = feeds;
           try {
             const finalRaw = await app.vault.adapter.read(STATUS_PATH);
-            const finalFeeds = JSON.parse(finalRaw).feeds || {};
+            finalFeeds = JSON.parse(finalRaw).feeds || {};
             renderBadges(statusArea, feedLabels, patchSkippedFeeds(finalFeeds), prevStatuses);
           } catch (_) { /* use last known state */ }
-          const hasFail = tracked.some(n => (feeds[n] || {}).status === "failed");
+          const hasFail = tracked.some(n => (finalFeeds[n] || {}).status === "failed");
           setBtnDone(btn, label, hasFail);
         }
       } catch (e) {
