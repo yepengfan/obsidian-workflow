@@ -847,6 +847,19 @@ function createTabGroup(dvRef, tabs, defaultId) {
   return { panels, topBar };
 }
 
+// ── Parse YAML frontmatter from file content (avoids dv.page race condition) ──
+function parseFM(content) {
+  const lines = content.split("\n");
+  const fm = {};
+  if (lines[0] !== "---") return fm;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i] === "---") break;
+    const m = lines[i].match(/^([\w_-]+):\s*(.+)/);
+    if (m) fm[m[1]] = m[2].trim();
+  }
+  return fm;
+}
+
 // ========== GENERATE FEEDS BUTTONS + STATUS ==========
 {
   const STATUS_PATH = "Feeds/.feed-status.json";
@@ -863,6 +876,28 @@ function createTabGroup(dvRef, tabs, defaultId) {
     "github-trending": "GitHub",
     "engineering-blogs": "Eng Blogs",
   };
+
+  // Map feed keys to output directories for file-existence checks
+  const FEED_DIRS = {
+    "ai-digest": "Feeds/AI-Daily",
+    "github-trending": "Feeds/GitHub-Trending",
+    "engineering-blogs": "Feeds/Engineering-Blogs",
+  };
+
+  // Override "skipped" → "success" when today's report file exists
+  function patchSkippedFeeds(feeds) {
+    const today = dv.date("today").toFormat("yyyy-MM-dd");
+    const patched = { ...feeds };
+    for (const [name, dir] of Object.entries(FEED_DIRS)) {
+      if (patched[name]?.status === "skipped") {
+        const exists = app.vault.getAbstractFileByPath(`${dir}/${today}.md`)
+                    || app.vault.getAbstractFileByPath(`${dir}/${today}-en.md`);
+        if (exists) patched[name] = { ...patched[name], status: "success" };
+      }
+    }
+    return patched;
+  }
+
   // ── Animations (injected once) ──
   if (!document.getElementById("feed-fx-style")) {
     const style = document.createElement("style");
@@ -990,7 +1025,15 @@ function createTabGroup(dvRef, tabs, defaultId) {
         const allDone = statuses.length > 0 && statuses.every(s => terminal.includes(s));
         if (allDone) {
           if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-          const hasFail = tracked.some(n => (feeds[n] || {}).status === "failed");
+          // Final re-read to ensure badges reflect the latest state
+          // (guards against Dataview re-renders orphaning earlier badge updates)
+          let finalFeeds = feeds;
+          try {
+            const finalRaw = await app.vault.adapter.read(STATUS_PATH);
+            finalFeeds = JSON.parse(finalRaw).feeds || {};
+            renderBadges(statusArea, feedLabels, patchSkippedFeeds(finalFeeds), prevStatuses);
+          } catch (_) { /* use last known state */ }
+          const hasFail = tracked.some(n => (finalFeeds[n] || {}).status === "failed");
           setBtnDone(btn, label, hasFail);
         }
       } catch (e) {
@@ -1021,7 +1064,7 @@ function createTabGroup(dvRef, tabs, defaultId) {
           const completedDate = new Date(data.completed_at).toLocaleDateString("sv-SE");
           const todayDate = new Date().toLocaleDateString("sv-SE");
           if (completedDate === todayDate) {
-            renderBadges(statusArea, feedLabels, feeds, {});
+            renderBadges(statusArea, feedLabels, patchSkippedFeeds(feeds), {});
           }
         }
       } catch (e) { /* no status file */ }
@@ -1074,8 +1117,8 @@ const { panels: fPanels } = createTabGroup(dv, [
   if (digestFile) {
     const isEn = !!enFile;
     const digestPath = isEn ? enPath : zhPath;
-    const page = dv.page(digestPath);
     const content = await app.vault.read(digestFile);
+    const fm = parseFM(content);
     const lines = content.split("\n");
 
     const highlightMarker = isEn ? "Today's Highlights" : "今日看点";
@@ -1091,8 +1134,8 @@ const { panels: fPanels } = createTabGroup(dv, [
     const row = p.createEl("div", {
       attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
     });
-    const scanned = page?.articles_scanned || "?";
-    const selected = page?.articles_selected || "?";
+    const scanned = fm.articles_scanned || "?";
+    const selected = fm.articles_selected || "?";
     row.createEl("span", {
       text: `📰 ${selected}/${scanned} articles`,
       attr: { style: "font-size:0.78em;color:var(--text-muted);" }
@@ -1132,8 +1175,8 @@ const { panels: fPanels } = createTabGroup(dv, [
   if (reportFile) {
     const isEn = !!enFile;
     const reportPath = isEn ? enPath : zhPath;
-    const page = dv.page(reportPath);
     const content = await app.vault.read(reportFile);
+    const fm = parseFM(content);
     const lines = content.split("\n");
 
     const repoLines = lines
@@ -1143,8 +1186,8 @@ const { panels: fPanels } = createTabGroup(dv, [
     const row = p.createEl("div", {
       attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
     });
-    const scanned = page.repos_scanned || "?";
-    const selected = page.repos_selected || "?";
+    const scanned = fm.repos_scanned || "?";
+    const selected = fm.repos_selected || "?";
     row.createEl("span", {
       text: `📦 ${selected}/${scanned} repos`,
       attr: { style: "font-size:0.78em;color:var(--text-muted);" }
@@ -1187,8 +1230,8 @@ const { panels: fPanels } = createTabGroup(dv, [
   if (reportFile) {
     const isEn = !!enFile;
     const reportPath = isEn ? enPath : zhPath;
-    const page = dv.page(reportPath);
     const content = await app.vault.read(reportFile);
+    const fm = parseFM(content);
     const lines = content.split("\n");
 
     const postLines = lines
@@ -1198,8 +1241,8 @@ const { panels: fPanels } = createTabGroup(dv, [
     const row = p.createEl("div", {
       attr: { style: "display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;" }
     });
-    const scanned = page?.articles_scanned || "?";
-    const selected = page?.articles_selected || "?";
+    const scanned = fm.articles_scanned || "?";
+    const selected = fm.articles_selected || "?";
     row.createEl("span", {
       text: `🏗️ ${selected}/${scanned} posts`,
       attr: { style: "font-size:0.78em;color:var(--text-muted);" }
