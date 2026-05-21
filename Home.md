@@ -876,6 +876,27 @@ function parseFM(content) {
     "github-trending": "GitHub",
     "engineering-blogs": "Eng Blogs",
   };
+
+  // Map feed keys to output directories for file-existence checks
+  const FEED_DIRS = {
+    "ai-digest": "Feeds/AI-Daily",
+    "github-trending": "Feeds/GitHub-Trending",
+    "engineering-blogs": "Feeds/Engineering-Blogs",
+  };
+
+  // Override "skipped" → "success" when today's report file exists
+  function patchSkippedFeeds(feeds) {
+    const today = dv.date("today").toFormat("yyyy-MM-dd");
+    const patched = { ...feeds };
+    for (const [name, dir] of Object.entries(FEED_DIRS)) {
+      if (patched[name]?.status === "skipped") {
+        const exists = app.vault.getAbstractFileByPath(`${dir}/${today}.md`)
+                    || app.vault.getAbstractFileByPath(`${dir}/${today}-en.md`);
+        if (exists) patched[name] = { ...patched[name], status: "success" };
+      }
+    }
+    return patched;
+  }
   // ── Animations (injected once) ──
   if (!document.getElementById("feed-fx-style")) {
     const style = document.createElement("style");
@@ -1008,7 +1029,7 @@ function parseFM(content) {
           try {
             const finalRaw = await app.vault.adapter.read(STATUS_PATH);
             const finalFeeds = JSON.parse(finalRaw).feeds || {};
-            renderBadges(statusArea, feedLabels, finalFeeds, prevStatuses);
+            renderBadges(statusArea, feedLabels, patchSkippedFeeds(finalFeeds), prevStatuses);
           } catch (_) { /* use last known state */ }
           const hasFail = tracked.some(n => (feeds[n] || {}).status === "failed");
           setBtnDone(btn, label, hasFail);
@@ -1041,7 +1062,7 @@ function parseFM(content) {
           const completedDate = new Date(data.completed_at).toLocaleDateString("sv-SE");
           const todayDate = new Date().toLocaleDateString("sv-SE");
           if (completedDate === todayDate) {
-            renderBadges(statusArea, feedLabels, feeds, {});
+            renderBadges(statusArea, feedLabels, patchSkippedFeeds(feeds), {});
           }
         }
       } catch (e) { /* no status file */ }
