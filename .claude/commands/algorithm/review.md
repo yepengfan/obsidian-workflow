@@ -27,7 +27,8 @@ Read `Learning/Algorithm/CLAUDE.md` for module instructions.
 
 5. **Offer drill-down**: Ask if user wants to:
    - 复习某个具体 pattern（打开对应 card）
-   - 做一道该 pattern 的新题（转到 `/algorithm/solve`，做完后 confidence 会自动更新）
+   - 做一道该 pattern 的新题（转到 `/algorithm/solve`，做完后 confidence 自动取 max 更新）
+   - 重做该 pattern 的旧题验证掌握程度（转到 `/algorithm/solve`，结果**直接覆盖** confidence，可降级）
 
 6. **Stats summary**:
    - 总 pattern 数

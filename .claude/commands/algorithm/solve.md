@@ -59,7 +59,7 @@ Read `Learning/Algorithm/CLAUDE.md` for module instructions.
    - 在 frontmatter `problems` 数组末尾加题号
    - 在正文 Problems 表格加一行（题号、名称、难度、今天日期）
    - 更新 frontmatter `updated` 为今天
-   - 根据本次做题过程自动重新计算 `confidence`（规则同下方新建 pattern），取 **当前值与本次值的较大者**（confidence 只升不降，降级靠 review 时重做验证）
+   - 按 CLAUDE.md Confidence Rules 自动重新计算 `confidence`，取 `max(当前值, 本次值)`
    - 如果有新的 Gotcha 发现，追加到 Gotchas section
 
 3. **新 pattern → 创建**:
@@ -67,12 +67,7 @@ Read `Learning/Algorithm/CLAUDE.md` for module instructions.
    - `id`: 读取所有现有 card 的 id，取最大值 +1
    - 填充: title, category, tags, problems, Key Insight, Trigger (如适用), Template, Gotchas
    - `difficulty`: 基于 pattern 复杂度评估
-   - `confidence`: 基于本次做题过程自动推断（不要问用户）:
-     - **5**: 独立解出（仅用 L1），代码审核无 bug
-     - **4**: 独立解出（仅用 L1-L2），代码有小问题但思路正确
-     - **3**: 需要方向提示（到 L3）才解出
-     - **2**: 需要 Pseudocode（到 L4）或看提示后才写出代码
-     - **1**: 放弃 / 看完整答案
+   - `confidence`: 按 CLAUDE.md Confidence Rules 自动推断（不要问用户）
 
 4. **写 Log**:
    - 检查 `Learning/Algorithm/Log/YYYY-MM-DD.md` 是否存在
