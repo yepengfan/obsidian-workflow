@@ -27,7 +27,6 @@
 
 - **已有 pattern**: 加题名到 frontmatter `problems[]` + 正文 Problems 表格加一行 + 更新 `updated` 日期
 - **新 pattern**: 创建新文件（用 `Templates/SD Pattern.md`），id 取当前最大值 +1，填充所有字段
-- `confidence` 由用户自评，Claude 可建议但不自行修改
 - `difficulty` 指 pattern 理解难度，非单题难度
 - 文件名 = pattern title（去掉文件系统非法字符 `/ \ : * ? " < > |`）
 - `tags` 格式: `[system-design/pattern, system-design/{category-slug}]`

@@ -31,24 +31,22 @@ TABLE WITHOUT ID
   link(file.link, title) AS "Pattern",
   category AS "Category",
   length(problems) AS "Problems",
-  confidence AS "Confidence",
   updated AS "Updated"
 FROM "Learning/System-Design/Patterns"
 WHERE contains(file.tags, "#system-design/pattern")
 SORT category ASC, id ASC
 ```
 
-## 🔴 Low Confidence (需要复习)
+## 🔴 需要复习 (30+ 天未更新)
 
 ```dataview
 TABLE WITHOUT ID
   link(file.link, title) AS "Pattern",
   category AS "Category",
-  confidence AS "Confidence",
   updated AS "Last Updated"
 FROM "Learning/System-Design/Patterns"
-WHERE contains(file.tags, "#system-design/pattern") AND confidence <= 2
-SORT confidence ASC, updated ASC
+WHERE contains(file.tags, "#system-design/pattern") AND updated <= date(today) - dur(30 days)
+SORT updated ASC
 ```
 
 ## 📝 待练清单
