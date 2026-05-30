@@ -93,6 +93,13 @@ def build_headers() -> dict:
     return headers
 
 
+# Adaptive rate-limit delay: authenticated (30 req/min) vs unauthenticated (10 req/min)
+HAS_GITHUB_TOKEN = bool(os.environ.get("GITHUB_TOKEN", "").strip())
+PAGE_DELAY = 2 if HAS_GITHUB_TOKEN else 6
+QUERY_DELAY = 1 if HAS_GITHUB_TOKEN else 2
+NPM_BATCH_DELAY = 0.5 if HAS_GITHUB_TOKEN else 1
+
+
 def api_get(url: str, headers: dict, timeout: int = 30) -> dict:
     """Generic GET request returning parsed JSON."""
     req = urllib.request.Request(url, headers=headers)
@@ -134,7 +141,7 @@ def search_github(query: str, headers: dict) -> list[dict]:
 
         if len(page_items) < 30:
             break
-        time.sleep(6)  # rate limit: 10 req/min unauthenticated → ≥6s between pages
+        time.sleep(PAGE_DELAY)  # adaptive: 2s authenticated, 6s unauthenticated
 
     return items
 
@@ -266,7 +273,7 @@ def main() -> None:
         all_items.extend(items)
         print(f"[fetch] Query {i} returned {len(items)} results.", file=sys.stderr)
         if i < len(SEARCH_QUERIES):
-            time.sleep(2)  # rate limit between queries
+            time.sleep(QUERY_DELAY)  # adaptive: 1s authenticated, 2s unauthenticated
 
     print(f"[fetch] Total raw results: {len(all_items)}", file=sys.stderr)
 
@@ -312,7 +319,7 @@ def main() -> None:
 
         if (i + 1) % 5 == 0:
             print(f"[fetch]   Resolved {i + 1}/{len(seen)} repos...", file=sys.stderr)
-            time.sleep(1)
+            time.sleep(NPM_BATCH_DELAY)  # adaptive: 0.5s authenticated, 1s unauthenticated
 
     npm_count = sum(1 for r in seen.values() if r["npm_info"])
     print(f"[fetch] npm packages resolved: {npm_count}/{len(seen)}", file=sys.stderr)

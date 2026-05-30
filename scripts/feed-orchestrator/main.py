@@ -92,7 +92,7 @@ async def run_feed(
         return f"❌ {feed_name}: fetch failed — {e}"
 
     data = json.loads(fetched_json)
-    items = data.get("articles", data.get("repos", []))
+    items = data.get("articles", data.get("repos", data.get("plugins", [])))
     print(f"[{feed_name}] Fetched {len(items)} items", file=sys.stderr)
     reporter.update_feed(feed_name, "running", message=f"Fetched {len(items)} items")
 
