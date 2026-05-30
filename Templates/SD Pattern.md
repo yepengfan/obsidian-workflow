@@ -5,7 +5,6 @@ category: "{{category}}"
 tags: [system-design/pattern]
 problems: []
 difficulty: medium
-confidence: 3
 created: {{date}}
 updated: {{date}}
 ---

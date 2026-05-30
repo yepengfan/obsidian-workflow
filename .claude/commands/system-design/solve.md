@@ -60,7 +60,6 @@ Read `Learning/System-Design/CLAUDE.md` for module instructions.
    - `id`: 读取所有现有 card 的 id，取最大值 +1
    - 填充: title, category, tags, problems, Key Insight, When to Use, Design Framework, Trade-offs, Common Mistakes
    - `difficulty`: 基于 pattern 复杂度评估
-   - `confidence`: 询问用户自评 (1-5)
 
 4. **写 Log**:
    - 检查 `Learning/System-Design/Log/YYYY-MM-DD.md` 是否存在

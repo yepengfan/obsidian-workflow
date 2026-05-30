@@ -75,23 +75,6 @@
 - 代码始终 Python 3，clean and readable
 - 中英混排时遵循 vault 现有风格
 
-## Confidence Rules
-
-`confidence` 字段（1-5）**必须基于做题过程自动推断，永远不要问用户自评**。
-
-| 最深引导层级 | 代码审核 | confidence |
-|-------------|---------|-----------|
-| L1（独立理解题意+暴力解） | 无 bug | 5 |
-| L1 | 有小问题 | 4 |
-| L2（需要方向提示） | 不论 | 4 |
-| L3（需要点破 insight） | 不论 | 3 |
-| L4（需要 Pseudocode） | 不论 | 2 |
-| 放弃 / 看完整答案 | — | 1 |
-
-- **新建 pattern**: 直接按规则赋值
-- **已有 pattern（做新题）**: 取 `max(当前值, 本次值)`，confidence 只升不降
-- **降级（review 重做验证）**: 在 `/algorithm/review` 中选择重做旧题时，该次结果直接覆盖 confidence（不取 max），反映真实掌握程度
-
 ## Do NOT
 
 - 不要主动给完整代码（除非用户明确要求）
