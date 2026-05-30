@@ -112,6 +112,10 @@ async def run_fetch(
     python = config["python"]
     args = [python, str(script), "--vault-path", str(vault_path)]
 
+    # cc-plugins needs longer timeout: 7 GitHub search queries × up to 4 pages
+    # can hit unauthenticated rate limits (10 req/min) causing long sleeps
+    fetch_timeout = 300 if config.get("cadence") == "weekly" else 120
+
     proc = await asyncio.create_subprocess_exec(
         *args,
         stdout=asyncio.subprocess.PIPE,
@@ -119,7 +123,17 @@ async def run_fetch(
         cwd=str(config["script_dir"]),
         env=_build_env(config),
     )
-    stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
+    try:
+        stdout, stderr = await asyncio.wait_for(
+            proc.communicate(), timeout=fetch_timeout
+        )
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.wait()
+        raise FetchError(
+            f"{feed_name} fetch timed out after {fetch_timeout}s "
+            f"(hint: set GITHUB_TOKEN to avoid rate-limit delays)"
+        )
 
     if proc.returncode == 2:
         raise ReportExistsError(f"{feed_name} report already exists")
@@ -259,7 +273,7 @@ async def _enrich_single_call(
     data = json.loads(fetched_json)
 
     # Extract the items array from the fetched data
-    items = data.get("repos", data.get("articles", []))
+    items = data.get("repos", data.get("articles", data.get("plugins", [])))
     print(f"[enrich] {wrap_key}: fetched data keys={list(data.keys())}, items count={len(items)}", file=sys.stderr)
     if not items:
         return json.dumps({wrap_key: []})
@@ -289,6 +303,11 @@ async def _enrich_single_call(
     else:
         print(f"[enrich] {wrap_key}: FALLBACK to empty — parsed keys={list(parsed.keys()) if isinstance(parsed, dict) else 'not dict'}", file=sys.stderr)
         enriched = parsed if isinstance(parsed, list) else []
+
+    # Assign rank by score (required by cc-plugins write_reports)
+    enriched.sort(key=lambda r: r.get("score", 0), reverse=True)
+    for i, item in enumerate(enriched, start=1):
+        item.setdefault("rank", i)
 
     return json.dumps(
         {wrap_key: enriched, "date": _today(), "stats": {"enriched_count": len(enriched)}},
@@ -323,6 +342,11 @@ async def _enrich_batched(
             print(f"[enrich] Batch failed: {result}", file=sys.stderr)
             continue
         enriched.extend(result)
+
+    # Assign rank by score (required by cc-plugins write_reports)
+    enriched.sort(key=lambda r: r.get("score", 0), reverse=True)
+    for i, item in enumerate(enriched, start=1):
+        item.setdefault("rank", i)
 
     return json.dumps(
         {wrap_key: enriched, "date": _today(), "stats": {"enriched_count": len(enriched)}},
@@ -618,6 +642,19 @@ def _build_env(config: dict[str, Any]) -> dict[str, str]:
         f"{env.get('PATH', '')}"
     )
     env.update(config.get("extra_env", {}))
+
+    # Auto-resolve GITHUB_TOKEN from gh CLI if not already set
+    if not env.get("GITHUB_TOKEN"):
+        try:
+            result = subprocess.run(
+                ["gh", "auth", "token"],
+                capture_output=True, text=True, timeout=5,
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                env["GITHUB_TOKEN"] = result.stdout.strip()
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass  # gh not installed or hung — proceed without token
+
     return env
 
 

@@ -63,6 +63,8 @@ def get_decay(appearances: int) -> float:
     if appearances == 0:
         return 1.0
     if appearances == 1:
+        return 0.6
+    if appearances == 2:
         return 0.3
     return 0.1
 
