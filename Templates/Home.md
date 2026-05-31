@@ -42,17 +42,14 @@ updated: 2026-05-22
 > - **Also (v1)**: Snap transform to neutral + disable transitions + force reflow before re-enabling on entry. First `mousemove` deferred via `requestAnimationFrame`.
 
 > [!note] 2026-05-21 — Generate Feeds button with Agent SDK orchestrator
-> - **Why**: Replaced the disabled AI-only Shell Commands button (2026-03-18 removal) with a unified "Generate Feeds ▶" button that triggers all 4 feed pipelines (ai-digest, github-trending, engineering-blogs, cc-plugins) via a Claude Agent SDK orchestrator.
+> - **Why**: Replaced the disabled AI-only Shell Commands button (2026-03-18 removal) with a unified "Generate Feeds ▶" button that triggers all 3 feed pipelines (ai-digest, github-trending, engineering-blogs) via a Claude Agent SDK orchestrator.
 > - **Architecture**: Button calls Shell Command `shf4gf2026` → `load-env.sh` sources `~/.zshrc` for env vars → `main.py` runs Agent SDK `query()` loop with 7 custom MCP tools (check/fetch/enrich/write/archive/status). Enrichment uses Anthropic SDK + Haiku directly (no Claude CLI dependency), solving the original PATH failure.
 > - **Status polling**: Button writes `Feeds/.feed-status.json` atomically (tmp+rename). Home.md polls every 3s via `app.vault.adapter.read()`, renders per-feed emoji badges (⏳/🔄/✅/⏭️/❌/⛔). Auto-stops when all feeds reach terminal state or 12-min timeout.
 > - **Concurrent lock**: `StatusReporter.check_concurrent_lock()` refuses to start if running feeds < 15 min old in `.feed-status.json`.
 > - **Supersedes**: 2026-03-18 removal note — button is back with a robust solution.
 
-> [!note] 2026-05-21 — Split feeds into Daily + CC Plugins buttons
-> - **Why**: cc-plugins is a weekly feed; the other 3 (ai-digest, github-trending, engineering-blogs) are daily. One button conflated cadences — users clicking "Generate Feeds" daily would unnecessarily re-run cc-plugins (which skips via idempotency check, but wastes an Agent SDK turn).
-> - **Change**: Split into two buttons: "Daily Feeds ▶" (`shf4gf2026 --feeds ai-digest,github-trending,engineering-blogs`) and "CC Plugins ▶" (`shf5cp2026 --feeds cc-plugins`). Each triggers its own Shell Command with `--feeds` arg.
-> - **Implementation**: `main.py` accepts `--feeds` (comma-separated). `StatusReporter` accepts `feed_names` param — `write_initial()` only initializes the active subset. Home.md uses a shared `createFeedButton()` factory; each button tracks only its own feeds' badges.
-> - **Backwards compatible**: Running without `--feeds` still processes all 4 (default behavior).
+> [!note] 2026-06-01 — Removed CC Plugins feed
+> - **Why**: cc-plugins pipeline was unreliable (persistent `KeyError: 'category'` failures due to data flow mismatch between enrich.py filtering and write_reports.py merge logic). Removed entirely: scripts, module, reports, Home.md section, and feed-orchestrator references.
 
 > [!note] 2026-03-13 — Automatic carryover in navToday button
 > - **Problem**: The create button generated clean daily notes without checking for unfinished tasks from the previous day. The `/daily` skill had carryover logic, but clicking the Home.md button did not.

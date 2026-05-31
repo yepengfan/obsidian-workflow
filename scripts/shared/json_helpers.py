@@ -1,7 +1,7 @@
 """Shared JSON parsing helpers for LLM pipeline output.
 
-All feed pipelines (ai-digest, github-trending, engineering-blogs, podcast,
-cc-plugins) call Claude via subprocess and parse the JSON response.  LLMs
+All feed pipelines (ai-digest, github-trending, engineering-blogs) call
+Claude via subprocess and parse the JSON response.  LLMs
 occasionally produce invalid output (markdown fences, wrapper objects, bad
 backslash escapes, trailing commas).  This module centralises the repair
 logic so fixes are applied consistently.

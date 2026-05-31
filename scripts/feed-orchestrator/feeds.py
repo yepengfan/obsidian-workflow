@@ -70,18 +70,6 @@ def get_feed_config(vault_path: str | Path) -> dict[str, dict[str, Any]]:
             "extra_tmpfiles": ["fetched.json", "enriched.json"],
             "archive_max_days": 14,
         },
-        "cc-plugins": {
-            "module": "feeds-cc-plugins",
-            "feed_dir": v / "Feeds" / "CC-Plugins",
-            "script_dir": s / "cc-plugins",
-            "python": "python3",
-            "cadence": "weekly",
-            "report_path": lambda: v / "Feeds" / "CC-Plugins" / f"{_this_week()}.md",
-            "tmpdir_env": "TMPDIR_CC_PLUGINS",
-            "extra_env": {"WEEK": _this_week()},
-            "extra_tmpfiles": ["fetched.json", "enriched.json"],
-            "archive_max_weeks": 14,
-        },
     }
 
 
@@ -112,9 +100,7 @@ async def run_fetch(
     python = config["python"]
     args = [python, str(script), "--vault-path", str(vault_path)]
 
-    # cc-plugins needs longer timeout: 7 GitHub search queries × up to 4 pages
-    # can hit unauthenticated rate limits (10 req/min) causing long sleeps
-    fetch_timeout = 300 if config.get("cadence") == "weekly" else 120
+    fetch_timeout = 120
 
     proc = await asyncio.create_subprocess_exec(
         *args,
@@ -163,8 +149,6 @@ async def run_enrich(
     elif feed_name == "github-trending":
         return await _enrich_single_call(fetched_json, prompt_dir / "enrich.md", "enriched")
     elif feed_name == "engineering-blogs":
-        return await _enrich_single_call(fetched_json, prompt_dir / "enrich.md", "enriched")
-    elif feed_name == "cc-plugins":
         return await _enrich_single_call(fetched_json, prompt_dir / "enrich.md", "enriched")
     else:
         raise ValueError(f"Unknown feed: {feed_name}")
@@ -269,11 +253,11 @@ async def _enrich_ai_digest(fetched_json: str, prompt_dir: Path) -> str:
 async def _enrich_single_call(
     fetched_json: str, prompt_path: Path, wrap_key: str
 ) -> str:
-    """Enrich with a single Haiku call (GitHub Trending, Eng Blogs, CC Plugins)."""
+    """Enrich with a single Haiku call (GitHub Trending, Eng Blogs)."""
     data = json.loads(fetched_json)
 
     # Extract the items array from the fetched data
-    items = data.get("repos", data.get("articles", data.get("plugins", [])))
+    items = data.get("repos", data.get("articles", []))
     print(f"[enrich] {wrap_key}: fetched data keys={list(data.keys())}, items count={len(items)}", file=sys.stderr)
     if not items:
         return json.dumps({wrap_key: []})
@@ -304,7 +288,7 @@ async def _enrich_single_call(
         print(f"[enrich] {wrap_key}: FALLBACK to empty — parsed keys={list(parsed.keys()) if isinstance(parsed, dict) else 'not dict'}", file=sys.stderr)
         enriched = parsed if isinstance(parsed, list) else []
 
-    # Assign rank by score (required by cc-plugins write_reports)
+    # Assign rank by score
     enriched.sort(key=lambda r: r.get("score", 0), reverse=True)
     for i, item in enumerate(enriched, start=1):
         item.setdefault("rank", i)
@@ -343,7 +327,7 @@ async def _enrich_batched(
             continue
         enriched.extend(result)
 
-    # Assign rank by score (required by cc-plugins write_reports)
+    # Assign rank by score
     enriched.sort(key=lambda r: r.get("score", 0), reverse=True)
     for i, item in enumerate(enriched, start=1):
         item.setdefault("rank", i)
@@ -385,10 +369,6 @@ async def run_write_reports(
         env[config["tmpdir_env"]] = tmpdir
         env["TODAY"] = _today()
         env["VAULT_DIR"] = str(vault_path)
-        # CC Plugins also needs WEEK
-        if feed_name == "cc-plugins":
-            env["WEEK"] = _this_week()
-
         proc = await asyncio.create_subprocess_exec(
             python, str(script),
             stdout=asyncio.subprocess.PIPE,
@@ -483,7 +463,7 @@ _client: anthropic.AsyncAnthropic | None = None
 def get_client() -> anthropic.AsyncAnthropic:
     """Lazy-init Anthropic async client.
 
-    Auth resolution (same pattern as cc-plugins/enrich.py):
+    Auth resolution:
       1. ANTHROPIC_API_KEY   → direct Anthropic API
       2. ANTHROPIC_AUTH_TOKEN → Bearer auth (LiteLLM proxy)
     Model auto-selected based on auth method unless FEED_HAIKU_MODEL is set.
@@ -620,12 +600,6 @@ def _parse_json_response(raw: str) -> Any:
 
 def _today() -> str:
     return date.today().isoformat()
-
-
-def _this_week() -> str:
-    d = date.today()
-    year, week, _ = d.isocalendar()
-    return f"{year}-W{week:02d}"
 
 
 def _chunk(lst: list, n: int) -> list[list]:

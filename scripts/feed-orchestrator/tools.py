@@ -38,7 +38,7 @@ CONTEXT: dict[str, Any] = {
     "data": {},  # {feed_name: {"fetched": str, "enriched": str}}
 }
 
-VALID_FEEDS = ["ai-digest", "github-trending", "engineering-blogs", "cc-plugins"]
+VALID_FEEDS = ["ai-digest", "github-trending", "engineering-blogs"]
 
 
 def init_context(vault_path: str | Path, feed_names: list[str] | None = None) -> None:
@@ -86,7 +86,7 @@ async def check_module_status_tool(args: dict[str, Any]) -> dict[str, Any]:
 
 @tool(
     "check_existing_report",
-    "Check if today's (or this week's for cc-plugins) report already exists. Returns the file path if it exists, or 'not_found'.",
+    "Check if today's report already exists. Returns the file path if it exists, or 'not_found'.",
     {"feed_name": str},
 )
 async def check_existing_report_tool(args: dict[str, Any]) -> dict[str, Any]:

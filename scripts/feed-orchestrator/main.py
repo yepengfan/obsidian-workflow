@@ -6,7 +6,6 @@ No Agent SDK / Claude Code CLI dependency. Enrichment uses Anthropic SDK directl
 Usage:
     python main.py --vault-path /path/to/vault
     python main.py --vault-path /path/to/vault --feeds ai-digest,github-trending,engineering-blogs
-    python main.py --vault-path /path/to/vault --feeds cc-plugins
     bash load-env.sh  # (from Obsidian Shell Commands)
 """
 
@@ -34,7 +33,6 @@ ALL_FEEDS = {
     "ai-digest": "(daily) — AI/ML news from 92 RSS feeds",
     "github-trending": "(daily) — Trending GitHub repositories",
     "engineering-blogs": "(daily) — Top company engineering blog posts",
-    "cc-plugins": "(weekly) — Claude Code plugin discoveries",
 }
 
 
@@ -92,7 +90,7 @@ async def run_feed(
         return f"❌ {feed_name}: fetch failed — {e}"
 
     data = json.loads(fetched_json)
-    items = data.get("articles", data.get("repos", data.get("plugins", [])))
+    items = data.get("articles", data.get("repos", []))
     print(f"[{feed_name}] Fetched {len(items)} items", file=sys.stderr)
     reporter.update_feed(feed_name, "running", message=f"Fetched {len(items)} items")
 
