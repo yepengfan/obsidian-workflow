@@ -23,7 +23,6 @@ Note/
 scripts/ai-digest/history.json
 scripts/github-trending/history.json
 scripts/engineering-blogs/history.json
-scripts/cc-plugins/state.json
 
 # ── Plugin runtime state ──
 .claudian/

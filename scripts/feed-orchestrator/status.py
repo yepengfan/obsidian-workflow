@@ -14,7 +14,7 @@ from typing import Any, Literal
 
 StatusValue = Literal["pending", "running", "success", "skipped", "failed", "disabled"]
 
-ALL_FEED_NAMES = ["ai-digest", "github-trending", "engineering-blogs", "cc-plugins"]
+ALL_FEED_NAMES = ["ai-digest", "github-trending", "engineering-blogs"]
 
 
 class StatusReporter:
