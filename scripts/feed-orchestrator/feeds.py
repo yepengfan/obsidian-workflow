@@ -396,16 +396,9 @@ def archive_old_reports(config: dict[str, Any]) -> list[str]:
     feed_dir = config["feed_dir"]
     archive_dir = feed_dir / "archive"
     archive_dir.mkdir(parents=True, exist_ok=True)
-    archived = []
 
-    if config["cadence"] == "weekly":
-        max_weeks = config.get("archive_max_weeks", 14)
-        archived = _archive_weekly(feed_dir, archive_dir, max_weeks)
-    else:
-        max_days = config.get("archive_max_days", 14)
-        archived = _archive_daily(feed_dir, archive_dir, max_days)
-
-    return archived
+    max_days = config.get("archive_max_days", 14)
+    return _archive_daily(feed_dir, archive_dir, max_days)
 
 
 def _archive_daily(feed_dir: Path, archive_dir: Path, max_days: int) -> list[str]:
@@ -424,30 +417,6 @@ def _archive_daily(feed_dir: Path, archive_dir: Path, max_days: int) -> list[str
             fdate = date.fromisoformat(m.group(1))
             days_old = (today - fdate).days
             if days_old > max_days:
-                f.rename(archive_dir / f.name)
-                archived.append(f.name)
-        except ValueError:
-            continue
-    return archived
-
-
-def _archive_weekly(feed_dir: Path, archive_dir: Path, max_weeks: int) -> list[str]:
-    """Archive weekly reports older than max_weeks."""
-    archived = []
-    week_pattern = re.compile(r"^(\d{4})-W(\d{2})(-en)?\.md$")
-    current_year, current_week, _ = date.today().isocalendar()
-
-    for f in feed_dir.iterdir():
-        if f.name == "Dashboard.md" or f.is_dir():
-            continue
-        m = week_pattern.match(f.name)
-        if not m:
-            continue
-        try:
-            file_year = int(m.group(1))
-            file_week = int(m.group(2))
-            week_diff = (current_year - file_year) * 52 + (current_week - file_week)
-            if week_diff > max_weeks:
                 f.rename(archive_dir / f.name)
                 archived.append(f.name)
         except ValueError:
