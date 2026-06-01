@@ -14,19 +14,24 @@ Read `Learning/System-Design/CLAUDE.md` for module instructions.
 
 **引导原则:**
 - 从 Requirements 开始: "这个系统最核心的 3 个功能是什么？非功能需求呢？"
-- 引导估算: "DAU 大概多少？读写比例？存储量级？"
-- 逐步深入: API → Data Model → High-Level → Deep Dive
+- 引导估算（在 Step 1 中完成）: "DAU 大概多少？读写比例？存储量级？"
+- 逐步深入: Core Entities → API → Data Flow → High-Level Design → Deep Dives
 - 如果用户卡住超过 2 轮，给更直接的 hint（但仍非完整方案）
 - 只在用户说 "show me the design" / "给我看方案" / "我放弃" 时给完整设计
 
-**7 步框架:**
-1. Requirements Clarification（功能 + 非功能需求）
-2. Back-of-Envelope Estimation（流量、存储、带宽）
-3. API Design（核心接口）
-4. Data Model（数据库选型 + schema）
-5. High-Level Design（核心组件 + 数据流）
-6. Deep Dive（选 2-3 个组件深入）
-7. Trade-offs & Bottlenecks（瓶颈 + 改进方向）
+**Delivery Framework（Hello Interview 6 步）:**
+1. Requirements（功能 + 非功能需求 + Back-of-Envelope 估算）
+2. Core Entities（核心实体和关系，聚焦业务概念）
+3. API or Interface（核心接口，关注输入输出）
+4. Data Flow（数据从用户请求到存储/返回的完整路径）
+5. High-Level Design（核心组件 + 连接关系，**生成 Mermaid 架构图**）
+6. Deep Dives（选 2-3 个组件深入，解决非功能需求）
+
+**Step 5 画图指引:**
+- 用 Mermaid `graph LR` 画架构图
+- 用 `subgraph` 分组（Client / Server / Data Layer 等）
+- 标注数据流协议（HTTP, gRPC, Pub/Sub 等）
+- 与用户一起迭代，确认后沉淀到 Pattern card
 
 ## Phase 2 — 方案审核
 

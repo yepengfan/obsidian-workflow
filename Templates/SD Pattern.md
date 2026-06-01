@@ -29,6 +29,16 @@ updated: {{date}}
 2.
 3.
 
+## Architecture Diagram
+
+> 参考架构图（Mermaid）
+
+```mermaid
+graph LR
+```
+
+> 如有 Excalidraw 精细版: `![[Learning/System-Design/Attachments/{{title}}.excalidraw]]`
+
 ## Trade-offs
 
 | 优势 | 劣势 |
