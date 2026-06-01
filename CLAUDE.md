@@ -197,15 +197,17 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Algorithm/CLAUD
 | `Learning/System-Design/Patterns/` | Pattern card（一个 pattern 一个 .md，含设计框架 + 关联题目） |
 | `Learning/System-Design/Log/` | 每次练习记录（`YYYY-MM-DD.md`） |
 | `Learning/System-Design/Courses/` | 课程笔记（Hello Interview 等） |
+| `Learning/System-Design/Frameworks/` | 方法论 & 设计框架（Delivery Framework 等） |
+| `Learning/System-Design/Attachments/` | 架构图、截图等媒体 |
 | `Learning/System-Design/00_index.md` | Dataview dashboard |
 
 ### Commands
 
 **`/system-design/solve <题目>`** — 做题全流程：
 
-1. **引导设计** — 按 7 步框架引导（Requirements → Estimation → API → Data Model → High-Level → Deep Dive → Trade-offs），不给完整方案。说「给我看方案」/「我放弃」才给
+1. **引导设计** — 按 Hello Interview Delivery Framework 6 步引导（Requirements → Core Entities → API → Data Flow → High-Level Design → Deep Dives），不给完整方案。说「给我看方案」/「我放弃」才给。Step 5 生成 Mermaid 架构图
 2. **方案审核** — 审需求覆盖、可扩展性、trade-offs、单点故障、成本
-3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
+3. **沉淀** — 归类到已有 Pattern card（含架构图）或新建 + 写当日 Log
 
 ```
 /system-design/solve Design YouTube
@@ -220,7 +222,7 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Algorithm/CLAUD
 ```
 做题 → /system-design/solve Design YouTube
          ↓
-    Phase 1: 7 步框架引导
+    Phase 1: Delivery Framework 6 步引导（含 Mermaid 架构图）
     Phase 2: 方案审核
     Phase 3: 沉淀 pattern + log
          ↓

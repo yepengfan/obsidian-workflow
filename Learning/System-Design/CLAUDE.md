@@ -17,11 +17,11 @@
 ## Solving Flow
 
 1. 用户给题目（如 "Design YouTube"）→ 引导需求分析，**不直接给架构**
-2. 引导用户从 functional + non-functional requirements 出发
-3. 逐步引导：API → 数据模型 → 高层架构 → 深入组件 → trade-offs
+2. 按 Delivery Framework 6 步引导：Requirements → Core Entities → API → Data Flow → High-Level Design → Deep Dives
+3. Step 5 时生成 Mermaid 架构图，与用户一起迭代
 4. 用户说 "show me the design" / "给我看方案" / "我放弃" 时才给完整设计
 5. 用户给出设计 → 审核合理性、trade-off 分析、改进建议
-6. 通过后 → 沉淀 pattern card + 写 log
+6. 通过后 → 沉淀 pattern card（含架构图）+ 写 log
 
 ## Pattern Card Rules
 
@@ -57,19 +57,30 @@
 - Observability
 - Microservices
 
-## Solving 引导框架（7 步）
+## Solving 引导框架（Hello Interview Delivery Framework）
 
-引导用户走完 system design 的标准框架：
+基于 Hello Interview 的 6 步 Delivery Framework。核心理念：前半段（1→5）满足功能需求，整个流程（1→6）满足非功能需求。
 
-1. **Requirements Clarification** — 功能需求 + 非功能需求（QPS、延迟、可用性、一致性）
-2. **Back-of-Envelope Estimation** — 流量、存储、带宽估算
-3. **API Design** — 核心接口定义
-4. **Data Model** — 数据库选型 + schema 设计
-5. **High-Level Design** — 画出核心组件和数据流
-6. **Deep Dive** — 选 2-3 个组件深入（用户选或引导）
-7. **Trade-offs & Bottlenecks** — 瓶颈分析 + 改进方向
+1. **Requirements** — 功能需求 + 非功能需求（QPS、延迟、可用性、一致性）+ Back-of-Envelope 估算
+2. **Core Entities** — 识别核心实体和它们之间的关系（不是完整 schema，聚焦业务概念）
+3. **API or Interface** — 核心接口定义（REST/gRPC/WebSocket，关注输入输出）
+4. **Data Flow** — 数据如何在系统中流动（从用户请求到最终存储/返回的完整路径）
+5. **High-Level Design** — 画出核心组件和连接关系（生成 Mermaid 架构图）
+6. **Deep Dives** — 选 2-3 个组件深入，解决非功能需求（scaling、consistency、availability）
 
 每一步先让用户思考，卡住时给 hint，不直接给答案。
+
+> 详细框架笔记见 `[[Frameworks/Delivery Framework]]`
+
+## Diagram Conventions
+
+- **Mermaid** 为主要画图工具，直接内嵌 Markdown，Obsidian 原生渲染
+- 架构图用 `graph LR`（左到右流向）
+- 用 `subgraph` 分组（Client / Server / Data Layer 等）
+- 数据流标注协议/方向（HTTP, gRPC, Pub/Sub, CDC 等）
+- 需要精细手绘版时用 Excalidraw，文件存 `Learning/System-Design/Attachments/`
+- Pattern card 里的 Architecture Diagram section 存参考架构（Mermaid）
+- Log 里的 Architecture section 存当次练习的架构快照（Mermaid）
 
 ## 与其他计划的关系
 

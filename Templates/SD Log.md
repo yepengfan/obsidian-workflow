@@ -18,6 +18,14 @@ tags: [system-design/log]
 - Functional:
 - Non-functional:
 
+### Architecture
+
+> 本次练习的架构图
+
+```mermaid
+graph LR
+```
+
 ### Key Decisions
 -
 
