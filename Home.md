@@ -1426,10 +1426,11 @@ const { panels: lPanels } = createTabGroup(dv, [
   const pArr = patterns.array();
   const totalProblems = pArr.reduce((sum, x) => sum + (x.problems ? (Array.isArray(x.problems) ? x.problems.length : 1) : 0), 0);
 
-  const weekAgo = dv.date("today").minus({ days: 7 });
-  const monthAgo = dv.date("today").minus({ days: 30 });
+  const todayD = dv.date("today");
+  const weekStart = todayD.weekday === 1 ? todayD : todayD.minus({ days: todayD.weekday - 1 });
+  const monthAgo = todayD.minus({ days: 30 });
   const lArr = logs.array();
-  const weekProblems = lArr.filter(l => dv.date(l.date) >= weekAgo).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
+  const weekProblems = lArr.filter(l => dv.date(l.date) >= weekStart).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
   const monthProblems = lArr.filter(l => dv.date(l.date) >= monthAgo).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
 
   const statsLine = p.createEl("div", {
@@ -1579,10 +1580,11 @@ const { panels: lPanels } = createTabGroup(dv, [
   const pArr = patterns.array();
   const totalProblems = pArr.reduce((sum, x) => sum + (x.problems ? (Array.isArray(x.problems) ? x.problems.length : 1) : 0), 0);
 
-  const weekAgo = dv.date("today").minus({ days: 7 });
-  const monthAgo = dv.date("today").minus({ days: 30 });
+  const todayD = dv.date("today");
+  const weekStart = todayD.weekday === 1 ? todayD : todayD.minus({ days: todayD.weekday - 1 });
+  const monthAgo = todayD.minus({ days: 30 });
   const lArr = logs.array();
-  const weekProblems = lArr.filter(l => dv.date(l.date) >= weekAgo).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
+  const weekProblems = lArr.filter(l => dv.date(l.date) >= weekStart).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
   const monthProblems = lArr.filter(l => dv.date(l.date) >= monthAgo).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
 
   const statsLine = p.createEl("div", {
