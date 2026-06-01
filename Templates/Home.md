@@ -1,7 +1,7 @@
 ---
 tags: template
 for: Home
-updated: 2026-05-22
+updated: 2026-06-02
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
@@ -62,4 +62,8 @@ updated: 2026-05-22
 > - **Problem 2**: Article/repo counts showed `?/?` because `dv.page()` races with Dataview indexing on newly created files.
 > - **Problem 3**: Badges could show stale intermediate state if Dataview re-rendered the block during a feed run.
 > - **Solution**: (1) Compare `completed_at` date against today before rendering badges. (2) Replace `dv.page()` with `parseFM(content)` — parses YAML frontmatter directly from file content already read via `app.vault.read()`, eliminating Dataview dependency. (3) Added final re-read of status file on completion to ensure badges reflect latest state.
+
+> [!note] 2026-06-02 — Fix "本周" stats using rolling 7-day window instead of calendar week
+> - **Problem**: Algorithm tab stats line used `today.minus({ days: 7 })` (rolling 7-day window) while the bar chart used calendar week (Mon-Sun). This caused the "本周 X 题" number to disagree with the current week's bar.
+> - **Solution**: Changed `weekAgo` to compute current week's Monday (`todayD.weekday === 1 ? todayD : todayD.minus({ days: todayD.weekday - 1 })`), matching the bar chart's calendar week logic. Changed "本月" (rolling 30 days) to "上月" (previous calendar month, e.g. May 1–31). Applied to both desktop and mobile code paths.
 
