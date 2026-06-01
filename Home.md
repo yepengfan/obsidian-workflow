@@ -1541,6 +1541,27 @@ const { panels: lPanels } = createTabGroup(dv, [
     p.createEl("div", { text: "✅ 所有 patterns confidence ≥ 3", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
   }
 
+  // Recent pattern cards — latest 5 by created date
+  {
+    const recent = pArr
+      .filter(x => x.created)
+      .sort((a, b) => dv.date(b.created).ts - dv.date(a.created).ts)
+      .slice(0, 5);
+    if (recent.length > 0) {
+      p.createEl("div", { text: "📝 最近 Pattern Cards", attr: { style: "font-size:0.8em;font-weight:600;margin:10px 0 6px;color:var(--text-muted);" } });
+      const rcList = p.createEl("div", { attr: { style: "display:flex;flex-direction:column;gap:5px;" } });
+      for (const pat of recent) {
+        const card = rcList.createEl("div", { attr: { style: "display:flex;align-items:center;gap:10px;padding:7px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--color-accent);" } });
+        const info = card.createEl("div", { attr: { style: "flex:1;min-width:0;" } });
+        const nameEl = info.createEl("div", { attr: { style: "font-size:0.8em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+        nameEl.innerHTML = `<a class="internal-link" data-href="${pat.file.path}">${pat.title || pat.file.name}</a>`;
+        const probCount = pat.problems ? (Array.isArray(pat.problems) ? pat.problems.length : 1) : 0;
+        info.createEl("div", { text: `${pat.category || "-"} · ${probCount} 题`, attr: { style: "font-size:0.65em;color:var(--text-faint);margin-top:1px;" } });
+        card.createEl("div", { text: dv.date(pat.created).toFormat("M/d"), attr: { style: "font-size:0.7em;color:var(--text-faint);flex-shrink:0;" } });
+      }
+    }
+  }
+
   // Link to full dashboard
   p.createEl("div", { attr: { style: "margin-top:10px;font-size:0.85em;" } }).innerHTML =
     '<a class="internal-link" data-href="Learning/Algorithm/00_index.md">All patterns →</a>';
