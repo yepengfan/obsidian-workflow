@@ -65,5 +65,5 @@ updated: 2026-06-02
 
 > [!note] 2026-06-02 — Fix "本周" stats using rolling 7-day window instead of calendar week
 > - **Problem**: Algorithm tab stats line used `today.minus({ days: 7 })` (rolling 7-day window) while the bar chart used calendar week (Mon-Sun). This caused the "本周 X 题" number to disagree with the current week's bar.
-> - **Solution**: Changed `weekAgo` to compute current week's Monday (`todayD.weekday === 1 ? todayD : todayD.minus({ days: todayD.weekday - 1 })`), matching the bar chart's calendar week logic. Applied to both desktop and mobile code paths.
+> - **Solution**: Changed `weekAgo` to compute current week's Monday (`todayD.weekday === 1 ? todayD : todayD.minus({ days: todayD.weekday - 1 })`), matching the bar chart's calendar week logic. Changed "本月" (rolling 30 days) to "上月" (previous calendar month, e.g. May 1–31). Applied to both desktop and mobile code paths.
 

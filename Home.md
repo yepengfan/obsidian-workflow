@@ -1428,15 +1428,16 @@ const { panels: lPanels } = createTabGroup(dv, [
 
   const todayD = dv.date("today");
   const weekStart = todayD.weekday === 1 ? todayD : todayD.minus({ days: todayD.weekday - 1 });
-  const monthAgo = todayD.minus({ days: 30 });
+  const lastMonthStart = todayD.set({ day: 1 }).minus({ months: 1 });
+  const lastMonthEnd = todayD.set({ day: 1 }).minus({ days: 1 });
   const lArr = logs.array();
   const weekProblems = lArr.filter(l => dv.date(l.date) >= weekStart).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
-  const monthProblems = lArr.filter(l => dv.date(l.date) >= monthAgo).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
+  const lastMonthProblems = lArr.filter(l => { const d = dv.date(l.date); return d >= lastMonthStart && d <= lastMonthEnd; }).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
 
   const statsLine = p.createEl("div", {
     attr: { style: "font-size:0.85em;padding:8px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--color-accent);margin-bottom:10px;" }
   });
-  statsLine.innerHTML = `<strong>${totalPatterns}</strong> patterns · <strong>${totalProblems}</strong> problems · 本周 <strong>${weekProblems}</strong> 题 · 本月 <strong>${monthProblems}</strong> 题`;
+  statsLine.innerHTML = `<strong>${totalPatterns}</strong> patterns · <strong>${totalProblems}</strong> problems · 本周 <strong>${weekProblems}</strong> 题 · 上月 <strong>${lastMonthProblems}</strong> 题`;
 
   // Category distribution — Donut Chart
   const catCount = {};
@@ -1582,15 +1583,16 @@ const { panels: lPanels } = createTabGroup(dv, [
 
   const todayD = dv.date("today");
   const weekStart = todayD.weekday === 1 ? todayD : todayD.minus({ days: todayD.weekday - 1 });
-  const monthAgo = todayD.minus({ days: 30 });
+  const lastMonthStart = todayD.set({ day: 1 }).minus({ months: 1 });
+  const lastMonthEnd = todayD.set({ day: 1 }).minus({ days: 1 });
   const lArr = logs.array();
   const weekProblems = lArr.filter(l => dv.date(l.date) >= weekStart).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
-  const monthProblems = lArr.filter(l => dv.date(l.date) >= monthAgo).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
+  const lastMonthProblems = lArr.filter(l => { const d = dv.date(l.date); return d >= lastMonthStart && d <= lastMonthEnd; }).reduce((sum, l) => sum + (l.problems_solved ? (Array.isArray(l.problems_solved) ? l.problems_solved.length : 1) : 0), 0);
 
   const statsLine = p.createEl("div", {
     attr: { style: "font-size:0.85em;padding:8px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--color-accent);margin-bottom:10px;" }
   });
-  statsLine.innerHTML = `<strong>${totalPatterns}</strong> patterns · <strong>${totalProblems}</strong> problems · 本周 <strong>${weekProblems}</strong> 题 · 本月 <strong>${monthProblems}</strong> 题`;
+  statsLine.innerHTML = `<strong>${totalPatterns}</strong> patterns · <strong>${totalProblems}</strong> problems · 本周 <strong>${weekProblems}</strong> 题 · 上月 <strong>${lastMonthProblems}</strong> 题`;
 
   // Category distribution bars
   const catCount = {};
