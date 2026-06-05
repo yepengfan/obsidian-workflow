@@ -236,3 +236,50 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Algorithm/CLAUD
 - **System Design 模块**（本模块）: 理论 + 刷题，模式化练习
 - **SYSD (Learning Plan)**: 实战项目，Docker POC + 生产深度
 - 两者并行互补，目标一致：成为分布式系统架构专家
+
+## Grammar System
+
+高级英语语法表达力练习系统。目标不是纠错，而是扩展句法工具箱。详细规则见 `Learning/Grammar/CLAUDE.md`。
+
+### Directory Structure
+
+| Path | Purpose |
+|------|---------|
+| `Learning/Grammar/Structures/` | Structure card（一个语法结构一个 .md，含 before→after 重写对） |
+| `Learning/Grammar/Log/` | 每日练习记录（`YYYY-MM-DD.md`） |
+| `Learning/Grammar/files/` | 参考书 PDF + 学习计划 MOC |
+| `Learning/Grammar/00_index.md` | Dataview dashboard |
+
+### Commands
+
+**`/grammar/practice [structure]`** — 练习全流程：
+
+1. **选结构** — 指定或从最久未练的结构推荐
+2. **重写练习** — 用自己的真实句子，Socratic 引导多版本重写
+3. **沉淀** — 更新已有 Structure card 或新建 + 写当日 Log
+
+```
+/grammar/practice cleft sentences
+/grammar/practice participle clauses
+/grammar/practice
+```
+
+**`/grammar/review`** — 复习排序 + 统计：
+
+1. 扫描所有 Structure card，按 `updated` 排序（最久未练优先）
+2. 输出 review 表 + 统计（总结构数、本周/月练习次数）
+3. 可 drill-down 快速练习 + 场景 prompt 造句
+
+### Daily Workflow
+
+```
+练习 → /grammar/practice cleft sentences
+         ↓
+    Phase 1: 选结构 + 回顾功能
+    Phase 2: 用自己的句子重写（Socratic 引导）
+    Phase 3: 沉淀 structure card + log
+         ↓
+复习 → /grammar/review
+         ↓
+    挑最久未练的 structure 再练 → 循环
+```

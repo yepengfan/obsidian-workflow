@@ -1312,15 +1312,13 @@ function createTabGroup(dvRef, tabs, defaultId) {
   return { panels, topBar };
 }
 
-const { panels: lPanels } = createTabGroup(dv, [
-  { id: "plans", label: "Plans" },
-  { id: "algo", label: "Algorithm" },
-  { id: "sd", label: "System Design" },
-], "plans");
+// ========== 📚 学习计划 ==========
+dv.el("div", "📚 学习计划", {
+  attr: { style: "font-size:0.92em;font-weight:700;margin-bottom:6px;color:var(--text-normal);" }
+});
 
-// ========== PLANS TAB ==========
 {
-  const container = lPanels["plans"];
+  const container = dv.el("div", "");
 
   function isoWeekLabel(d) {
     const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -1413,6 +1411,17 @@ const { panels: lPanels } = createTabGroup(dv, [
       `<a class="internal-link" data-href="Learning/Dashboard.md">Full dashboard →</a>`;
   }
 }
+
+// ========== 🏋️ 长期练习 ==========
+dv.el("div", "🏋️ 长期练习", {
+  attr: { style: "font-size:0.92em;font-weight:700;margin:16px 0 6px;color:var(--text-normal);" }
+});
+
+const { panels: lPanels } = createTabGroup(dv, [
+  { id: "algo", label: "Algorithm" },
+  { id: "sd", label: "System Design" },
+  { id: "grammar", label: "Grammar" },
+], "algo");
 
 // ========== ALGORITHM TAB ==========
 {
@@ -1667,6 +1676,77 @@ const { panels: lPanels } = createTabGroup(dv, [
   // Link to full dashboard
   p.createEl("div", { attr: { style: "margin-top:10px;font-size:0.85em;" } }).innerHTML =
     '<a class="internal-link" data-href="Learning/System-Design/00_index.md">All patterns →</a>';
+}
+
+// ========== GRAMMAR TAB ==========
+{
+  const p = lPanels["grammar"];
+
+  // Stats
+  const structures = dv.pages('"Learning/Grammar/Structures"').where(x => x.file.tags.includes("#grammar/expressive"));
+  const logs = dv.pages('"Learning/Grammar/Log"').where(x => x.file.tags.includes("#grammar/log"));
+
+  const totalStructures = structures.length;
+  const sArr = structures.array();
+  const totalExamples = sArr.reduce((sum, s) => sum + (s.examples_count || 0), 0);
+
+  const todayD = dv.date("today");
+  const weekStart = todayD.weekday === 1 ? todayD : todayD.minus({ days: todayD.weekday - 1 });
+  const lArr = logs.array();
+  const weekPractice = lArr.filter(l => dv.date(l.date) >= weekStart).reduce((sum, l) => sum + (l.structures_practiced ? (Array.isArray(l.structures_practiced) ? l.structures_practiced.length : 1) : 0), 0);
+
+  const statsLine = p.createEl("div", {
+    attr: { style: "font-size:0.85em;padding:8px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--color-accent);margin-bottom:10px;" }
+  });
+  statsLine.innerHTML = `<strong>${totalStructures}</strong> structures · <strong>${totalExamples}</strong> examples · 本周 <strong>${weekPractice}</strong> 次练习`;
+
+  // Structures list — sorted by last practiced (oldest first)
+  if (totalStructures > 0) {
+    p.createEl("div", { text: "📝 Structures", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:6px;color:var(--text-muted);" } });
+    const sorted = sArr
+      .filter(s => s.updated)
+      .sort((a, b) => dv.date(a.updated).ts - dv.date(b.updated).ts);
+
+    const cardList = p.createEl("div", { attr: { style: "display:flex;flex-direction:column;gap:5px;" } });
+    for (const st of sorted) {
+      const daysSince = Math.floor((todayD.ts - dv.date(st.updated).ts) / (1000 * 60 * 60 * 24));
+      const needsPractice = daysSince >= 14;
+      const accentColor = needsPractice ? "#E8674A" : "var(--color-accent)";
+
+      const card = cardList.createEl("div", { attr: { style: `display:flex;align-items:center;gap:10px;padding:7px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid ${accentColor};` } });
+      const info = card.createEl("div", { attr: { style: "flex:1;min-width:0;" } });
+      const nameEl = info.createEl("div", { attr: { style: "font-size:0.8em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+      nameEl.innerHTML = `<a class="internal-link" data-href="${st.file.path}">${st.title || st.file.name}</a>`;
+      info.createEl("div", { text: `${st.examples_count || 0} examples`, attr: { style: "font-size:0.65em;color:var(--text-faint);margin-top:1px;" } });
+
+      const right = card.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;flex-shrink:0;" } });
+      if (needsPractice) {
+        right.createEl("span", { text: "⚠️", attr: { style: "font-size:0.75em;" } });
+      }
+      right.createEl("span", { text: `${daysSince}d ago`, attr: { style: `font-size:0.7em;color:${needsPractice ? "#E8674A" : "var(--text-faint)"};` } });
+    }
+  } else {
+    p.createEl("div", { text: "还没有 structures — 用 /grammar/practice 开始练习！", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
+  }
+
+  // Priority structures not yet built
+  const builtSlugs = sArr.map(s => String(s.structure || ""));
+  const planned = [
+    { name: "Full Conditional Spectrum", slug: "conditionals" },
+    { name: "Nominalisation", slug: "nominalisation" },
+  ].filter(x => !builtSlugs.includes(x.slug));
+
+  if (planned.length > 0) {
+    p.createEl("div", { text: "📋 待建卡片", attr: { style: "font-size:0.8em;font-weight:600;margin:10px 0 4px;color:var(--text-muted);" } });
+    const todoList = p.createEl("div", { attr: { style: "font-size:0.82em;color:var(--text-muted);padding-left:4px;" } });
+    for (const item of planned) {
+      todoList.createEl("div", { text: `☐ ${item.name}`, attr: { style: "padding:2px 0;" } });
+    }
+  }
+
+  // Link to full dashboard
+  p.createEl("div", { attr: { style: "margin-top:10px;font-size:0.85em;" } }).innerHTML =
+    '<a class="internal-link" data-href="Learning/Grammar/00_index.md">All structures →</a>';
 }
 ```
 
