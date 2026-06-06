@@ -6,11 +6,11 @@
 
 | Path | Purpose |
 |------|---------|
-| `Learning/System-Design/Patterns/` | Pattern card 文件（一个 pattern 一个 .md） |
-| `Learning/System-Design/Log/` | 每次练习记录 |
-| `Learning/System-Design/Courses/` | 课程笔记（Hello Interview 等） |
-| `Learning/System-Design/Attachments/` | 架构图、截图等媒体 |
-| `Learning/System-Design/00_index.md` | Dataview dashboard |
+| `Learning/Practice/System-Design/Patterns/` | Pattern card 文件（一个 pattern 一个 .md） |
+| `Learning/Practice/System-Design/Log/` | 每次练习记录 |
+| `Learning/Practice/System-Design/Courses/` | 课程笔记（Hello Interview 等） |
+| `Learning/Practice/System-Design/Attachments/` | 架构图、截图等媒体 |
+| `Learning/Practice/System-Design/00_index.md` | Dataview dashboard |
 | `Templates/SD Pattern.md` | 新 pattern card 模板 |
 | `Templates/SD Log.md` | 新 log 模板 |
 
@@ -78,12 +78,12 @@
 - 架构图用 `graph LR`（左到右流向）
 - 用 `subgraph` 分组（Client / Server / Data Layer 等）
 - 数据流标注协议/方向（HTTP, gRPC, Pub/Sub, CDC 等）
-- 需要精细手绘版时用 Excalidraw，文件存 `Learning/System-Design/Attachments/`
+- 需要精细手绘版时用 Excalidraw，文件存 `Learning/Practice/System-Design/Attachments/`
 - Pattern card 里的 Architecture Diagram section 存参考架构（Mermaid）
 - Log 里的 Architecture section 存当次练习的架构快照（Mermaid）
 
 ## 与其他计划的关系
 
-- **[[../SYSD/00_plan|SYSD]]**: 实战计划（Docker POC + 项目），提供动手经验
-- **[[../AISA/00_plan|AISA]]**: AI Solutions Architect，云架构方向
+- **[[../../Plans/SYSD/00_plan|SYSD]]**: 实战计划（Docker POC + 项目），提供动手经验
+- **[[../../Plans/AISA/00_plan|AISA]]**: AI Solutions Architect，云架构方向
 - **Algorithm**: LeetCode 刷题系统，训练编码能力

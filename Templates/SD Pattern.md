@@ -37,7 +37,7 @@ updated: {{date}}
 graph LR
 ```
 
-> 如有 Excalidraw 精细版: `![[Learning/System-Design/Attachments/{{title}}.excalidraw]]`
+> 如有 Excalidraw 精细版: `![[Learning/Practice/System-Design/Attachments/{{title}}.excalidraw]]`
 
 ## Trade-offs
 

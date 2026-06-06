@@ -3,17 +3,17 @@
 
 Review grammar structures and practice stats.
 
-Read `Learning/Grammar/CLAUDE.md` for module instructions.
+Read `Learning/Practice/Grammar/CLAUDE.md` for module instructions.
 
 ## Step 1 — Scan & Sort
 
-1. Read all files in `Learning/Grammar/Structures/` — extract frontmatter (`id`, `title`, `structure`, `difficulty`, `examples_count`, `updated`)
+1. Read all files in `Learning/Practice/Grammar/Structures/` — extract frontmatter (`id`, `title`, `structure`, `difficulty`, `examples_count`, `updated`)
 2. Sort by `updated` ascending (oldest first = most in need of practice)
 3. Count total structures
 
 ## Step 2 — Practice Stats
 
-1. Read all files in `Learning/Grammar/Log/` — count total practice sessions
+1. Read all files in `Learning/Practice/Grammar/Log/` — count total practice sessions
 2. Calculate:
    - Total structures in library
    - Total practice sessions (log entries)

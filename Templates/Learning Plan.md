@@ -84,4 +84,4 @@ tags: [learning/{{title}}]
 
 ## 附件目录
 
-截图、图表等媒体文件放在 `Learning/<PLAN-CODE>/Attachments/`
+截图、图表等媒体文件放在 `Learning/Plans/<PLAN-CODE>/Attachments/`

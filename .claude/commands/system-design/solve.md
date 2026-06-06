@@ -3,7 +3,7 @@
 
 Solve System Design problem: $ARGUMENTS
 
-Read `Learning/System-Design/CLAUDE.md` for module instructions.
+Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 
 ## Phase 1 — 引导设计
 
@@ -49,7 +49,7 @@ Read `Learning/System-Design/CLAUDE.md` for module instructions.
 ## Phase 3 — 沉淀
 
 1. **判断 pattern 归属**:
-   - 读取 `Learning/System-Design/Patterns/` 下所有文件的 frontmatter
+   - 读取 `Learning/Practice/System-Design/Patterns/` 下所有文件的 frontmatter
    - 判断该题涉及哪些已有 pattern（一道题可能涉及多个 pattern）
    - 或是否需要新建 pattern
    - 告诉用户归类结果，确认后继续
@@ -67,7 +67,7 @@ Read `Learning/System-Design/CLAUDE.md` for module instructions.
    - `difficulty`: 基于 pattern 复杂度评估
 
 4. **写 Log**:
-   - 检查 `Learning/System-Design/Log/YYYY-MM-DD.md` 是否存在
+   - 检查 `Learning/Practice/System-Design/Log/YYYY-MM-DD.md` 是否存在
    - 不存在 → 用 `Templates/SD Log.md` 创建，填充第一条
    - 已存在 → 追加新 `##` section，更新 frontmatter `problems_solved` 数组
    - 包含: pattern wikilink、difficulty、result emoji、notes、requirements 小结、key decisions

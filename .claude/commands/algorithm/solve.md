@@ -3,7 +3,7 @@
 
 Solve LeetCode problem: $ARGUMENTS
 
-Read `Learning/Algorithm/CLAUDE.md` for module instructions.
+Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 
 ## Phase 1 — 引导解题（渐进 4 层）
 
@@ -51,7 +51,7 @@ Read `Learning/Algorithm/CLAUDE.md` for module instructions.
 ## Phase 3 — 沉淀
 
 1. **判断 pattern 归属**:
-   - 读取 `Learning/Algorithm/Patterns/` 下所有文件的 frontmatter
+   - 读取 `Learning/Practice/Algorithm/Patterns/` 下所有文件的 frontmatter
    - 判断该题属于哪个已有 pattern，或是否需要新建
    - 告诉用户归类结果，确认后继续
 
@@ -68,7 +68,7 @@ Read `Learning/Algorithm/CLAUDE.md` for module instructions.
    - `difficulty`: 基于 pattern 复杂度评估
 
 4. **写 Log**:
-   - 检查 `Learning/Algorithm/Log/YYYY-MM-DD.md` 是否存在
+   - 检查 `Learning/Practice/Algorithm/Log/YYYY-MM-DD.md` 是否存在
    - 不存在 → 用 `Templates/Algorithm Log.md` 创建，填充第一条
    - 已存在 → 追加新 `##` section，更新 frontmatter `problems_solved` 数组
    - 包含: pattern wikilink、difficulty、result emoji、notes、complexity

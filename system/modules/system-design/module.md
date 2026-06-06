@@ -14,11 +14,11 @@ commands: [solve, review]
 templates: [Templates/SD Pattern.md, Templates/SD Log.md]
 scripts: []
 hooks: []
-folders: [Learning/System-Design/, Learning/System-Design/Patterns/, Learning/System-Design/Log/, Learning/System-Design/Courses/]
+folders: [Learning/Practice/System-Design/, Learning/Practice/System-Design/Patterns/, Learning/Practice/System-Design/Log/, Learning/Practice/System-Design/Courses/]
 config_files:
   - .claude/commands/system-design/solve.md
   - .claude/commands/system-design/review.md
-  - Learning/System-Design/CLAUDE.md
+  - Learning/Practice/System-Design/CLAUDE.md
 tags: [system/module]
 ---
 

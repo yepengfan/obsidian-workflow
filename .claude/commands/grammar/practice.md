@@ -3,14 +3,14 @@
 
 Practice grammar structure: $ARGUMENTS
 
-Read `Learning/Grammar/CLAUDE.md` for module instructions.
+Read `Learning/Practice/Grammar/CLAUDE.md` for module instructions.
 
 ## Phase 1 — Pick & Study
 
-1. If user specified a structure name → search `Learning/Grammar/Structures/` for a matching card
+1. If user specified a structure name → search `Learning/Practice/Grammar/Structures/` for a matching card
    - Found → read the card, briefly recap "What it does / when to reach for it"
    - Not found → explain the structure's function and usage, offer to create a new card
-2. If no structure specified → read all cards in `Learning/Grammar/Structures/`, find the one with the oldest `updated` date, suggest it
+2. If no structure specified → read all cards in `Learning/Practice/Grammar/Structures/`, find the one with the oldest `updated` date, suggest it
 3. Confirm with user before proceeding
 
 ## Phase 2 — Rewrite Exercise (Socratic)
@@ -26,7 +26,7 @@ Read `Learning/Grammar/CLAUDE.md` for module instructions.
 
 ## Phase 3 — Card Update / Create
 
-1. **Check existing structures first**: `Glob("Learning/Grammar/Structures/*.md")` — scan filenames for match. **Never skip this step.**
+1. **Check existing structures first**: `Glob("Learning/Practice/Grammar/Structures/*.md")` — scan filenames for match. **Never skip this step.**
 
 2. **Existing structure → update**:
    - Append a new `> [!example]` block with the before→after pair from this session
@@ -43,7 +43,7 @@ Read `Learning/Grammar/CLAUDE.md` for module instructions.
 
 ## Phase 4 — Log
 
-1. Check if `Learning/Grammar/Log/YYYY-MM-DD.md` exists (use today's date)
+1. Check if `Learning/Practice/Grammar/Log/YYYY-MM-DD.md` exists (use today's date)
 2. Does not exist → create from `Templates/Grammar Log.md`, fill first entry
 3. Already exists → append new `##` section, update frontmatter `structures_practiced` array
 4. Each section includes: structure wikilink, before→after summary, insight

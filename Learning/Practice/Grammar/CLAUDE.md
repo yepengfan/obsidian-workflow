@@ -6,10 +6,10 @@
 
 | Path | Purpose |
 |------|---------|
-| `Learning/Grammar/Structures/` | Structure card 文件（一个语法结构一个 .md） |
-| `Learning/Grammar/Log/` | 每日练习记录 |
-| `Learning/Grammar/files/` | 参考书 PDF + 学习计划 MOC |
-| `Learning/Grammar/00_index.md` | Dataview dashboard |
+| `Learning/Practice/Grammar/Structures/` | Structure card 文件（一个语法结构一个 .md） |
+| `Learning/Practice/Grammar/Log/` | 每日练习记录 |
+| `Learning/Practice/Grammar/files/` | 参考书 PDF + 学习计划 MOC |
+| `Learning/Practice/Grammar/00_index.md` | Dataview dashboard |
 | `Templates/Grammar Structure.md` | 新 card 模板 |
 | `Templates/Grammar Log.md` | 新 log 模板 |
 
@@ -46,7 +46,7 @@
 ### Phase 3 — Card Update / Create
 
 1. **判断 structure 归属**:
-   - 用 `Glob("Learning/Grammar/Structures/*.md")` 列出所有文件名
+   - 用 `Glob("Learning/Practice/Grammar/Structures/*.md")` 列出所有文件名
    - 判断该练习属于哪个已有 structure card
    - 告诉用户归类结果，确认后继续
 
@@ -66,14 +66,14 @@
 
 ### Phase 4 — Log
 
-1. 检查 `Learning/Grammar/Log/YYYY-MM-DD.md` 是否存在
+1. 检查 `Learning/Practice/Grammar/Log/YYYY-MM-DD.md` 是否存在
 2. 不存在 → 用 `Templates/Grammar Log.md` 创建，填充第一条
 3. 已存在 → 追加新 `##` section，更新 frontmatter `structures_practiced` 数组
 4. 包含: structure wikilink、before→after 摘要、insight
 
 ## Structure Card Rules
 
-- **归类前必须先查已有 structure**: 用 `Glob("Learning/Grammar/Structures/*.md")` 列出所有文件名。扫描文件名判断是否有匹配的 structure。**绝不跳过此步直接新建。**
+- **归类前必须先查已有 structure**: 用 `Glob("Learning/Practice/Grammar/Structures/*.md")` 列出所有文件名。扫描文件名判断是否有匹配的 structure。**绝不跳过此步直接新建。**
 - `difficulty` 指 structure 掌握难度，非单次练习难度
 - 文件名 = structure title（去掉文件系统非法字符 `/ \ : * ? " < > |`）
 - `tags` 格式: `[grammar/expressive, english]`

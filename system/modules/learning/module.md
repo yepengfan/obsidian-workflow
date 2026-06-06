@@ -14,7 +14,7 @@ commands: [learning-init, learning-log, learning-review]
 templates: [Templates/Learning Plan.md, Templates/Learning Week.md]
 scripts: []
 hooks: []
-folders: [Learning/, Learning/Books/, Learning/Training/]
+folders: [Learning/, Learning/Plans/, Learning/Books/, Learning/Resources/]
 config_files:
   - .claude/commands/learning/learning-init.md
   - .claude/commands/learning/learning-log.md
@@ -33,14 +33,18 @@ tags: [system/module]
 
 ```
 Learning/
-└── <CODE>/                 # 每个学习计划一个文件夹
-    ├── 00_plan.md          # 目标、阶段、时间线、资源
-    ├── 00_map.md           # 概念图、技术雷达
-    ├── Weeks/
-    │   └── YYYY-WXX.md    # 周记（目标、完成、洞察、阻力）
-    ├── Courses/            # 课程笔记
-    ├── Projects/           # 项目 POC
-    └── Attachments/        # 计划专属媒体
+├── Plans/                  # 有阶段、有终点的学习项目
+│   └── <CODE>/
+│       ├── 00_plan.md      # 目标、阶段、时间线、资源
+│       ├── 00_map.md       # 概念图、技术雷达
+│       ├── Weeks/
+│       │   └── YYYY-WXX.md # 周记（目标、完成、洞察、阻力）
+│       ├── Courses/        # 课程笔记
+│       ├── Projects/       # 项目 POC
+│       └── Attachments/    # 计划专属媒体
+├── Practice/               # 持续练习，无终点
+├── Books/                  # 读书系统
+└── Resources/              # 松散学习材料
 ```
 
 ### 数据流

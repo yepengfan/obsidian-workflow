@@ -1341,8 +1341,8 @@ dv.el("div", "📚 学习计划", {
 
   const WEEKS = lastNWeeks(isMobile ? 6 : 10);
   const currentWeek = WEEKS[WEEKS.length - 1];
-  const plans = dv.pages('"Learning"').where(p => p.file.name === "00_plan" && p.status === "active");
-  const allLogs = dv.pages('"Learning"').where(p => p.week !== undefined);
+  const plans = dv.pages('"Learning/Plans"').where(p => p.file.name === "00_plan" && p.status === "active");
+  const allLogs = dv.pages('"Learning/Plans"').where(p => p.week !== undefined);
 
   if (plans.length === 0) {
     container.createEl("p", { text: "No active plans — run /learning-init to start one.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
@@ -1428,8 +1428,8 @@ const { panels: lPanels } = createTabGroup(dv, [
   const p = lPanels["algo"];
 
   // Stats
-  const patterns = dv.pages('"Learning/Algorithm/Patterns"').where(x => x.file.tags.includes("#leetcode/pattern"));
-  const logs = dv.pages('"Learning/Algorithm/Log"').where(x => x.file.tags.includes("#leetcode/log"));
+  const patterns = dv.pages('"Learning/Practice/Algorithm/Patterns"').where(x => x.file.tags.includes("#leetcode/pattern"));
+  const logs = dv.pages('"Learning/Practice/Algorithm/Log"').where(x => x.file.tags.includes("#leetcode/log"));
 
   const totalPatterns = patterns.length;
   const pArr = patterns.array();
@@ -1575,7 +1575,7 @@ const { panels: lPanels } = createTabGroup(dv, [
 
   // Link to full dashboard
   p.createEl("div", { attr: { style: "margin-top:10px;font-size:0.85em;" } }).innerHTML =
-    '<a class="internal-link" data-href="Learning/Algorithm/00_index.md">All patterns →</a>';
+    '<a class="internal-link" data-href="Learning/Practice/Algorithm/00_index.md">All patterns →</a>';
 }
 
 // ========== SYSTEM DESIGN TAB ==========
@@ -1583,8 +1583,8 @@ const { panels: lPanels } = createTabGroup(dv, [
   const p = lPanels["sd"];
 
   // Stats
-  const patterns = dv.pages('"Learning/System-Design/Patterns"').where(x => x.file.tags.includes("#system-design/pattern"));
-  const logs = dv.pages('"Learning/System-Design/Log"').where(x => x.file.tags.includes("#system-design/log"));
+  const patterns = dv.pages('"Learning/Practice/System-Design/Patterns"').where(x => x.file.tags.includes("#system-design/pattern"));
+  const logs = dv.pages('"Learning/Practice/System-Design/Log"').where(x => x.file.tags.includes("#system-design/log"));
 
   const totalPatterns = patterns.length;
   const pArr = patterns.array();
@@ -1675,7 +1675,7 @@ const { panels: lPanels } = createTabGroup(dv, [
 
   // Link to full dashboard
   p.createEl("div", { attr: { style: "margin-top:10px;font-size:0.85em;" } }).innerHTML =
-    '<a class="internal-link" data-href="Learning/System-Design/00_index.md">All patterns →</a>';
+    '<a class="internal-link" data-href="Learning/Practice/System-Design/00_index.md">All patterns →</a>';
 }
 
 // ========== GRAMMAR TAB ==========
@@ -1683,8 +1683,8 @@ const { panels: lPanels } = createTabGroup(dv, [
   const p = lPanels["grammar"];
 
   // Stats
-  const structures = dv.pages('"Learning/Grammar/Structures"').where(x => x.file.tags.includes("#grammar/expressive"));
-  const logs = dv.pages('"Learning/Grammar/Log"').where(x => x.file.tags.includes("#grammar/log"));
+  const structures = dv.pages('"Learning/Practice/Grammar/Structures"').where(x => x.file.tags.includes("#grammar/expressive"));
+  const logs = dv.pages('"Learning/Practice/Grammar/Log"').where(x => x.file.tags.includes("#grammar/log"));
 
   const totalStructures = structures.length;
   const sArr = structures.array();
@@ -1746,7 +1746,7 @@ const { panels: lPanels } = createTabGroup(dv, [
 
   // Link to full dashboard
   p.createEl("div", { attr: { style: "margin-top:10px;font-size:0.85em;" } }).innerHTML =
-    '<a class="internal-link" data-href="Learning/Grammar/00_index.md">All structures →</a>';
+    '<a class="internal-link" data-href="Learning/Practice/Grammar/00_index.md">All structures →</a>';
 }
 ```
 
