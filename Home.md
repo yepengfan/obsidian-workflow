@@ -1341,8 +1341,8 @@ dv.el("div", "📚 学习计划", {
 
   const WEEKS = lastNWeeks(isMobile ? 6 : 10);
   const currentWeek = WEEKS[WEEKS.length - 1];
-  const plans = dv.pages('"Learning"').where(p => p.file.name === "00_plan" && p.status === "active");
-  const allLogs = dv.pages('"Learning"').where(p => p.week !== undefined);
+  const plans = dv.pages('"Learning/Plans"').where(p => p.file.name === "00_plan" && p.status === "active");
+  const allLogs = dv.pages('"Learning/Plans"').where(p => p.week !== undefined);
 
   if (plans.length === 0) {
     container.createEl("p", { text: "No active plans — run /learning-init to start one.", attr: { style: "color:var(--text-muted);font-size:0.85em;" } });
