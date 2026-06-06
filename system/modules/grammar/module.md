@@ -14,11 +14,11 @@ commands: [practice, review]
 templates: [Templates/Grammar Structure.md, Templates/Grammar Log.md]
 scripts: []
 hooks: []
-folders: [Learning/Grammar/, Learning/Grammar/Structures/, Learning/Grammar/Log/]
+folders: [Learning/Practice/Grammar/, Learning/Practice/Grammar/Structures/, Learning/Practice/Grammar/Log/]
 config_files:
   - .claude/commands/grammar/practice.md
   - .claude/commands/grammar/review.md
-  - Learning/Grammar/CLAUDE.md
+  - Learning/Practice/Grammar/CLAUDE.md
 tags: [system/module]
 ---
 
@@ -47,7 +47,7 @@ tags: [system/module]
 
 | 文件 | 用途 |
 |------|------|
-| `Learning/Grammar/CLAUDE.md` | 模块详细规则 |
+| `Learning/Practice/Grammar/CLAUDE.md` | 模块详细规则 |
 | `.claude/commands/grammar/practice.md` | 练习命令 |
 | `.claude/commands/grammar/review.md` | 复习命令 |
 | `Templates/Grammar Structure.md` | Structure card 模板 |

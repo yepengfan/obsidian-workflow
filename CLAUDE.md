@@ -7,10 +7,14 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 ## Folder Structure
 
 - **Archive/** — Archived/inactive content. Contains `Entertainment/` (hobbies, e.g., Mahjong reference notes).
-- **Attachments/** — Media files (images, etc.) for general vault notes. Also contains `Excalidraw/` (drawings and diagrams). Each Learning plan manages its own attachments under `Learning/<CODE>/Attachments/`
+- **Attachments/** — Media files (images, etc.) for general vault notes. Also contains `Excalidraw/` (drawings and diagrams). Each Learning plan manages its own attachments under `Learning/Plans/<CODE>/Attachments/`
 - **Inbox/** — Fleeting notes capture. Quick thoughts from any source (reading, work, life). Processed weekly into Zettelkasten or deleted.
 - **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `topics` (list of keywords for filtering).
-- **Learning/** — Structured learning plans, book reading, and skill training. Each plan lives in a subfolder named by its code (e.g. `Learning/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier — used as shorthand in all commands (`/learning-log AISA`). Also contains `Books/` (book reading workflow — see `Learning/Books/CLAUDE.md`), `Training/` (skill builder resources, related to Home Skills tab in the Work section), and `Algorithm/` (LeetCode pattern library and daily practice — `Patterns/` has one file per algorithm pattern with frontmatter-driven Dataview, `Log/` has daily solving records, `Legacy/` holds pre-migration reference files; see `Learning/Algorithm/CLAUDE.md`). Managed via `/learning/learning-init`, `/learning/learning-log`, `/learning/learning-review`, `/algorithm/solve`, `/algorithm/review`.
+- **Learning/** — Organized into four categories:
+  - `Plans/` — Phased learning projects with endpoints. Each plan lives in a subfolder named by its code (e.g. `Learning/Plans/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier — used as shorthand in all commands (`/learning-log AISA`). Current plans: AISA, SYSD, STYLE. Managed via `/learning/learning-init`, `/learning/learning-log`, `/learning/learning-review`.
+  - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/CLAUDE.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/CLAUDE.md`), `Grammar/` (advanced English grammar — see `Learning/Practice/Grammar/CLAUDE.md`). Managed via `/algorithm/solve`, `/algorithm/review`, `/system-design/solve`, `/system-design/review`, `/grammar/practice`, `/grammar/review`.
+  - `Books/` — Book reading workflow (see `Learning/Books/CLAUDE.md`).
+  - `Resources/` — Loose learning materials and skill builder resources (e.g., system-design-sketchnote).
 - **Note/** — Persistent quick-reference notes (credentials, demo setups, etc.). Unlike Inbox (which is processed weekly), these stay as-is for easy access.
 - **Matter/** — Article notes from Matter app. **DO NOT MODIFY / DO NOT MOVE** — synced by Matter plugin, folder path is fixed.
 - **Instapaper Notes/** — Saved article highlights from Instapaper. **DO NOT MODIFY / DO NOT MOVE** — synced by Instapaper plugin, folder path is fixed.
@@ -52,7 +56,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Links**: Use `[[wikilinks]]` for internal linking
 - **Language**: Mix of English and Chinese — match the language of the content being worked on
 - **Formatting**: Use headers (##), callouts (`> [!tip]`), blockquotes, and lists. Follow existing patterns in the vault.
-- **Attachments**: Place images/media in `Attachments/`. Exception: Learning plan assets (screenshots, diagrams, etc.) go in `Learning/<CODE>/Attachments/`
+- **Attachments**: Place images/media in `Attachments/`. Exception: Learning plan assets (screenshots, diagrams, etc.) go in `Learning/Plans/<CODE>/Attachments/`
 - **New notes**: Place in the appropriate existing folder. If unsure, use `Inbox/`
 - **Zettel notes**: One idea per note, written in your own words (not copy-paste). Use `[[wikilinks]]` in the `Related::` field to connect to other zettel. Title should be a descriptive statement (e.g., "Distributed systems trade consistency for availability").
 - **Inbox notes**: No format required. Just capture the thought. Run `/zettelkasten/inbox-review` weekly to process: convert to zettel or archive to `Inbox/archive/YYYY-MM/`.
@@ -140,16 +144,16 @@ When working inside the `Learning/Books/` folder, that file takes precedence for
 
 ## Algorithm System
 
-LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Algorithm/CLAUDE.md`。
+LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algorithm/CLAUDE.md`。
 
 ### Directory Structure
 
 | Path | Purpose |
 |------|---------|
-| `Learning/Algorithm/Patterns/` | Pattern card（一个 pattern 一个 .md，含模板代码 + 关联题目） |
-| `Learning/Algorithm/Log/` | 每日解题记录（`YYYY-MM-DD.md`） |
-| `Learning/Algorithm/Legacy/` | 迁移前原始文件（只读存档） |
-| `Learning/Algorithm/00_index.md` | Dataview dashboard |
+| `Learning/Practice/Algorithm/Patterns/` | Pattern card（一个 pattern 一个 .md，含模板代码 + 关联题目） |
+| `Learning/Practice/Algorithm/Log/` | 每日解题记录（`YYYY-MM-DD.md`） |
+| `Learning/Practice/Algorithm/Legacy/` | 迁移前原始文件（只读存档） |
+| `Learning/Practice/Algorithm/00_index.md` | Dataview dashboard |
 
 ### Commands
 
@@ -188,18 +192,18 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Algorithm/CLAUD
 
 ## System Design System
 
-系统设计刷题 + 模式沉淀系统（类似 Algorithm）。详细规则见 `Learning/System-Design/CLAUDE.md`。
+系统设计刷题 + 模式沉淀系统（类似 Algorithm）。详细规则见 `Learning/Practice/System-Design/CLAUDE.md`。
 
 ### Directory Structure
 
 | Path | Purpose |
 |------|---------|
-| `Learning/System-Design/Patterns/` | Pattern card（一个 pattern 一个 .md，含设计框架 + 关联题目） |
-| `Learning/System-Design/Log/` | 每次练习记录（`YYYY-MM-DD.md`） |
-| `Learning/System-Design/Courses/` | 课程笔记（Hello Interview 等） |
-| `Learning/System-Design/Frameworks/` | 方法论 & 设计框架（Delivery Framework 等） |
-| `Learning/System-Design/Attachments/` | 架构图、截图等媒体 |
-| `Learning/System-Design/00_index.md` | Dataview dashboard |
+| `Learning/Practice/System-Design/Patterns/` | Pattern card（一个 pattern 一个 .md，含设计框架 + 关联题目） |
+| `Learning/Practice/System-Design/Log/` | 每次练习记录（`YYYY-MM-DD.md`） |
+| `Learning/Practice/System-Design/Courses/` | 课程笔记（Hello Interview 等） |
+| `Learning/Practice/System-Design/Frameworks/` | 方法论 & 设计框架（Delivery Framework 等） |
+| `Learning/Practice/System-Design/Attachments/` | 架构图、截图等媒体 |
+| `Learning/Practice/System-Design/00_index.md` | Dataview dashboard |
 
 ### Commands
 
@@ -239,16 +243,16 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Algorithm/CLAUD
 
 ## Grammar System
 
-高级英语语法表达力练习系统。目标不是纠错，而是扩展句法工具箱。详细规则见 `Learning/Grammar/CLAUDE.md`。
+高级英语语法表达力练习系统。目标不是纠错，而是扩展句法工具箱。详细规则见 `Learning/Practice/Grammar/CLAUDE.md`。
 
 ### Directory Structure
 
 | Path | Purpose |
 |------|---------|
-| `Learning/Grammar/Structures/` | Structure card（一个语法结构一个 .md，含 before→after 重写对） |
-| `Learning/Grammar/Log/` | 每日练习记录（`YYYY-MM-DD.md`） |
-| `Learning/Grammar/files/` | 参考书 PDF + 学习计划 MOC |
-| `Learning/Grammar/00_index.md` | Dataview dashboard |
+| `Learning/Practice/Grammar/Structures/` | Structure card（一个语法结构一个 .md，含 before→after 重写对） |
+| `Learning/Practice/Grammar/Log/` | 每日练习记录（`YYYY-MM-DD.md`） |
+| `Learning/Practice/Grammar/files/` | 参考书 PDF + 学习计划 MOC |
+| `Learning/Practice/Grammar/00_index.md` | Dataview dashboard |
 
 ### Commands
 

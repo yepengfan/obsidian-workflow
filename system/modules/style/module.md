@@ -13,7 +13,7 @@ commands: []
 templates: []
 scripts: []
 hooks: []
-folders: [Learning/STYLE/, Learning/STYLE/Attachments/]
+folders: [Learning/Plans/STYLE/, Learning/Plans/STYLE/Attachments/]
 config_files: []
 tags: [system/module]
 ---

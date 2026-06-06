@@ -14,12 +14,12 @@ commands: [solve, review, migrate]
 templates: [Templates/Algorithm Pattern.md, Templates/Algorithm Log.md]
 scripts: []
 hooks: []
-folders: [Learning/Algorithm/, Learning/Algorithm/Patterns/, Learning/Algorithm/Log/]
+folders: [Learning/Practice/Algorithm/, Learning/Practice/Algorithm/Patterns/, Learning/Practice/Algorithm/Log/]
 config_files:
   - .claude/commands/algorithm/solve.md
   - .claude/commands/algorithm/review.md
   - .claude/commands/algorithm/migrate.md
-  - Learning/Algorithm/CLAUDE.md
+  - Learning/Practice/Algorithm/CLAUDE.md
 tags: [system/module]
 ---
 

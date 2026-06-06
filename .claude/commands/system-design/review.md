@@ -3,11 +3,11 @@
 
 Review system design patterns for revision.
 
-Read `Learning/System-Design/CLAUDE.md` for module instructions.
+Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 
 ## Steps
 
-1. **Scan all patterns**: Read frontmatter of all files in `Learning/System-Design/Patterns/`
+1. **Scan all patterns**: Read frontmatter of all files in `Learning/Practice/System-Design/Patterns/`
 
 2. **Sort by priority**:
    - `updated` ascending (oldest first — 最久未复习优先)

@@ -3,11 +3,11 @@
 
 Review algorithm patterns for revision.
 
-Read `Learning/Algorithm/CLAUDE.md` for module instructions.
+Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 
 ## Steps
 
-1. **Scan all patterns**: Read frontmatter of all files in `Learning/Algorithm/Patterns/`
+1. **Scan all patterns**: Read frontmatter of all files in `Learning/Practice/Algorithm/Patterns/`
 
 2. **Sort by priority**:
    - `updated` ascending (oldest first — 最久未复习优先)
