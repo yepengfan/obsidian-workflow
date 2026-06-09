@@ -1533,25 +1533,6 @@ const { panels: lPanels } = createTabGroup(dv, [
     }
   }
 
-  // Low confidence patterns — card layout
-  const lowConf = pArr.filter(x => x.confidence && x.confidence <= 2).sort((a, b) => (a.confidence || 0) - (b.confidence || 0));
-
-  if (lowConf.length > 0) {
-    p.createEl("div", { text: "🔴 需要复习", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:6px;color:var(--text-muted);" } });
-    const cardList = p.createEl("div", { attr: { style: "display:flex;flex-direction:column;gap:6px;" } });
-    for (const pat of lowConf) {
-      const confColor = (pat.confidence || 1) <= 1 ? "#E8674A" : "#F5A623";
-      const card = cardList.createEl("div", { attr: { style: `display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid ${confColor};` } });
-      const info = card.createEl("div", { attr: { style: "flex:1;min-width:0;" } });
-      const nameEl = info.createEl("div", { attr: { style: "font-size:0.8em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
-      nameEl.innerHTML = `<a class="internal-link" data-href="${pat.file.path}">${pat.title || pat.file.name}</a>`;
-      info.createEl("div", { text: pat.category || "-", attr: { style: "font-size:0.65em;color:var(--text-faint);margin-top:1px;" } });
-      card.createEl("div", { text: "⭐".repeat(pat.confidence || 1), attr: { style: "font-size:0.75em;flex-shrink:0;" } });
-    }
-  } else {
-    p.createEl("div", { text: "✅ 所有 patterns confidence ≥ 3", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
-  }
-
   // Recent pattern cards — latest 5 by created date
   {
     const recent = pArr
@@ -1648,28 +1629,7 @@ const { panels: lPanels } = createTabGroup(dv, [
     }
   }
 
-  // Low confidence patterns
-  const lowConf = pArr.filter(x => x.confidence && x.confidence <= 2).sort((a, b) => (a.confidence || 0) - (b.confidence || 0));
-
-  if (lowConf.length > 0) {
-    p.createEl("div", { text: "🔴 需要复习", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:4px;color:var(--text-muted);" } });
-    const table = p.createEl("table", { attr: { style: "width:100%;font-size:0.8em;border-collapse:collapse;" } });
-    const thead = table.createEl("thead");
-    const hr = thead.createEl("tr");
-    for (const h of ["Pattern", "Category", "Confidence"]) {
-      hr.createEl("th", { text: h, attr: { style: "text-align:left;padding:4px 8px;border-bottom:1px solid var(--background-modifier-border);color:var(--text-muted);font-weight:500;" } });
-    }
-    const tbody = table.createEl("tbody");
-    for (const pat of lowConf) {
-      const tr = tbody.createEl("tr");
-      const td1 = tr.createEl("td", { attr: { style: "padding:3px 8px;" } });
-      td1.innerHTML = `<a class="internal-link" data-href="${pat.file.path}">${pat.title || pat.file.name}</a>`;
-      tr.createEl("td", { text: pat.category || "-", attr: { style: "padding:3px 8px;color:var(--text-muted);" } });
-      tr.createEl("td", { text: "⭐".repeat(pat.confidence || 1), attr: { style: "padding:3px 8px;" } });
-    }
-  } else if (totalPatterns > 0) {
-    p.createEl("div", { text: "✅ 所有 patterns confidence ≥ 3", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
-  } else {
+  if (totalPatterns === 0) {
     p.createEl("div", { text: "还没有 patterns — 用 /system-design/solve 开始练题！", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
   }
 
