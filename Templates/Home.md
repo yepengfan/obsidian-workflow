@@ -30,11 +30,6 @@ updated: 2026-06-02
 > - **Change**: Replaced the button + polling + spinner block with a static placeholder message directing users to run `/ai-digest` in Claude Code instead.
 > - **Supersedes**: The 2026-03-18 timeout note (timeout logic removed along with the button).
 
-> [!note] 2026-03-29 — Skills tab practice tracker links
-> - **What**: Added a data-driven practice links section between the radar chart legend and the footer in the Skills tab.
-> - **How**: Reads `tracker` field from each skill entry in `Profile/Skill Radar.md` frontmatter. Skills with a `tracker` path get a `📐 Name → Tracker →` row. Skills without `tracker` are skipped.
-> - **Scalable**: Adding a new skill with a `tracker:` field in Skill Radar frontmatter automatically surfaces its link in the Skills tab — no Home.md edit needed.
-
 > [!note] 2026-03-31 — Fix baseball card tilt on fast mouse entry
 > - **Problem**: Two independent bugs. (A) Chromium 3D hit testing triggers spurious `mouseleave` on `cardWrap` when the card tilts — the rotated card surface no longer aligns with the wrapper's 2D bounding box, so the browser thinks the cursor left. (B) `endInteraction()`'s 600ms animation-restart timer is never cancelled — re-entering within 600ms causes the old timer to re-apply `bc-float`, overriding the tilt transform.
 > - **Fix A**: Guard `mouseleave` with a bounding-rect check — verify `e.clientX/Y` is actually outside `cardWrap`'s rect before calling `endInteraction()`. Spurious leaves (cursor still inside) are ignored.
