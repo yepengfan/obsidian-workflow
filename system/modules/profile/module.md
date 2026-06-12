@@ -30,14 +30,12 @@ tags: [system/module]
 ```
 Profile/
 ├── Personal Baseball Card.md   # Baseball Card（雷达图数据）
-├── Skill Radar.md              # 技能矩阵
 ├── ted-profile.png             # 头像
 └── PrinciplesYou*.pdf          # 测评原始报告
 ```
 
 ### 展示
 - Home.md 的 Profile 标签页 → Dataview 雷达图（全息效果）
-- Home.md 的 Skills 标签页 → 技能雷达可视化
 
 ### 数据来源
 - PrinciplesYou 测评结果
@@ -48,7 +46,6 @@ Profile/
 | 组件 | 位置 |
 |------|------|
 | Baseball Card | `Profile/Personal Baseball Card.md` |
-| 技能雷达 | `Profile/Skill Radar.md` |
 | 展示层 | `Home.md`（Dataviewjs 雷达图代码） |
 
 ---

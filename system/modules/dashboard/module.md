@@ -29,10 +29,9 @@ Vault 的 UI 层。Home.md 是主入口，通过 Dataviewjs 实现标签页导�
 
 ```
 Home.md                          # 主仪表盘（Homepage 插件落地页）
-├── [Work | Profile | Skills]    # 主标签组
+├── [Work | Profile]             # 主标签组
 │   ├── Work → 工作入口 + 日记按钮 + 任务工具栏
-│   ├── Profile → Baseball Card 雷达图（全息效果）
-│   └── Skills → 技能雷达可视化
+│   └── Profile → Baseball Card 雷达图（全息效果）
 └── [AI Digest | GitHub Trending] # Feed 标签组
     ├── AI Digest → 最新摘要预览
     └── GitHub Trending → 最新趋势预览
