@@ -5,7 +5,7 @@ type: profile
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-06-12
 depends_on: [dashboard]
 requires:
   plugins: [dataview]
