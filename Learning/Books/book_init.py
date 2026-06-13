@@ -293,8 +293,6 @@ def write_chapter(chapters_dir: Path, chapter_num: int, title: str, preview: str
                   book_title: str = "", weread_name: str = None, weread_heading: str = None):
     # Strip leading "N. " or "N " from title so filename isn't "Ch01_1 Title"
     clean_title = re.sub(r'^\d+[\.\s]+', '', title).strip()
-    # Use book title for flashcard deck tag
-    deck_tag = safe_filename(book_title).replace(' ', '') if book_title else 'default'
     fname = f"Ch{chapter_num:02d}_{safe_filename(clean_title)}"
 
     weread_section = ""
@@ -309,31 +307,12 @@ def write_chapter(chapters_dir: Path, chapter_num: int, title: str, preview: str
 title: "{title}"
 chapter: {chapter_num}
 status: unread
-tags:
-  - flashcards/{deck_tag}
 ---
 
 # {title}
 
 > **一句话：** {preview}…
-
-## 核心概念
-<!-- 读完后用自己的话解释每个概念 -->
-
-## 和已知事物的连接
-<!-- 类比、对比、联想 -->
-
-## 费曼测试
-<!-- 合上书，用 3-5 句话解释这章给一个完全不懂的人听 -->
-
-## 未解决的问题
-<!-- 读完还不懂的地方，或想深入探索的方向 -->
-
-## Flashcards
-<!-- 费曼测试后在这里添加卡片，格式：问题::答案 -->
 {weread_section}
----
-*Status: `unread` → `reading` → `filled` → `feynman-tested` → `reviewed`*
 """
     (chapters_dir / f"{fname}.md").write_text(content, encoding='utf-8')
     return fname
