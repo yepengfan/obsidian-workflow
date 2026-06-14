@@ -5,6 +5,42 @@ Solve System Design problem: $ARGUMENTS
 
 Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 
+## Phase 0 — 初始化 Solution 文件夹
+
+1. 从 `$ARGUMENTS` 提取题目简称（如 "Design YouTube" → "YouTube", "Bitly" → "Bitly"）
+2. 检查 `Learning/Practice/System-Design/Solutions/<题目>/progress.md` 是否已存在:
+   - **已存在且有 `system-design/wip` tag** → 读取 progress.md，恢复到上次中断的位置继续（跳到对应 Step）
+   - **已存在但无 wip tag** → 告诉用户这题已完成，问是否重新练习
+   - **不存在** → 创建 Solution 文件夹 + 文件（见下方）
+
+3. **创建 Solution 文件夹**:
+   - 创建目录: `Learning/Practice/System-Design/Solutions/<题目>/`
+   - 创建 Excalidraw 文件: 运行 `node scripts/sd-excalidraw-template.js "<题目>"` 并将输出写入 `<题目>.excalidraw.md`
+   - 创建 progress.md:
+     ```yaml
+     topic: <完整题目描述>
+     started: <今天日期>
+     source: Hello Interview
+     excalidraw: "[[Learning/Practice/System-Design/Solutions/<题目>/<题目>.excalidraw]]"
+     tags: [system-design/wip]
+     ```
+     包含空的 Progress 表（6 步全 ⬜）、空的 Pending Questions、空的 Key Learnings、空的下次继续
+
+4. 告诉用户: "已创建 Solution 文件夹，打开 Excalidraw 开始画图" + 给出 wikilink
+
+## 自动 Checkpoint（贯穿 Phase 1-2 全程）
+
+在引导过程中，当以下**任一条件满足**时，自动更新 `progress.md`（Read → 修改 → Write 覆盖）：
+
+1. **Step 状态变化** — 某个 Step 从 ⬜ 变为 🔄（进行中）或 ✅（完成）→ 更新 Progress 表对应行 + Notes 列
+2. **关键设计决策** — 用户做出重要选择或学到关键概念（如 "302 vs 301"、"需要 cache 因为 100K QPS"）→ 追加到 Key Learnings
+3. **新 pending 问题** — 讨论中发现需要后续解决的问题 → 追加到 Pending Questions
+4. **每次更新时** — 同步更新"下次继续"section 为当前最新的下一步行动
+
+**不要更新的场景:** 普通 Q&A 轮次（用户问 "QPS 是什么"，解释完不需要写）。只在**状态实际变化**时写。
+
+**更新频率:** 大约每 3-5 轮对话一次。不用每轮都写。
+
 ## Phase 1 — 引导设计
 
 1. 用户提供了题目名称或描述

@@ -6,10 +6,11 @@
 
 | Path | Purpose |
 |------|---------|
+| `Learning/Practice/System-Design/Solutions/<题目>/` | Solution folder（每题一个，含 progress.md + Excalidraw） |
 | `Learning/Practice/System-Design/Patterns/` | Pattern card 文件（一个 pattern 一个 .md） |
 | `Learning/Practice/System-Design/Log/` | 每次练习记录 |
 | `Learning/Practice/System-Design/Courses/` | 课程笔记（Hello Interview 等） |
-| `Learning/Practice/System-Design/Attachments/` | 架构图、截图等媒体 |
+| `Learning/Practice/System-Design/Attachments/` | 共享媒体（非题目专属的架构图、截图等） |
 | `Learning/Practice/System-Design/00_index.md` | Dataview dashboard |
 | `Templates/SD Pattern.md` | 新 pattern card 模板 |
 | `Templates/SD Log.md` | 新 log 模板 |
@@ -71,6 +72,45 @@
 每一步先让用户思考，卡住时给 hint，不直接给答案。
 
 > 详细框架笔记见 `[[Frameworks/Delivery Framework]]`
+
+## Solution Folder Convention
+
+每道系统设计题有自己的文件夹，所有 artifacts 集中管理：
+
+```
+Learning/Practice/System-Design/
+├── Solutions/
+│   ├── Bitly/
+│   │   ├── progress.md          # 进度文件（tags: [system-design/wip]）
+│   │   └── Bitly.excalidraw.md  # Excalidraw 画板
+│   ├── YouTube/
+│   │   ├── progress.md
+│   │   └── YouTube.excalidraw.md
+```
+
+### 文件夹
+- 路径: `Learning/Practice/System-Design/Solutions/<题目简称>/`
+- **不要**在 vault 根目录 `Excalidraw/` 或 `Attachments/` 创建
+- 练习完成（Phase 3 沉淀结束）后文件夹保留不动，作为学习记录
+
+### progress.md
+- frontmatter 必须有 `topic`, `started`, `tags: [system-design/wip]`
+- 包含: Progress 表（Delivery Framework 每步状态）、Pending Questions、Key Learnings、下次继续步骤
+- Home.md SD tab 自动检测带 `system-design/wip` tag 的 `progress.md` 并显示 "Continue →" 入口
+- Phase 3 完成后移除 `system-design/wip` tag（文件保留）
+
+### Excalidraw
+- 命名: `<题目简称>.excalidraw.md`（如 `Bitly.excalidraw.md`）
+- `/system-design/solve` 启动时自动创建，预填 Delivery Framework 6 步标题
+- progress.md 通过 `![[...]]` 嵌入引用
+- 使用未压缩 JSON 格式（`json` 代码块），Excalidraw 插件打开后自动压缩
+
+### Excalidraw 模板生成
+
+使用脚本生成：`node scripts/sd-excalidraw-template.js "<题目>"`
+- 预填 Delivery Framework 6 步标题 + FR/NFR/Back-of-Envelope/Write Flow/Read Flow 子标题
+- 输出未压缩 JSON 格式，Excalidraw 插件打开后自动压缩
+- 修改模板布局请编辑 `scripts/sd-excalidraw-template.js`
 
 ## Diagram Conventions
 

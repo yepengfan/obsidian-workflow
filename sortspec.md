@@ -2,6 +2,7 @@
 sorting-spec: |
   target-folder: .
   Inbox
+  Essays
   Zettelkasten
   Profile
   Work
