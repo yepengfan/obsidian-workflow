@@ -986,11 +986,34 @@ function parseFM(content) {
   const dailyStatus = dailyRow.createEl("div", {
     attr: { style: "display:flex;gap:6px;align-items:center;flex-wrap:wrap;" }
   });
-  createFeedButton({
-    row: dailyRow, btn: dailyBtn, label: "Daily Feeds ▶",
-    statusArea: dailyStatus, feedLabels: DAILY_FEEDS,
-    shellCmdId: "shf4gf2026",
-  });
+  // If all feeds already generated today, skip polling setup entirely to avoid
+  // setBtnDone race that would re-enable the button after 1.5s timeout.
+  {
+    const today = dv.date("today").toFormat("yyyy-MM-dd");
+    const allGenerated = Object.values(FEED_DIRS).every(dir =>
+      app.vault.getAbstractFileByPath(`${dir}/${today}.md`) ||
+      app.vault.getAbstractFileByPath(`${dir}/${today}-en.md`)
+    );
+    if (allGenerated) {
+      dailyBtn.disabled = true;
+      dailyBtn.textContent = "Daily Feeds ✓";
+      dailyBtn.style.background = "var(--background-modifier-border)";
+      dailyBtn.style.borderColor = "var(--background-modifier-border)";
+      dailyBtn.style.color = "var(--text-muted)";
+      dailyBtn.style.cursor = "not-allowed";
+      dailyBtn.style.opacity = "0.7";
+      for (const [, label] of Object.entries(DAILY_FEEDS)) {
+        const badge = dailyStatus.createEl("span", { text: `✅ ${label}` });
+        badge.style.cssText = "font-size:0.72em;padding:2px 6px;border-radius:5px;background:var(--background-secondary);color:var(--color-green);white-space:nowrap;";
+      }
+    } else {
+      createFeedButton({
+        row: dailyRow, btn: dailyBtn, label: "Daily Feeds ▶",
+        statusArea: dailyStatus, feedLabels: DAILY_FEEDS,
+        shellCmdId: "shf4gf2026",
+      });
+    }
+  }
 
 }
 
