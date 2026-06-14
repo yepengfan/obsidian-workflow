@@ -236,43 +236,57 @@ def write_meta(out_dir: Path, title: str, author: str):
     content = f"""---
 title: "{title}"
 author: "{author}"
+archetype:
+output_target:
+reading_channel:
 status: reading
 started: {date.today()}
 finished:
-tags: [book]
+progress: {{}}
 ---
 
 # {title} — Meta
 
 ## 这本书要解决什么问题？
-<!-- 读前填写 -->
+
 
 ## 作者的核心主张是什么？
-<!-- 读前填写，读中随时更新 -->
+
 
 ## 我读这本书想得到什么？
-<!-- 读前填写 -->
 
-## 读完后的整体评价
-<!-- 读完后填写 -->
+
+## 跨章回顾
+> 读完整本书后填写（AI 问，你答，记录要点）
+
+## 全局连接
+> 读完整本后的宏观 differentiation
+
+## 读后感
+> 你自己写——这本书改变了什么？值不值得推荐？
+
+## 整体评价
+
 """
-    (out_dir / "00_meta.md").write_text(content, encoding='utf-8')
+    (out_dir / "meta.md").write_text(content, encoding='utf-8')
 
 
-def write_map(out_dir: Path, title: str, parts: dict, filenames: dict):
+def write_moc(out_dir: Path, title: str, parts: dict, filenames: dict):
     lines = [
         f'---',
-        f'title: "{title} — Full Map"',
-        f'updated: {date.today()}',
+        f'title: "{title} — Map of Content"',
         f'---',
         f'',
-        f'# {title} — Full Map',
+        f'# {title} — Map of Content',
         f'',
-        f'> 用来追踪整本书的结构和章节间的关系。随阅读进度持续更新。',
+        f'## Meta',
+        f'- [[meta]]',
+        f'',
+        f'## Chapters',
         f'',
     ]
     for part, chapters in parts.items():
-        lines.append(f'## {part}')
+        lines.append(f'### {part}')
         for ch in chapters:
             fname = filenames.get(ch)
             if fname:
@@ -282,15 +296,19 @@ def write_map(out_dir: Path, title: str, parts: dict, filenames: dict):
         lines.append('')
 
     lines += [
-        '## 核心概念网络',
-        '<!-- 读完后在这里用 [[wikilinks]] 连接跨章节的重复概念 -->',
+        '## Working Notes',
+        '',
+        '## Feynman Checks',
+        '',
+        '## WeRead',
+        '> WeRead 划线和批注见 `WeRead/` 对应书目',
         '',
     ]
-    (out_dir / "00_map.md").write_text('\n'.join(lines), encoding='utf-8')
+    (out_dir / "MOC.md").write_text('\n'.join(lines), encoding='utf-8')
 
 
 def write_chapter(chapters_dir: Path, chapter_num: int, title: str, preview: str,
-                  book_title: str = "", weread_name: str = None, weread_heading: str = None):
+                  weread_name: str = None, weread_heading: str = None):
     # Strip leading "N. " or "N " from title so filename isn't "Ch01_1 Title"
     clean_title = re.sub(r'^\d+[\.\s]+', '', title).strip()
     fname = f"Ch{chapter_num:02d}_{safe_filename(clean_title)}"
@@ -372,24 +390,28 @@ def main():
             if wr_heading:
                 weread_matched += 1
         fname = write_chapter(chapters_dir, ch_num, ch_title, preview,
-                             book_title=title, weread_name=weread_name,
+                             weread_name=weread_name,
                              weread_heading=wr_heading)
         filenames[ch_title] = fname
         ch_num += 1
 
     write_meta(out_dir, title, author)
-    write_map(out_dir, title, parts, filenames)
+    write_moc(out_dir, title, parts, filenames)
+
+    # Create notes/ and feynman/ directories
+    (out_dir / "notes").mkdir(exist_ok=True)
+    (out_dir / "feynman").mkdir(exist_ok=True)
 
     # Summary
     n_chapters = len(chapter_items)
     n_parts = len(parts)
     print(f"\n✅  {n_chapters} chapter files generated")
-    print(f"✅  00_map.md  ({n_chapters} chapters across {n_parts} part(s))")
-    print(f"✅  00_meta.md ready to fill")
+    print(f"✅  MOC.md  ({n_chapters} chapters across {n_parts} part(s))")
+    print(f"✅  meta.md ready to fill")
     if weread_name:
         print(f"✅  WeRead linked: {weread_matched}/{n_chapters} chapters")
     print(f"\n📁  Output: {out_dir}")
-    print(f"\n👉  Next: open 00_meta.md in Obsidian and fill in your reading goals.")
+    print(f"\n👉  Next: open meta.md in Obsidian and fill in your reading goals.")
 
 
 if __name__ == '__main__':
