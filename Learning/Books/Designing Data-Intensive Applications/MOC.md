@@ -1,12 +1,12 @@
 ---
-title: DDIA — Map of Content
+title: Designing Data-Intensive Applications — Map of Content
 book: "Designing Data-Intensive Applications, 2nd Edition"
 ---
 
-# DDIA — Map of Content
+# Designing Data-Intensive Applications — Map of Content
 
 ## Meta
-- [[DDIA/meta|meta]]
+- [[Designing Data-Intensive Applications/meta|meta]]
 
 ## Chapters (skeleton)
 > `book_init.py` 生成后自动填充
@@ -14,7 +14,7 @@ book: "Designing Data-Intensive Applications, 2nd Edition"
 ## Working Notes
 ```dataview
 LIST
-FROM "Learning/Books/DDIA/notes"
+FROM "Learning/Books/Designing Data-Intensive Applications/notes"
 WHERE file.name != "_README"
 SORT file.name ASC
 ```
@@ -22,7 +22,7 @@ SORT file.name ASC
 ## Feynman Checks
 ```dataview
 LIST
-FROM "Learning/Books/DDIA/feynman"
+FROM "Learning/Books/Designing Data-Intensive Applications/feynman"
 WHERE file.name != "_README"
 SORT file.name ASC
 ```

@@ -10,7 +10,7 @@ finished:
 progress: {}
 ---
 
-# DDIA — Meta
+# Designing Data-Intensive Applications — Meta
 
 ## 这本书要解决什么问题？
 
