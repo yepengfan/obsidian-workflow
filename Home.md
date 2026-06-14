@@ -992,6 +992,24 @@ function parseFM(content) {
     shellCmdId: "shf4gf2026",
   });
 
+  // Disable button if all feeds already generated today
+  {
+    const today = dv.date("today").toFormat("yyyy-MM-dd");
+    const allGenerated = Object.values(FEED_DIRS).every(dir =>
+      app.vault.getAbstractFileByPath(`${dir}/${today}.md`) ||
+      app.vault.getAbstractFileByPath(`${dir}/${today}-en.md`)
+    );
+    if (allGenerated) {
+      dailyBtn.disabled = true;
+      dailyBtn.textContent = "Daily Feeds ✓";
+      dailyBtn.style.background = "var(--background-modifier-border)";
+      dailyBtn.style.borderColor = "var(--background-modifier-border)";
+      dailyBtn.style.color = "var(--text-muted)";
+      dailyBtn.style.cursor = "not-allowed";
+      dailyBtn.style.opacity = "0.7";
+    }
+  }
+
 }
 
 const { panels: fPanels } = createTabGroup(dv, [
