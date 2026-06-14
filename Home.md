@@ -1459,6 +1459,40 @@ const { panels: lPanels } = createTabGroup(dv, [
 {
   const p = lPanels["sd"];
 
+  // WIP detection — show in-progress practice sessions
+  {
+    const wipFiles = app.vault.getMarkdownFiles().filter(f => {
+      if (!f.path.startsWith("Learning/Practice/System-Design/Solutions/") || f.name !== "progress.md") return false;
+      const cache = app.metadataCache.getFileCache(f);
+      const tags = cache?.frontmatter?.tags || [];
+      return tags.includes("system-design/wip");
+    });
+    if (wipFiles.length > 0) {
+      const wipWrap = p.createEl("div", { attr: { style: "margin-bottom:10px;" } });
+      for (const wf of wipFiles) {
+        const parts = wf.path.split("/");
+        const topic = parts[parts.length - 2] || "Unknown";
+        const cache = app.metadataCache.getFileCache(wf);
+        const fm = cache?.frontmatter || {};
+        const started = fm.started || "";
+
+        const excalidrawPath = `Learning/Practice/System-Design/Solutions/${topic}/${topic}.excalidraw.md`;
+        const card = wipWrap.createEl("div", {
+          attr: { style: "display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--color-orange);margin-bottom:6px;cursor:pointer;" }
+        });
+        card.addEventListener("click", () => app.workspace.openLinkText(excalidrawPath, "", false));
+
+        card.createEl("span", { text: "🔄", attr: { style: "font-size:1.1em;flex-shrink:0;" } });
+        const info = card.createEl("div", { attr: { style: "flex:1;min-width:0;" } });
+        info.createEl("div", { text: topic, attr: { style: "font-size:0.85em;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+        if (started) {
+          info.createEl("div", { text: `Started ${started}`, attr: { style: "font-size:0.65em;color:var(--text-faint);margin-top:1px;" } });
+        }
+        card.createEl("span", { text: "Continue →", attr: { style: "font-size:0.72em;color:var(--color-orange);white-space:nowrap;flex-shrink:0;" } });
+      }
+    }
+  }
+
   // Stats
   const patterns = dv.pages('"Learning/Practice/System-Design/Patterns"').where(x => x.file.tags.includes("#system-design/pattern"));
   const logs = dv.pages('"Learning/Practice/System-Design/Log"').where(x => x.file.tags.includes("#system-design/log"));
@@ -1781,6 +1815,51 @@ for (const p of recent) {
 container.createEl("div", { attr: { style: "margin-top:8px;font-size:0.8em;display:flex;gap:12px;" } }).innerHTML =
   `<a class="internal-link" data-href="Matter/Matter Index" style="color:var(--text-faint);">All Matter →</a>` +
   `<a class="internal-link" data-href="Instapaper Notes/Instapaper Index" style="color:var(--text-faint);">All Instapaper →</a>`;
+```
+
+---
+
+## Essays
+
+```dataviewjs
+const essays = dv.pages('"Essays"')
+  .where(p => p.type === "essay")
+  .sort(p => p.created, "desc");
+
+const container = dv.el("div", "");
+
+// Stats
+const stats = container.createEl("div", {
+  attr: { style: "display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;" }
+});
+const statEl = stats.createEl("div", {
+  attr: { style: "padding:8px 16px;background:var(--background-secondary);border-radius:8px;text-align:center;min-width:70px;" }
+});
+statEl.createEl("div", { text: String(essays.length), attr: { style: "font-size:1.3em;font-weight:700;line-height:1.2;" } });
+statEl.createEl("div", { text: "Essays", attr: { style: "font-size:0.72em;color:var(--text-muted);" } });
+
+// Essay list
+const grid = container.createEl("div", {
+  attr: { style: "display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;" }
+});
+for (const p of essays.limit(6)) {
+  const card = grid.createEl("div", {
+    attr: { style: "border:1px solid var(--background-modifier-border);border-radius:10px;padding:12px;background:var(--background-secondary);box-shadow:0 1px 3px rgba(0,0,0,0.06);display:flex;flex-direction:column;" }
+  });
+  const titleEl = card.createEl("div", { attr: { style: "font-weight:700;font-size:0.88em;margin-bottom:6px;line-height:1.4;" } });
+  titleEl.innerHTML = `<a class="internal-link" data-href="${p.file.path}">${p.file.name}</a>`;
+  const tags = (p.tags || []).filter(t => t !== "essay");
+  if (tags.length > 0) {
+    const tagRow = card.createEl("div", { attr: { style: "display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;" } });
+    for (const t of tags.slice(0, 4)) {
+      tagRow.createEl("span", { text: String(t).replace(/^#/, ""), attr: { style: "font-size:0.65em;padding:1px 6px;border-radius:6px;background:var(--background-primary);color:var(--text-muted);border:1px solid var(--background-modifier-border);" } });
+    }
+  }
+  card.createEl("div", {
+    text: p.created ? String(p.created).slice(0, 10) : "",
+    attr: { style: "margin-top:auto;padding-top:8px;font-size:0.7em;color:var(--text-faint);" }
+  });
+}
 ```
 
 ---
