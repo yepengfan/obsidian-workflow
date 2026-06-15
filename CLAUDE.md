@@ -12,7 +12,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `topics` (list of keywords for filtering).
 - **Learning/** — Organized into four categories:
   - `Plans/` — Phased learning projects with endpoints. Each plan lives in a subfolder named by its code (e.g. `Learning/Plans/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier — used as shorthand in all commands (`/learning-log AISA`). Current plans: AISA, SYSD, STYLE. Managed via `/learning/learning-init`, `/learning/learning-log`, `/learning/learning-review`.
-  - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/CLAUDE.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/CLAUDE.md`), `Grammar/` (advanced English grammar — see `Learning/Practice/Grammar/CLAUDE.md`). Managed via `/algorithm/solve`, `/algorithm/review`, `/system-design/solve`, `/system-design/review`, `/grammar/practice`, `/grammar/review`.
+  - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/CLAUDE.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/CLAUDE.md`), `Grammar/` (advanced English grammar — see `Learning/Practice/Grammar/CLAUDE.md`). Managed via `/algo/solve`, `/algo/review`, `/sysd/solve`, `/sysd/review`, `/grammar/practice`, `/grammar/review`.
   - `Books/` — Book reading workflow (see `Learning/Books/CLAUDE.md`).
   - `Resources/` — Loose learning materials and skill builder resources (e.g., system-design-sketchnote).
 - **Note/** — Persistent quick-reference notes (credentials, demo setups, etc.). Unlike Inbox (which is processed weekly), these stay as-is for easy access.
@@ -42,8 +42,8 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Templates/Work Project.md** — Template for project pages.
 - **Templates/Learning Plan.md** — Template for `00_plan.md` (learning plan goals and phases).
 - **Templates/Learning Week.md** — Template for weekly learning logs (`Weeks/YYYY-WXX.md`).
-- **Templates/Algorithm Pattern.md** — Template for algorithm pattern cards (used by `/algorithm/solve`).
-- **Templates/Algorithm Log.md** — Template for daily algorithm practice logs (used by `/algorithm/solve`).
+- **Templates/Algorithm Pattern.md** — Template for algorithm pattern cards (used by `/algo/solve`).
+- **Templates/Algorithm Log.md** — Template for daily algorithm practice logs (used by `/algo/solve`).
 - **Templates/Brownbag Session.md** — Template for brownbag session plans (used by `/brownbag` command).
 - **Templates/Home.md** — Reference backup + design decisions log for `Home.md` (note-creation button, toolbar design).
 - **Templates/Work Dashboard.md** — Reference backup + design decisions log for `Work/Work Dashboard.md`.
@@ -83,8 +83,9 @@ Commands are organized by module in `.claude/commands/`:
 ├── work/            # /work/daily, /work/project, ...
 ├── learning/        # /learning/learning-init, ...
 ├── feeds/           # /feeds/ai-digest, /feeds/github-trending
+├── algo/            # /algo/solve, /algo/review
 ├── brownbag/        # /brownbag/brownbag
-├── system-design/   # /system-design/solve, /system-design/review
+├── sysd/            # /sysd/solve, /sysd/review
 ├── vault-ops/       # /vault-ops/organize, /vault-ops/backup, ...
 └── module-toggle.md # /module-toggle (global)
 ```
@@ -157,19 +158,19 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
 
 ### Commands
 
-**`/algorithm/solve <题号或题名>`** — 做题全流程：
+**`/algo/solve <题号或题名>`** — 做题全流程：
 
 1. **引导解题** — 给 hints + pseudocode，不给代码。说「给我看代码」/「我放弃」才给
 2. **代码审核** — 贴代码后审正确性、edge cases、复杂度、风格
 3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
 
 ```
-/algorithm/solve 15
-/algorithm/solve two sum
-/algorithm/solve LC 200 岛屿数量
+/algo/solve 15
+/algo/solve two sum
+/algo/solve LC 200 岛屿数量
 ```
 
-**`/algorithm/review`** — 复习排序 + 统计：
+**`/algo/review`** — 复习排序 + 统计：
 
 1. 扫描所有 Pattern card，按 `updated` 排序（最久未更新优先）
 2. 输出 review 表，标注最久未更新的 pattern
@@ -179,13 +180,13 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
 ### Daily Workflow
 
 ```
-做题 → /algorithm/solve 42
+做题 → /algo/solve 42
          ↓
     Phase 1: hints 引导
     Phase 2: 贴代码审核
     Phase 3: 沉淀 pattern + log
          ↓
-复习 → /algorithm/review
+复习 → /algo/review
          ↓
     挑最久未更新的 pattern 再做一题 → 循环
 ```
@@ -207,30 +208,30 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
 
 ### Commands
 
-**`/system-design/solve <题目>`** — 做题全流程：
+**`/sysd/solve <题目>`** — 做题全流程：
 
 1. **引导设计** — 按 Hello Interview Delivery Framework 6 步引导（Requirements → Core Entities → API → Data Flow → High-Level Design → Deep Dives），不给完整方案。说「给我看方案」/「我放弃」才给。Step 5 生成 Mermaid 架构图
 2. **方案审核** — 审需求覆盖、可扩展性、trade-offs、单点故障、成本
 3. **沉淀** — 归类到已有 Pattern card（含架构图）或新建 + 写当日 Log
 
 ```
-/system-design/solve Design YouTube
-/system-design/solve Design URL Shortener
-/system-design/solve 设计聊天系统
+/sysd/solve Design YouTube
+/sysd/solve Design URL Shortener
+/sysd/solve 设计聊天系统
 ```
 
-**`/system-design/review`** — 复习排序 + 统计（同 Algorithm review 逻辑）
+**`/sysd/review`** — 复习排序 + 统计（同 Algorithm review 逻辑）
 
 ### Daily Workflow
 
 ```
-做题 → /system-design/solve Design YouTube
+做题 → /sysd/solve Design YouTube
          ↓
     Phase 1: Delivery Framework 6 步引导（含 Mermaid 架构图）
     Phase 2: 方案审核
     Phase 3: 沉淀 pattern + log
          ↓
-复习 → /system-design/review
+复习 → /sysd/review
          ↓
     挑最久未更新的 pattern 再做一题 → 循环
 ```

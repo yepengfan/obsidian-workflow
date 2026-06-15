@@ -16,9 +16,9 @@ scripts: []
 hooks: []
 folders: [Learning/Practice/Algorithm/, Learning/Practice/Algorithm/Patterns/, Learning/Practice/Algorithm/Log/]
 config_files:
-  - .claude/commands/algorithm/solve.md
-  - .claude/commands/algorithm/review.md
-  - .claude/commands/algorithm/migrate.md
+  - .claude/commands/algo/solve.md
+  - .claude/commands/algo/review.md
+  - .claude/commands/algo/migrate.md
   - Learning/Practice/Algorithm/CLAUDE.md
 tags: [system/module]
 ---
@@ -35,12 +35,12 @@ LeetCode 算法练习模块。交互式解题引导 → 代码审核 → Pattern
 
 ### 数据流
 
-- **输入**: `/algorithm/solve <LC#>` → 引导解题 → 代码审核 → 沉淀 card + log
-- **回顾**: `/algorithm/review` → 按 confidence 排序展示薄弱 patterns
-- **迁移**: `/algorithm/migrate` → Legacy/ → Patterns/ 一次性转换
+- **输入**: `/algo/solve <LC#>` → 引导解题 → 代码审核 → 沉淀 card + log
+- **回顾**: `/algo/review` → 按 confidence 排序展示薄弱 patterns
+- **迁移**: `/algo/migrate` → Legacy/ → Patterns/ 一次性转换
 
 ## Quick Start
 
-1. `/algorithm/solve 543` — 开始解题
-2. `/algorithm/review` — 复习薄弱 pattern
-3. `/algorithm/migrate` — 迁移旧数据（仅需运行一次）
+1. `/algo/solve 543` — 开始解题
+2. `/algo/review` — 复习薄弱 pattern
+3. `/algo/migrate` — 迁移旧数据（仅需运行一次）
