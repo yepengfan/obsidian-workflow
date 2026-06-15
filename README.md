@@ -208,24 +208,24 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 
 | Command | When to use |
 |---------|------------|
-| `/algorithm/solve <题号或题名>` | 做题全流程：hints 引导 → 代码审核 → 沉淀 pattern card + log |
-| `/algorithm/review` | 复习排序：按 confidence↑ + updated↑ 展示所有 pattern，统计做题数 |
+| `/algo/solve <题号或题名>` | 做题全流程：hints 引导 → 代码审核 → 沉淀 pattern card + log |
+| `/algo/review` | 复习排序：按 confidence↑ + updated↑ 展示所有 pattern，统计做题数 |
 
-`/algorithm/solve` 三阶段：
+`/algo/solve` 三阶段：
 1. **引导解题** — 给 hints + pseudocode，不给代码（说「给我看代码」/「我放弃」才给）
 2. **代码审核** — 贴代码后审正确性、edge cases、复杂度、风格
 3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
 
-`/algorithm/review` 输出 review 表：🔴 confidence ≤ 2 需重点复习、🟡 = 3 建议巩固、🟢 ≥ 4 良好。可 drill-down 复习某 pattern 或做新题。
+`/algo/review` 输出 review 表：🔴 confidence ≤ 2 需重点复习、🟡 = 3 建议巩固、🟢 ≥ 4 良好。可 drill-down 复习某 pattern 或做新题。
 
 #### System Design
 
 | Command | When to use |
 |---------|------------|
-| `/system-design/solve <题目>` | 做题全流程：7 步框架引导 → 方案审核 → 沉淀 pattern card + log |
-| `/system-design/review` | 复习排序：按 confidence↑ + updated↑ 展示所有 pattern，统计做题数 |
+| `/sysd/solve <题目>` | 做题全流程：7 步框架引导 → 方案审核 → 沉淀 pattern card + log |
+| `/sysd/review` | 复习排序：按 confidence↑ + updated↑ 展示所有 pattern，统计做题数 |
 
-`/system-design/solve` 三阶段：
+`/sysd/solve` 三阶段：
 1. **引导设计** — 按 7 步框架引导（Requirements → Estimation → API → Data Model → High-Level → Deep Dive → Trade-offs），不给完整方案（说「给我看方案」/「我放弃」才给）
 2. **方案审核** — 审需求覆盖、可扩展性、trade-offs、单点故障、成本
 3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log

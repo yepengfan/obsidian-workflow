@@ -1583,7 +1583,7 @@ const { panels: lPanels } = createTabGroup(dv, [
   }
 
   if (totalPatterns === 0) {
-    p.createEl("div", { text: "还没有 patterns — 用 /system-design/solve 开始练题！", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
+    p.createEl("div", { text: "还没有 patterns — 用 /sysd/solve 开始练题！", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
   }
 
   // Link to full dashboard

@@ -16,8 +16,8 @@ scripts: []
 hooks: []
 folders: [Learning/Practice/System-Design/, Learning/Practice/System-Design/Patterns/, Learning/Practice/System-Design/Log/, Learning/Practice/System-Design/Courses/]
 config_files:
-  - .claude/commands/system-design/solve.md
-  - .claude/commands/system-design/review.md
+  - .claude/commands/sysd/solve.md
+  - .claude/commands/sysd/review.md
   - Learning/Practice/System-Design/CLAUDE.md
 tags: [system/module]
 ---
@@ -34,8 +34,8 @@ System Design 练习模块。交互式设计引导 → 方案审核 → Pattern 
 
 ### 数据流
 
-- **输入**: `/system-design/solve <题目>` → 引导设计（7 步框架） → 方案审核 → 沉淀 card + log
-- **回顾**: `/system-design/review` → 按 confidence 排序展示薄弱 patterns
+- **输入**: `/sysd/solve <题目>` → 引导设计（7 步框架） → 方案审核 → 沉淀 card + log
+- **回顾**: `/sysd/review` → 按 confidence 排序展示薄弱 patterns
 
 ### 与其他模块关系
 
@@ -45,5 +45,5 @@ System Design 练习模块。交互式设计引导 → 方案审核 → Pattern 
 
 ## Quick Start
 
-1. `/system-design/solve Design YouTube` — 开始练题
-2. `/system-design/review` — 复习薄弱 pattern
+1. `/sysd/solve Design YouTube` — 开始练题
+2. `/sysd/review` — 复习薄弱 pattern

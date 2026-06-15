@@ -8,6 +8,8 @@
 |------|---------|
 | `Learning/Practice/System-Design/Solutions/<题目>/` | Solution folder（每题一个，含 progress.md + Excalidraw） |
 | `Learning/Practice/System-Design/Patterns/` | Pattern card 文件（一个 pattern 一个 .md） |
+| `Learning/Practice/System-Design/Key Technologies/` | 技术 building block 文章（Redis, Kafka, etc.） |
+| `Learning/Practice/System-Design/Design Patterns/` | 设计模式 building block 文章（Scaling Reads, Real-time Updates, etc.） |
 | `Learning/Practice/System-Design/Log/` | 每次练习记录 |
 | `Learning/Practice/System-Design/Courses/` | 课程笔记（Hello Interview 等） |
 | `Learning/Practice/System-Design/Attachments/` | 共享媒体（非题目专属的架构图、截图等） |

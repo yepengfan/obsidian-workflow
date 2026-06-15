@@ -1,13 +1,13 @@
-<!-- module: system-design -->
-> [!GUARD] Read `system/modules/system-design/module.md`. If `enabled: false` → reply "⛔ Module **system-design** is disabled. Enable it via `/module-toggle system-design`." and STOP. Do NOT proceed.
+<!-- module: algorithm -->
+> [!GUARD] Read `system/modules/algorithm/module.md`. If `enabled: false` → reply "⛔ Module **algorithm** is disabled. Enable it via `/module-toggle algorithm`." and STOP. Do NOT proceed.
 
-Review system design patterns for revision.
+Review algorithm patterns for revision.
 
-Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
+Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 
 ## Steps
 
-1. **Scan all patterns**: Read frontmatter of all files in `Learning/Practice/System-Design/Patterns/`
+1. **Scan all patterns**: Read frontmatter of all files in `Learning/Practice/Algorithm/Patterns/`
 
 2. **Sort by priority**:
    - `updated` ascending (oldest first — 最久未复习优先)
@@ -21,7 +21,8 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 
 4. **Offer drill-down**: Ask if user wants to:
    - 复习某个具体 pattern（打开对应 card）
-   - 做一道该 pattern 的题（转到 `/system-design/solve`）
+   - 做一道该 pattern 的新题（转到 `/algo/solve`）
+   - 重做该 pattern 的旧题验证掌握程度（转到 `/algo/solve`）
 
 5. **Stats summary**:
    - 总 pattern 数
