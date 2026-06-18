@@ -14,6 +14,7 @@ Exit codes:
 
 import argparse
 import json
+import os
 import re
 import shutil
 import ssl
@@ -21,6 +22,7 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import date, datetime, timezone, timedelta
 from difflib import SequenceMatcher
@@ -166,19 +168,48 @@ def fetch_feed(feed: dict, ssl_ctx: ssl.SSLContext) -> list[Article]:
         return []
 
 
+MAX_WORKERS = 16  # concurrent feed fetches (enough for all 27 in ≤2 rounds)
+FETCH_WALL_TIMEOUT = 60  # hard wall-clock limit for the entire fetch phase
+
+
 def fetch_all_feeds(hours: int) -> tuple[list[Article], int]:
-    """Fetch all feeds sequentially, filter by time window."""
+    """Fetch all feeds concurrently, filter by time window.
+
+    All feeds launch in parallel. A hard wall-clock timeout ensures we
+    finish within FETCH_WALL_TIMEOUT seconds — slow feeds are abandoned
+    and we return whatever we collected so far.
+    """
     cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     ssl_ctx = ssl.create_default_context()
     all_articles = []
     feeds_ok = 0
 
-    for feed in RSS_FEEDS:
-        articles = fetch_feed(feed, ssl_ctx)
-        if articles:
-            feeds_ok += 1
-        filtered = [a for a in articles if a.pub_date >= cutoff]
-        all_articles.extend(filtered)
+    pool = ThreadPoolExecutor(max_workers=MAX_WORKERS)
+    futures = {
+        pool.submit(fetch_feed, feed, ssl_ctx): feed["name"]
+        for feed in RSS_FEEDS
+    }
+    try:
+        for future in as_completed(futures, timeout=FETCH_WALL_TIMEOUT):
+            name = futures[future]
+            try:
+                articles = future.result()
+            except Exception as e:
+                print(f"[fetch] {name}: unexpected error: {e}", file=sys.stderr)
+                continue
+            if articles:
+                feeds_ok += 1
+            filtered = [a for a in articles if a.pub_date >= cutoff]
+            all_articles.extend(filtered)
+    except TimeoutError:
+        pending = [name for f, name in futures.items() if not f.done()]
+        print(
+            f"[fetch] Wall-clock timeout ({FETCH_WALL_TIMEOUT}s), "
+            f"skipping {len(pending)} slow feeds: {', '.join(pending)}",
+            file=sys.stderr,
+        )
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
 
     all_articles.sort(key=lambda a: a.pub_date, reverse=True)
     return all_articles, feeds_ok
@@ -259,6 +290,11 @@ def main() -> None:
 
     json.dump(payload, sys.stdout, ensure_ascii=False, indent=2)
     print(file=sys.stdout)
+    sys.stdout.flush()
+
+    # Force-exit to avoid blocking on abandoned slow-feed threads.
+    # All output is already flushed; clean shutdown is not needed here.
+    os._exit(0)
 
 
 if __name__ == "__main__":
