@@ -271,3 +271,50 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
          ↓
     挑最久未练的 structure 再练 → 循环
 ```
+
+## Frontend System
+
+React & Next.js 前端练习系统。题源: GreatFrontEnd。详细规则见 `Learning/Practice/Frontend/CLAUDE.md`。
+
+### Directory Structure
+
+| Path | Purpose |
+|------|---------|
+| `Learning/Practice/Frontend/Patterns/` | Pattern card（一个 pattern 一个 .md） |
+| `Learning/Practice/Frontend/Log/` | 每日练习记录（`YYYY-MM-DD.md`） |
+| `Learning/Practice/Frontend/sandbox/` | Next.js 15 练习项目（App Router + TS + Tailwind） |
+| `Learning/Practice/Frontend/Attachments/` | 效果截图、GIF |
+| `Learning/Practice/Frontend/00_index.md` | Dataview dashboard |
+
+### Commands
+
+**`/frontend/solve <题目>`** — 做题全流程：
+
+1. **初始化** — 创建 sandbox 骨架文件（UI Component / JS Utility / Frontend System Design）
+2. **引导实现** — 渐进 3 层 hint（需求分析 → 实现策略 → 骨架代码），不给完整代码
+3. **Code Review** — 审 React best practices、a11y、性能、edge cases
+4. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
+
+```
+/frontend/solve Accordion
+/frontend/solve debounce
+/frontend/solve Star Rating
+```
+
+### Sandbox
+
+`sandbox/` 是一个 Next.js 15 项目，所有 challenge 代码在此运行：
+- UI Component: `sandbox/app/challenges/<name>/page.tsx`
+- JS Utility: `sandbox/challenges/<name>.ts` + `.test.ts`
+- `npm run dev` 后访问 `/challenges/<name>` 预览
+
+### Daily Workflow
+
+```
+做题 → /frontend/solve Accordion
+         ↓
+    Phase 0: 创建骨架 → npm run dev 预览
+    Phase 1: 渐进引导（L1 需求分析 → L2 策略 → L3 骨架）
+    Phase 2: Code Review（React + a11y + 性能）
+    Phase 3: 沉淀 pattern + log
+```
