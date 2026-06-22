@@ -8,8 +8,10 @@
 |------|---------|
 | `Learning/Practice/System-Design/Solutions/<题目>/` | Solution folder（每题一个，含 progress.md + Excalidraw） |
 | `Learning/Practice/System-Design/Patterns/` | Pattern card 文件（一个 pattern 一个 .md） |
+| `Learning/Practice/System-Design/Core Concepts/` | 核心概念 reference（Caching, Sharding, CAP Theorem, etc.） |
 | `Learning/Practice/System-Design/Key Technologies/` | 技术 building block 文章（Redis, Kafka, etc.） |
 | `Learning/Practice/System-Design/Design Patterns/` | 设计模式 building block 文章（Scaling Reads, Real-time Updates, etc.） |
+| `Learning/Practice/System-Design/Insights/` | 练习中沉淀的具体知识点和经验总结 |
 | `Learning/Practice/System-Design/Log/` | 每次练习记录 |
 | `Learning/Practice/System-Design/Courses/` | 课程笔记（Hello Interview 等） |
 | `Learning/Practice/System-Design/Attachments/` | 共享媒体（非题目专属的架构图、截图等） |
@@ -103,7 +105,7 @@ Learning/Practice/System-Design/
 
 ### Excalidraw
 - 命名: `<题目简称>.excalidraw.md`（如 `Bitly.excalidraw.md`）
-- `/system-design/solve` 启动时自动创建，预填 Delivery Framework 6 步标题
+- `/sysd/solve` 启动时自动创建，预填 Delivery Framework 6 步标题
 - progress.md 通过 `![[...]]` 嵌入引用
 - 使用未压缩 JSON 格式（`json` 代码块），Excalidraw 插件打开后自动压缩
 
@@ -126,6 +128,6 @@ Learning/Practice/System-Design/
 
 ## 与其他计划的关系
 
-- **[[../../Plans/SYSD/00_plan|SYSD]]**: 实战计划（Docker POC + 项目），提供动手经验
 - **[[../../Plans/AISA/00_plan|AISA]]**: AI Solutions Architect，云架构方向
 - **Algorithm**: LeetCode 刷题系统，训练编码能力
+- **Frontend**: React/Next.js 前端练习
