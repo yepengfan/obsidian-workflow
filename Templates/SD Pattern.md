@@ -11,6 +11,8 @@ updated: {{date}}
 
 # {{title}}
 
+**Category**: {{category}}
+
 ## Key Insight
 
 
