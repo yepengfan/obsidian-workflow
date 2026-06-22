@@ -37,9 +37,8 @@ System Design 练习模块。交互式设计引导 → 方案审核 → Pattern 
 
 ### 与其他模块关系
 
-- **SYSD (Learning Plan)**: 实战计划，专注 Docker POC + 项目经验积累
 - **Algorithm**: LeetCode 刷题，训练编码能力
-- 三者互补：理论模式（System Design）+ 编码能力（Algorithm）+ 实战经验（SYSD）
+- **Frontend**: React/Next.js 前端练习
 
 ## Quick Start
 

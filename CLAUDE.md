@@ -11,7 +11,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Inbox/** — Fleeting notes capture. Quick thoughts from any source (reading, work, life). Processed weekly into Zettelkasten or deleted.
 - **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `topics` (list of keywords for filtering).
 - **Learning/** — Organized into four categories:
-  - `Plans/` — Phased learning projects with endpoints. Each plan lives in a subfolder named by its code (e.g. `Learning/Plans/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier — used as shorthand in all commands (`/learning-log AISA`). Current plans: AISA, SYSD, STYLE. Managed via `/learning/learning-init`, `/learning/learning-log`, `/learning/learning-review`.
+  - `Plans/` — Phased learning projects with endpoints. Each plan lives in a subfolder named by its code (e.g. `Learning/Plans/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier — used as shorthand in all commands (`/learning-log AISA`). Current plans: AISA, STYLE. Managed via `/learning/learning-init`, `/learning/learning-log`, `/learning/learning-review`.
   - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/CLAUDE.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/CLAUDE.md`), `Grammar/` (advanced English grammar — see `Learning/Practice/Grammar/CLAUDE.md`). Managed via `/algo/solve`, `/sysd/solve`, `/grammar/practice`, `/grammar/review`.
   - `Books/` — Book reading workflow (see `Learning/Books/CLAUDE.md`).
   - `Resources/` — Loose learning materials and skill builder resources (e.g., system-design-sketchnote).
@@ -219,11 +219,6 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
     Phase 3: 沉淀 pattern + log
 ```
 
-### 与 SYSD 的关系
-
-- **System Design 模块**（本模块）: 理论 + 刷题，模式化练习
-- **SYSD (Learning Plan)**: 实战项目，Docker POC + 生产深度
-- 两者并行互补，目标一致：成为分布式系统架构专家
 
 ## Grammar System
 
