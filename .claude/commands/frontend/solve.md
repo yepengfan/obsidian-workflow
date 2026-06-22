@@ -8,10 +8,10 @@ Read `Learning/Practice/Frontend/CLAUDE.md` for module instructions.
 ## Phase 0 — 初始化 Challenge
 
 1. 从 `$ARGUMENTS` 提取题目名称，转为 kebab-case slug（如 "Accordion" → "accordion", "Star Rating" → "star-rating"）
-2. 判断 challenge type:
+2. 判断 challenge type（按优先级从高到低匹配，更具体的规则优先）:
    - 含 "design" / "system" → `frontend-system-design`
-   - 含 "implement" / "build" / 常见 UI 组件名（Accordion, Tabs, Modal, Autocomplete, etc.） → `ui-component`
-   - 含 "implement" + JS API 名（debounce, throttle, Promise, curry, deepClone, etc.） → `js-utility`
+   - 含 JS API 名（debounce, throttle, Promise, curry, deepClone, flatten, classNames, etc.） → `js-utility`
+   - 含常见 UI 组件名（Accordion, Tabs, Modal, Autocomplete, etc.）或 "build" / "component" → `ui-component`
    - 不确定 → 问用户
 3. 检查是否已存在:
    - **UI Component / FE System Design**: 检查 `Learning/Practice/Frontend/sandbox/app/challenges/<slug>/page.tsx`

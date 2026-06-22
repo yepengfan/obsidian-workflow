@@ -25,7 +25,7 @@
 ### Sandbox 操作约定
 
 - 新建 challenge 时自动创建骨架文件（见 Solving Flow Phase 0）
-- `code_path` 字段记录相对于 `sandbox/` 的路径
+- `code_path` 字段记录相对于 `sandbox/` 的路径（如 `app/challenges/accordion` 或 `challenges/debounce.ts`）
 - `node_modules/` 和 `.next/` 已加入 Obsidian ignore（不被索引）
 
 ## Challenge Types

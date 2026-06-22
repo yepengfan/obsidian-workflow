@@ -14,14 +14,16 @@ const totalPatterns = patterns.length;
 const pArr = patterns.array();
 const totalProblems = pArr.reduce((sum, p) => sum + (p.problems ? (Array.isArray(p.problems) ? p.problems.length : 1) : 0), 0);
 
-const weekAgo = dv.date("today").minus({ days: 7 });
-const monthAgo = dv.date("today").minus({ days: 30 });
+const todayD = dv.date("today");
+const weekStart = todayD.weekday === 1 ? todayD : todayD.minus({ days: todayD.weekday - 1 });
+const lastMonthStart = todayD.set({ day: 1 }).minus({ months: 1 });
+const lastMonthEnd = todayD.set({ day: 1 }).minus({ days: 1 });
 
 const lArr = logs.array();
-const weekProblems = lArr.filter(l => dv.date(l.date) >= weekAgo).reduce((sum, l) => sum + (l.challenges_completed ? (Array.isArray(l.challenges_completed) ? l.challenges_completed.length : 1) : 0), 0);
-const monthProblems = lArr.filter(l => dv.date(l.date) >= monthAgo).reduce((sum, l) => sum + (l.challenges_completed ? (Array.isArray(l.challenges_completed) ? l.challenges_completed.length : 1) : 0), 0);
+const weekProblems = lArr.filter(l => dv.date(l.date) >= weekStart).reduce((sum, l) => sum + (l.challenges_completed ? (Array.isArray(l.challenges_completed) ? l.challenges_completed.length : 1) : 0), 0);
+const lastMonthProblems = lArr.filter(l => { const d = dv.date(l.date); return d >= lastMonthStart && d <= lastMonthEnd; }).reduce((sum, l) => sum + (l.challenges_completed ? (Array.isArray(l.challenges_completed) ? l.challenges_completed.length : 1) : 0), 0);
 
-dv.paragraph(`**${totalPatterns}** patterns · **${totalProblems}** challenges covered · 本周 **${weekProblems}** 题 · 本月 **${monthProblems}** 题`);
+dv.paragraph(`**${totalPatterns}** patterns · **${totalProblems}** challenges covered · 本周 **${weekProblems}** 题 · 上月 **${lastMonthProblems}** 题`);
 ```
 
 ## 🗂 Patterns by Category
