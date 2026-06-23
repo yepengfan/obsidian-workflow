@@ -1538,23 +1538,36 @@ const { panels: lPanels } = createTabGroup(dv, [
   });
   statsLine.innerHTML = `<strong>${totalPatterns}</strong> patterns · <strong>${totalProblems}</strong> problems · 本周 <strong>${weekProblems}</strong> 题 · 上月 <strong>${lastMonthProblems}</strong> 题`;
 
-  // Category distribution bars
+  // Category distribution — Donut Chart
   const catCount = {};
   for (const x of pArr) { const c = x.category || "Other"; catCount[c] = (catCount[c] || 0) + 1; }
   const catEntries = Object.entries(catCount).sort((a, b) => b[1] - a[1]);
-  const maxCat = catEntries.length > 0 ? catEntries[0][1] : 1;
+  const catColors = ["#7C6EF6","#E8674A","#4CAF7D","#F5A623","#5B9BD5","#D45DBF","#45B7AA","#F07171","#8E8CD8","#6ABE5F","#E09C3F","#5ECCC9","#C97AB5","#7FB069"];
+  const R = 70, SW = 28, CX = 100, CY = 100, CIRC = 2 * Math.PI * R;
 
-  if (catEntries.length > 0) {
-    const catWrap = p.createEl("div", { attr: { style: "margin-bottom:10px;" } });
-    catWrap.createEl("div", { text: "📊 Category 分布", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:4px;color:var(--text-muted);" } });
-    for (const [cat, count] of catEntries) {
-      const row = catWrap.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;margin-bottom:2px;" } });
-      row.createEl("div", { text: cat, attr: { style: `font-size:0.72em;color:var(--text-muted);width:${isMobile ? "80px" : "140px"};text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;` } });
-      const barOuter = row.createEl("div", { attr: { style: "flex:1;height:8px;background:var(--background-modifier-border);border-radius:4px;overflow:hidden;" } });
-      barOuter.createEl("div", { attr: { style: `width:${(count / maxCat) * 100}%;height:100%;background:var(--color-accent);border-radius:4px;opacity:0.8;` } });
-      row.createEl("div", { text: String(count), attr: { style: "font-size:0.72em;color:var(--text-faint);width:18px;flex-shrink:0;" } });
-    }
-  }
+  const catWrap = p.createEl("div", { attr: { style: "margin-bottom:10px;" } });
+  catWrap.createEl("div", { text: "📊 Category 分布", attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:4px;color:var(--text-muted);" } });
+  const chartRow = catWrap.createEl("div", { attr: { style: `display:flex;${isMobile ? "flex-direction:column;" : ""}align-items:center;gap:${isMobile ? "8" : "16"}px;` } });
+
+  let arcs = "", arcOff = 0;
+  catEntries.forEach(([, count], i) => {
+    const seg = (count / (totalPatterns || 1)) * CIRC;
+    arcs += `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${catColors[i % catColors.length]}" stroke-width="${SW}" stroke-dasharray="${seg} ${CIRC - seg}" stroke-dashoffset="-${arcOff}" transform="rotate(-90 ${CX} ${CY})"/>`;
+    arcOff += seg;
+  });
+  if (!arcs) arcs = `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--background-modifier-border)" stroke-width="${SW}"/>`;
+
+  const donutSz = isMobile ? "120px" : "140px";
+  const svgEl = chartRow.createEl("div", { attr: { style: `flex-shrink:0;width:${donutSz};height:${donutSz};` } });
+  svgEl.innerHTML = `<svg viewBox="0 0 200 200" style="width:100%;height:100%"><g>${arcs}</g><text x="${CX}" y="${CY - 6}" text-anchor="middle" fill="var(--text-normal)" font-size="28" font-weight="700">${totalPatterns}</text><text x="${CX}" y="${CY + 14}" text-anchor="middle" fill="var(--text-muted)" font-size="12">patterns</text></svg>`;
+
+  const legend = chartRow.createEl("div", { attr: { style: `display:flex;flex-direction:column;gap:2px;${isMobile ? "" : "flex:1;"}` } });
+  catEntries.forEach(([cat, count], i) => {
+    const item = legend.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;" } });
+    item.createEl("div", { attr: { style: `width:8px;height:8px;border-radius:2px;background:${catColors[i % catColors.length]};flex-shrink:0;` } });
+    item.createEl("div", { text: cat, attr: { style: "font-size:0.7em;color:var(--text-muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+    item.createEl("div", { text: String(count), attr: { style: "font-size:0.7em;color:var(--text-faint);flex-shrink:0;" } });
+  });
 
   // Recent pattern cards — latest 5 by created date
   {
