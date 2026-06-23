@@ -24,36 +24,32 @@ const sections = [
   { title: `Design: ${topic}`, fontSize: 36, y: 0, color: "#1e1e1e" },
 
   // Step 1: Requirements
-  { title: "1. Requirements", fontSize: 28, y: 80, color: "#1971c2" },
-  { title: "Functional Requirements", fontSize: 20, y: 140, color: "#495057" },
-  { title: "1.", fontSize: 16, y: 170, color: "#868e96" },
-  { title: "2.", fontSize: 16, y: 195, color: "#868e96" },
-  { title: "3.", fontSize: 16, y: 220, color: "#868e96" },
-  { title: "Non-Functional Requirements", fontSize: 20, y: 280, color: "#495057" },
-  { title: "1.", fontSize: 16, y: 310, color: "#868e96" },
-  { title: "2.", fontSize: 16, y: 335, color: "#868e96" },
-  { title: "3.", fontSize: 16, y: 360, color: "#868e96" },
-  { title: "Back-of-Envelope", fontSize: 20, y: 420, color: "#495057" },
-  { title: "- read/write ratio:", fontSize: 16, y: 450, color: "#868e96" },
-  { title: "- QPS:", fontSize: 16, y: 475, color: "#868e96" },
-  { title: "- storage:", fontSize: 16, y: 500, color: "#868e96" },
+  { title: "1. Requirements", fontSize: 28, y: 96, color: "#1971c2" },
+  { title: "Functional Requirements", fontSize: 20, y: 168, color: "#495057" },
+  { title: "1.\n2.\n3.\n4.\n5.", fontSize: 16, y: 204, color: "#868e96" },
+  { title: "Below the line (out of scope)", fontSize: 20, y: 330, color: "#495057" },
+  { title: "1.\n2.", fontSize: 16, y: 366, color: "#868e96" },
+  { title: "Non-Functional Requirements", fontSize: 20, y: 456, color: "#495057" },
+  { title: "1.\n2.\n3.\n4.\n5.", fontSize: 16, y: 492, color: "#868e96" },
+  { title: "Back-of-Envelope", fontSize: 20, y: 624, color: "#495057" },
+  { title: "- read/write ratio:\n- QPS:\n- storage:", fontSize: 16, y: 660, color: "#868e96" },
 
   // Step 2
-  { title: "2. Core Entities", fontSize: 28, y: 600, color: "#1971c2" },
+  { title: "2. Core Entities", fontSize: 28, y: 840, color: "#1971c2" },
 
   // Step 3
-  { title: "3. API / Interface", fontSize: 28, y: 900, color: "#1971c2" },
+  { title: "3. API / Interface", fontSize: 28, y: 1200, color: "#1971c2" },
 
   // Step 4
-  { title: "4. Data Flow", fontSize: 28, y: 1200, color: "#1971c2" },
-  { title: "Write Flow:", fontSize: 20, y: 1260, color: "#495057" },
-  { title: "Read Flow:", fontSize: 20, y: 1460, color: "#495057" },
+  { title: "4. Data Flow", fontSize: 28, y: 1560, color: "#1971c2" },
+  { title: "Write Flow:", fontSize: 20, y: 1632, color: "#495057" },
+  { title: "Read Flow:", fontSize: 20, y: 1872, color: "#495057" },
 
   // Step 5
-  { title: "5. High-Level Design", fontSize: 28, y: 1700, color: "#1971c2" },
+  { title: "5. High-Level Design", fontSize: 28, y: 2160, color: "#1971c2" },
 
   // Step 6
-  { title: "6. Deep Dives", fontSize: 28, y: 2200, color: "#1971c2" },
+  { title: "6. Deep Dives", fontSize: 28, y: 2760, color: "#1971c2" },
 ];
 
 const elements = sections.map((s, i) => {
