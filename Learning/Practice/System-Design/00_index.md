@@ -84,7 +84,7 @@ SORT updated ASC
 - Hello Interview — 主线课程
 
 ### 练习平台
-- [bugfree.ai](https://bugfree.ai/) — SD 刷题平台（待体验）
+- [Codemia](https://codemia.io/) — SD 刷题平台（LeetCode 式系统设计练习，120+ 题 + 多角度题解）
 
 ### 关联
 - [[../SYSD/00_plan|SYSD]] — 实战项目（Docker POC + 生产深度）
