@@ -71,10 +71,10 @@ updated: 2026-06-23
 ```mermaid
 graph LR
     C[Client] -->|POST /urls| S[Server]
-    S -->|1. canonicalize + hash + base62| S
-    S -->|2. check exists?| DB[(Database)]
+    S -->|① canonicalize + hash + base62| S
+    S -->|② check exists?| DB[(Database)]
     DB -->|collision| S
-    S -->|3. save mapping| DB
+    S -->|③ save mapping| DB
     S -->|short_url| C
 ```
 
@@ -83,10 +83,10 @@ graph LR
 ```mermaid
 graph LR
     C[Client] -->|POST /urls| S[Server]
-    S -->|1. INCR| R[(Redis Counter)]
+    S -->|① INCR| R[(Redis Counter)]
     R -->|count| S
-    S -->|2. base62 encode| S
-    S -->|3. save mapping| DB[(Database)]
+    S -->|② base62 encode| S
+    S -->|③ save mapping| DB[(Database)]
     S -->|short_url| C
 ```
 
