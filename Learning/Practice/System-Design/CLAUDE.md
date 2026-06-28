@@ -84,16 +84,20 @@
 ```
 Learning/Practice/System-Design/
 ├── Solutions/
-│   ├── Bitly/
+│   ├── Bitly-2026-06-14/
 │   │   ├── progress.md          # 进度文件（tags: [system-design/wip]）
 │   │   └── Bitly.excalidraw.md  # Excalidraw 画板
-│   ├── YouTube/
+│   ├── Bitly-2026-08-15/        # 同题第二次练习
+│   │   ├── progress.md
+│   │   └── Bitly.excalidraw.md
+│   ├── YouTube-2026-07-01/
 │   │   ├── progress.md
 │   │   └── YouTube.excalidraw.md
 ```
 
 ### 文件夹
-- 路径: `Learning/Practice/System-Design/Solutions/<题目简称>/`
+- 路径: `Learning/Practice/System-Design/Solutions/<题目简称>-<started日期>/`（如 `Dropbox-2026-06-24`）
+- 同一道题可多次练习，每次用不同日期区分
 - **不要**在 vault 根目录 `Excalidraw/` 或 `Attachments/` 创建
 - 练习完成（Phase 3 沉淀结束）后文件夹保留不动，作为学习记录
 

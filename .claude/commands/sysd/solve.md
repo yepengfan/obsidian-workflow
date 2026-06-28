@@ -8,20 +8,21 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 ## Phase 0 — 初始化 Solution 文件夹
 
 1. 从 `$ARGUMENTS` 提取题目简称（如 "Design YouTube" → "YouTube", "Bitly" → "Bitly"）
-2. 检查 `Learning/Practice/System-Design/Solutions/<题目>/progress.md` 是否已存在:
-   - **已存在且有 `system-design/wip` tag** → 读取 progress.md，恢复到上次中断的位置继续（跳到对应 Step）
-   - **已存在但无 wip tag** → 告诉用户这题已完成，问是否重新练习
+2. 扫描 `Learning/Practice/System-Design/Solutions/` 下所有 `<题目>-*` 文件夹:
+   - **找到带 `system-design/wip` tag 的 progress.md** → 读取该 progress.md，恢复到上次中断的位置继续（跳到对应 Step）
+   - **找到该题目的文件夹但都无 wip tag** → 告诉用户这题已练习过 N 次，问是否重新练习
    - **不存在** → 创建 Solution 文件夹 + 文件（见下方）
 
 3. **创建 Solution 文件夹**:
-   - 创建目录: `Learning/Practice/System-Design/Solutions/<题目>/`
+   - 文件夹命名: `<题目>-<今天日期>`（如 `Dropbox-2026-06-24`）
+   - 创建目录: `Learning/Practice/System-Design/Solutions/<题目>-<今天日期>/`
    - 创建 Excalidraw 文件: 运行 `node scripts/sd-excalidraw-template.js "<题目>"` 并将输出写入 `<题目>.excalidraw.md`
    - 创建 progress.md:
      ```yaml
      topic: <完整题目描述>
      started: <今天日期>
      source: Hello Interview
-     excalidraw: "[[Learning/Practice/System-Design/Solutions/<题目>/<题目>.excalidraw]]"
+     excalidraw: "[[Learning/Practice/System-Design/Solutions/<题目>-<今天日期>/<题目>.excalidraw]]"
      tags: [system-design/wip]
      ```
      包含空的 Progress 表（6 步全 ⬜）、空的 Pending Questions、空的 Key Learnings、空的下次继续
