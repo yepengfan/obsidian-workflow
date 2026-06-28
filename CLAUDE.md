@@ -137,6 +137,7 @@ Each module declares external dependencies via the `requires` frontmatter field:
 4. Keep the vault organized — use existing folders before creating new ones
 5. Match the language of the source content (English or Chinese)
 6. **New features must have a module file** in `system/modules/` — create it before or alongside implementation
+7. **Never commit directly to `main`** — always create a feature branch, commit there, push, and open a PR
 
 ## Book Learning System
 
