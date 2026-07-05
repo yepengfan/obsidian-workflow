@@ -1496,11 +1496,14 @@ const { panels: lPanels } = createTabGroup(dv, [
       for (const wf of wipFiles) {
         const parts = wf.path.split("/");
         const topic = parts[parts.length - 2] || "Unknown";
+        const topicName = topic.replace(/-\d{4}-\d{2}-\d{2}$/, "") || topic;
         const cache = app.metadataCache.getFileCache(wf);
         const fm = cache?.frontmatter || {};
         const started = fm.started || "";
 
-        const excalidrawPath = `Learning/Practice/System-Design/Solutions/${topic}/${topic}.excalidraw.md`;
+        const newPath = `Learning/Practice/System-Design/Solutions/${topic}/${topicName}.excalidraw.md`;
+        const oldPath = `Learning/Practice/System-Design/Solutions/${topic}/${topic}.excalidraw.md`;
+        const excalidrawPath = app.vault.getAbstractFileByPath(newPath) ? newPath : oldPath;
         const card = wipWrap.createEl("div", {
           attr: { style: "display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--color-orange);margin-bottom:6px;cursor:pointer;" }
         });
