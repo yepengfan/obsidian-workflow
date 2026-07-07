@@ -1453,11 +1453,11 @@ const { panels: lPanels } = createTabGroup(dv, [
     }
   }
 
-  // Recent pattern cards — latest 5 by created date
+  // Recent pattern cards — latest 5 by updated date
   {
     const recent = pArr
-      .filter(x => x.created)
-      .sort((a, b) => dv.date(b.created).ts - dv.date(a.created).ts)
+      .filter(x => x.updated)
+      .sort((a, b) => dv.date(b.updated).ts - dv.date(a.updated).ts)
       .slice(0, 5);
     if (recent.length > 0) {
       p.createEl("div", { text: "📝 最近 Pattern Cards", attr: { style: "font-size:0.8em;font-weight:600;margin:10px 0 6px;color:var(--text-muted);" } });
@@ -1469,7 +1469,7 @@ const { panels: lPanels } = createTabGroup(dv, [
         nameEl.innerHTML = `<a class="internal-link" data-href="${pat.file.path}">${pat.title || pat.file.name}</a>`;
         const probCount = pat.problems ? (Array.isArray(pat.problems) ? pat.problems.length : 1) : 0;
         info.createEl("div", { text: `${pat.category || "-"} · ${probCount} 题`, attr: { style: "font-size:0.65em;color:var(--text-faint);margin-top:1px;" } });
-        card.createEl("div", { text: dv.date(pat.created).toFormat("M/d"), attr: { style: "font-size:0.7em;color:var(--text-faint);flex-shrink:0;" } });
+        card.createEl("div", { text: dv.date(pat.updated).toFormat("M/d"), attr: { style: "font-size:0.7em;color:var(--text-faint);flex-shrink:0;" } });
       }
     }
   }
@@ -1572,11 +1572,11 @@ const { panels: lPanels } = createTabGroup(dv, [
     item.createEl("div", { text: String(count), attr: { style: "font-size:0.7em;color:var(--text-faint);flex-shrink:0;" } });
   });
 
-  // Recent pattern cards — latest 5 by created date
+  // Recent pattern cards — latest 5 by updated date
   {
     const recent = pArr
-      .filter(x => x.created)
-      .sort((a, b) => dv.date(b.created).ts - dv.date(a.created).ts)
+      .filter(x => x.updated)
+      .sort((a, b) => dv.date(b.updated).ts - dv.date(a.updated).ts)
       .slice(0, 5);
     if (recent.length > 0) {
       p.createEl("div", { text: "📝 最近 Pattern Cards", attr: { style: "font-size:0.8em;font-weight:600;margin:10px 0 6px;color:var(--text-muted);" } });
@@ -1588,7 +1588,7 @@ const { panels: lPanels } = createTabGroup(dv, [
         nameEl.innerHTML = `<a class="internal-link" data-href="${pat.file.path}">${pat.title || pat.file.name}</a>`;
         const probCount = pat.problems ? (Array.isArray(pat.problems) ? pat.problems.length : 1) : 0;
         info.createEl("div", { text: `${pat.category || "-"} · ${probCount} 题`, attr: { style: "font-size:0.65em;color:var(--text-faint);margin-top:1px;" } });
-        card.createEl("div", { text: dv.date(pat.created).toFormat("M/d"), attr: { style: "font-size:0.7em;color:var(--text-faint);flex-shrink:0;" } });
+        card.createEl("div", { text: dv.date(pat.updated).toFormat("M/d"), attr: { style: "font-size:0.7em;color:var(--text-faint);flex-shrink:0;" } });
       }
     }
   }
