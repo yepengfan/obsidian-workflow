@@ -1,12 +1,21 @@
 ---
 tags: template
 for: Home
-updated: 2026-06-02
+updated: 2026-07-15
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-07-15 — 📖 读书 widget in Learning section (book production progress)
+> - **Placement**: Inside the `## Learning` dataviewjs block, between 📚 学习计划 and 🏋️ 长期练习. Distinct from the existing `## Reading` section — that reads the WeRead **capture** layer (raw highlights); this reads the **production** layer (`Learning/Books/*/meta.md` with `status: reading`), i.e. books upgraded into the Feynman/write workflow.
+> - **Data source**: One card per book where `meta.status === "reading"` (shows all in-progress, sorted by `started` desc). Chapter progress scans `<book>/chapters/*.md` frontmatter — `feynman` field drives done/current: done = `feynman && feynman !== "not_started"`; current chapter = lowest-numbered chapter still `not_started`. `chapter !== undefined` filter excludes non-chapter files like `_README.md`.
+> - **Backward compatibility**: Older book chapter skeletons (DDIA, TFS) predate the `feynman` field — they only have `status: unread`. Undefined `feynman` is falsy, so those correctly count as 0 done rather than all done. New books (via updated book_init flow) carry `feynman`/`write` fields.
+> - **Card visuals**: Mirror the 学习计划 card (3px accent bar + title-link badge → MOC, archetype pill tech-ref/cognitive, `ChN / total` stat). Chapter dots reuse the weekly-activity dot style: Feynman-done = filled accent, current = dashed border, else muted. Each dot links to its chapter file.
+> - **▶ 开始阅读 button**: `app.workspace.openLinkText(mocPath)` opens the book's MOC (so Claudian ingests it as `<linked_note>`), then `app.commands.executeCommandById("realclaudian:open-view")` opens the Claudian chat. **Constraint**: Claudian (realclaudian v2.0.34) registers no URI protocol and its commands take no args — a button cannot auto-send a prompt. The button gets you to "book + chat open"; the user types the reading command (e.g. "Ch1 费曼"). Verified command id `realclaudian:open-view` (name "Open chat view", callback `activateView()` which reuses or creates the view).
+> - **Empty state**: No `status: reading` books → "No books in production — 说「我要开始读 XXX」启动一本。" Footer links to `Learning/Books/Books Index.md`.
+> - **gitignore note**: `Learning/` book content is gitignored (private), but Dataview indexes the working tree directly, so the widget renders fine locally. The widget code lives in the committed `Home.md`.
 
 > [!note] 2026-03-10 — Note creation button (navToday)
 > - **Why note creation lives in Home.md**: Home.md is the primary entry point to the vault. Centralising note creation here (rather than relying solely on Templater or Calendar) ensures the full toolbar experience (priority buttons, project selectors) is always applied to new daily notes.
