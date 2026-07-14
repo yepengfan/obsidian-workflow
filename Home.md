@@ -1331,6 +1331,133 @@ dv.el("div", "📚 学习计划", {
   }
 }
 
+// ========== 📖 读书 ==========
+dv.el("div", "📖 读书", {
+  attr: { style: "font-size:0.92em;font-weight:700;margin:16px 0 6px;color:var(--text-normal);" }
+});
+
+{
+  const container = dv.el("div", "");
+
+  // Production layer: books upgraded into Learning/Books/ (not raw WeRead capture).
+  const metas = dv.pages('"Learning/Books"')
+    .where(p => p.file.name === "meta" && p.status === "reading")
+    .sort(p => p.started, "desc");
+
+  if (metas.length === 0) {
+    container.createEl("p", {
+      text: "No books in production — 说「我要开始读 XXX」启动一本。",
+      attr: { style: "color:var(--text-muted);font-size:0.85em;" }
+    });
+  } else {
+    const archLabel = { "technical-reference": "tech-ref", "cognitive-mental-model": "cognitive" };
+
+    for (const m of metas) {
+      const folder = m.file.folder;              // Learning/Books/<Title>
+      const bookName = folder.split("/").pop();
+      const mocPath = `${folder}/MOC.md`;
+
+      // Scan chapter skeletons for Feynman progress.
+      const chapters = dv.pages(`"${folder}/chapters"`)
+        .where(c => c.chapter !== undefined)
+        .sort(c => c.chapter, "asc");
+      const total = chapters.length;
+      const doneCh = chapters.where(c => c.feynman && c.feynman !== "not_started").length;
+      const current = chapters.find(c => !c.feynman || c.feynman === "not_started");
+      const currentNum = current ? current.chapter : (total > 0 ? total : null);
+
+      // Card (mirrors 学习计划 card style)
+      const card = container.createEl("div", {
+        attr: { style: "display:flex;gap:0;margin-bottom:8px;border:1px solid var(--background-modifier-border);border-radius:8px;overflow:hidden;background:var(--background-secondary);" }
+      });
+      card.createEl("div", { attr: { style: "width:3px;background:var(--color-accent);flex-shrink:0;" } });
+      const body = card.createEl("div", { attr: { style: "flex:1;min-width:0;padding:9px 12px;" } });
+
+      // Row 1: title-link badge + archetype pill + chapter stat + ▶ button
+      const row1 = body.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;" } });
+      // Badge built via createEl (not innerHTML) so bookName/mocPath are never
+      // interpolated into raw HTML — safe against quotes/angle brackets in folder names.
+      row1.createEl("a", {
+        text: bookName,
+        attr: {
+          class: "internal-link",
+          "data-href": mocPath,
+          title: bookName,
+          style: "font-weight:700;font-size:0.7em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;text-decoration:none;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;"
+        }
+      });
+      if (archLabel[m.archetype]) {
+        row1.createEl("span", {
+          text: archLabel[m.archetype],
+          attr: { style: "font-size:0.68em;padding:1px 7px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
+        });
+      }
+      if (total > 0) {
+        const allDone = doneCh === total;
+        row1.createEl("span", {
+          text: allDone ? "✓ 费曼完成" : `Ch${currentNum} / ${total}`,
+          attr: { style: `font-size:0.7em;white-space:nowrap;color:${allDone ? "var(--color-accent)" : "var(--text-faint)"};` }
+        });
+      }
+      // ▶ 开始阅读 — open the book MOC (becomes linked_note), then open Claudian chat.
+      const startBtn = row1.createEl("button", {
+        text: "▶ 开始阅读",
+        attr: { style: "margin-left:auto;font-size:0.7em;padding:2px 9px;border-radius:6px;border:1px solid var(--color-accent);background:var(--color-accent);color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;" }
+      });
+      startBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await app.workspace.openLinkText(mocPath, "", false);
+        app.commands.executeCommandById("realclaudian:open-view");
+      });
+
+      // Row 2: title text
+      if (m.title) {
+        body.createEl("div", {
+          text: m.title,
+          attr: { style: "font-size:0.8em;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" }
+        });
+      }
+
+      // Row 3: author · feynman x/N · WeRead %
+      const bits = [];
+      if (m.author) bits.push(m.author);
+      if (total > 0) bits.push(`费曼 ${doneCh}/${total}`);
+      if (m.weread_progress) bits.push(`WeRead ${m.weread_progress}`);
+      if (bits.length) {
+        body.createEl("div", {
+          text: bits.join(" · "),
+          attr: { style: "font-size:0.72em;color:var(--text-faint);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" }
+        });
+      }
+
+      // Chapter progress dots (Feynman done = filled, current = dashed, else muted)
+      if (total > 0) {
+        const dotSize = isMobile ? "8px" : "10px";
+        const dotGap = isMobile ? "2px" : "3px";
+        const dotsWrap = body.createEl("div", { attr: { style: `display:flex;align-items:center;gap:${dotGap};margin-top:7px;flex-wrap:wrap;` } });
+        for (const c of chapters) {
+          const isDone = c.feynman && c.feynman !== "not_started";
+          const isCurrent = currentNum && c.chapter === currentNum && !isDone;
+          dotsWrap.createEl("a", {
+            attr: {
+              class: "internal-link",
+              "data-href": c.file.path,
+              title: `Ch${c.chapter}: ${c.title || ""}`,
+              style: `width:${dotSize};height:${dotSize};border-radius:2px;display:inline-block;` +
+                (isDone ? "background:var(--color-accent);opacity:0.85;"
+                        : isCurrent ? "border:1.5px dashed var(--color-accent);opacity:0.7;"
+                                    : "background:var(--background-modifier-border);opacity:0.5;")
+            }
+          });
+        }
+      }
+    }
+
+    container.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
+      `<a class="internal-link" data-href="Learning/Books/Books Index.md">All books →</a>`;
+  }
+}
+
 // ========== 🏋️ 长期练习 ==========
 dv.el("div", "🏋️ 长期练习", {
   attr: { style: "font-size:0.92em;font-weight:700;margin:16px 0 6px;color:var(--text-normal);" }
