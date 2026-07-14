@@ -1375,17 +1375,28 @@ dv.el("div", "📖 读书", {
 
       // Row 1: title-link badge + archetype pill + chapter stat + ▶ button
       const row1 = body.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;" } });
-      row1.innerHTML += `<a class="internal-link" data-href="${mocPath}" style="font-weight:700;font-size:0.7em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;text-decoration:none;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;" title="${bookName}">${bookName}</a>`;
+      // Badge built via createEl (not innerHTML) so bookName/mocPath are never
+      // interpolated into raw HTML — safe against quotes/angle brackets in folder names.
+      row1.createEl("a", {
+        text: bookName,
+        attr: {
+          class: "internal-link",
+          "data-href": mocPath,
+          title: bookName,
+          style: "font-weight:700;font-size:0.7em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;text-decoration:none;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;"
+        }
+      });
       if (archLabel[m.archetype]) {
         row1.createEl("span", {
           text: archLabel[m.archetype],
           attr: { style: "font-size:0.68em;padding:1px 7px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
         });
       }
-      if (total > 0 && currentNum) {
+      if (total > 0) {
+        const allDone = doneCh === total;
         row1.createEl("span", {
-          text: `Ch${currentNum} / ${total}`,
-          attr: { style: "font-size:0.7em;color:var(--text-faint);white-space:nowrap;" }
+          text: allDone ? "✓ 费曼完成" : `Ch${currentNum} / ${total}`,
+          attr: { style: `font-size:0.7em;white-space:nowrap;color:${allDone ? "var(--color-accent)" : "var(--text-faint)"};` }
         });
       }
       // ▶ 开始阅读 — open the book MOC (becomes linked_note), then open Claudian chat.
