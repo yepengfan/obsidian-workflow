@@ -93,7 +93,8 @@ These four roles never change.
   **Read-only reference.** Do not modify.
 - `articles/` — publication-bound drafts. **Read, annotate, critique only.
   Never write prose here.**
-- `articles/ddia/` — DDIA article series (Medium). Same rules as `articles/`.
+- `articles/{slug}/` — per-book article series (e.g. `articles/ddia/` for DDIA,
+  on Medium). Same rules as `articles/`.
 - `journal/` — (future) private decision/bias log for cognitive books. You may
   prompt and question; never fabricate entries. **Not yet created — will be added
   when needed.**
@@ -153,7 +154,7 @@ no separate `_capture/` folder — all raw reading reactions live in WeRead.
 > accumulated (may span 2-3 chapters, or a single rich chapter).
 
 ```
-Read (WeRead highlights) → Feynman sparring → You write + I review
+Read (WeRead highlights / EPUB) → Feynman sparring → You write + I review
                                ↑
                     on-demand: stuck / doubtful → ask me to find a source
                     differentiation questions are folded in here
@@ -168,7 +169,7 @@ automatically.
 
 **Preparation (before the human speaks):**
 ```
-1. Read chapters/{chapter} skeleton     → chapter scope
+1. Read chapters/{chapter} skeleton (if exists) → chapter scope
 2. Read notes/{chapter}.md (if exists)  → existing sources
 3. Read WeRead highlights for chapter   → what the user focused on
 4. Do NOT give hints. Open with:
