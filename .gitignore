@@ -1,48 +1,53 @@
 # ── Content (synced via S3/iCloud, not git) ──
-Archive/
-Attachments/
-Essays/
-Excalidraw/
-system-design-primer/
-Kanban/
-Instapaper Notes/*
-!Instapaper Notes/Instapaper Index.md
-Matter/*
-!Matter/Matter Index.md
-Thoughts/
+# NOTE: all patterns below are root-anchored (leading `/`). Without the
+# leading slash, git matches the name at ANY depth in the repo — e.g. an
+# unanchored `Work/` would also hide `.claude/commands/work/` and
+# `system/modules/work/`, silently untracking unrelated workflow files.
+# Bug found 2026-07: this cost us 7 untracked command files (work + learning).
+/Archive/
+/Attachments/
+/Essays/
+/Excalidraw/
+/system-design-primer/
+/Kanban/
+/Instapaper Notes/*
+!/Instapaper Notes/Instapaper Index.md
+/Matter/*
+!/Matter/Matter Index.md
+/Thoughts/
 # Learning/ is vault content (books, patterns, logs, sandboxes) — not tracked.
 # Exceptions below are workflow tooling only (CLAUDE.md, dashboards, init scripts).
-Learning/*
-!Learning/Books/
-Learning/Books/*
-!Learning/Books/CLAUDE.md
-!Learning/Books/.bookrc.example
-!Learning/Books/book_init.py
-!Learning/Books/Books Index.md
-!Learning/Practice/
-Learning/Practice/*
-!Learning/Practice/Algorithm/
-Learning/Practice/Algorithm/*
-!Learning/Practice/Algorithm/CLAUDE.md
-!Learning/Practice/Frontend/
-Learning/Practice/Frontend/*
-!Learning/Practice/Frontend/CLAUDE.md
-!Learning/Practice/Frontend/00_index.md
-!Learning/Practice/Grammar/
-Learning/Practice/Grammar/*
-!Learning/Practice/Grammar/CLAUDE.md
-!Learning/Practice/Grammar/00_index.md
-!Learning/Practice/System-Design/
-Learning/Practice/System-Design/*
-!Learning/Practice/System-Design/CLAUDE.md
-!Learning/Practice/System-Design/00_index.md
-WeRead/
-Work/
-Inbox/
-Zettelkasten/*
-!Zettelkasten/Zettelkasten Index.md
-Profile/
-Note/
+/Learning/*
+!/Learning/Books/
+/Learning/Books/*
+!/Learning/Books/CLAUDE.md
+!/Learning/Books/.bookrc.example
+!/Learning/Books/book_init.py
+!/Learning/Books/Books Index.md
+!/Learning/Practice/
+/Learning/Practice/*
+!/Learning/Practice/Algorithm/
+/Learning/Practice/Algorithm/*
+!/Learning/Practice/Algorithm/CLAUDE.md
+!/Learning/Practice/Frontend/
+/Learning/Practice/Frontend/*
+!/Learning/Practice/Frontend/CLAUDE.md
+!/Learning/Practice/Frontend/00_index.md
+!/Learning/Practice/Grammar/
+/Learning/Practice/Grammar/*
+!/Learning/Practice/Grammar/CLAUDE.md
+!/Learning/Practice/Grammar/00_index.md
+!/Learning/Practice/System-Design/
+/Learning/Practice/System-Design/*
+!/Learning/Practice/System-Design/CLAUDE.md
+!/Learning/Practice/System-Design/00_index.md
+/WeRead/
+/Work/
+/Inbox/
+/Zettelkasten/*
+!/Zettelkasten/Zettelkasten Index.md
+/Profile/
+/Note/
 /Feeds/
 
 # ── Pipeline runtime state ──
