@@ -171,9 +171,37 @@ def parse_epub(filepath: str):
             parts[current_part].append(chapter_title)
             chapter_items.append((chapter_title, href, get_preview(href)))
 
-    # Fallback: no parts detected, treat all chapters as one flat list
+    # Fallback 1: no parts detected, treat all chapters as one flat list
     if not parts and chapter_items:
         parts["Contents"] = [t for t, _, _ in chapter_items]
+
+    # Fallback 2: pattern-based detection found nothing. This happens when the
+    # book's chapters have plain titles with no "Chapter N" / "第N章" prefix
+    # (e.g. "Architecting for Innovation"). Fall back to the top-level TOC
+    # structure — each top-level entry is a chapter — and skip common
+    # front/back matter so chapter numbering starts at the real Chapter 1.
+    if not chapter_items:
+        skip_matter = re.compile(
+            r'^(preface|foreword|contents|table of contents|index|'
+            r'about the author|other books|copyright|dedication|'
+            r'acknowledg|glossary|前言|序言|目录|索引|致谢|版权)',
+            re.I,
+        )
+        top_level = []
+        for item in book.toc:
+            if isinstance(item, epub.Link):
+                top_level.append((item.title, item.href))
+            elif isinstance(item, tuple):
+                section, _children = item
+                top_level.append((section.title, section.href))
+        for ch_title, href in top_level:
+            if not ch_title or skip_matter.match(ch_title.strip()):
+                continue
+            chapter_items.append((ch_title, href, get_preview(href)))
+        if chapter_items:
+            parts["Contents"] = [t for t, _, _ in chapter_items]
+            print(f"ℹ️   No numbered chapters found; using top-level TOC "
+                  f"sections ({len(chapter_items)} chapters).")
 
     return title, author, parts, chapter_items
 
