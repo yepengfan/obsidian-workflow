@@ -1352,6 +1352,21 @@ dv.el("div", "📖 读书", {
   } else {
     const archLabel = { "technical-reference": "tech-ref", "cognitive-mental-model": "cognitive" };
 
+    // Look up a book's cover image via its matching WeRead/<bookName>/ folder
+    // (cover: frontmatter field on any highlights note inside). Returns null if
+    // no matching folder/field is found — caller falls back to a placeholder icon.
+    function findBookCover(bookName) {
+      const wrFolder = app.vault.getAbstractFileByPath(`WeRead/${bookName}`);
+      if (!wrFolder || !wrFolder.children) return null;
+      for (const child of wrFolder.children) {
+        if (child.extension !== "md") continue;
+        const cache = app.metadataCache.getFileCache(child);
+        const cover = cache?.frontmatter?.cover;
+        if (cover) return String(cover);
+      }
+      return null;
+    }
+
     for (const m of metas) {
       const folder = m.file.folder;              // Learning/Books/<Title>
       const bookName = folder.split("/").pop();
@@ -1366,62 +1381,65 @@ dv.el("div", "📖 读书", {
       const current = chapters.find(c => !c.feynman || c.feynman === "not_started");
       const currentNum = current ? current.chapter : (total > 0 ? total : null);
 
-      // Card (mirrors 学习计划 card style)
+      // Card (mirrors 学习计划 card style) — accent bar + cover thumbnail + content
       const card = container.createEl("div", {
         attr: { style: "display:flex;gap:0;margin-bottom:8px;border:1px solid var(--background-modifier-border);border-radius:8px;overflow:hidden;background:var(--background-secondary);" }
       });
       card.createEl("div", { attr: { style: "width:3px;background:var(--color-accent);flex-shrink:0;" } });
+
+      // Cover thumbnail (from matching WeRead/<bookName>/ folder) — placeholder icon if none found
+      const coverUrl = findBookCover(bookName);
+      const coverSize = isMobile ? "44px" : "52px";
+      const coverWrap = card.createEl("div", {
+        attr: { style: `width:${coverSize};flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--background-primary);` }
+      });
+      function showCoverPlaceholder() {
+        coverWrap.empty();
+        coverWrap.createEl("span", { text: "📖", attr: { style: "font-size:1.3em;opacity:0.35;" } });
+      }
+      if (coverUrl) {
+        const coverImg = coverWrap.createEl("img", {
+          attr: { src: coverUrl, alt: bookName, style: "width:100%;height:100%;object-fit:cover;" }
+        });
+        // Fall back to the placeholder icon if the WeRead-hosted cover 404s or is unreachable.
+        coverImg.addEventListener("error", showCoverPlaceholder, { once: true });
+      } else {
+        showCoverPlaceholder();
+      }
+
       const body = card.createEl("div", { attr: { style: "flex:1;min-width:0;padding:9px 12px;" } });
 
-      // Row 1: title-link badge + archetype pill + chapter stat + ▶ button
-      const row1 = body.createEl("div", { attr: { style: "display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;" } });
-      // Badge built via createEl (not innerHTML) so bookName/mocPath are never
-      // interpolated into raw HTML — safe against quotes/angle brackets in folder names.
+      // Row 1: book title (wraps, clamped to 2 lines — no more truncated badge) + archetype pill
+      const row1 = body.createEl("div", { attr: { style: "display:flex;align-items:flex-start;gap:6px;margin-bottom:3px;" } });
       row1.createEl("a", {
         text: bookName,
         attr: {
           class: "internal-link",
           "data-href": mocPath,
           title: bookName,
-          style: "font-weight:700;font-size:0.7em;background:var(--color-accent);color:#fff;border-radius:4px;padding:2px 7px;text-decoration:none;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;"
+          style: "flex:1;min-width:0;font-weight:700;font-size:0.85em;line-height:1.3;color:var(--text-normal);text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"
         }
       });
       if (archLabel[m.archetype]) {
         row1.createEl("span", {
           text: archLabel[m.archetype],
-          attr: { style: "font-size:0.68em;padding:1px 7px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
+          attr: { style: "font-size:0.62em;padding:1px 7px;margin-top:1px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
         });
       }
-      if (total > 0) {
-        const allDone = doneCh === total;
-        row1.createEl("span", {
-          text: allDone ? "✓ 费曼完成" : `Ch${currentNum} / ${total}`,
-          attr: { style: `font-size:0.7em;white-space:nowrap;color:${allDone ? "var(--color-accent)" : "var(--text-faint)"};` }
-        });
-      }
-      // ▶ 开始阅读 — open the book MOC (becomes linked_note), then open Claudian chat.
-      const startBtn = row1.createEl("button", {
-        text: "▶ 开始阅读",
-        attr: { style: "margin-left:auto;font-size:0.7em;padding:2px 9px;border-radius:6px;border:1px solid var(--color-accent);background:var(--color-accent);color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;" }
-      });
-      startBtn.addEventListener("click", async (e) => {
-        e.preventDefault();
-        await app.workspace.openLinkText(mocPath, "", false);
-        app.commands.executeCommandById("realclaudian:open-view");
-      });
 
-      // Row 2: title text
-      if (m.title) {
+      // Full title (edition, subtitle, etc.) — only shown when it adds info beyond the folder name.
+      if (m.title && m.title !== bookName) {
         body.createEl("div", {
           text: m.title,
-          attr: { style: "font-size:0.8em;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" }
+          attr: { style: "font-size:0.72em;color:var(--text-muted);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" }
         });
       }
 
-      // Row 3: author · feynman x/N · WeRead %
+      // Row 2: author · feynman x/N · Ch current/total · WeRead %
       const bits = [];
       if (m.author) bits.push(m.author);
       if (total > 0) bits.push(`费曼 ${doneCh}/${total}`);
+      if (total > 0) bits.push(doneCh === total ? "✓ 完成" : `Ch${currentNum}/${total}`);
       if (m.weread_progress) bits.push(`WeRead ${m.weread_progress}`);
       if (bits.length) {
         body.createEl("div", {
@@ -1451,6 +1469,19 @@ dv.el("div", "📖 读书", {
           });
         }
       }
+
+      // Row: ▶ 开始阅读 — own row, right-aligned, never crowds the title/pills above.
+      // Opens the book MOC (becomes linked_note), then opens Claudian chat.
+      const btnRow = body.createEl("div", { attr: { style: "display:flex;justify-content:flex-end;margin-top:7px;" } });
+      const startBtn = btnRow.createEl("button", {
+        text: "▶ 开始阅读",
+        attr: { style: "font-size:0.7em;padding:2px 9px;border-radius:6px;border:1px solid var(--color-accent);background:var(--color-accent);color:#fff;cursor:pointer;white-space:nowrap;" }
+      });
+      startBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await app.workspace.openLinkText(mocPath, "", false);
+        app.commands.executeCommandById("realclaudian:open-view");
+      });
     }
 
     container.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
