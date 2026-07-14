@@ -51,12 +51,13 @@ progress table from `meta.md`:
 ```
 📖 DDIA — 上次进度
 
-Ch3 Storage:     ✅ gaps ✅ feynman ✅ research ✅ write ✅ diff
-Ch4 Encoding:    ✅ gaps ✅ feynman ○ research  ○ write  ○ diff
-Ch5 Replication: ✅ gaps ○ feynman  ○ research  ○ write  ○ diff
+Ch3 Storage:     ✅ feynman(全过)   ✅ write
+Ch4 Encoding:    ✅ feynman(反方⚠️) ○ write
+Ch5 Replication: ○ feynman           ○ write
 Ch6 Partition:   ○ 未开始
 
-继续哪章？哪个 step？
+（Sources 按需，不在进度表里追踪）
+继续哪章？读 / 费曼 / 写？
 ```
 
 ---
@@ -140,30 +141,36 @@ no separate `_capture/` folder — all raw reading reactions live in WeRead.
 
 ---
 
-## Per-unit workflow (one chapter or one concept)
+## Per-unit workflow (3 steps)
+
+> **History note:** this used to be a 6-step flow. Three books (DDIA, Fundamentals
+> of Software Architecture, Thinking Fast and Slow) all stalled at the empty-shell
+> stage under it. The flow below is the deliberately-simplified version: the
+> minimum that still forces real understanding. Sources/research are now
+> **on-demand**, not a mandatory per-chapter step; differentiation is folded into
+> the Feynman check; and **"one chapter = one article" is dissolved** — Feynman is
+> per-chapter (cheap, spoken), articles are written only when enough material has
+> accumulated (may span 2-3 chapters, or a single rich chapter).
+
+```
+Read (WeRead highlights) → Feynman sparring → You write + I review
+                               ↑
+                    on-demand: stuck / doubtful → ask me to find a source
+                    differentiation questions are folded in here
+```
 
 ### Step 1 — Naked read
 Human reads the primary text in WeRead. No AI. Highlights and annotations sync
 automatically.
 
-### Step 2 — Fill gaps (Role 2: Research assistant)
-*Trigger: "帮我找论文" / "这章引用了什么" / "找 sources"*
-
-AI proactively lists the canonical sources the chapter cites:
-- **Primary**: papers/articles the book directly references
-- **Secondary**: at most one explainer if the original paper is too academic
-- AI does not judge what is canonical — defer to what the book cites
-
-Output: `{BookTitle}/notes/{chapter-slug}.md` under `## Sources`
-
-### Step 3 — Feynman check (Role 1: Feynman sparring partner)
+### Step 2 — Feynman check (Role 1: sparring + Role 4: differentiation)
 *Trigger: "费曼测试" / "我来解释一下" / "帮我检查理解"*
 
 **Preparation (before the human speaks):**
 ```
 1. Read chapters/{chapter} skeleton     → chapter scope
-2. Read notes/{chapter}.md             → existing sources
-3. Read WeRead highlights for chapter  → what the user focused on
+2. Read notes/{chapter}.md (if exists)  → existing sources
+3. Read WeRead highlights for chapter   → what the user focused on
 4. Do NOT give hints. Open with:
    "用你自己的话解释一下这章的核心内容。"
 ```
@@ -177,10 +184,28 @@ Output: `{BookTitle}/notes/{chapter-slug}.md` under `## Sources`
 - Archetype-specific question style:
   - technical reference → "what breaks if not this? what does the alternative cost?"
   - cognitive → "你自己什么时候犯过这个 bias？具体场景？"
+- **Fold in differentiation** — as the check converges, push the human to connect
+  the material to their real context: "你在工作里遇到过类似问题吗？用这章的框架
+  重看当时的决策会改什么？" AI asks, human answers — AI does not answer for them.
+
+**Guardrails (default ON — these replace the AI's subjective "讲得不错" judgment):**
+
+The enemy is *feeling* like you understood. A check you can pass by reciting or
+sounding fluent is worthless. These three create friction you cannot fake:
+
+| # | Guardrail | Catches | How |
+|---|-----------|---------|-----|
+| 🟢 1 | **Zero-jargon** | Term-shufflers (reciting a definition ≠ understanding) | Ban the book's terms. Explaining "event sourcing" may not use "event"/"sourcing"/"log" — force plain language + analogy. Stalls without the label = only memorized the label. |
+| 🟢 2 | **Predict-then-check** | The knowing illusion (obvious *only after* reading) | Before a section with a clear trade-off, AI poses a scenario and asks the human to predict the outcome; then compare against the book. A wrong prediction exposes the real blind spot. |
+| 🟡 3 | **Steel-man the alternative** | One-directional understanding (only knows why to use it) | Not just "why CQRS" but "when NOT to — where plain CRUD wins." Real grasp of a pattern = knowing its boundary and cost. |
+
+**Pass criterion (objective, replaces subjective judgment):**
+Explains zero-jargon + can state the alternative's cost + prediction held →
+mark ✅. Any one fails → mark ⚠️ and log it as an open gap.
 
 **End conditions (any of these):**
 - User says to stop → stop immediately
-- Natural convergence → 2-3 consecutive questions answered clearly
+- Natural convergence → 2-3 consecutive questions answered clearly (all guardrails passed)
 - AI judges all core concepts covered, no new gaps found
 
 **Output — written to `{BookTitle}/feynman/{chapter-slug}.md`:**
@@ -188,10 +213,13 @@ Output: `{BookTitle}/notes/{chapter-slug}.md` under `## Sources`
 # {Chapter} — Feynman Check
 
 ## {date}
-### ✅ 讲清楚的
+### ✅ 讲清楚的（zero-jargon + 反方 + 预测均过）
 - ...
 
-### ⚠️ 仍然模糊的
+### ⚠️ 仍然模糊的（哪道 guardrail 没过）
+- ...
+
+### 🔗 差异化连接（跟工作/其他书的关联）
 - ...
 ```
 
@@ -200,20 +228,27 @@ to track gap closure over time.
 
 **Does NOT**: generate flashcards, extract zettel, write prose.
 
-### Step 4 — Research (Role 2: Research assistant)
-*Trigger: "帮我验证" / "这个说法还成立吗" / "查一下最新的"*
-*Also: after Feynman check, AI proactively suggests verification for factual
-gaps — but does not auto-execute. "这几个点要不要我帮你验证？"*
+### On-demand — Find sources / verify (Role 2: Research assistant)
+*Trigger: "帮我找论文" / "这章引用了什么" / "帮我验证" / "这个说法还成立吗"*
 
-AI verifies facts from the Feynman check, surfaces the correct information,
-checks what has changed since publication.
+**Not a mandatory step anymore.** Invoked only when the human hits something
+doubtful or wants to go deeper. Also, after a Feynman check surfaces a factual
+gap, AI may *suggest* — never auto-execute — "这几个点要不要我帮你查一下？"
 
-Output: `{BookTitle}/notes/{chapter-slug}.md` under `## Research`
+When invoked, AI lists the canonical sources the chapter cites (primary papers
+first, at most one explainer), verifies facts, and checks what has changed since
+publication.
 
-### Step 5 — Human writes + Review (Role 3: Structure & accuracy review)
+Output: `{BookTitle}/notes/{chapter-slug}.md` under `## Sources` / `## Research`
+
+### Step 3 — Human writes + Review (Role 3: Structure & accuracy review)
 *Trigger: human finishes writing, says "帮我 review" / "看看有什么问题"*
 
-The human writes in the output target (e.g. `articles/ddia/{chapter-slug}.md`).
+**Not every chapter produces an article.** Write only when enough material has
+accumulated — could be one rich chapter, could be 2-3 combined. Feynman keeps
+pace with reading; writing does not have to.
+
+The human writes in the output target (e.g. `articles/{slug}/{article-slug}.md`).
 AI does not participate in writing. After the human finishes, AI reviews:
 
 **Review dimensions:**
@@ -250,19 +285,8 @@ drafts.
 
 User can iterate: "再 review 一次" — AI compares against previous findings.
 
-### Step 6 — Differentiation close (Role 4: Differentiation prompt)
-*Trigger: after review, AI prompts "要做 differentiation 吗？" / user says
-"跟我的工作有什么关系" / "帮我连接"*
-
-AI asks questions to push the human to connect the material to their real context.
-AI asks, human answers — AI does not answer for them.
-
-Example questions (archetype-specific):
-- technical reference (DDIA): "你在 replatform 里遇到过类似的问题吗？"
-  "你的 13 个 submodules 里哪些会受影响？" "用这章的框架重新审视当时的决策，会改什么？"
-- cognitive: "这个 bias 你最近在哪个决策里犯过？" "知道了之后，决策流程怎么改？"
-
-Output: `{BookTitle}/notes/{chapter-slug}.md` under `## Differentiation`
+> **Differentiation** is no longer a separate step — it is folded into the
+> Feynman check (Step 2). See the "Fold in differentiation" rule there.
 
 ---
 
@@ -274,11 +298,9 @@ Display the chapter's full progress — inform, do not push:
 ✅ {Step} 完成
 
 这章的进度：
-  ✅ Fill gaps — 已找到 3 个 sources
-  ✅ Feynman — 刚完成，2 个 gap 待关闭
-  ○ Research — 未开始
-  ○ Write — 未开始
-  ○ Differentiation — 未开始
+  ✅ Feynman — 刚完成，zero-jargon 过，反方 ⚠️ 1 个 gap 待关闭
+  ○ Sources — 按需（未触发）
+  ○ Write — 未开始（攒够材料再写）
 ```
 
 The human decides what to do next. AI does not push to the next step.
@@ -292,17 +314,16 @@ Each book's `meta.md` frontmatter contains an explicit progress tracker:
 ```yaml
 progress:
   ch05:
-    fill_gaps: done       # 2026-06-14
-    feynman: done         # 2026-06-14, 2 gaps open
-    research: not_started
+    feynman: done         # 2026-06-14, zero-jargon ✅, 反方 ⚠️ 1 gap open
     write: not_started
-    differentiation: not_started
   ch06:
-    fill_gaps: not_started
+    feynman: not_started
+    write: not_started
 ```
 
-AI updates this tracker at the end of each step. Session start reads it to
-reconstruct progress.
+Only two fields are tracked now: `feynman` and `write`. Sources/research are
+on-demand and not tracked here. AI updates this tracker at the end of each step.
+Session start reads it to reconstruct progress.
 
 ---
 
