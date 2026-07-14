@@ -1393,10 +1393,18 @@ dv.el("div", "📖 读书", {
       const coverWrap = card.createEl("div", {
         attr: { style: `width:${coverSize};flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--background-primary);` }
       });
-      if (coverUrl) {
-        coverWrap.createEl("img", { attr: { src: coverUrl, style: "width:100%;height:100%;object-fit:cover;" } });
-      } else {
+      function showCoverPlaceholder() {
+        coverWrap.empty();
         coverWrap.createEl("span", { text: "📖", attr: { style: "font-size:1.3em;opacity:0.35;" } });
+      }
+      if (coverUrl) {
+        const coverImg = coverWrap.createEl("img", {
+          attr: { src: coverUrl, alt: bookName, style: "width:100%;height:100%;object-fit:cover;" }
+        });
+        // Fall back to the placeholder icon if the WeRead-hosted cover 404s or is unreachable.
+        coverImg.addEventListener("error", showCoverPlaceholder, { once: true });
+      } else {
+        showCoverPlaceholder();
       }
 
       const body = card.createEl("div", { attr: { style: "flex:1;min-width:0;padding:9px 12px;" } });
@@ -1416,6 +1424,14 @@ dv.el("div", "📖 读书", {
         row1.createEl("span", {
           text: archLabel[m.archetype],
           attr: { style: "font-size:0.62em;padding:1px 7px;margin-top:1px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
+        });
+      }
+
+      // Full title (edition, subtitle, etc.) — only shown when it adds info beyond the folder name.
+      if (m.title && m.title !== bookName) {
+        body.createEl("div", {
+          text: m.title,
+          attr: { style: "font-size:0.72em;color:var(--text-muted);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" }
         });
       }
 
