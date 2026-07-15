@@ -337,7 +337,7 @@ progress: {{}}
 def write_moc(out_dir: Path, title: str, parts: dict, filenames: dict):
     lines = [
         f'---',
-        f'title: "{title} — Map of Content"',
+        f'title: "{_yaml_escape(title)} — Map of Content"',
         f'---',
         f'',
         f'# {title} — Map of Content',
@@ -385,7 +385,7 @@ def write_chapter(chapters_dir: Path, chapter_num: int, title: str, preview: str
 """
 
     content = f"""---
-title: "{title}"
+title: "{_yaml_escape(title)}"
 chapter: {chapter_num}
 status: unread
 ---
