@@ -311,7 +311,7 @@ GitHub Search API (2 queries: new hot + active popular)
 
 - [Obsidian](https://obsidian.md)
 - [Claude Code](https://claude.ai/claude-code)
-- Python 3.10+ (for `Learning/Books/.venv/` — see step 5)
+- Python 3.13+ (used by `Learning/Books/.venv/`, `scripts/ai-digest/`, `scripts/feed-orchestrator/`)
 - AWS CLI (`brew install awscli`) — for vault sync and Bedrock access
 
 ### 1. AWS credentials
