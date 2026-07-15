@@ -1390,7 +1390,7 @@ dv.el("div", "📖 读书", {
       });
       card.createEl("div", { attr: { style: "width:3px;background:var(--color-accent);flex-shrink:0;" } });
 
-      // Cover thumbnail (from matching WeRead/<bookName>/ folder) — placeholder icon if none found
+      // Cover thumbnail (meta.md cover: field, else WeRead fallback) — placeholder icon if none found
       const coverUrl = findBookCover(m, bookName);
       const coverSize = isMobile ? "44px" : "52px";
       const coverWrap = card.createEl("div", {
