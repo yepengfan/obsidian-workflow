@@ -22,10 +22,16 @@ The combination produces a two-layer system: a **capture layer** (Inbox) where n
   settings.json   # Hook configuration
 
 Learning/Books/
-  book_init.py    # EPUB/PDF parser → Obsidian note generator
+  book_init.py    # EPUB/PDF parser → Obsidian note generator (writes epub_path/pdf_path)
   CLAUDE.md       # Book learning system instructions
   Books Index.md  # Dataview-powered book directory + WeRead Library card view
   .bookrc.example # Config template for local paths
+
+.claude/commands/book/
+  book-init.md    # /book/book-init — onboarding + epub_path/pdf_path retrofit
+
+system/modules/book-learning/
+  module.md       # Module manifest (registry.md dashboard entry)
 
 Inbox/            # Fleeting notes — quick capture, processed weekly
 Zettelkasten/     # Permanent notes — one atomic idea per note, interlinked
@@ -88,44 +94,43 @@ graph TD
 
 ```mermaid
 graph TD
-    INIT["<b>INIT</b><br/>初始化 书名"]
-    INIT -->|book_init.py| GEN[Generate Structure]
+    INIT["<b>/book/book-init</b><br/>书名 + archetype + channel"]
+    INIT -->|locate epub in<br/>~/Library/ebooks/| LOCATE[Resolve source file]
+    LOCATE -->|book_init.py| GEN[Generate Structure]
 
     subgraph scaffold [" "]
         direction LR
-        META[00_meta.md<br/>Reading goals]
-        MAP[00_map.md<br/>Concept network]
-        CH[chapters/Ch01..N<br/>Feynman prompts]
+        META["meta.md<br/>epub_path/pdf_path +<br/>archetype + progress"]
+        MOC[MOC.md<br/>Index + chapter links]
+        CH[chapters/Ch01..N<br/>Skeleton, read-only]
+        NOTES[notes/<br/>Sources, research]
+        FEY_DIR[feynman/<br/>Check results log]
     end
     GEN --> scaffold
 
-    READ["<b>READ</b><br/>Read chapter on WeRead"]
-    READ --> FILL[Fill 核心概念 +<br/>和已知事物的连接]
+    READ["<b>Naked read</b><br/>WeRead / EPUB, no AI"]
+    scaffold --> READ
 
-    FILL --> FEYNMAN["<b>FEYNMAN</b><br/>帮我费曼测试第 X 章"]
-    FEYNMAN --> CARDS[Generate flashcards]
-    FEYNMAN -->|extract insights| ZK[Zettelkasten]
+    READ --> FEYNMAN["<b>费曼测试</b><br/>用自己的话解释这章"]
+    FEYNMAN -->|zero-jargon +<br/>反方 + 预测 guardrails| CHECK[✅/⚠️ result → feynman/]
+    FEYNMAN -.->|on-demand| RESEARCH[Sources / verify → notes/]
 
-    CARDS --> REVIEW["<b>REVIEW</b><br/>review 第 X 部分"]
-    REVIEW --> SUMMARY[Part summary]
+    CHECK --> WRITE["<b>人写</b><br/>articles/ or journal/"]
+    WRITE --> REVIEW["<b>AI review</b><br/>技术错误 · 逻辑 gap · 结构 · 遗漏"]
 
-    SUMMARY --> FINAL["<b>FINAL</b><br/>我读完了这本书"]
-    FINAL --> SYNTH[Book synthesis]
-    FINAL -->|cross-chapter insights| ZK
-
-    CARDS -.->|#flashcards| SR["<b>SPACED REVIEW</b><br/>Obsidian SR plugin"]
-    SR -.->|interval repetition| SR
+    REVIEW --> FINAL["<b>FINAL</b><br/>我读完了这本书"]
+    FINAL --> SYNTH[跨章回顾 + 全局连接]
+    FINAL -->|extract insights| ZK[Zettelkasten]
 
     style INIT fill:#4a9eff,color:#fff
     style FEYNMAN fill:#ff6b6b,color:#fff
     style REVIEW fill:#ffa94d,color:#fff
     style FINAL fill:#51cf66,color:#fff
-    style SR fill:#be4bdb,color:#fff
     style ZK fill:#20c997,color:#fff
     style scaffold fill:none,stroke:#ddd,stroke-dasharray:5
 ```
 
-A structured reading workflow: **scaffold first → directed reading → active construction → spaced review → permanent knowledge**.
+A structured reading workflow: **onboard (`/book/book-init`) → naked read → Feynman sparring → human writes → AI review → permanent knowledge**. Books stall at read-only until material accumulates — not every chapter produces a written article. See `Learning/Books/CLAUDE.md` for the full per-unit workflow, archetypes, and guardrails.
 
 ## Knowledge Flow (Zettelkasten)
 
@@ -204,6 +209,13 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 | `/learning-review [code\|plan] [week]` | Review a week's log — produce zettel candidates and plan adjustments |
 | `/project-retro [code\|folder]` | Technical project retro — decisions, pitfalls, reusable patterns |
 
+#### Books
+
+| Command | When to use |
+|---------|------------|
+| `/book/book-init <书名>` | Onboard a new book — locate its EPUB/PDF in `~/Library/ebooks/`, run `book_init.py`, confirm archetype/output target |
+| `/book/book-init` (say "帮我补一下 epub_path") | Retrofit — scan existing books for a missing `epub_path`/`pdf_path` and backfill it |
+
 #### Algorithm
 
 | Command | When to use |
@@ -255,21 +267,6 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 - 🌿 `growing` — 2+ Related links, idea connected to the network
 - 🌳 `evergreen` — manually marked; deeply internalized, cross-domain connections
 
-```
-python3 Learning/Books/book_init.py --file "path/to/book.epub" --output "path/to/vault/Learning/Books"
-```
-
-Generates per-book Obsidian notes:
-- `00_meta.md` — reading goals and final evaluation
-- `00_map.md` — chapter map + cross-chapter concept network
-- `chapters/Ch01_*.md` — per-chapter notes with Feynman test prompts and flashcards
-
-Features:
-- EPUB and PDF support (CJK and English)
-- Auto-links WeRead (微信读书) highlights to chapter notes
-- Spaced repetition flashcards via [obsidian-spaced-repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition)
-- Interactive workflows: Feynman testing, Part Review, Final synthesis (via Claude Code)
-
 ## AI Daily Digest
 
 A self-contained pipeline in `scripts/ai-digest/` that generates a bilingual (中/EN) daily AI news digest:
@@ -314,7 +311,7 @@ GitHub Search API (2 queries: new hot + active popular)
 
 - [Obsidian](https://obsidian.md)
 - [Claude Code](https://claude.ai/claude-code)
-- Python 3.13+ with `pip install ebooklib beautifulsoup4 pdfplumber`
+- Python 3.10+ (for `Learning/Books/.venv/` — see step 5)
 - AWS CLI (`brew install awscli`) — for vault sync and Bedrock access
 
 ### 1. AWS credentials
@@ -397,6 +394,9 @@ cp Learning/Books/.bookrc.example .bookrc
 # Edit .bookrc:
 #   books_dir = "~/Library/ebooks"
 #   vault_dir = "~/Vaults/Workspace"
+
+# book_init.py's venv (used by /book/book-init)
+cd Learning/Books && python3 -m venv .venv && .venv/bin/pip install ebooklib beautifulsoup4 pdfplumber
 ```
 
 ### 6. Obsidian plugins
