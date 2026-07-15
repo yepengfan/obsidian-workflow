@@ -3,7 +3,7 @@
 
 New book onboarding: $ARGUMENTS
 
-Read `Learning/Books/CLAUDE.md` for the full reading workflow this book will enter (archetypes, per-unit steps, folder boundaries). This command only handles **onboarding a new book** — the "New book onboarding" section there is the source of truth; follow it, this file just operationalizes steps 2-3.
+Read `Learning/Books/CLAUDE.md` for the full reading workflow this book will enter (archetypes, per-unit steps, folder boundaries). This command only handles **onboarding a new book** (the "New book onboarding" section there is the source of truth for that scope) — it does not touch the per-unit Feynman/write/review cycle that follows, which is a separate, ongoing workflow described later in that same file.
 
 ## Step 1 — Confirm book identity
 
@@ -37,11 +37,11 @@ ls ~/Library/ebooks | grep -i "<title fragment>"
   --output "Learning/Books"
 ```
 
-This generates `Learning/Books/{Book Title}/` with `meta.md`, `MOC.md`, `chapters/`, `notes/`, `feynman/`. As of the epub_path automation, `meta.md`'s frontmatter already contains `epub_path` pointing at the resolved absolute path of the source file — **do not ask the user to re-supply it**, and do not manually re-type it elsewhere.
+This generates `Learning/Books/{Book Title}/` with `meta.md`, `MOC.md`, `chapters/`, `notes/`, `feynman/`. `meta.md`'s frontmatter already contains the resolved absolute path of the source file — keyed as `epub_path` for `.epub` sources, `pdf_path` for `.pdf` sources — **do not ask the user to re-supply it**, and do not manually re-type it elsewhere.
 
 If `--title` produced a folder name the user doesn't like (bad EPUB metadata), rerun with `--title "Correct Title"` — do not manually rename files.
 
-If the reading channel is pure WeRead (no EPUB/PDF), skip this step and create the folder structure manually per `Learning/Books/CLAUDE.md` step 3 (no `epub_path` field in that case).
+If the reading channel is pure WeRead (no EPUB/PDF), skip this step and create the folder structure manually per `Learning/Books/CLAUDE.md` step 3 (no `epub_path`/`pdf_path` field in that case).
 
 ## Step 4 — Fill in fields book_init.py doesn't know
 
@@ -61,20 +61,20 @@ Check whether a matching `WeRead/` folder exists for this book title; if so, add
 ```
 ✅ {BookTitle} 已加入系统
    archetype: {X} · output: {Y} · channel: {Z}
-   epub_path: {path, or "—" if WeRead-only}
+   epub_path/pdf_path: {path, or "—" if WeRead-only}
 
 开始读书时告诉我你在读哪个 chapter/concept。
 ```
 
 Do not push further — Books Index.md discovers the new book automatically via Dataview (reads `status: reading` from `meta.md`), no manual index edit needed.
 
-## Retrofit — backfill epub_path on existing books
+## Retrofit — backfill epub_path/pdf_path on existing books
 
 *Triggered when user says "帮我补一下 epub_path" / "检查一下哪些书缺 epub 路径"*
 
-For books already onboarded before this automation existed (or WeRead-only books that later got an EPUB), `meta.md` may be missing `epub_path` even though a matching file exists in `~/Library/ebooks/`.
+For books already onboarded before this automation existed (or WeRead-only books that later got an EPUB/PDF), `meta.md` may be missing `epub_path`/`pdf_path` even though a matching file exists in `~/Library/ebooks/`.
 
-1. Scan `Learning/Books/*/meta.md` for entries missing `epub_path`.
+1. Scan `Learning/Books/*/meta.md` for entries missing both `epub_path` and `pdf_path`.
 2. For each, fuzzy-match the folder/title against `ls ~/Library/ebooks/`.
 3. **Exactly one plausible match** → propose adding it, list the exact line you'll insert, and wait for confirmation (per this vault's "before you act" rule — do not write without approval).
 4. **Multiple candidates** (editions/translations) → ask the user which one, same as Step 2 above. Never guess between an English original and a translation, or between editions.

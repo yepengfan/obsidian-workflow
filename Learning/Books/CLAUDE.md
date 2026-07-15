@@ -125,14 +125,14 @@ Run via **`/book/book-init`** (see `.claude/commands/book/book-init.md` for the 
    b. Run book_init.py for the chapter skeleton:
       "Learning/Books/.venv/bin/python3" Learning/Books/book_init.py \
         --file "{resolved path}" --output "Learning/Books"
-      This writes `epub_path` (resolved absolute path) into meta.md's frontmatter
-      automatically — no manual step needed.
+      This writes `epub_path`/`pdf_path` (resolved absolute path, keyed by source
+      format) into meta.md's frontmatter automatically — no manual step needed.
 
 3. Create per-book folder structure:
    Learning/Books/{BookTitle}/
    ├── MOC.md          ← pure index linking to all content
    ├── meta.md         ← metadata + progress tracker + reading meta questions
-   │                      (epub_path auto-filled by book_init.py when EPUB/PDF)
+   │                      (epub_path/pdf_path auto-filled by book_init.py)
    ├── chapters/       ← book_init.py skeleton (if generated)
    ├── notes/          ← per-chapter working notes
    └── feynman/        ← Feynman check results
@@ -150,7 +150,7 @@ Run via **`/book/book-init`** (see `.claude/commands/book/book-init.md` for the 
 ```
 
 **Retrofitting older books**: books onboarded before this automation may be missing
-`epub_path` even though a matching EPUB exists in `~/Library/ebooks/`. Trigger
+`epub_path`/`pdf_path` even though a matching file exists in `~/Library/ebooks/`. Trigger
 `/book/book-init` with "帮我补一下 epub_path" to scan and backfill — always confirm
 before writing, and never guess between multiple candidate files (e.g. different
 editions or an English/translated pair).

@@ -147,7 +147,7 @@ See `Learning/Books/CLAUDE.md` for the full reading workflow.
 When working inside the `Learning/Books/` folder, that file takes precedence for all book-related tasks.
 
 New book onboarding (EPUB/PDF locate + `book_init.py` + metadata confirmation) runs via
-**`/book/book-init <书名>`**. It also backfills `epub_path` on older books missing it.
+**`/book/book-init <书名>`**. It also backfills `epub_path`/`pdf_path` on older books missing it.
 
 ## Algorithm System
 

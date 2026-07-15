@@ -8,8 +8,8 @@ created: 2026-07-15
 updated: 2026-07-15
 depends_on: []
 requires:
-  cli: [claude, python3]
-  python: ">=3.9"
+  cli: [claude]
+  python: ">=3.10"
   pip: [ebooklib, beautifulsoup4, pdfplumber]
   plugins: [dataview]
 commands: [book-init]
@@ -31,7 +31,7 @@ tags: [system/module]
 
 ## 架构
 
-- **`{BookTitle}/meta.md`**: frontmatter 驱动 — archetype、output_target、reading_channel、progress tracker，以及（EPUB/PDF 书）`epub_path` 指向 `~/Library/ebooks/` 下的实体文件
+- **`{BookTitle}/meta.md`**: frontmatter 驱动 — archetype、output_target、reading_channel、progress tracker，以及（EPUB/PDF 书）`epub_path`/`pdf_path`（按来源格式二选一）指向 `~/Library/ebooks/` 下的实体文件
 - **`{BookTitle}/MOC.md`**: 纯索引，链接到 meta + chapters + notes + feynman
 - **`{BookTitle}/chapters/`**: `book_init.py` 生成的章节骨架，只读参考
 - **`{BookTitle}/notes/`**: 按需的 sources/research 记录
@@ -40,13 +40,13 @@ tags: [system/module]
 
 ### Ebook 存储
 
-实体 epub/pdf 文件不在 vault 内，存放在 `~/Library/ebooks/`（从 S3 bucket `obsidian-ebook-library-391824190072` 经 launchd 同步，见 `.bookrc.example`）。`meta.md` 的 `epub_path` 字段记录解析后的绝对路径，把笔记和原书文件关联起来。
+实体 epub/pdf 文件不在 vault 内，存放在 `~/Library/ebooks/`（从 S3 bucket `obsidian-ebook-library-391824190072` 经 launchd 同步，见 `.bookrc.example`）。`meta.md` 的 `epub_path`（`.epub` 来源）或 `pdf_path`（`.pdf` 来源）字段记录解析后的绝对路径，把笔记和原书文件关联起来。
 
 ### 数据流
 
-- **新书 onboarding**: `/book/book-init <书名>` → 确认 archetype/channel → 在 `~/Library/ebooks/` 模糊匹配 epub → 跑 `book_init.py` 生成骨架（自动写入 `epub_path`）→ 人工补 archetype/output_target
+- **新书 onboarding**: `/book/book-init <书名>` → 确认 archetype/channel → 在 `~/Library/ebooks/` 模糊匹配 epub/pdf → 跑 `book_init.py` 生成骨架（按来源格式自动写入 `epub_path`/`pdf_path`）→ 人工补 archetype/output_target
 - **读书循环**: Naked read（WeRead/EPUB）→ Feynman sparring → 人写 + AI review，见 `Learning/Books/CLAUDE.md` "Per-unit workflow"
-- **补全遗留书**: `/book/book-init` 的 Retrofit 流程 → 扫描缺 `epub_path` 的 `meta.md` → 模糊匹配补全（多候选时必须询问，不猜）
+- **补全遗留书**: `/book/book-init` 的 Retrofit 流程 → 扫描缺 `epub_path`/`pdf_path` 的 `meta.md` → 模糊匹配补全（多候选时必须询问，不猜）
 
 ## 已知遗留问题
 
@@ -54,5 +54,6 @@ tags: [system/module]
 
 ## Quick Start
 
-1. `/book/book-init "书名"` — 新书 onboarding（含 epub 定位 + book_init.py + 元数据确认）
-2. `/book/book-init` 说「帮我补一下 epub_path」— 扫描并补全遗留书的 epub_path
+1. **首次安装** → `cd Learning/Books && python3 -m venv .venv && .venv/bin/pip install ebooklib beautifulsoup4 pdfplumber`（仅在 `.venv/` 不存在时需要，`book_init.py` 依赖这三个包）
+2. `/book/book-init "书名"` — 新书 onboarding（含 epub 定位 + book_init.py + 元数据确认）
+3. `/book/book-init` 说「帮我补一下 epub_path」— 扫描并补全遗留书的 epub_path/pdf_path
