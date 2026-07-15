@@ -85,6 +85,7 @@ Commands are organized by module in `.claude/commands/`:
 ├── learning/        # /learning/learning-init, ...
 ├── feeds/           # /feeds/ai-digest, /feeds/github-trending
 ├── algo/            # /algo/solve
+├── book/            # /book/book-init
 ├── brownbag/        # /brownbag/brownbag
 ├── sysd/            # /sysd/solve
 ├── vault-ops/       # /vault-ops/organize, /vault-ops/backup, ...
@@ -144,6 +145,9 @@ Each module declares external dependencies via the `requires` frontmatter field:
 
 See `Learning/Books/CLAUDE.md` for the full reading workflow.
 When working inside the `Learning/Books/` folder, that file takes precedence for all book-related tasks.
+
+New book onboarding (EPUB/PDF locate + `book_init.py` + metadata confirmation) runs via
+**`/book/book-init <书名>`**. It also backfills `epub_path`/`pdf_path` on older books missing it.
 
 ## Algorithm System
 

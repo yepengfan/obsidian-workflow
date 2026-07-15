@@ -6,11 +6,16 @@ Usage:
 
 Generates a ready-to-use Obsidian note structure for deep reading:
     {output}/{Book Title}/
-    ├── 00_meta.md
-    ├── 00_map.md
-    └── chapters/
-        ├── Ch01_{title}.md
-        └── ...
+    ├── meta.md         (frontmatter includes epub_path/pdf_path -> resolved
+    │                    absolute path of the --file source, keyed by its
+    │                    format, so the note always knows where its source
+    │                    ebook lives on disk)
+    ├── MOC.md
+    ├── chapters/
+    │   ├── Ch01_{title}.md
+    │   └── ...
+    ├── notes/
+    └── feynman/
 
 Dependencies:
     pip install ebooklib beautifulsoup4 pdfplumber
@@ -282,13 +287,21 @@ def parse_pdf(filepath: str):
 
 # ── File generators ───────────────────────────────────────────────────────────
 
-def write_meta(out_dir: Path, title: str, author: str):
+def _yaml_escape(s: str) -> str:
+    """Escape backslashes and double quotes so a value stays a valid
+    double-quoted YAML scalar (titles/authors/paths can contain either)."""
+    return s.replace('\\', '\\\\').replace('"', '\\"')
+
+
+def write_meta(out_dir: Path, title: str, author: str,
+               source_path: str = None, source_key: str = "epub_path"):
+    source_line = f'\n{source_key}: "{_yaml_escape(source_path)}"' if source_path else ""
     content = f"""---
-title: "{title}"
-author: "{author}"
+title: "{_yaml_escape(title)}"
+author: "{_yaml_escape(author)}"
 archetype:
 output_target:
-reading_channel:
+reading_channel:{source_line}
 status: reading
 started: {date.today()}
 finished:
@@ -324,7 +337,7 @@ progress: {{}}
 def write_moc(out_dir: Path, title: str, parts: dict, filenames: dict):
     lines = [
         f'---',
-        f'title: "{title} — Map of Content"',
+        f'title: "{_yaml_escape(title)} — Map of Content"',
         f'---',
         f'',
         f'# {title} — Map of Content',
@@ -372,7 +385,7 @@ def write_chapter(chapters_dir: Path, chapter_num: int, title: str, preview: str
 """
 
     content = f"""---
-title: "{title}"
+title: "{_yaml_escape(title)}"
 chapter: {chapter_num}
 status: unread
 ---
@@ -445,7 +458,9 @@ def main():
         filenames[ch_title] = fname
         ch_num += 1
 
-    write_meta(out_dir, title, author)
+    abs_source_path = str(Path(filepath).expanduser().resolve())
+    source_key = "epub_path" if ext == '.epub' else "pdf_path"
+    write_meta(out_dir, title, author, source_path=abs_source_path, source_key=source_key)
     write_moc(out_dir, title, parts, filenames)
 
     # Create notes/ and feynman/ directories
