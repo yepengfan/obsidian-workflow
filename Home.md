@@ -1352,10 +1352,13 @@ dv.el("div", "📖 读书", {
   } else {
     const archLabel = { "technical-reference": "tech-ref", "cognitive-mental-model": "cognitive" };
 
-    // Look up a book's cover image via its matching WeRead/<bookName>/ folder
-    // (cover: frontmatter field on any highlights note inside). Returns null if
-    // no matching folder/field is found — caller falls back to a placeholder icon.
-    function findBookCover(bookName) {
+    // Resolve a book's cover image. Priority:
+    //   1. explicit `cover:` on the book's own meta.md — lets a book pin a
+    //      specific edition's cover (e.g. DDIA 2nd ed) regardless of folder name
+    //   2. fallback: `cover:` frontmatter on any note inside WeRead/<bookName>/
+    // Returns null if neither is found — caller shows a placeholder icon.
+    function findBookCover(meta, bookName) {
+      if (meta?.cover) return String(meta.cover);
       const wrFolder = app.vault.getAbstractFileByPath(`WeRead/${bookName}`);
       if (!wrFolder || !wrFolder.children) return null;
       for (const child of wrFolder.children) {
@@ -1387,8 +1390,8 @@ dv.el("div", "📖 读书", {
       });
       card.createEl("div", { attr: { style: "width:3px;background:var(--color-accent);flex-shrink:0;" } });
 
-      // Cover thumbnail (from matching WeRead/<bookName>/ folder) — placeholder icon if none found
-      const coverUrl = findBookCover(bookName);
+      // Cover thumbnail (meta.md cover: field, else WeRead fallback) — placeholder icon if none found
+      const coverUrl = findBookCover(m, bookName);
       const coverSize = isMobile ? "44px" : "52px";
       const coverWrap = card.createEl("div", {
         attr: { style: `width:${coverSize};flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--background-primary);` }
