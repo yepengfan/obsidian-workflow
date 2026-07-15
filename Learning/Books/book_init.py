@@ -6,11 +6,15 @@ Usage:
 
 Generates a ready-to-use Obsidian note structure for deep reading:
     {output}/{Book Title}/
-    ├── 00_meta.md
-    ├── 00_map.md
-    └── chapters/
-        ├── Ch01_{title}.md
-        └── ...
+    ├── meta.md         (frontmatter includes epub_path -> resolved absolute
+    │                    path of the --file source, so the note always knows
+    │                    where its source ebook lives on disk)
+    ├── MOC.md
+    ├── chapters/
+    │   ├── Ch01_{title}.md
+    │   └── ...
+    ├── notes/
+    └── feynman/
 
 Dependencies:
     pip install ebooklib beautifulsoup4 pdfplumber
@@ -282,13 +286,14 @@ def parse_pdf(filepath: str):
 
 # ── File generators ───────────────────────────────────────────────────────────
 
-def write_meta(out_dir: Path, title: str, author: str):
+def write_meta(out_dir: Path, title: str, author: str, epub_path: str = None):
+    epub_line = f'\nepub_path: "{epub_path}"' if epub_path else ""
     content = f"""---
 title: "{title}"
 author: "{author}"
 archetype:
 output_target:
-reading_channel:
+reading_channel:{epub_line}
 status: reading
 started: {date.today()}
 finished:
@@ -445,7 +450,8 @@ def main():
         filenames[ch_title] = fname
         ch_num += 1
 
-    write_meta(out_dir, title, author)
+    abs_epub_path = str(Path(filepath).expanduser().resolve())
+    write_meta(out_dir, title, author, epub_path=abs_epub_path)
     write_moc(out_dir, title, parts, filenames)
 
     # Create notes/ and feynman/ directories

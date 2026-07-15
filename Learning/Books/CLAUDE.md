@@ -109,7 +109,9 @@ no separate `_capture/` folder — all raw reading reactions live in WeRead.
 
 ## New book onboarding
 
-*Triggered when user says "我要开始读 XXX"*
+*Triggered when user says "我要开始读 XXX", or explicitly via `/book/book-init <书名>`*
+
+Run via **`/book/book-init`** (see `.claude/commands/book/book-init.md` for the full step-by-step). Summary:
 
 ```
 1. Confirm: book title, author, archetype, reading channel (WeRead / EPUB / PDF)
@@ -117,13 +119,20 @@ no separate `_capture/` folder — all raw reading reactions live in WeRead.
    - Archetype determines output target and Feynman question style
    - More archetypes can be added as new patterns emerge
 
-2. If EPUB/PDF available → ask whether to run book_init.py for chapter skeleton
-   python3 Learning/Books/book_init.py --file "{path}" --output "Learning/Books"
+2. If EPUB/PDF available:
+   a. Search ~/Library/ebooks/ for a matching file (fuzzy match on title).
+      Multiple candidates (editions/translations) → ask which one, never guess.
+   b. Run book_init.py for the chapter skeleton:
+      "Learning/Books/.venv/bin/python3" Learning/Books/book_init.py \
+        --file "{resolved path}" --output "Learning/Books"
+      This writes `epub_path` (resolved absolute path) into meta.md's frontmatter
+      automatically — no manual step needed.
 
 3. Create per-book folder structure:
    Learning/Books/{BookTitle}/
    ├── MOC.md          ← pure index linking to all content
    ├── meta.md         ← metadata + progress tracker + reading meta questions
+   │                      (epub_path auto-filled by book_init.py when EPUB/PDF)
    ├── chapters/       ← book_init.py skeleton (if generated)
    ├── notes/          ← per-chapter working notes
    └── feynman/        ← Feynman check results
@@ -139,6 +148,12 @@ no separate `_capture/` folder — all raw reading reactions live in WeRead.
    "✅ {BookTitle} 已加入系统，archetype: {X}, output: {Y}。
     开始读书时告诉我你在读哪个 chapter/concept。"
 ```
+
+**Retrofitting older books**: books onboarded before this automation may be missing
+`epub_path` even though a matching EPUB exists in `~/Library/ebooks/`. Trigger
+`/book/book-init` with "帮我补一下 epub_path" to scan and backfill — always confirm
+before writing, and never guess between multiple candidate files (e.g. different
+editions or an English/translated pair).
 
 ---
 
