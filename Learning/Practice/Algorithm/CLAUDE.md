@@ -69,7 +69,7 @@
 **新建/引用 atom 的具体做法**：
 
 - **新建 atom**：用 `Templates/Algorithm Atom.md`，`title` 描述该技术本身（不含具体题目），不设 `category`（原子应可跨 category 复用，不被单一分类束缚）
-- **`tags` 目前只有 `leetcode/atom` 固定值**：呼应"不设 category"的原则，暂不做二级分类；若未来需要按主题筛选原子，需重新设计这个字段，目前不预留占位值
+- **`tags` 格式**：`[leetcode/atom]` 或 `[leetcode/atom, leetcode/{相关领域}]`——多数原子可以额外带一个领域标签帮助浏览（如 `leetcode/tree`、`leetcode/array`），但这不是强制分类；一个原子若确实横跨多个领域（如同时用于 DP 和 BST 的二分查找），只保留 `leetcode/atom` 即可。这和"不设 category"的原则不冲突：`category` 是必填的单一分类字段，这里的第二个 tag 只是可选的浏览辅助
 - **文件名 = atom title**：去掉文件系统非法字符 `/ \ : * ? " < > |`，且需与 frontmatter `title` 完全一致——两者不一致会导致 `Glob` 列出的标题和 pattern 卡里的 wikilink 对不上，静默产生断链或漏判
 - **`type: atom` frontmatter 字段**：与 vault 里其他卡片（module.md、essay 等）使用 `type` 字段的命名习惯保持一致；本模块目前的 Dataview 查询仍以 `tags` 中的 `#leetcode/atom` 为准做过滤，`type` 暂不参与查询，为未来可能的扩展保留
 - **反向引用免维护**：atom 文件的 "Used By" 用 `dv.current().file.inlinks` 自动渲染，不手动维护列表——只要 pattern 卡片里有 `[[atom title]]` wikilink，就会自动出现在该 atom 的 Used By 里，且不会漂移过期
