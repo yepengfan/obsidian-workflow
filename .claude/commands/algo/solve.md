@@ -64,7 +64,7 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 3. **新 pattern → 创建**:
    - 用 `Templates/Algorithm Pattern.md` 模板
    - `id`: 读取所有现有 card 的 id，取最大值 +1
-   - 填充: title, category, tags, problems, Key Insight, Trigger (如适用), Template, Gotchas
+   - 填充: title, category, tags, problems, Key Insight, Trigger (如适用), Composed Of (是否填写见步骤 5), Template, Gotchas
    - `difficulty`: 基于 pattern 复杂度评估
 
 4. **写 Log**:
@@ -72,3 +72,11 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
    - 不存在 → 用 `Templates/Algorithm Log.md` 创建，填充第一条
    - 已存在 → 追加新 `##` section，更新 frontmatter `problems_solved` 数组
    - 包含: pattern wikilink、difficulty、result emoji、notes、complexity
+
+5. **检查 Atom 提炼机会**（粒度标准见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Atom Card Rules）:
+   - 用 `Glob` 列出 `Atoms/` 全部文件名（= atom title，文件名约定见 CLAUDE.md）+ `Patterns/` 全部文件名（不要用 shell glob，理由同 Pattern Card Rules 第一条）
+   - 逐一读取每张 pattern 卡的 `## Key Insight`（如有 `## Composed Of` 一并看）——只需要这一小段，不必读 Gotchas/Template/Problems，避免不必要的开销
+   - 本次涉及的 pattern 卡核心机制，是否已被某个已有 atom 覆盖？若是 → 补充/确认 `## Composed Of` 链接，并把该 atom frontmatter 的 `updated` 改成今天
+   - 是否有一个可复用的技术，同时出现在本次卡和至少一张**其他任意**已有 pattern 卡的 Key Insight 里（不限于本次刚好接触到的卡），但还没有对应 atom？若是 → 新建 atom card，双方都加 `## Composed Of` 链接
+   - 是否构成"原子"（而非实现细节）拿不准时，默认跳过不新建——宁可漏掉，也不要把上次过度提炼、之后被迫撤销重来的错误再犯一次
+   - 以上都不适用（本次是新建 pattern 且步骤 3 已用模板创建）时 → 删除该卡片里空的 `## Composed Of` 小节及其占位注释，不要把未填写的模板占位符留在正文里
