@@ -72,3 +72,9 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
    - 不存在 → 用 `Templates/Algorithm Log.md` 创建，填充第一条
    - 已存在 → 追加新 `##` section，更新 frontmatter `problems_solved` 数组
    - 包含: pattern wikilink、difficulty、result emoji、notes、complexity
+
+5. **检查 Atom 提炼机会**（粒度标准见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Atom Card Rules）:
+   - 列出 `Learning/Practice/Algorithm/Atoms/` 下所有文件标题（文件夹不存在或为空则跳过此步）
+   - 本次涉及的 pattern 卡（步骤 2 更新或步骤 3 新建的）是否用到某个已有 atom？若是 → 在该卡补充/确认 `## Composed Of` 链接
+   - 是否有可复用的原子技术首次出现在这张卡里，且**至少另一张已有 pattern 卡**也用到同样的技术？若是 → 新建 atom card，双方都加 `## Composed Of` 链接
+   - 不确定是否构成原子（区别于代码写法细节）时，默认跳过，不主动新建 —— 提炼靠多次沉淀中自然浮现的重复信号，不追求一次性拆干净
