@@ -7,11 +7,13 @@
 | Path | Purpose |
 |------|---------|
 | `Learning/Practice/Algorithm/Patterns/` | Pattern card 文件（一个 pattern 一个 .md） |
+| `Learning/Practice/Algorithm/Atoms/` | Atom card 文件（跨 pattern 复用的原子知识，一个 atom 一个 .md） |
 | `Learning/Practice/Algorithm/Log/` | 每日解题记录 |
 | `Learning/Practice/Algorithm/Legacy/` | 迁移前原始文件（只读参考） |
 | `Learning/Practice/Algorithm/00_index.md` | Dataview dashboard |
 | `Templates/Algorithm Pattern.md` | 新 card 模板 |
 | `Templates/Algorithm Log.md` | 新 log 模板 |
+| `Templates/Algorithm Atom.md` | 新 atom 模板 |
 
 ## Solving Flow
 
@@ -24,7 +26,7 @@
 3. 只在用户明确说 "show me the code" / "给我看代码" / "我放弃" 时给完整代码
 4. 用户贴代码 → 审核正确性、edge cases、复杂度
 5. Bug fixing → 指出具体行，targeted fix，不重写
-6. 通过后 → 沉淀 pattern card + 写 log
+6. 通过后 → 沉淀 pattern card + 写 log（若某条 Gotcha 与已有 pattern 卡片重复，提炼为 Atom，见 Atom Card Rules）
 
 ### 周赛模式
 
@@ -45,6 +47,18 @@
 - `difficulty` 指 pattern 理解难度，非单题难度
 - 文件名 = pattern title（去掉文件系统非法字符 `/ \ : * ? " < > |`）
 - `tags` 格式: `[leetcode/pattern, leetcode/{category-slug}]`
+- 沉淀时若发现某条 Gotcha 与已有 pattern 卡片几乎逐字重复 → 考虑提炼为 Atom（见下）
+
+## Atom Card Rules
+
+**原子 vs 组合**：Pattern card 是"识别信号 → 完整解法"的组合层，数量随刷题深度增长快、彼此有重叠。Atom card 是不可再分的可复用知识片段（如"循环方向判断法则""K-state 滚动 DP"），数量少、增长慢、可跨 category 复用。
+
+- **提炼时机**：不预先设计分类体系，只在**实际发现两张 pattern 卡片写了几乎一样的话**时才提炼——这是信号成本最低、最不会过度设计的时刻
+- **归属判断**：与 Pattern Card Rules 第一条一致，提炼前先看 `Atoms/` 下是否已有可复用的原子，避免重复创建
+- **新建 atom**：用 `Templates/Algorithm Atom.md`，`title` 描述该原子本身（不含具体题目），不设 `category`（原子应可跨 category 复用，不被单一分类束缚）
+- **反向引用免维护**：atom 文件的 "Used By" 用 `dv.current().file.inlinks` 自动渲染，不手动维护列表——只要 pattern 卡片里有 `[[atom title]]` wikilink，就会自动出现在该 atom 的 Used By 里，且不会漂移过期
+- **Pattern 卡片这样引用**：把原本重复的详细推导替换成一句结论 + 链接到 atom，例如 `0-1 背包依赖上行 → 倒序（通用判断法则见 [[atom title]]）`——组合层保留的是"这个原子在本 pattern 里如何取值"，完整推导只在 atom 里存一份
+- **接缝知识不提炼**：两个原子拼接处产生的坑（如"先减后加的顺序""某个初始化为何是 -inf 而非 0"）留在 pattern 卡片的 Gotchas 里，不下沉到 atom——这类知识依赖具体组合上下文，拆到 atom 反而丢失语境
 
 ## Log Rules
 

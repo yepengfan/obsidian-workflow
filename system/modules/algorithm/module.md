@@ -5,16 +5,16 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-07
-updated: 2026-06-23
+updated: 2026-07-17
 depends_on: []
 requires:
   cli: [claude]
   plugins: [dataview]
 commands: [solve, migrate]
-templates: [Templates/Algorithm Pattern.md, Templates/Algorithm Log.md]
+templates: [Templates/Algorithm Pattern.md, Templates/Algorithm Log.md, Templates/Algorithm Atom.md]
 scripts: []
 hooks: []
-folders: [Learning/Practice/Algorithm/, Learning/Practice/Algorithm/Patterns/, Learning/Practice/Algorithm/Log/]
+folders: [Learning/Practice/Algorithm/, Learning/Practice/Algorithm/Patterns/, Learning/Practice/Algorithm/Log/, Learning/Practice/Algorithm/Atoms/]
 config_files:
   - .claude/commands/algo/solve.md
   - .claude/commands/algo/migrate.md
