@@ -69,9 +69,11 @@
 **新建/引用 atom 的具体做法**：
 
 - **新建 atom**：用 `Templates/Algorithm Atom.md`，`title` 描述该技术本身（不含具体题目），不设 `category`（原子应可跨 category 复用，不被单一分类束缚）
+- **`tags` 目前只有 `leetcode/atom` 固定值**：呼应"不设 category"的原则，暂不做二级分类；若未来需要按主题筛选原子，需重新设计这个字段，目前不预留占位值
 - **文件名 = atom title**：去掉文件系统非法字符 `/ \ : * ? " < > |`，且需与 frontmatter `title` 完全一致——两者不一致会导致 `Glob` 列出的标题和 pattern 卡里的 wikilink 对不上，静默产生断链或漏判
 - **`type: atom` frontmatter 字段**：与 vault 里其他卡片（module.md、essay 等）使用 `type` 字段的命名习惯保持一致；本模块目前的 Dataview 查询仍以 `tags` 中的 `#leetcode/atom` 为准做过滤，`type` 暂不参与查询，为未来可能的扩展保留
 - **反向引用免维护**：atom 文件的 "Used By" 用 `dv.current().file.inlinks` 自动渲染，不手动维护列表——只要 pattern 卡片里有 `[[atom title]]` wikilink，就会自动出现在该 atom 的 Used By 里，且不会漂移过期
+- **`updated` 字段需手动维护**：与 Pattern Card Rules 一致——若本次沉淀让某张已有 atom 新增了一个引用来源（新的 pattern 卡链接到它），顺带把该 atom frontmatter 的 `updated` 改成今天。这个字段不像 Used By 列表会自动算，长期不更新会让"最久未更新"这类排序失去意义
 - **Pattern 卡片这样引用**：在 `## Key Insight` 之后新增 `## Composed Of` 小节，列出这张卡用到的原子 + 一句话说明"这个原子在本 pattern 里具体怎么用"（不是裸链接，要点出这次组合的特殊性）
 - **不是每张卡都需要 Composed Of**：如果一张 pattern 卡本身已经是最小粒度（找不到比它更基础的可复用技术），就不写这个小节，或者只写"本卡已是原子，无进一步拆分"
 - **`## Template` 小节可选**：仅当原子有清晰、可直接复用的代码骨架时才填写；偏概念/设计类的原子可以留空或删除这一节
