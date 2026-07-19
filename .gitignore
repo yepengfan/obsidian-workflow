@@ -24,6 +24,7 @@
 !/Learning/Books/.bookrc.example
 !/Learning/Books/book_init.py
 !/Learning/Books/extract_fulltext.py
+!/Learning/Books/test_extract_fulltext.py
 !/Learning/Books/Books Index.md
 !/Learning/Practice/
 /Learning/Practice/*

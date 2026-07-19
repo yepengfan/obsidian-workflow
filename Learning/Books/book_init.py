@@ -370,11 +370,27 @@ def write_moc(out_dir: Path, title: str, parts: dict, filenames: dict):
     (out_dir / "MOC.md").write_text('\n'.join(lines), encoding='utf-8')
 
 
-def write_chapter(chapters_dir: Path, chapter_num: int, title: str, preview: str,
-                  weread_name: str = None, weread_heading: str = None):
+def chapter_filename_stem(chapter_num: int, title: str) -> str:
+    """Build a chapter's filename stem (no extension) from its number and
+    title — e.g. (1, "1. Architecting for Innovation") -> "Ch01_Architecting
+    for Innovation".
+
+    Single source of truth for this convention: write_chapter() below uses
+    it to create chapters/*.md, and extract_fulltext.py's
+    verify_chapter_alignment() calls it too, to re-derive the same stem from
+    a freshly re-parsed EPUB TOC and catch silent chapter misalignment
+    (e.g. chapters/ manually renamed/reordered). Keeping this in one place
+    means the two can't drift apart — a change here automatically propagates
+    to both.
+    """
     # Strip leading "N. " or "N " from title so filename isn't "Ch01_1 Title"
     clean_title = re.sub(r'^\d+[\.\s]+', '', title).strip()
-    fname = f"Ch{chapter_num:02d}_{safe_filename(clean_title)}"
+    return f"Ch{chapter_num:02d}_{safe_filename(clean_title)}"
+
+
+def write_chapter(chapters_dir: Path, chapter_num: int, title: str, preview: str,
+                  weread_name: str = None, weread_heading: str = None):
+    fname = chapter_filename_stem(chapter_num, title)
 
     weread_section = ""
     if weread_name and weread_heading:

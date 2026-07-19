@@ -82,9 +82,12 @@ def get_chapter_stems(chapters_dir: Path) -> list:
 def verify_chapter_alignment(chapter_items: list, chapter_stems: list) -> list:
     """Verify chapter_items (freshly re-parsed from the EPUB's TOC) line up
     1:1, title-for-title, with chapter_stems (existing chapters/*.md
-    filenames) — using the exact same title -> filename convention
-    book_init.py used when it originally created them (see its
-    write_chapter()).
+    filenames) — via book_init.chapter_filename_stem(), the single source of
+    truth for this convention (also used by book_init.write_chapter() when
+    chapters/*.md was originally created). Deliberately NOT a local copy of
+    that naming logic — a copy could silently drift out of sync with
+    book_init.py and either false-positive-reject healthy books or, worse,
+    stop catching real misalignments.
 
     A plain positional zip() can't catch a silent misalignment (e.g.
     chapters/ manually renamed/reordered, or a change in how parse_epub()
@@ -97,8 +100,7 @@ def verify_chapter_alignment(chapter_items: list, chapter_stems: list) -> list:
     """
     mismatches = []
     for i, (ch_title, _href, _preview) in enumerate(chapter_items):
-        clean_title = re.sub(r'^\d+[\.\s]+', '', ch_title).strip()
-        expected = f"Ch{i + 1:02d}_{book_init.safe_filename(clean_title)}"
+        expected = book_init.chapter_filename_stem(i + 1, ch_title)
         actual = chapter_stems[i] if i < len(chapter_stems) else None
         if expected != actual:
             mismatches.append((i + 1, expected, actual))
@@ -228,7 +230,7 @@ def main():
         # "pip install ..." message on ImportError (see book_init.py). Doing
         # our own `from ebooklib import epub` before this would bypass that
         # guard and surface a raw ModuleNotFoundError traceback instead.
-        title, author, parts, chapter_items = book_init.parse_epub(source_path)
+        _title, _author, _parts, chapter_items = book_init.parse_epub(source_path)
         import ebooklib
         from ebooklib import epub
 

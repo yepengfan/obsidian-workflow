@@ -14,7 +14,7 @@ requires:
   plugins: [dataview]
 commands: [book-init]
 templates: []
-scripts: [Learning/Books/book_init.py, Learning/Books/extract_fulltext.py]
+scripts: [Learning/Books/book_init.py, Learning/Books/extract_fulltext.py, Learning/Books/test_extract_fulltext.py]
 hooks: []
 folders: [Learning/Books/]
 config_files:
@@ -22,6 +22,7 @@ config_files:
   - Learning/Books/CLAUDE.md
   - Learning/Books/book_init.py
   - Learning/Books/extract_fulltext.py
+  - Learning/Books/test_extract_fulltext.py
   - Learning/Books/.bookrc.example
 tags: [system/module]
 ---
