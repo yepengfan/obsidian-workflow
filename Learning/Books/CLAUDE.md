@@ -157,6 +157,83 @@ editions or an English/translated pair).
 
 ---
 
+## Full-text cache (optional, per-book opt-in)
+
+*Not part of the default per-unit workflow. Exists only for books where the human has
+explicitly asked the AI to be able to answer free-form questions/discussion using the
+book's actual content, instead of general knowledge + WeRead highlights alone.*
+
+### Why this exists, and its boundary
+
+The default reading workflow (see "Per-unit workflow" below) deliberately keeps the AI
+from reading chapter full text — Step 1 (naked read) and the Feynman check depend on the
+human explaining first, unprompted by book content. This section is the **opt-in
+exception**, scoped narrowly:
+
+- **Usable for**: free-form Q&A / topic discussion when the human asks about specific
+  content in a book that has this cache built.
+- **NOT usable for**: Feynman check openers or follow-ups (still "explain in your own
+  words first" — the AI must not use book content to hint at or lead toward an answer),
+  and never for generating article prose (anti-slop red line applies regardless of
+  whether the AI has "read" the book — quote only 1-2 sentences to verify/support a
+  point, never reproduce long passages).
+- Ask before building this for a book that doesn't already have it — it's a deliberate
+  trade-off, not a default step of onboarding or per-unit workflow. When the human agrees,
+  record the decision in that book's own `meta.md` (gitignored per-book state, not this
+  file) so future sessions don't have to re-confirm, e.g.:
+
+  ```markdown
+  ## AI 协作边界（本书专属约定 · {date}）
+
+  - **全书正文已缓存 + 索引**：EPUB {N} 章正文已提取到本书目录下的 `.fulltext_cache/`
+    （机制见 `Learning/Books/CLAUDE.md` → "Full-text cache"）。仅限自由问答/话题讨论场景
+    使用，费曼检查与 anti-slop 红线不受影响。
+  ```
+
+### Two layers — don't conflate them
+
+1. **Layer 1 — on-disk text cache (persistent, per-book)**: `{BookTitle}/.fulltext_cache/`,
+   one `.txt` per chapter, filenames matching `chapters/*.md` stems exactly, plus a
+   `_manifest.json` (source path + content hash, with size/mtime kept only as
+   human-readable metadata) used to detect staleness. Already covered by the existing
+   `/Learning/Books/*` `.gitignore` rule — no new ignore rules needed when creating this
+   folder for a book.
+2. **Layer 2 — session search index (ephemeral, in-memory)**: built fresh each session
+   from Layer 1's text files via the search/index tool available in that session. Never
+   written to disk. Cheap to rebuild (seconds for a ~13-chapter book).
+
+### Building / refreshing the cache
+
+```bash
+"Learning/Books/.venv/bin/python3" Learning/Books/extract_fulltext.py \
+  --book "Learning/Books/{BookTitle}"
+```
+
+Reads `epub_path`/`pdf_path` from that book's `meta.md` — no need to pass the source path
+again. Skips work and reports "up to date" if the source file's content hash already
+matches the manifest (a same-content S3 re-sync can still touch mtime, so hash — not
+size/mtime — is the actual staleness signal); pass `--force` to rebuild anyway. PDF
+sources are not yet supported (only EPUB) — the PDF chapter-detection in `book_init.py`
+is page-heuristic and not reliable enough to map back to `chapters/` automatically.
+
+### Session-start check (for books with this cache)
+
+When a session's free-form discussion touches a book, check whether it has
+`.fulltext_cache/_manifest.json`:
+
+- **Missing entirely** → this book hasn't opted in, or the cache was never built. Answer
+  from general knowledge + WeRead as usual; don't build the cache unprompted (see
+  boundary above).
+- **Present but the search index for this session is empty** → Layer 2 only; re-index
+  the `.fulltext_cache/*.txt` files into the session's search tool. No confirmation
+  needed — this is read-only, in-memory, and reversible by construction.
+- **Present but `extract_fulltext.py` would report staleness** (source ebook file's
+  content hash changed since the cache was built — e.g. a corrected re-download or an
+  edition swap) → tell the user and ask before rebuilding, per this vault's "confirm
+  before modifying" rule, since rebuilding writes files.
+
+---
+
 ## Per-unit workflow (3 steps)
 
 > **History note:** this used to be a 6-step flow. Three books (DDIA, Fundamentals

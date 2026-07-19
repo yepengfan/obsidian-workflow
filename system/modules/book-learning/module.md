@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-07-15
-updated: 2026-07-15
+updated: 2026-07-19
 depends_on: []
 requires:
   cli: [claude]
@@ -14,13 +14,15 @@ requires:
   plugins: [dataview]
 commands: [book-init]
 templates: []
-scripts: [Learning/Books/book_init.py]
+scripts: [Learning/Books/book_init.py, Learning/Books/extract_fulltext.py, Learning/Books/test_extract_fulltext.py]
 hooks: []
 folders: [Learning/Books/]
 config_files:
   - .claude/commands/book/book-init.md
   - Learning/Books/CLAUDE.md
   - Learning/Books/book_init.py
+  - Learning/Books/extract_fulltext.py
+  - Learning/Books/test_extract_fulltext.py
   - Learning/Books/.bookrc.example
 tags: [system/module]
 ---
@@ -36,6 +38,7 @@ tags: [system/module]
 - **`{BookTitle}/chapters/`**: `book_init.py` 生成的章节骨架，只读参考
 - **`{BookTitle}/notes/`**: 按需的 sources/research 记录
 - **`{BookTitle}/feynman/`**: 费曼测试结果日志（✅/⚠️，按日期追加）
+- **`{BookTitle}/.fulltext_cache/`**（可选，per-book opt-in）: 全书正文文本缓存，`extract_fulltext.py` 生成，仅用于自由问答/话题讨论，不影响费曼检查的"先讲后审"顺序。详见 `Learning/Books/CLAUDE.md` → "Full-text cache"
 - **`_archive/`**: 旧版目录结构迁移前的存档（如 `DDIA-old-00_meta.md`）
 
 ### Ebook 存储
