@@ -26,14 +26,28 @@ Dependencies: same as book_init.py (ebooklib, beautifulsoup4, pdfplumber)
 
 import argparse
 import hashlib
+import html
 import json
 import os
 import re
 import sys
+from html.parser import HTMLParser
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import book_init  # reuse parse_epub's TOC/chapter-matching logic
+
+
+def _yaml_unescape(s: str) -> str:
+    """Reverse book_init.py's _yaml_escape() (which does '\\' -> '\\\\' then
+    '"' -> '\\"'). A single left-to-right pass — not two sequential
+    .replace() calls — so a literal backslash sitting right next to an
+    escaped quote doesn't get double-unescaped incorrectly. (Every backslash
+    in an escaped string is always part of an escape pair, since
+    _yaml_escape doubles ALL backslashes before it escapes quotes — so
+    "consume a backslash and whatever follows it" is a safe, exact inverse.)
+    """
+    return re.sub(r'\\(.)', lambda m: m.group(1), s)
 
 
 def read_frontmatter(meta_path: Path) -> dict:
@@ -51,7 +65,7 @@ def read_frontmatter(meta_path: Path) -> dict:
             continue
         key, val = kv.group(1), kv.group(2).strip()
         if val.startswith('"') and val.endswith('"'):
-            val = val[1:-1]
+            val = _yaml_unescape(val[1:-1])
         fm[key] = val
     return fm
 
@@ -63,6 +77,32 @@ def get_chapter_stems(chapters_dir: Path) -> list:
     stems = [f.stem for f in chapters_dir.glob("Ch*.md")]
     stems.sort()
     return stems
+
+
+def verify_chapter_alignment(chapter_items: list, chapter_stems: list) -> list:
+    """Verify chapter_items (freshly re-parsed from the EPUB's TOC) line up
+    1:1, title-for-title, with chapter_stems (existing chapters/*.md
+    filenames) — using the exact same title -> filename convention
+    book_init.py used when it originally created them (see its
+    write_chapter()).
+
+    A plain positional zip() can't catch a silent misalignment (e.g.
+    chapters/ manually renamed/reordered, or a change in how parse_epub()
+    classifies front/back matter between runs) — this catches it before any
+    text is written, since a misattributed chapter would defeat the whole
+    point of grounding answers in what the book actually says.
+
+    Returns a list of (chapter_number, expected_stem, actual_stem) for every
+    chapter that doesn't line up. Empty list means everything matches.
+    """
+    mismatches = []
+    for i, (ch_title, _href, _preview) in enumerate(chapter_items):
+        clean_title = re.sub(r'^\d+[\.\s]+', '', ch_title).strip()
+        expected = f"Ch{i + 1:02d}_{book_init.safe_filename(clean_title)}"
+        actual = chapter_stems[i] if i < len(chapter_stems) else None
+        if expected != actual:
+            mismatches.append((i + 1, expected, actual))
+    return mismatches
 
 
 def file_sha256(path: str, chunk_size: int = 1 << 20) -> str:
@@ -90,9 +130,8 @@ class _BlockTextExtractor:
     directly with no inserted separator, so consecutive block-tag boundaries
     correctly produce '\n\n'.
     """
-    import html.parser as _hp
 
-    class _Parser(_hp.HTMLParser):
+    class _Parser(HTMLParser):
         def __init__(self):
             super().__init__()
             self.parts = []
@@ -116,23 +155,19 @@ class _BlockTextExtractor:
 
     @classmethod
     def extract(cls, raw_html: str) -> str:
-        import re as _re
-        import html as _html
         parser = cls._Parser()
         parser.feed(raw_html)
         text = "".join(parser.parts)
-        text = _html.unescape(text)
-        text = _re.sub(r'[ \t]+', ' ', text)
-        text = _re.sub(r'\n{3,}', '\n\n', text)
+        text = html.unescape(text)
+        text = re.sub(r'[ \t]+', ' ', text)
+        text = re.sub(r'\n{3,}', '\n\n', text)
         return text.strip()
 
 
-def full_text_from_epub_item(book, href: str) -> str:
-    import ebooklib
-    items_by_name = {
-        item.get_name(): item
-        for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT)
-    }
+def full_text_from_epub_item(items_by_name: dict, href: str) -> str:
+    """items_by_name: {epub item name -> EpubItem}, built once per book by
+    the caller (not per-chapter — building it fresh for every chapter would
+    mean rebuilding the same dict N times for an N-chapter book)."""
     item = items_by_name.get(href.split('#')[0])
     if not item:
         return ""
@@ -189,17 +224,46 @@ def main():
     chapter_stems = get_chapter_stems(chapters_dir)
 
     if ext == '.epub':
-        from ebooklib import epub
+        # parse_epub() first: it wraps ebooklib/bs4 imports in a friendly
+        # "pip install ..." message on ImportError (see book_init.py). Doing
+        # our own `from ebooklib import epub` before this would bypass that
+        # guard and surface a raw ModuleNotFoundError traceback instead.
         title, author, parts, chapter_items = book_init.parse_epub(source_path)
+        import ebooklib
+        from ebooklib import epub
+
         if len(chapter_items) != len(chapter_stems):
-            print(f"⚠️  Chapter count mismatch: EPUB TOC parse found {len(chapter_items)}, "
-                  f"chapters/ has {len(chapter_stems)}. Proceeding with positional pairing "
-                  f"anyway — verify a few output files manually before trusting this cache.")
+            sys.exit(
+                f"❌  Chapter count mismatch: EPUB TOC parse found {len(chapter_items)} "
+                f"chapters, chapters/ has {len(chapter_stems)}. Refusing to guess pairing — "
+                f"investigate before retrying (did chapters/ get manually edited, or did "
+                f"book_init.py's chapter-detection change?)."
+            )
+
+        mismatches = verify_chapter_alignment(chapter_items, chapter_stems)
+        if mismatches:
+            detail = "\n".join(
+                f"  #{i}: expected '{expected}', chapters/ actually has '{actual}'"
+                for i, expected, actual in mismatches
+            )
+            sys.exit(
+                "❌  Chapter alignment check failed — refusing to write a cache that could "
+                "silently attribute one chapter's text to a different chapter's file:\n"
+                f"{detail}\n"
+                "This usually means chapters/ was manually renamed/reordered, or a re-run "
+                "of book_init.py's chapter-detection produced a different result than when "
+                "chapters/ was first generated. Investigate before retrying."
+            )
+
         book = epub.read_epub(source_path)
+        items_by_name = {
+            item.get_name(): item
+            for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT)
+        }
         cache_dir.mkdir(exist_ok=True)
         written = 0
         for (ch_title, href, _preview), stem in zip(chapter_items, chapter_stems):
-            text = full_text_from_epub_item(book, href)
+            text = full_text_from_epub_item(items_by_name, href)
             (cache_dir / f"{stem}.txt").write_text(text, encoding='utf-8')
             written += 1
         print(f"✅  {written}/{len(chapter_stems)} chapter text files written to {cache_dir}")
