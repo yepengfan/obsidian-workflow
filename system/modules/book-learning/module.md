@@ -21,6 +21,7 @@ config_files:
   - .claude/commands/book/book-init.md
   - Learning/Books/CLAUDE.md
   - Learning/Books/book_init.py
+  - Learning/Books/extract_fulltext.py
   - Learning/Books/.bookrc.example
 tags: [system/module]
 ---
