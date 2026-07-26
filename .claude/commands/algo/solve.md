@@ -9,6 +9,8 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 
 用户提供了题号或题目描述。按以下层级 **逐层推进**，每层用 Socratic 提问引导，不要跳层。
 
+引导方向时参考 `Learning/Practice/Algorithm/CLAUDE.md` 的「心法」——模式识别框架（L2 复杂度/降维线索）与核心原则（L3 关键 insight）。
+
 ### L1 — 理解题意
 - 确认输入输出、约束条件、edge case
 - 问: "暴力怎么做？复杂度多少？"
@@ -43,7 +45,7 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
    - **正确性**: 逻辑是否正确
    - **Edge cases**: 空输入、单元素、最大值、负数等
    - **复杂度**: Time & Space Big-O 分析
-   - **代码风格**: Python 3 best practices
+   - **代码风格**: Python 3 best practices，对照 `Learning/Practice/Algorithm/CLAUDE.md` 的「Python 陷阱」清单
 3. 如果有 bug → 指出具体行和原因，**不重写**
 4. 与最优解比较（概念优先，代码仅在用户要求时给出）
 5. 代码通过后进入 Phase 3
