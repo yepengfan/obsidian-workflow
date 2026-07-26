@@ -77,6 +77,16 @@
 
 > 详细框架笔记见 `[[Frameworks/Delivery Framework]]`
 
+## 心法 (Guiding Heuristics)
+
+引导 Phase 1 时参考以下原则。
+
+### 核心原则
+- **从需求推导架构** — 不要背方案，要能推导出来
+- **Trade-off 思维** — 每个决策都有代价，说清楚
+- **数字感** — QPS、延迟、存储量级要能估算
+- **渐进式设计** — 先简单方案，再说 scale 怎么加
+
 ## Solution Folder Convention
 
 每道系统设计题有自己的文件夹，所有 artifacts 集中管理：

@@ -74,22 +74,6 @@ SORT updated ASC
 - [ ] Image Carousel
 - [ ] News Feed
 
-## 🧠 通用心法
-
-### React 思维模型
-1. **UI = f(state)** — UI 是 state 的函数，想清楚 state 在哪
-2. **单向数据流** — props 向下，events 向上
-3. **组合优于继承** — 用 children / render props / hooks 组合行为
-4. **副作用隔离** — effects 管副作用，cleanup 防泄漏
-
-### Code Review 检查清单
-- [ ] Hooks 规则（不在条件/循环中调用）
-- [ ] Key 使用（不用 index 做 key，除非列表静态）
-- [ ] 受控 vs 非受控（表单元素统一策略）
-- [ ] a11y（ARIA、键盘、焦点、语义标签）
-- [ ] 性能（memo、useCallback、useMemo 是否必要）
-- [ ] 清理（事件监听、定时器、订阅的 cleanup）
-
 ## 📚 学习资源
 
 ### 练习平台

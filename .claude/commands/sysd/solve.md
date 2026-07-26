@@ -70,6 +70,7 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 - 逐步深入: Core Entities → API → Data Flow → High-Level Design → Deep Dives
 - 如果用户卡住超过 2 轮，给更直接的 hint（但仍非完整方案）
 - 只在用户说 "show me the design" / "给我看方案" / "我放弃" 时给完整设计
+- 组织提问方向时参考 `Learning/Practice/System-Design/CLAUDE.md` 的「核心原则」（从需求推导架构、Trade-off 思维、数字感、渐进式设计）
 
 **Delivery Framework（Hello Interview 6 步）:**
 1. Requirements（功能 + 非功能需求 + Back-of-Envelope 估算）

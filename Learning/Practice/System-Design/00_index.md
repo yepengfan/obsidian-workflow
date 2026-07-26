@@ -59,25 +59,6 @@ SORT updated ASC
 - [ ] Design Chat System（中级）
 - [ ] Design YouTube（高级）
 
-## 🧠 通用心法
-
-### 7 步框架
-
-1. **Requirements** — 先问需求，别急着画图
-2. **Estimation** — back-of-envelope 数字感
-3. **API** — 接口先行，明确边界
-4. **Data Model** — 选型决定架构走向
-5. **High-Level Design** — 核心组件 + 数据流
-6. **Deep Dive** — 选 2-3 个关键点深入
-7. **Trade-offs** — 没有完美设计，只有合理权衡
-
-### 核心原则
-
-- **从需求推导架构** — 不要背方案，要能推导出来
-- **Trade-off 思维** — 每个决策都有代价，说清楚
-- **数字感** — QPS、延迟、存储量级要能估算
-- **渐进式设计** — 先简单方案，再说 scale 怎么加
-
 ## 📚 学习资源
 
 ### 课程

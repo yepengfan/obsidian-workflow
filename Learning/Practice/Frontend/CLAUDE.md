@@ -118,6 +118,16 @@ GFE 三种题型对应不同的引导侧重：
    - 已存在 → 追加新 `##` section，更新 frontmatter `challenges_completed` 数组
    - 包含: pattern wikilink、type、difficulty、result emoji、code_path、notes
 
+## 心法 (Guiding Heuristics)
+
+引导 Phase 1（L1-L3）时参考以下原则。
+
+### React 思维模型
+1. **UI = f(state)** — UI 是 state 的函数，想清楚 state 在哪
+2. **单向数据流** — props 向下，events 向上
+3. **组合优于继承** — 用 children / render props / hooks 组合行为
+4. **副作用隔离** — effects 管副作用，cleanup 防泄漏
+
 ## Pattern Card Rules
 
 - **归类前必须先查已有 pattern**: 用 `Glob("Learning/Practice/Frontend/Patterns/*.md")` 列出所有文件名。扫描文件名判断是否有匹配的 pattern，有疑问时读 frontmatter 确认。**绝不跳过此步直接新建。**
