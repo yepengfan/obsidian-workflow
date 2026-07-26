@@ -39,6 +39,32 @@
 
 周赛中引导节奏可加快：Easy 题可压缩 L1-L3 为一轮确认，优先保证做题速度。
 
+## 心法 (Guiding Heuristics)
+
+引导 Phase 1（L1-L4）和审核 Phase 2 时参考以下原则。
+
+### 模式识别框架
+1. **暴力怎么做?** 估算复杂度,看哪里可以优化
+2. **能否降维?** 固定一端,把多变量问题变两变量
+3. **数据结构匹配** — 是否需要快速 min/max、连通性、有序性
+4. **从约束出发** — n≤20 想 bitmask;n≤40 想 meet in the middle;n≤10⁵ 想 O(n log n)
+
+### 核心原则
+- **BST inorder 即有序序列** → 任何"相邻 / 排序 / 第 k 小"的操作都先想 inorder
+- **遍历选择**: inorder (BST 排序), preorder (自顶向下传播), postorder (自底向上聚合)
+- **递归 DFS 返回值语义**: 参数携带 per-call 状态；共享答案用闭包 `nonlocal`,仅当 "经过当前节点的答案" ≠ "传给父节点的值" 时才需要
+- **循环复杂度** ≠ 循环次数 — 看循环内部操作
+- **`bisect_left/right` 返回 `[0, len(arr)]`** — Python `arr[-1]` 静默返回最后元素,容易 off-by-one
+- **网格模拟优先简化几何**: 旋转 + 重力 → 先在原网格做重力,再旋转
+
+### Python 陷阱（Phase 2 代码审核时对照检查）
+- `[[0]*n]*m` 共享 row 引用
+- class vars 在测试间泄漏 (用 `nonlocal` 或 instance vars)
+- `arr[-1]` 静默负索引
+- is 和双等号的区别 — 用于结构相等，不要用 is 比较值
+- `.sort()` 返回 `None`
+- 单帧 `return` 不会停止整个递归
+
 ## Pattern Card Rules
 
 - **归类前必须先查已有 pattern**: 用 `Glob("Learning/Practice/Algorithm/Patterns/*.md")` 列出所有文件名（不要用 shell glob，中文/括号文件名会静默失败）。扫描文件名判断是否有匹配的 pattern，有疑问时读 frontmatter 确认。**绝不跳过此步直接新建。**
