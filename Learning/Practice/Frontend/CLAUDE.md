@@ -159,8 +159,10 @@ GFE 三种题型对应不同的引导侧重：
 - Styling & Layout
 - Accessibility
 - Form Handling
+- JavaScript Functions
+- Algorithmic Coding
 
-新 category 可按需添加，但优先归入已有类别。
+新 category 可按需添加，但优先归入已有类别。`JavaScript Functions` / `Algorithmic Coding` 对齐 GFE 官方三分类（JavaScript Functions / User Interface Coding / Algorithmic Coding）——上面前 10 个值都是 `User Interface Coding` 下的细分子类。
 
 ## Language
 
