@@ -39,46 +39,11 @@ WHERE contains(file.tags, "#frontend/pattern")
 SORT category ASC, id ASC
 ```
 
-## 🔴 需要复习 (30+ 天未更新)
-
-```dataview
-TABLE WITHOUT ID
-  link(file.link, title) AS "Pattern",
-  category AS "Category",
-  updated AS "Last Updated"
-FROM "Learning/Practice/Frontend/Patterns"
-WHERE contains(file.tags, "#frontend/pattern") AND updated <= date(today) - dur(30 days)
-SORT updated ASC
-```
-
-## 📝 待练清单
-
-> 添加想练习的 GFE 题目
-
-### UI Components
-- [ ] Accordion
-- [ ] Tabs
-- [ ] Star Rating
-- [ ] Modal Dialog
-- [ ] Autocomplete / Typeahead
-
-### JS Utilities
-- [ ] debounce
-- [ ] throttle
-- [ ] Promise.all
-- [ ] deepClone
-- [ ] curry
-
-### Frontend System Design
-- [ ] Autocomplete System
-- [ ] Image Carousel
-- [ ] News Feed
-
 ## 📚 学习资源
 
 ### 练习平台
 - [GreatFrontEnd](https://www.greatfrontend.com/) — 主线题源
 
 ### 关联
-- [[../../Algorithm/00_index|Algorithm]] — LeetCode 刷题系统
-- [[../../System-Design/00_index|System Design]] — 系统设计练习
+- [[../Algorithm/00_index|Algorithm]] — LeetCode 刷题系统
+- [[../System-Design/00_index|System Design]] — 系统设计练习
