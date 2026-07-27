@@ -1860,7 +1860,7 @@ const { panels: lPanels } = createTabGroup(dv, [
   }
 
   if (totalPatterns === 0 && recentLogs.length === 0) {
-    p.createEl("div", { text: "还没有练习记录 — 用 /frontend/solve 开始做题！", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
+    p.createEl("div", { text: "还没有练习记录 — 用 /frnt/solve 开始做题！", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
   }
 
   // Link to full dashboard
