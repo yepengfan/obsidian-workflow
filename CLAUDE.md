@@ -88,6 +88,7 @@ Commands are organized by module in `.claude/commands/`:
 ├── book/            # /book/book-init
 ├── brownbag/        # /brownbag/brownbag
 ├── sysd/            # /sysd/solve
+├── frnt/            # /frnt/solve
 ├── vault-ops/       # /vault-ops/organize, /vault-ops/backup, ...
 └── module-toggle.md # /module-toggle (global)
 ```
@@ -289,7 +290,7 @@ React & Next.js 前端练习系统。题源: GreatFrontEnd。详细规则见 `Le
 
 ### Commands
 
-**`/frontend/solve <题目>`** — 做题全流程：
+**`/frnt/solve <题目>`** — 做题全流程：
 
 1. **初始化** — 创建 sandbox 骨架文件（UI Component / JS Utility / Frontend System Design）
 2. **引导实现** — 渐进 3 层 hint（需求分析 → 实现策略 → 骨架代码），不给完整代码
@@ -297,9 +298,9 @@ React & Next.js 前端练习系统。题源: GreatFrontEnd。详细规则见 `Le
 4. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
 
 ```
-/frontend/solve Accordion
-/frontend/solve debounce
-/frontend/solve Star Rating
+/frnt/solve Accordion
+/frnt/solve debounce
+/frnt/solve Star Rating
 ```
 
 ### Sandbox
@@ -312,7 +313,7 @@ React & Next.js 前端练习系统。题源: GreatFrontEnd。详细规则见 `Le
 ### Daily Workflow
 
 ```
-做题 → /frontend/solve Accordion
+做题 → /frnt/solve Accordion
          ↓
     Phase 0: 创建骨架 → npm run dev 预览
     Phase 1: 渐进引导（L1 需求分析 → L2 策略 → L3 骨架）
