@@ -39,62 +39,11 @@ WHERE contains(file.tags, "#frontend/pattern")
 SORT category ASC, id ASC
 ```
 
-## 🔴 需要复习 (30+ 天未更新)
-
-```dataview
-TABLE WITHOUT ID
-  link(file.link, title) AS "Pattern",
-  category AS "Category",
-  updated AS "Last Updated"
-FROM "Learning/Practice/Frontend/Patterns"
-WHERE contains(file.tags, "#frontend/pattern") AND updated <= date(today) - dur(30 days)
-SORT updated ASC
-```
-
-## 📝 待练清单
-
-> 添加想练习的 GFE 题目
-
-### UI Components
-- [ ] Accordion
-- [ ] Tabs
-- [ ] Star Rating
-- [ ] Modal Dialog
-- [ ] Autocomplete / Typeahead
-
-### JS Utilities
-- [ ] debounce
-- [ ] throttle
-- [ ] Promise.all
-- [ ] deepClone
-- [ ] curry
-
-### Frontend System Design
-- [ ] Autocomplete System
-- [ ] Image Carousel
-- [ ] News Feed
-
-## 🧠 通用心法
-
-### React 思维模型
-1. **UI = f(state)** — UI 是 state 的函数，想清楚 state 在哪
-2. **单向数据流** — props 向下，events 向上
-3. **组合优于继承** — 用 children / render props / hooks 组合行为
-4. **副作用隔离** — effects 管副作用，cleanup 防泄漏
-
-### Code Review 检查清单
-- [ ] Hooks 规则（不在条件/循环中调用）
-- [ ] Key 使用（不用 index 做 key，除非列表静态）
-- [ ] 受控 vs 非受控（表单元素统一策略）
-- [ ] a11y（ARIA、键盘、焦点、语义标签）
-- [ ] 性能（memo、useCallback、useMemo 是否必要）
-- [ ] 清理（事件监听、定时器、订阅的 cleanup）
-
 ## 📚 学习资源
 
 ### 练习平台
 - [GreatFrontEnd](https://www.greatfrontend.com/) — 主线题源
 
 ### 关联
-- [[../../Algorithm/00_index|Algorithm]] — LeetCode 刷题系统
-- [[../../System-Design/00_index|System Design]] — 系统设计练习
+- [[../Algorithm/00_index|Algorithm]] — LeetCode 刷题系统
+- [[../System-Design/00_index|System Design]] — 系统设计练习
