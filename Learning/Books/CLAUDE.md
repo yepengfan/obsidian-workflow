@@ -173,10 +173,12 @@ exception**, scoped narrowly:
 - **Usable for**: free-form Q&A / topic discussion when the human asks about specific
   content in a book that has this cache built.
 - **NOT usable for**: Feynman check openers or follow-ups (still "explain in your own
-  words first" — the AI must not use book content to hint at or lead toward an answer),
-  and never for generating article prose (anti-slop red line applies regardless of
-  whether the AI has "read" the book — quote only 1-2 sentences to verify/support a
-  point, never reproduce long passages).
+  words first" — the AI must not use book content to hint at or lead toward an answer;
+  **scoped exception**: hint-on-request during follow-ups may draw on book content
+  including this cache for the scenario's setup, but never for its conclusion — see
+  "Hint on explicit request" under Interrogation rules), and never for generating article
+  prose (anti-slop red line applies regardless of whether the AI has "read" the book —
+  quote only 1-2 sentences to verify/support a point, never reproduce long passages).
 - Ask before building this for a book that doesn't already have it — it's a deliberate
   trade-off, not a default step of onboarding or per-unit workflow. When the human agrees,
   record the decision in that book's own `meta.md` (gitignored per-book state, not this
@@ -280,6 +282,20 @@ automatically.
   This covers time-lag forgetting (read the chapter a while ago, details are rusty) as a
   failure mode distinct from never having understood it — the check should still end in
   the human reasoning it out, not nodding along to an AI explanation.
+  - **Sourcing the scenario**: may draw on the book's actual content (including
+    `.fulltext_cache`, when present) to construct the scenario's setup/situation — but
+    must never state or closely paraphrase the book's own conclusion/verdict for that
+    scenario. The human must still reach the conclusion through their own reasoning. (This
+    is a scoped exception to the Full-text cache section's general "must not use book
+    content to hint at or lead toward an answer" rule — see that section.)
+  - **Follow-up comparison**: whether to compare the human's answer against the book
+    afterward depends on what the hint was for. **Core mechanism/derivation** (the causal
+    chain the section's main point rests on — why a trade-off holds, how one step leads to
+    the next) → do compare against the book once the human answers. **Background/context
+    recall** (supporting facts that aren't themselves the core reasoning — a timeline, a
+    definition, "what happened before X") → confirming the answer is correct is enough, no
+    forced comparison. When unsure which bucket a point falls into, default to comparing —
+    skipping a needed check is worse than one extra confirmation.
 - Archetype-specific question style:
   - technical reference → "what breaks if not this? what does the alternative cost?"
   - cognitive → "你自己什么时候犯过这个 bias？具体场景？"
