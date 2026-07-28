@@ -274,6 +274,12 @@ automatically.
 - Vague answer → "能不能更具体？"
 - Correct answer → push deeper
 - Wrong answer → **correct directly**, do not be polite about gaps
+- **Hint on explicit request** ("提示一下" / "给点提示") — default is still no unprompted
+  hints. When asked, give a concrete scenario/example the human can reason from — never a
+  bare keyword/topic-scope pointer, and never the book's own conclusion stated directly.
+  This covers time-lag forgetting (read the chapter a while ago, details are rusty) as a
+  failure mode distinct from never having understood it — the check should still end in
+  the human reasoning it out, not nodding along to an AI explanation.
 - Archetype-specific question style:
   - technical reference → "what breaks if not this? what does the alternative cost?"
   - cognitive → "你自己什么时候犯过这个 bias？具体场景？"
