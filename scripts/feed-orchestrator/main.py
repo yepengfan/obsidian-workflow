@@ -29,6 +29,9 @@ from feeds import (
 )
 from status import StatusReporter
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from shared.llm_runner import backend_summary, validate_backend_credentials  # noqa: E402
+
 ALL_FEEDS = {
     "ai-digest": "(daily) — AI/ML news from 92 RSS feeds",
     "github-trending": "(daily) — Trending GitHub repositories",
@@ -170,6 +173,14 @@ async def main() -> int:
         return 1
 
     reporter.write_initial()
+    try:
+        validate_backend_credentials()
+    except RuntimeError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        reporter.write_final(f"❌ Backend config error: {e}")
+        return 1
+
+    print(f"[orchestrator] LLM backend: {backend_summary()}", file=sys.stderr)
     print(f"[orchestrator] Starting {feed_names}...", file=sys.stderr)
 
     # Run each feed sequentially

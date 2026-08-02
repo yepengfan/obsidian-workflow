@@ -1,8 +1,8 @@
-"""Feed configuration and Anthropic SDK enrichment logic.
+"""Feed configuration and LLM enrichment logic.
 
 Each feed has:
 - Config dict (paths, cadence, env vars for write_reports.py)
-- Enrichment function using anthropic.AsyncAnthropic (replaces Claude CLI)
+- Enrichment via pluggable LLM backend (``FEED_LLM_BACKEND``)
 - Subprocess helpers for fetch.py and write_reports.py
 """
 
@@ -13,20 +13,20 @@ import re
 import subprocess
 import sys
 import tempfile
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 from typing import Any
 
-import anthropic
+# Shared LLM backend (cursor | anthropic)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from shared.llm_runner import call_llm, get_backend, uses_cursor_consolidation  # noqa: E402
 
 # ── Feed Configuration ──────────────────────────────────────────────
 
-# Model auto-detection: proxy (LiteLLM) needs "anthropic." prefix
-_MODEL_DIRECT = "claude-sonnet-4-6-20250514"
-_MODEL_PROXY = "anthropic.claude-4-6-sonnet"
-HAIKU_MODEL: str | None = os.environ.get("FEED_HAIKU_MODEL")  # explicit override
 MAX_CONCURRENT = 3
-STAGGER_DELAY = 0.5  # seconds between batch launches
+STAGGER_DELAY = 0.5  # seconds between batch launches (anthropic batched path)
+CURSOR_SINGLE_CALL_LIMIT = 50  # max items per cursor enrich call
+ANTHROPIC_SINGLE_CALL_LIMIT = 30
 
 
 def get_feed_config(vault_path: str | Path) -> dict[str, dict[str, Any]]:
@@ -137,11 +137,7 @@ async def run_enrich(
     config: dict[str, Any],
     fetched_json: str,
 ) -> str:
-    """Enrich/score feed data using Anthropic SDK with Haiku.
-
-    Returns JSON string of enriched data.
-    Replaces all Claude CLI calls with direct API calls.
-    """
+    """Enrich/score feed data using the configured LLM backend."""
     prompt_dir = config["script_dir"] / "prompts"
 
     if feed_name == "ai-digest":
@@ -155,12 +151,84 @@ async def run_enrich(
 
 
 async def _enrich_ai_digest(fetched_json: str, prompt_dir: Path) -> str:
-    """AI Digest: score articles → select top 15 → bilingual summarization.
+    """AI Digest: score → top 15 → bilingual summarization."""
+    if uses_cursor_consolidation():
+        return await _enrich_ai_digest_consolidated(fetched_json, prompt_dir)
+    return await _enrich_ai_digest_batched(fetched_json, prompt_dir)
 
-    Two-phase enrichment:
-    1. Score all articles in batches (4 per call, max 3 concurrent)
-    2. Summarize top 15 in batches (5 per call, max 3 concurrent)
-    """
+
+async def _enrich_ai_digest_consolidated(fetched_json: str, prompt_dir: Path) -> str:
+    """Cursor path: 3 LLM calls (score all → summarize all → trend)."""
+    data = json.loads(fetched_json)
+    articles = data.get("articles", [])
+    if not articles:
+        return json.dumps({"top_articles": [], "summaries": [], "trend_zh": "", "trend_en": ""})
+
+    score_prompt = (prompt_dir / "score.md").read_text()
+    summarize_prompt = (prompt_dir / "summarize.md").read_text()
+
+    # Phase 1: score all articles in one call
+    score_result = await call_llm(
+        score_prompt,
+        json.dumps(articles, ensure_ascii=False),
+        task="score",
+    )
+    score_parsed = _parse_json_response(score_result)
+    if isinstance(score_parsed, dict):
+        all_scored = score_parsed.get("top_articles", [])
+    elif isinstance(score_parsed, list):
+        all_scored = score_parsed
+    else:
+        all_scored = []
+
+    all_scored.sort(key=lambda a: a.get("scores", {}).get("total", 0), reverse=True)
+    top_articles = all_scored[:15]
+    for i, article in enumerate(top_articles, 1):
+        article["rank"] = i
+
+    # Phase 2: summarize all top articles in one call
+    sum_result = await call_llm(
+        summarize_prompt,
+        json.dumps({"top_articles": top_articles}, ensure_ascii=False),
+        task="summarize",
+    )
+    sum_parsed = _parse_json_response(sum_result)
+    if isinstance(sum_parsed, dict):
+        all_summaries = sum_parsed.get("summaries", [])
+        trend_zh = sum_parsed.get("trend_zh", "")
+        trend_en = sum_parsed.get("trend_en", "")
+    elif isinstance(sum_parsed, list):
+        all_summaries = sum_parsed
+        trend_zh = trend_en = ""
+    else:
+        all_summaries = []
+        trend_zh = trend_en = ""
+
+    # Phase 3: trend summary if not included in phase 2
+    if not trend_zh and not trend_en:
+        trend_result = await call_llm(
+            summarize_prompt,
+            json.dumps({"top_articles": top_articles, "trend_only": True}, ensure_ascii=False),
+            task="summarize",
+        )
+        trend_parsed = _parse_json_response(trend_result)
+        if isinstance(trend_parsed, dict):
+            trend_zh = trend_parsed.get("trend_zh", "")
+            trend_en = trend_parsed.get("trend_en", "")
+
+    scored_output = json.dumps({"top_articles": top_articles}, ensure_ascii=False)
+    summaries_output = json.dumps(
+        {"summaries": all_summaries, "trend_zh": trend_zh, "trend_en": trend_en},
+        ensure_ascii=False,
+    )
+    return json.dumps(
+        {"scored": scored_output, "summaries": summaries_output},
+        ensure_ascii=False,
+    )
+
+
+async def _enrich_ai_digest_batched(fetched_json: str, prompt_dir: Path) -> str:
+    """Anthropic path: score/summarize in parallel batches."""
     data = json.loads(fetched_json)
     articles = data.get("articles", [])
     if not articles:
@@ -174,9 +242,10 @@ async def _enrich_ai_digest(fetched_json: str, prompt_dir: Path) -> str:
     async def score_batch(batch: list) -> list:
         async with sem:
             await asyncio.sleep(STAGGER_DELAY)
-            result = await _call_haiku(
-                system=score_prompt,
-                user=json.dumps(batch, ensure_ascii=False),
+            result = await call_llm(
+                score_prompt,
+                json.dumps(batch, ensure_ascii=False),
+                task="score",
             )
             parsed = _parse_json_response(result)
             if isinstance(parsed, dict):
@@ -209,9 +278,10 @@ async def _enrich_ai_digest(fetched_json: str, prompt_dir: Path) -> str:
     async def summarize_batch(batch: list) -> list:
         async with sem:
             await asyncio.sleep(STAGGER_DELAY)
-            result = await _call_haiku(
-                system=summarize_prompt,
-                user=json.dumps({"top_articles": batch}, ensure_ascii=False),
+            result = await call_llm(
+                summarize_prompt,
+                json.dumps({"top_articles": batch}, ensure_ascii=False),
+                task="summarize",
             )
             parsed = _parse_json_response(result)
             if isinstance(parsed, dict):
@@ -230,9 +300,10 @@ async def _enrich_ai_digest(fetched_json: str, prompt_dir: Path) -> str:
         all_summaries.extend(result)
 
     # Generate trend summary from all top articles at once
-    trend_result = await _call_haiku(
-        system=summarize_prompt,
-        user=json.dumps({"top_articles": top_articles}, ensure_ascii=False),
+    trend_result = await call_llm(
+        summarize_prompt,
+        json.dumps({"top_articles": top_articles}, ensure_ascii=False),
+        task="summarize",
     )
     trend_parsed = _parse_json_response(trend_result)
     trend_zh = trend_parsed.get("trend_zh", "") if isinstance(trend_parsed, dict) else ""
@@ -264,14 +335,18 @@ async def _enrich_single_call(
 
     system_prompt = prompt_path.read_text()
 
-    # For large item lists, batch them
-    if len(items) > 30:
+    # For large item lists, batch them (threshold depends on backend)
+    single_limit = (
+        CURSOR_SINGLE_CALL_LIMIT if get_backend() == "cursor" else ANTHROPIC_SINGLE_CALL_LIMIT
+    )
+    if len(items) > single_limit:
         return await _enrich_batched(items, system_prompt, wrap_key)
 
     print(f"[enrich] {wrap_key}: sending {len(items)} items to model", file=sys.stderr)
-    result = await _call_haiku(
-        system=system_prompt,
-        user=json.dumps(items, ensure_ascii=False),
+    result = await call_llm(
+        system_prompt,
+        json.dumps(items, ensure_ascii=False),
+        task="enrich",
     )
     print(f"[enrich] {wrap_key}: raw response length={len(result)}, first 200 chars: {result[:200]}", file=sys.stderr)
     parsed = _parse_json_response(result)
@@ -309,9 +384,10 @@ async def _enrich_batched(
     async def enrich_batch(batch: list) -> list:
         async with sem:
             await asyncio.sleep(STAGGER_DELAY)
-            result = await _call_haiku(
-                system=system_prompt,
-                user=json.dumps(batch, ensure_ascii=False),
+            result = await call_llm(
+                system_prompt,
+                json.dumps(batch, ensure_ascii=False),
+                task="enrich",
             )
             parsed = _parse_json_response(result)
             return parsed if isinstance(parsed, list) else []
@@ -422,64 +498,6 @@ def _archive_daily(feed_dir: Path, archive_dir: Path, max_days: int) -> list[str
         except ValueError:
             continue
     return archived
-
-
-# ── Anthropic SDK Helpers ───────────────────────────────────────────
-
-_client: anthropic.AsyncAnthropic | None = None
-
-
-def get_client() -> anthropic.AsyncAnthropic:
-    """Lazy-init Anthropic async client.
-
-    Auth resolution:
-      1. ANTHROPIC_API_KEY   → direct Anthropic API
-      2. ANTHROPIC_AUTH_TOKEN → Bearer auth (LiteLLM proxy)
-    Model auto-selected based on auth method unless FEED_HAIKU_MODEL is set.
-    """
-    global _client, HAIKU_MODEL
-    if _client is None:
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
-        auth_token = os.environ.get("ANTHROPIC_AUTH_TOKEN")
-        if api_key:
-            _client = anthropic.AsyncAnthropic(api_key=api_key)
-            if HAIKU_MODEL is None:
-                HAIKU_MODEL = _MODEL_DIRECT
-        elif auth_token:
-            _client = anthropic.AsyncAnthropic(auth_token=auth_token)
-            if HAIKU_MODEL is None:
-                HAIKU_MODEL = _MODEL_PROXY
-        else:
-            raise RuntimeError(
-                "Neither ANTHROPIC_API_KEY nor ANTHROPIC_AUTH_TOKEN is set."
-            )
-        print(f"[enrich] Using model: {HAIKU_MODEL}", file=sys.stderr)
-    return _client
-
-
-async def _call_haiku(system: str, user: str, retries: int = 3) -> str:
-    """Call Haiku with retry + exponential backoff."""
-    client = get_client()
-    for attempt in range(retries):
-        try:
-            response = await client.messages.create(
-                model=HAIKU_MODEL,
-                max_tokens=16384,
-                system=system,
-                messages=[{"role": "user", "content": user}],
-            )
-            text = response.content[0].text if response.content else ""
-            if not text.strip():
-                raise ValueError("Empty response from Haiku")
-            return text
-        except (anthropic.RateLimitError, anthropic.APIConnectionError) as e:
-            if attempt < retries - 1:
-                wait = 2 ** (attempt + 1)
-                print(f"[haiku] Retry {attempt + 1}/{retries} after {wait}s: {e}", file=sys.stderr)
-                await asyncio.sleep(wait)
-            else:
-                raise
-    return ""  # unreachable
 
 
 def _parse_json_response(raw: str) -> Any:

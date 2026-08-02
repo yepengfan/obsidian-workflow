@@ -17,5 +17,9 @@ fi
 # Fallback: vault-level .env file
 [ -f "$VAULT_DIR/.env" ] && set -a && source "$VAULT_DIR/.env" && set +a || true
 
+# Default LLM backend: cursor (override via .env or shell export)
+export FEED_LLM_BACKEND="${FEED_LLM_BACKEND:-cursor}"
+export FEED_CURSOR_MODEL="${FEED_CURSOR_MODEL:-composer-2.5}"
+
 # Exec orchestrator with venv Python (absolute path — no PATH dependency)
 exec "$SCRIPT_DIR/.venv/bin/python" "$SCRIPT_DIR/main.py" --vault-path "$VAULT_DIR" "$@"
