@@ -17,8 +17,16 @@ fi
 # Fallback: vault-level .env file
 [ -f "$VAULT_DIR/.env" ] && set -a && source "$VAULT_DIR/.env" && set +a || true
 
-# Default LLM backend: cursor (override via .env or shell export)
-export FEED_LLM_BACKEND="${FEED_LLM_BACKEND:-cursor}"
+# Default LLM backend when unset: prefer credentials over hardcoded cursor
+if [ -z "${FEED_LLM_BACKEND:-}" ]; then
+  if [ -n "${ANTHROPIC_API_KEY:-}" ] || [ -n "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
+    export FEED_LLM_BACKEND=anthropic
+  elif command -v agent >/dev/null 2>&1 || command -v cursor-agent >/dev/null 2>&1; then
+    export FEED_LLM_BACKEND=cursor
+  else
+    export FEED_LLM_BACKEND=anthropic
+  fi
+fi
 export FEED_CURSOR_MODEL="${FEED_CURSOR_MODEL:-composer-2.5}"
 
 # Exec orchestrator with venv Python (absolute path — no PATH dependency)

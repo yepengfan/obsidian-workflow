@@ -1,8 +1,8 @@
 """Pluggable LLM backend for feed enrichment.
 
 Switch backends via ``FEED_LLM_BACKEND``:
-  - ``cursor`` (default) — Cursor CLI ``agent -p``, uses subscription token
-  - ``anthropic`` — Anthropic SDK Haiku, requires ``ANTHROPIC_API_KEY``
+  - ``anthropic`` — Anthropic SDK Haiku (default when API key/token is set)
+  - ``cursor`` — Cursor CLI ``agent -p`` (default when no Anthropic creds but CLI on PATH)
 """
 
 from __future__ import annotations
@@ -17,7 +17,17 @@ from shared.cursor_runner import resolve_cursor_model, run_cursor
 
 BACKEND_CURSOR = "cursor"
 BACKEND_ANTHROPIC = "anthropic"
-DEFAULT_BACKEND = BACKEND_CURSOR
+
+
+def _resolve_default_backend() -> str:
+    """Pick backend from available credentials when FEED_LLM_BACKEND is unset."""
+    if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+        return BACKEND_ANTHROPIC
+    import shutil
+
+    if shutil.which("agent") or shutil.which("cursor-agent"):
+        return BACKEND_CURSOR
+    return BACKEND_ANTHROPIC
 
 # Anthropic model auto-detection (proxy needs "anthropic." prefix)
 _MODEL_DIRECT = "claude-sonnet-4-6-20250514"
@@ -28,8 +38,9 @@ _haiku_model: str | None = os.environ.get("FEED_HAIKU_MODEL")
 
 
 def get_backend() -> str:
-    """Return normalized backend name. Defaults to ``cursor``."""
-    backend = os.environ.get("FEED_LLM_BACKEND", DEFAULT_BACKEND).strip().lower()
+    """Return normalized backend name. Infers from credentials when unset."""
+    raw = os.environ.get("FEED_LLM_BACKEND", "").strip().lower()
+    backend = _resolve_default_backend() if not raw else raw
     if backend not in (BACKEND_CURSOR, BACKEND_ANTHROPIC):
         raise ValueError(
             f"Unknown FEED_LLM_BACKEND={backend!r}. "
