@@ -53,7 +53,7 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 ## Phase 3 — 沉淀
 
 1. **判断 pattern 归属**:
-   - 读取 `Learning/Practice/Algorithm/Patterns/` 下所有文件的 frontmatter + `## Key Insight`（不读 Template/Gotchas/Problems，见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Efficiency Rules）
+   - 读取 `Learning/Practice/Algorithm/Patterns/` 下所有文件的 frontmatter + `## Key Insight`（如有 `## Composed Of` 一并看；不读 Template/Gotchas/Problems，见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Efficiency Rules）
    - 判断该题属于哪个已有 pattern，或是否需要新建
    - 告诉用户归类结果，确认后继续
 
