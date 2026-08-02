@@ -340,7 +340,9 @@ async def _enrich_single_call(
         CURSOR_SINGLE_CALL_LIMIT if get_backend() == "cursor" else ANTHROPIC_SINGLE_CALL_LIMIT
     )
     if len(items) > single_limit:
-        return await _enrich_batched(items, system_prompt, wrap_key)
+        return await _enrich_batched(
+            items, system_prompt, wrap_key, batch_size=single_limit
+        )
 
     print(f"[enrich] {wrap_key}: sending {len(items)} items to model", file=sys.stderr)
     result = await call_llm(
