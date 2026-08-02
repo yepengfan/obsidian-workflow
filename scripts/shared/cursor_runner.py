@@ -36,6 +36,33 @@ def _agent_env() -> dict[str, str]:
     return env
 
 
+def _agent_argv(agent_bin: str, model: str) -> list[str]:
+    """Build agent CLI argv for headless feed enrichment."""
+    argv = [
+        agent_bin,
+        "-p",
+        "--trust",
+        "--model",
+        model,
+        "--output-format",
+        "text",
+        "--force",
+        "--mode",
+        "ask",
+    ]
+    workspace = os.environ.get("FEED_VAULT_PATH")
+    if workspace:
+        argv.extend(["--workspace", workspace])
+    return argv
+
+
+def _agent_cwd() -> str | None:
+    workspace = os.environ.get("FEED_VAULT_PATH")
+    if workspace and os.path.isdir(workspace):
+        return workspace
+    return None
+
+
 def resolve_cursor_model(task: str = "default") -> str:
     """Resolve model for a task. Task-specific env overrides global default."""
     task_key = f"FEED_CURSOR_MODEL_{task.upper()}"
@@ -70,20 +97,12 @@ async def run_cursor(
 
     for attempt in range(retries):
         proc = await asyncio.create_subprocess_exec(
-            agent_bin,
-            "-p",
-            "--trust",
-            "--model",
-            model,
-            "--output-format",
-            "text",
-            "--force",
-            "--mode",
-            "ask",
+            *_agent_argv(agent_bin, model),
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             env=_agent_env(),
+            cwd=_agent_cwd(),
         )
         try:
             stdout, stderr = await asyncio.wait_for(

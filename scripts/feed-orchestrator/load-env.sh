@@ -33,6 +33,8 @@ if [ -z "${FEED_LLM_BACKEND:-}" ]; then
   # else: leave unset — orchestrator validates credentials at enrich time
 fi
 export FEED_CURSOR_MODEL="${FEED_CURSOR_MODEL:-composer-2.5}"
+export FEED_VAULT_PATH="$VAULT_DIR"
 
-# Exec orchestrator with venv Python (absolute path — no PATH dependency)
+# Exec from vault root so Cursor CLI trusts the correct workspace in headless runs
+cd "$VAULT_DIR"
 exec "$SCRIPT_DIR/.venv/bin/python" "$SCRIPT_DIR/main.py" --vault-path "$VAULT_DIR" "$@"
