@@ -97,11 +97,12 @@ async def run_feed(
     print(f"[{feed_name}] Fetched {len(items)} items", file=sys.stderr)
     reporter.update_feed(feed_name, "running", message=f"Fetched {len(items)} items")
 
-    # 4. Enrich (validate LLM backend only when enrichment is needed)
+    # 4. Enrich (validate LLM backend only when there are items to enrich)
     reporter.update_feed(feed_name, "running", message="Enriching...")
     try:
-        validate_backend_credentials()
-        print(f"[{feed_name}] LLM backend: {backend_summary()}", file=sys.stderr)
+        if items:
+            validate_backend_credentials()
+            print(f"[{feed_name}] LLM backend: {backend_summary()}", file=sys.stderr)
         enriched_json = await run_enrich(feed_name, config, fetched_json)
     except Exception as e:
         tb = traceback.format_exc()

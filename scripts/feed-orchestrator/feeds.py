@@ -152,6 +152,10 @@ async def run_enrich(
 
 async def _enrich_ai_digest(fetched_json: str, prompt_dir: Path) -> str:
     """AI Digest: score → top 15 → bilingual summarization."""
+    data = json.loads(fetched_json)
+    articles = data.get("articles", [])
+    if not articles:
+        return json.dumps({"top_articles": [], "summaries": [], "trend_zh": "", "trend_en": ""})
     if uses_cursor_consolidation():
         return await _enrich_ai_digest_consolidated(fetched_json, prompt_dir)
     return await _enrich_ai_digest_batched(fetched_json, prompt_dir)
