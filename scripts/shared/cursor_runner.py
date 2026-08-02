@@ -72,6 +72,7 @@ async def run_cursor(
         proc = await asyncio.create_subprocess_exec(
             agent_bin,
             "-p",
+            "--trust",
             "--model",
             model,
             "--output-format",
