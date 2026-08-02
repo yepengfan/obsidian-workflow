@@ -13,6 +13,7 @@ import sys
 
 import anthropic
 
+from shared.cursor_paths import cursor_cli_available, resolve_default_feed_backend
 from shared.cursor_runner import resolve_cursor_model, run_cursor
 
 BACKEND_CURSOR = "cursor"
@@ -21,13 +22,8 @@ BACKEND_ANTHROPIC = "anthropic"
 
 def _resolve_default_backend() -> str:
     """Pick backend from available credentials when FEED_LLM_BACKEND is unset."""
-    if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
-        return BACKEND_ANTHROPIC
-    import shutil
+    return resolve_default_feed_backend()
 
-    if shutil.which("agent") or shutil.which("cursor-agent"):
-        return BACKEND_CURSOR
-    return BACKEND_ANTHROPIC
 
 # Anthropic model auto-detection (proxy needs "anthropic." prefix)
 _MODEL_DIRECT = "claude-sonnet-4-6-20250514"
@@ -67,9 +63,7 @@ def validate_backend_credentials() -> None:
                 "or ANTHROPIC_AUTH_TOKEN"
             )
     elif backend == BACKEND_CURSOR:
-        import shutil
-
-        if not (shutil.which("agent") or shutil.which("cursor-agent")):
+        if not cursor_cli_available():
             raise RuntimeError(
                 "FEED_LLM_BACKEND=cursor requires Cursor CLI (agent) on PATH. "
                 "Install: curl https://cursor.com/install -fsS | bash"
