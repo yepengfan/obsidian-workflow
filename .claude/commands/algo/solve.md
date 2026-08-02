@@ -42,7 +42,7 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 
 1. 用户贴出自己的代码
 2. 审核以下方面:
-   - **正确性**: 逻辑是否正确
+   - **正确性**: 逻辑是否正确。需要用脚本验证时（穷举/随机 stress test/edge case/性能/gotcha 复现等），一次性写进同一个脚本调用跑完，不要拆成多次来回（见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Efficiency Rules）
    - **Edge cases**: 空输入、单元素、最大值、负数等
    - **复杂度**: Time & Space Big-O 分析
    - **代码风格**: Python 3 best practices，对照 `Learning/Practice/Algorithm/CLAUDE.md` 的「Python 陷阱」清单
@@ -53,7 +53,7 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 ## Phase 3 — 沉淀
 
 1. **判断 pattern 归属**:
-   - 读取 `Learning/Practice/Algorithm/Patterns/` 下所有文件的 frontmatter
+   - 读取 `Learning/Practice/Algorithm/Patterns/` 下所有文件的 frontmatter + `## Key Insight`（不读 Template/Gotchas/Problems，见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Efficiency Rules）
    - 判断该题属于哪个已有 pattern，或是否需要新建
    - 告诉用户归类结果，确认后继续
 
