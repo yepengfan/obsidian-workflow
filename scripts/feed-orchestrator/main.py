@@ -175,7 +175,7 @@ async def main() -> int:
     reporter.write_initial()
     try:
         validate_backend_credentials()
-    except RuntimeError as e:
+    except (RuntimeError, ValueError) as e:
         print(f"ERROR: {e}", file=sys.stderr)
         reporter.write_final(f"❌ Backend config error: {e}")
         return 1
