@@ -8,14 +8,12 @@ from __future__ import annotations
 
 import asyncio
 import os
-import shutil
 import sys
 
+from shared.cursor_paths import augmented_path, find_agent_binary
 
 DEFAULT_MODEL = "composer-2.5"
 DEFAULT_TIMEOUT = 600.0
-
-AGENT_BIN = shutil.which("agent") or shutil.which("cursor-agent") or "agent"
 
 USER_INSTRUCTION = (
     "Process the input according to your system instructions. "
@@ -24,11 +22,7 @@ USER_INSTRUCTION = (
 
 
 def _build_prompt(system: str, user: str) -> str:
-    """Combine system + user into a single -p argument.
-
-    Cursor CLI does not reliably consume stdin when spawned as a subprocess;
-    the full prompt must be passed via ``-p``.
-    """
+    """Combine system + user into the agent prompt body."""
     return (
         f"{USER_INSTRUCTION}\n\n"
         f"{system.rstrip()}\n\n"
@@ -38,12 +32,7 @@ def _build_prompt(system: str, user: str) -> str:
 
 def _agent_env() -> dict[str, str]:
     env = os.environ.copy()
-    env["PATH"] = (
-        f"{os.path.expanduser('~')}/.local/bin:"
-        f"{os.path.expanduser('~')}/.npm-global/bin:"
-        f"/usr/local/bin:/opt/homebrew/bin:"
-        f"{env.get('PATH', '')}"
-    )
+    env["PATH"] = augmented_path(env.get("PATH"))
     return env
 
 
@@ -67,18 +56,22 @@ async def run_cursor(
 ) -> str:
     """Call Cursor agent with system + user content, return stdout text.
 
-    The full system prompt and user payload are combined in the agent prompt
-    body (Cursor CLI does not support a separate --system-prompt flag like
-    ``claude -p``).
+    Large prompts are sent on stdin to avoid OS ``execve`` argument size limits
+    (``E2BIG``) when scoring full ai-digest payloads.
     """
+    agent_bin = find_agent_binary()
+    if not agent_bin:
+        raise RuntimeError(
+            "Cursor CLI (agent) not found. Install: curl https://cursor.com/install -fsS | bash"
+        )
+
     model = model or resolve_cursor_model("default")
     full_prompt = _build_prompt(system, user)
 
     for attempt in range(retries):
         proc = await asyncio.create_subprocess_exec(
-            AGENT_BIN,
+            agent_bin,
             "-p",
-            full_prompt,
             "--model",
             model,
             "--output-format",
@@ -86,13 +79,14 @@ async def run_cursor(
             "--force",
             "--mode",
             "ask",
+            stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             env=_agent_env(),
         )
         try:
             stdout, stderr = await asyncio.wait_for(
-                proc.communicate(),
+                proc.communicate(input=full_prompt.encode()),
                 timeout=timeout,
             )
         except asyncio.TimeoutError:
