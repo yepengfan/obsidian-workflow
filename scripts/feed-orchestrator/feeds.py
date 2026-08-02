@@ -158,7 +158,7 @@ async def _enrich_ai_digest(fetched_json: str, prompt_dir: Path) -> str:
 
 
 async def _enrich_ai_digest_consolidated(fetched_json: str, prompt_dir: Path) -> str:
-    """Cursor path: 3 LLM calls (score all → summarize all → trend)."""
+    """Cursor path: batched score → summarize all top → optional trend."""
     data = json.loads(fetched_json)
     articles = data.get("articles", [])
     if not articles:
@@ -167,19 +167,33 @@ async def _enrich_ai_digest_consolidated(fetched_json: str, prompt_dir: Path) ->
     score_prompt = (prompt_dir / "score.md").read_text()
     summarize_prompt = (prompt_dir / "summarize.md").read_text()
 
-    # Phase 1: score all articles in one call
-    score_result = await call_llm(
-        score_prompt,
-        json.dumps(articles, ensure_ascii=False),
-        task="score",
+    # Phase 1: score in batches (full corpus is too large for one Cursor call)
+    score_batches = _chunk(articles, 4)
+    sem = asyncio.Semaphore(MAX_CONCURRENT)
+
+    async def score_batch(batch: list) -> list:
+        async with sem:
+            await asyncio.sleep(STAGGER_DELAY)
+            result = await call_llm(
+                score_prompt,
+                json.dumps(batch, ensure_ascii=False),
+                task="score",
+            )
+            parsed = _parse_json_response(result)
+            if isinstance(parsed, dict):
+                return parsed.get("top_articles", [])
+            return parsed if isinstance(parsed, list) else []
+
+    scored_results = await asyncio.gather(
+        *[score_batch(b) for b in score_batches], return_exceptions=True
     )
-    score_parsed = _parse_json_response(score_result)
-    if isinstance(score_parsed, dict):
-        all_scored = score_parsed.get("top_articles", [])
-    elif isinstance(score_parsed, list):
-        all_scored = score_parsed
-    else:
-        all_scored = []
+
+    all_scored = []
+    for result in scored_results:
+        if isinstance(result, Exception):
+            print(f"[enrich] Score batch failed: {result}", file=sys.stderr)
+            continue
+        all_scored.extend(result)
 
     all_scored.sort(key=lambda a: a.get("scores", {}).get("total", 0), reverse=True)
     top_articles = all_scored[:15]
