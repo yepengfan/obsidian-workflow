@@ -76,6 +76,8 @@ All vault features are tracked as modules in `system/modules/`. See `system/regi
 
 ### Command Structure
 
+Commands live in `.claude/commands/` (Claude Code slash paths like `/algo/solve`). The same workflows are mirrored as Agent Skills in `.claude/skills/` for Cursor (invoke as `/algo-solve`, `/work-daily`, etc.). Keep command and skill bodies in sync when editing workflows.
+
 Commands are organized by module in `.claude/commands/`:
 
 ```
@@ -92,6 +94,8 @@ Commands are organized by module in `.claude/commands/`:
 ├── vault-ops/       # /vault-ops/organize, /vault-ops/backup, ...
 └── module-toggle.md # /module-toggle (global)
 ```
+
+Cursor / Agent Skills mirror (`.claude/skills/<name>/SKILL.md`): `algo-solve`, `sysd-solve`, `frnt-solve`, `work-daily`, `zettelkasten-zettel`, `feeds-all`, `module-toggle`, etc. Naming: `{module}-{command}` (e.g. `/work/daily` → `/work-daily`).
 
 ### Module Toggle
 
@@ -121,7 +125,7 @@ Each module declares external dependencies via the `requires` frontmatter field:
 ### Adding a New Feature
 
 1. Create module manifest: `system/modules/<name>/module.md` with `enabled: true`
-2. Create command files in `.claude/commands/<module>/` with module guard at top
+2. Create command files in `.claude/commands/<module>/` with module guard at top, and mirror each in `.claude/skills/<module>-<command>/SKILL.md` for Cursor
 3. Create templates/scripts as needed
 4. The registry auto-discovers the module via Dataview
 5. Update this file (CLAUDE.md) if the feature affects vault structure

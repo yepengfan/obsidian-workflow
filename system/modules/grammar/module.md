@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-06-06
-updated: 2026-06-06
+updated: 2026-08-03
 depends_on: []
 requires:
   cli: [claude]
@@ -17,7 +17,9 @@ hooks: []
 folders: [Learning/Practice/Grammar/, Learning/Practice/Grammar/Structures/, Learning/Practice/Grammar/Log/]
 config_files:
   - .claude/commands/grammar/practice.md
+  - .claude/skills/grammar-practice/SKILL.md
   - .claude/commands/grammar/review.md
+  - .claude/skills/grammar-review/SKILL.md
   - Learning/Practice/Grammar/CLAUDE.md
 tags: [system/module]
 ---

@@ -64,6 +64,7 @@ scripts/engineering-blogs/history.json
 # ── Claude Code config ──
 .claude/*
 !.claude/commands/
+!.claude/skills/
 !.claude/CLAUDE.md
 .bookrc
 

@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-12
-updated: 2026-06-23
+updated: 2026-08-03
 depends_on: []
 requires:
   cli: [claude]
@@ -17,6 +17,7 @@ hooks: []
 folders: [Learning/Practice/System-Design/, Learning/Practice/System-Design/Patterns/, Learning/Practice/System-Design/Log/, Learning/Practice/System-Design/Courses/]
 config_files:
   - .claude/commands/sysd/solve.md
+  - .claude/skills/sysd-solve/SKILL.md
   - Learning/Practice/System-Design/CLAUDE.md
 tags: [system/module]
 ---

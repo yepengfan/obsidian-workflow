@@ -5,7 +5,7 @@ type: work
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-08-03
 depends_on: [work]
 requires:
   cli: [claude]
@@ -17,6 +17,7 @@ hooks: []
 folders: [Work/Brownbag Sessions/]
 config_files:
   - .claude/commands/brownbag/brownbag.md
+  - .claude/skills/brownbag/SKILL.md
 tags: [system/module]
 ---
 

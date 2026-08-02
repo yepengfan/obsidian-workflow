@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-07-15
-updated: 2026-07-28
+updated: 2026-08-03
 depends_on: []
 requires:
   cli: [claude]
@@ -19,6 +19,7 @@ hooks: []
 folders: [Learning/Books/]
 config_files:
   - .claude/commands/book/book-init.md
+  - .claude/skills/book-init/SKILL.md
   - Learning/Books/CLAUDE.md
   - Learning/Books/book_init.py
   - Learning/Books/extract_fulltext.py

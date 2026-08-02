@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-08-03
 depends_on: []
 requires:
   cli: [claude]
@@ -17,10 +17,15 @@ hooks: [upgrade-zettel-status]
 folders: [Zettelkasten/, Inbox/, Inbox/archive/]
 config_files:
   - .claude/commands/zettelkasten/zettel.md
+  - .claude/skills/zettelkasten-zettel/SKILL.md
   - .claude/commands/zettelkasten/retro.md
+  - .claude/skills/zettelkasten-retro/SKILL.md
   - .claude/commands/zettelkasten/backlink.md
+  - .claude/skills/zettelkasten-backlink/SKILL.md
   - .claude/commands/zettelkasten/inbox-review.md
+  - .claude/skills/zettelkasten-inbox-review/SKILL.md
   - .claude/commands/zettelkasten/project-retro.md
+  - .claude/skills/zettelkasten-project-retro/SKILL.md
   - .claude/scripts/upgrade-zettel-status.py
 tags: [system/module]
 ---

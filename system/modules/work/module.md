@@ -5,7 +5,7 @@ type: work
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-08-03
 depends_on: [dashboard]
 requires:
   cli: [claude]
@@ -17,9 +17,13 @@ hooks: []
 folders: [Work/]
 config_files:
   - .claude/commands/work/daily.md
+  - .claude/skills/work-daily/SKILL.md
   - .claude/commands/work/project.md
+  - .claude/skills/work-project/SKILL.md
   - .claude/commands/work/decision-log.md
+  - .claude/skills/work-decision-log/SKILL.md
   - .claude/commands/work/meeting.md
+  - .claude/skills/work-meeting/SKILL.md
 tags: [system/module]
 ---
 
