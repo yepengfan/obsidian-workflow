@@ -65,9 +65,18 @@
 - `.sort()` 返回 `None`
 - 单帧 `return` 不会停止整个递归
 
+## Efficiency Rules（验证与检索效率）
+
+工具调用往返次数才是主要时间成本（脚本执行本身通常 <1s），Phase 2 验证、Phase 3 检索时遵守以下几点，减少不必要的往返。
+
+- **验证脚本一次性合并**: 穷举测试、随机 stress test、edge case、性能计时、gotcha 复现（如顺序颠倒对比）能写进同一个脚本的，一次调用跑完，不要拆成多次来回。只有当某次结果出乎意料、需要针对性追加验证时才发起新调用。
+- **纯重构不重新全量验证**: 改动只是变量名/代码结构调整、逻辑未变时（如把 `b`/`l` 改成语义化命名），不需要重新跑一遍完整穷举或大规模 stress test —— 几百组随机 spot-check 确认新旧实现等价即可，不必重复证明已证明过的正确性。
+- **Pattern/Atom 检索只读必要片段**: 判断分类归属只读 frontmatter + `## Key Insight`（有 `## Composed Of` 一并看），不读 `## Template` / `## Gotchas` / `## Problems` —— 这些字段判断"是不是同一个技术"用不到。确定要更新/引用某张具体卡时，才展开读它的全文（此时本就要编辑它）。
+- **禁止裸 `cd`**: Bash 工具的 cwd 会跨调用持久化，一次 `cd` 之后，后续所有相对路径（包括 Read 工具的相对路径）都会跟着漂移，导致看似无关的下一次调用意外失败。需要在某目录下执行命令时用绝对路径，或用 `(cd dir && cmd)` 子 shell 包裹，让目录切换不逃出这一次调用。
+
 ## Pattern Card Rules
 
-- **归类前必须先查已有 pattern**: 用 `Glob("Learning/Practice/Algorithm/Patterns/*.md")` 列出所有文件名（不要用 shell glob，中文/括号文件名会静默失败）。扫描文件名判断是否有匹配的 pattern，有疑问时读 frontmatter 确认。**绝不跳过此步直接新建。**
+- **归类前必须先查已有 pattern**: 用 `Glob("Learning/Practice/Algorithm/Patterns/*.md")` 列出所有文件名（不要用 shell glob，中文/括号文件名会静默失败）。扫描文件名判断是否有匹配的 pattern，有疑问时只读 frontmatter + `## Key Insight`（有 `## Composed Of` 一并看）确认（不读 Template/Gotchas/Problems，见 Efficiency Rules）。**绝不跳过此步直接新建。**
 - **已有 pattern**: 加题号到 frontmatter `problems[]` + 正文 Problems 表格加一行 + 更新 `updated` 日期
 - **新 pattern**: 创建新文件（用 `Templates/Algorithm Pattern.md`），id 取当前最大值 +1，填充所有字段
 - `difficulty` 指 pattern 理解难度，非单题难度
