@@ -5,7 +5,7 @@ type: feed
 status: active
 enabled: true
 created: 2026-03-31
-updated: 2026-04-01
+updated: 2026-08-03
 depends_on: [dashboard]
 requires:
   cli: [claude]
@@ -24,6 +24,7 @@ hooks: []
 folders: [Feeds/Engineering-Blogs/]
 config_files:
   - .claude/commands/feeds/engineering-blogs.md
+  - .claude/skills/feeds-engineering-blogs/SKILL.md
   - scripts/engineering-blogs/prompts/enrich.md
 tags: [system/module]
 ---

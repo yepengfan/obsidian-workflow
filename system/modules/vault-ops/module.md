@@ -5,7 +5,7 @@ type: utility
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-08-03
 depends_on: []
 requires:
   cli: [claude, git]
@@ -16,11 +16,17 @@ hooks: []
 folders: []
 config_files:
   - .claude/commands/vault-ops/organize.md
+  - .claude/skills/vault-ops-organize/SKILL.md
   - .claude/commands/vault-ops/tag-audit.md
+  - .claude/skills/vault-ops-tag-audit/SKILL.md
   - .claude/commands/vault-ops/summarize.md
+  - .claude/skills/vault-ops-summarize/SKILL.md
   - .claude/commands/vault-ops/backup.md
+  - .claude/skills/vault-ops-backup/SKILL.md
   - .claude/commands/vault-ops/research.md
+  - .claude/skills/vault-ops-research/SKILL.md
   - .claude/commands/module-toggle.md
+  - .claude/skills/module-toggle/SKILL.md
 tags: [system/module]
 ---
 

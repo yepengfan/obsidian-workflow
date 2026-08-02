@@ -5,7 +5,7 @@ type: feed
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-08-03
 depends_on: [dashboard]
 requires:
   cli: [claude]
@@ -26,6 +26,7 @@ hooks: []
 folders: [Feeds/AI-Daily/]
 config_files:
   - .claude/commands/feeds/ai-digest.md
+  - .claude/skills/feeds-ai-digest/SKILL.md
   - scripts/ai-digest/prompts/score.md
   - scripts/ai-digest/prompts/summarize.md
   - .obsidian/plugins/obsidian-shellcommands/data.json

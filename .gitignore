@@ -56,6 +56,7 @@
 scripts/ai-digest/history.json
 scripts/github-trending/history.json
 scripts/engineering-blogs/history.json
+.pr-review-state/
 
 # ── Plugin runtime state ──
 .claudian/
@@ -64,6 +65,7 @@ scripts/engineering-blogs/history.json
 # ── Claude Code config ──
 .claude/*
 !.claude/commands/
+!.claude/skills/
 !.claude/CLAUDE.md
 .bookrc
 

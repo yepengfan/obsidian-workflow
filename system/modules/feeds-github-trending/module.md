@@ -5,7 +5,7 @@ type: feed
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-08-03
 depends_on: [dashboard]
 requires:
   cli: [claude]
@@ -25,6 +25,7 @@ hooks: []
 folders: [Feeds/GitHub-Trending/]
 config_files:
   - .claude/commands/feeds/github-trending.md
+  - .claude/skills/feeds-github-trending/SKILL.md
   - scripts/github-trending/prompts/enrich.md
 tags: [system/module]
 ---

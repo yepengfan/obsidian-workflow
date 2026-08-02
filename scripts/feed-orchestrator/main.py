@@ -29,6 +29,9 @@ from feeds import (
 )
 from status import StatusReporter
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from shared.llm_runner import backend_summary, validate_backend_credentials  # noqa: E402
+
 ALL_FEEDS = {
     "ai-digest": "(daily) — AI/ML news from 92 RSS feeds",
     "github-trending": "(daily) — Trending GitHub repositories",
@@ -94,9 +97,12 @@ async def run_feed(
     print(f"[{feed_name}] Fetched {len(items)} items", file=sys.stderr)
     reporter.update_feed(feed_name, "running", message=f"Fetched {len(items)} items")
 
-    # 4. Enrich
+    # 4. Enrich (validate LLM backend only when there are items to enrich)
     reporter.update_feed(feed_name, "running", message="Enriching...")
     try:
+        if items:
+            validate_backend_credentials()
+            print(f"[{feed_name}] LLM backend: {backend_summary()}", file=sys.stderr)
         enriched_json = await run_enrich(feed_name, config, fetched_json)
     except Exception as e:
         tb = traceback.format_exc()

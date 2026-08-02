@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-08-03
 depends_on: [zettelkasten]
 requires:
   cli: [claude]
@@ -17,8 +17,11 @@ hooks: []
 folders: [Learning/, Learning/Plans/, Learning/Books/, Learning/Resources/]
 config_files:
   - .claude/commands/learning/learning-init.md
+  - .claude/skills/learning-init/SKILL.md
   - .claude/commands/learning/learning-log.md
+  - .claude/skills/learning-log/SKILL.md
   - .claude/commands/learning/learning-review.md
+  - .claude/skills/learning-review/SKILL.md
 tags: [system/module]
 ---
 

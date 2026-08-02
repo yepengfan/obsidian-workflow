@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-07
-updated: 2026-07-17
+updated: 2026-08-03
 depends_on: []
 requires:
   cli: [claude]
@@ -17,6 +17,7 @@ hooks: []
 folders: [Learning/Practice/Algorithm/, Learning/Practice/Algorithm/Patterns/, Learning/Practice/Algorithm/Log/, Learning/Practice/Algorithm/Atoms/]
 config_files:
   - .claude/commands/algo/solve.md
+  - .claude/skills/algo-solve/SKILL.md
   - .claude/commands/algo/migrate.md
   - Learning/Practice/Algorithm/CLAUDE.md
 tags: [system/module]
@@ -35,10 +36,10 @@ LeetCode 算法练习模块。交互式解题引导 → 代码审核 → Pattern
 
 ### 数据流
 
-- **输入**: `/algo/solve <LC#>` → 引导解题 → 代码审核 → 沉淀 card + log
+- **输入**: `/algo/solve <LC#>` 或 `/algo-solve <LC#>` → 引导解题 → 代码审核 → 沉淀 card + log
 - **迁移**: `/algo/migrate` → Legacy/ → Patterns/ 一次性转换
 
 ## Quick Start
 
-1. `/algo/solve 543` — 开始解题
+1. `/algo/solve 543` 或 `/algo-solve 543` — 开始解题（Claude Code / Cursor 均可）
 2. `/algo/migrate` — 迁移旧数据（仅需运行一次）
