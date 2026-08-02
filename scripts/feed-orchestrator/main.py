@@ -97,9 +97,11 @@ async def run_feed(
     print(f"[{feed_name}] Fetched {len(items)} items", file=sys.stderr)
     reporter.update_feed(feed_name, "running", message=f"Fetched {len(items)} items")
 
-    # 4. Enrich
+    # 4. Enrich (validate LLM backend only when enrichment is needed)
     reporter.update_feed(feed_name, "running", message="Enriching...")
     try:
+        validate_backend_credentials()
+        print(f"[{feed_name}] LLM backend: {backend_summary()}", file=sys.stderr)
         enriched_json = await run_enrich(feed_name, config, fetched_json)
     except Exception as e:
         tb = traceback.format_exc()
@@ -173,14 +175,6 @@ async def main() -> int:
         return 1
 
     reporter.write_initial()
-    try:
-        validate_backend_credentials()
-    except (RuntimeError, ValueError) as e:
-        print(f"ERROR: {e}", file=sys.stderr)
-        reporter.write_final(f"❌ Backend config error: {e}")
-        return 1
-
-    print(f"[orchestrator] LLM backend: {backend_summary()}", file=sys.stderr)
     print(f"[orchestrator] Starting {feed_names}...", file=sys.stderr)
 
     # Run each feed sequentially
