@@ -29,9 +29,8 @@ if [ -z "${FEED_LLM_BACKEND:-}" ]; then
     export FEED_LLM_BACKEND=anthropic
   elif cursor_cli_available; then
     export FEED_LLM_BACKEND=cursor
-  else
-    export FEED_LLM_BACKEND=anthropic
   fi
+  # else: leave unset — orchestrator validates credentials at enrich time
 fi
 export FEED_CURSOR_MODEL="${FEED_CURSOR_MODEL:-composer-2.5}"
 

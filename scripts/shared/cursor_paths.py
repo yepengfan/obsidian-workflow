@@ -54,4 +54,7 @@ def resolve_default_feed_backend() -> str:
         return "anthropic"
     if cursor_cli_available():
         return "cursor"
-    return "anthropic"
+    raise RuntimeError(
+        "No LLM backend available. Set ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN, "
+        "or install Cursor CLI (agent on PATH)."
+    )
