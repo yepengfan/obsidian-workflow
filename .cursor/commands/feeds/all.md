@@ -1,8 +1,15 @@
 Run all daily feed pipelines via the feed orchestrator.
 
-Uses `FEED_LLM_BACKEND` (default: `cursor`). Switch to Anthropic with:
+The orchestrator runs enabled feeds **sequentially** (ai-digest → github-trending → engineering-blogs). Uses `FEED_LLM_BACKEND` with credential-based default when unset (Anthropic key → anthropic; else Cursor CLI if `agent` on PATH).
+
+```bash
+bash scripts/feed-orchestrator/load-env.sh
+```
+
+Override backend explicitly:
 ```bash
 FEED_LLM_BACKEND=anthropic bash scripts/feed-orchestrator/load-env.sh
+FEED_LLM_BACKEND=cursor bash scripts/feed-orchestrator/load-env.sh
 ```
 
 ## Instructions
@@ -13,10 +20,9 @@ FEED_LLM_BACKEND=anthropic bash scripts/feed-orchestrator/load-env.sh
    ```bash
    bash scripts/feed-orchestrator/load-env.sh
    ```
-   - Default backend is Cursor CLI (`agent -p`), billed via Cursor subscription
-   - Requires `agent` on PATH and `agent login` (or `CURSOR_API_KEY`)
+   - Backend inferred from credentials when unset (see above)
    - Idempotent — skips feeds whose report already exists today
-   - Typical runtime: ~5-10 min (cursor) or ~4-6 min (anthropic)
+   - Typical runtime: ~5-10 min total (varies by backend and feed count)
 
 3. **Report results** — for each feed: ✅ generated / ⏭️ skipped / ❌ failed / ⛔ disabled
 

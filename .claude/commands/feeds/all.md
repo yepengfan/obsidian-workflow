@@ -1,32 +1,32 @@
 <!-- wrapper: feeds-ai-digest, feeds-github-trending, feeds-engineering-blogs -->
-Run all daily feed pipelines in parallel.
+Run all daily feed pipelines via the unified orchestrator.
 
-This is a convenience wrapper that runs all feed pipelines at once:
-- **AI Daily Digest** (`scripts/feed-orchestrator` via enrich) — ~4-10 min
+This convenience wrapper runs all three daily feeds in one invocation. The orchestrator processes enabled feeds **sequentially** (ai-digest → github-trending → engineering-blogs), skipping any whose report already exists today.
+
+Typical runtime per feed:
+- **AI Daily Digest** — ~4-10 min
 - **GitHub Trending** — ~1-3 min
 - **Engineering Blogs** — ~1-3 min
 
-**Recommended**: use the unified orchestrator (supports `FEED_LLM_BACKEND`):
+**Recommended** — unified orchestrator (supports `FEED_LLM_BACKEND`):
 ```bash
 bash scripts/feed-orchestrator/load-env.sh
 ```
-Default backend is `cursor` (Cursor CLI). Set `FEED_LLM_BACKEND=anthropic` for Anthropic Haiku.
-
-All pipelines are independent and idempotent.
+When `FEED_LLM_BACKEND` is unset, the backend is inferred: Anthropic if `ANTHROPIC_API_KEY` / `ANTHROPIC_AUTH_TOKEN` is set, otherwise Cursor CLI if `agent` is on PATH. Override explicitly with `FEED_LLM_BACKEND=anthropic` or `FEED_LLM_BACKEND=cursor`.
 
 ## Instructions
 
 1. **Check modules**: Read `system/modules/feeds-ai-digest/module.md`, `system/modules/feeds-github-trending/module.md`, and `system/modules/feeds-engineering-blogs/module.md`. Note which are enabled. If ALL are disabled → reply "⛔ All feed modules are disabled. Enable them via `/module-toggle`." and STOP.
 
-2. **Run enabled pipelines in parallel** — prefer the unified orchestrator when all feeds are needed:
+2. **Run enabled feeds** — prefer the unified orchestrator when all feeds are needed:
 
-   **Option A (recommended)** — single orchestrator with pluggable LLM backend:
+   **Option A (recommended)** — sequential orchestrator with pluggable LLM backend:
    ```bash
    bash scripts/feed-orchestrator/load-env.sh
    ```
-   Respects `FEED_LLM_BACKEND` (default: `cursor`).
+   Runs each enabled feed one after another. Respects `FEED_LLM_BACKEND` (credential-based default when unset).
 
-   **Option B** — legacy per-feed `run.sh` scripts (Claude CLI only, not Cursor backend):
+   **Option B** — legacy per-feed `run.sh` scripts (Claude CLI only; each feed is a separate process and may be started in parallel manually):
    - **AI Digest** (if enabled): `bash scripts/ai-digest/run.sh`
    - **GitHub Trending** (if enabled): `bash scripts/github-trending/run.sh`
    - **Engineering Blogs** (if enabled): `bash scripts/engineering-blogs/run.sh`
