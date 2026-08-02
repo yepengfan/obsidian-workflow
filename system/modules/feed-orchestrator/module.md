@@ -10,12 +10,12 @@ depends_on: [feeds-ai-digest, feeds-github-trending, feeds-engineering-blogs, da
 requires:
   python: ">=3.13"
   pip: [anthropic, aiohttp]
-  cli: [agent]
   plugins: [dataview, obsidian-shellcommands]
   env:
-    FEED_LLM_BACKEND: "(optional) cursor (default) or anthropic"
-    CURSOR_API_KEY: "(optional) Cursor API key for headless runs; agent login also works"
+    FEED_LLM_BACKEND: "(optional) anthropic or cursor; inferred from credentials when unset"
     ANTHROPIC_API_KEY: "(required when FEED_LLM_BACKEND=anthropic) Anthropic API key for Haiku"
+    ANTHROPIC_AUTH_TOKEN: "(optional) Alternative Anthropic auth token"
+    CURSOR_API_KEY: "(optional) Cursor API key for headless cursor backend; agent login also works"
 commands: []
 templates: []
 scripts:
@@ -26,6 +26,8 @@ scripts:
   - scripts/feed-orchestrator/load-env.sh
   - scripts/shared/llm_runner.py
   - scripts/shared/cursor_runner.py
+  - scripts/shared/cursor_paths.py
+  - scripts/shared/cursor-paths.sh
 hooks: []
 folders: []
 config_files:
