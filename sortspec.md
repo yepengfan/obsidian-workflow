@@ -12,6 +12,7 @@ sorting-spec: |
   Feeds
   Note
   WeRead
+  ibooks-highlights
   Attachments
   Archive
   docs

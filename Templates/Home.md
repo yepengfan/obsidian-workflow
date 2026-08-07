@@ -1,12 +1,24 @@
 ---
 tags: template
 for: Home
-updated: 2026-07-15
+updated: 2026-08-07
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-08-07 — 📖 读书 card reads WeRead progress live (not a static snapshot)
+> - **Problem**: The 读书 card's `WeRead N%` badge read `m.weread_progress` — a static frontmatter field in each `Learning/Books/<book>/meta.md`, hand-copied at onboarding. It never tracked the live WeRead plugin data, so the badge silently went stale as the user kept reading (values happened to match only by coincidence). There was no sync mechanism — it was a one-time copy.
+> - **Fix**: Added `findWeReadProgress(meta)` helper (mirror of `findBookCover`, direction reversed): resolves `meta.weread_source` → the plugin-synced WeRead note → reads its frontmatter `progress` via `app.metadataCache.getFileCache(f)`, returning that as the single source of truth. Falls back to the static `meta.weread_progress` only when the source note can't be found. Badge line changed from `if (m.weread_progress) …` to `const wr = findWeReadProgress(m); if (wr) …`.
+> - **Why this works without new fields**: Every reading book's `meta.md` already carries a `weread_source:` pointer to its WeRead note, and all pointers resolved to valid files. So `weread_progress` is demoted from sole source to fallback-only; no writeback script or hook needed.
+> - **Consumers**: `weread_progress` had exactly one reader (this card) — verified by grep — so a live read here fully solves staleness. Contrast the sibling `## Reading → Currently Reading` section, which was already live (`dv.pages('"WeRead"')`); only this production-layer card used the frozen field.
+
+> [!note] 2026-08-07 — 🧬 最近更新的 Atoms card in Algorithm tab
+> - **Why**: Pattern cards already surfaced recently-updated cards via "📝 最近 Pattern Cards"; Atoms/ (原子技术) had no equivalent, making it hard to see recent atom activity from Home.
+> - **Placement**: Inside the Algorithm tab's `lPanels["algo"]` block, directly below "📝 最近 Pattern Cards" and above "All patterns →". Same card layout (name link + subtitle line + date), but atoms have no `category`/`problems` fields, so the subtitle shows `Atom · used by N patterns` instead — `N` computed from `atom.file.inlinks.length` (Dataview auto-tracks `[[wikilink]]` backlinks from pattern cards' `## Composed Of` sections, no manual list to maintain).
+> - **Visual differentiation**: Left border uses `#8E8CD8` (already in the category donut's color palette) instead of `var(--color-accent)`, so atom cards are distinguishable from pattern cards at a glance despite identical layout.
+> - **Data source**: `dv.pages('"Learning/Practice/Algorithm/Atoms"').where(x => x.file.tags.includes("#leetcode/atom"))`, sorted by `updated` desc, sliced to top 5 — mirrors the existing pattern-card query exactly.
 
 > [!note] 2026-07-15 — 📖 读书 widget in Learning section (book production progress)
 > - **Placement**: Inside the `## Learning` dataviewjs block, between 📚 学习计划 and 🏋️ 长期练习. Distinct from the existing `## Reading` section — that reads the WeRead **capture** layer (raw highlights); this reads the **production** layer (`Learning/Books/*/meta.md` with `status: reading`), i.e. books upgraded into the Feynman/write workflow.
