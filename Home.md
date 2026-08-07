@@ -1370,6 +1370,21 @@ dv.el("div", "📖 读书", {
       return null;
     }
 
+    // Read WeRead progress live from the plugin-synced source file (single source
+    // of truth). meta.md's static weread_progress is only a fallback for when the
+    // source note can't be found — mirror of findBookCover, direction reversed.
+    function findWeReadProgress(meta) {
+      const src = meta?.weread_source;
+      if (src) {
+        const f = app.vault.getAbstractFileByPath(String(src));
+        if (f) {
+          const prog = app.metadataCache.getFileCache(f)?.frontmatter?.progress;
+          if (prog != null) return String(prog);
+        }
+      }
+      return meta?.weread_progress ? String(meta.weread_progress) : null;
+    }
+
     for (const m of metas) {
       const folder = m.file.folder;              // Learning/Books/<Title>
       const bookName = folder.split("/").pop();
@@ -1443,7 +1458,8 @@ dv.el("div", "📖 读书", {
       if (m.author) bits.push(m.author);
       if (total > 0) bits.push(`费曼 ${doneCh}/${total}`);
       if (total > 0) bits.push(doneCh === total ? "✓ 完成" : `Ch${currentNum}/${total}`);
-      if (m.weread_progress) bits.push(`WeRead ${m.weread_progress}`);
+      const wr = findWeReadProgress(m);
+      if (wr) bits.push(`WeRead ${wr}`);
       if (bits.length) {
         body.createEl("div", {
           text: bits.join(" · "),
@@ -1510,6 +1526,7 @@ const { panels: lPanels } = createTabGroup(dv, [
   // Stats
   const patterns = dv.pages('"Learning/Practice/Algorithm/Patterns"').where(x => x.file.tags.includes("#leetcode/pattern"));
   const logs = dv.pages('"Learning/Practice/Algorithm/Log"').where(x => x.file.tags.includes("#leetcode/log"));
+  const atoms = dv.pages('"Learning/Practice/Algorithm/Atoms"').where(x => x.file.tags.includes("#leetcode/atom"));
 
   const totalPatterns = patterns.length;
   const pArr = patterns.array();
@@ -1630,6 +1647,28 @@ const { panels: lPanels } = createTabGroup(dv, [
         const probCount = pat.problems ? (Array.isArray(pat.problems) ? pat.problems.length : 1) : 0;
         info.createEl("div", { text: `${pat.category || "-"} · ${probCount} 题`, attr: { style: "font-size:0.65em;color:var(--text-faint);margin-top:1px;" } });
         card.createEl("div", { text: dv.date(pat.updated).toFormat("M/d"), attr: { style: "font-size:0.7em;color:var(--text-faint);flex-shrink:0;" } });
+      }
+    }
+  }
+
+  // Recent atom cards — latest 5 by updated date
+  {
+    const aArr = atoms.array();
+    const recentAtoms = aArr
+      .filter(x => x.updated)
+      .sort((a, b) => dv.date(b.updated).ts - dv.date(a.updated).ts)
+      .slice(0, 5);
+    if (recentAtoms.length > 0) {
+      p.createEl("div", { text: "🧬 最近更新的 Atoms", attr: { style: "font-size:0.8em;font-weight:600;margin:10px 0 6px;color:var(--text-muted);" } });
+      const raList = p.createEl("div", { attr: { style: "display:flex;flex-direction:column;gap:5px;" } });
+      for (const atom of recentAtoms) {
+        const card = raList.createEl("div", { attr: { style: "display:flex;align-items:center;gap:10px;padding:7px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid #8E8CD8;" } });
+        const info = card.createEl("div", { attr: { style: "flex:1;min-width:0;" } });
+        const nameEl = info.createEl("div", { attr: { style: "font-size:0.8em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+        nameEl.innerHTML = `<a class="internal-link" data-href="${atom.file.path}">${atom.title || atom.file.name}</a>`;
+        const usedByCount = atom.file.inlinks ? atom.file.inlinks.length : 0;
+        info.createEl("div", { text: `Atom · used by ${usedByCount} pattern${usedByCount === 1 ? "" : "s"}`, attr: { style: "font-size:0.65em;color:var(--text-faint);margin-top:1px;" } });
+        card.createEl("div", { text: dv.date(atom.updated).toFormat("M/d"), attr: { style: "font-size:0.7em;color:var(--text-faint);flex-shrink:0;" } });
       }
     }
   }
