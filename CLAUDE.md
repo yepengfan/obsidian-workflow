@@ -87,7 +87,7 @@ Commands are organized by module in `.claude/commands/`:
 ├── learning/        # /learning/learning-init, ...
 ├── feeds/           # /feeds/ai-digest, /feeds/github-trending
 ├── algo/            # /algo/solve
-├── book/            # /book/book-init
+├── book/            # /book/book-init, /book/read
 ├── brownbag/        # /brownbag/brownbag
 ├── sysd/            # /sysd/solve
 ├── frnt/            # /frnt/solve
@@ -153,6 +153,10 @@ When working inside the `Learning/Books/` folder, that file takes precedence for
 
 New book onboarding (EPUB/PDF locate + `book_init.py` + metadata confirmation) runs via
 **`/book/book-init <书名>`**. It also backfills `epub_path`/`pdf_path` on older books missing it.
+
+Resuming a reading session (pick an in-progress book → chapter → step) runs via
+**`/book/read`**. It's a router into the `Learning/Books/CLAUDE.md` workflow — use it instead
+of natural-language triggers like "继续 {book}", which can collide with the Learning Plans system.
 
 ## Algorithm System
 

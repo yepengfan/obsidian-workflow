@@ -5,21 +5,23 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-07-15
-updated: 2026-08-03
+updated: 2026-08-07
 depends_on: []
 requires:
   cli: [claude]
   python: ">=3.10"
   pip: [ebooklib, beautifulsoup4, pdfplumber]
   plugins: [dataview]
-commands: [book-init]
+commands: [book-init, read]
 templates: []
 scripts: [Learning/Books/book_init.py, Learning/Books/extract_fulltext.py, Learning/Books/test_extract_fulltext.py]
 hooks: []
 folders: [Learning/Books/]
 config_files:
   - .claude/commands/book/book-init.md
+  - .claude/commands/book/read.md
   - .claude/skills/book-init/SKILL.md
+  - .claude/skills/book-read/SKILL.md
   - Learning/Books/CLAUDE.md
   - Learning/Books/book_init.py
   - Learning/Books/extract_fulltext.py
