@@ -1,7 +1,7 @@
 ---
 name: zettelkasten-zettel
 description: >-
-  Create a new atomic zettel note in Zettelkasten/. Use for /zettelkasten/zettel.
+  Create a new atomic zettel note in Zettelkasten/. Use for /zettelkasten-zettel.
 disable-model-invocation: true
 ---
 

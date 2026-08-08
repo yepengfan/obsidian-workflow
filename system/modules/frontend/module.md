@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-06-23
-updated: 2026-08-03
+updated: 2026-08-08
 depends_on: []
 requires:
   cli: [claude, node, npm]
@@ -16,7 +16,6 @@ scripts: []
 hooks: []
 folders: [Learning/Practice/Frontend/, Learning/Practice/Frontend/Patterns/, Learning/Practice/Frontend/Log/, Learning/Practice/Frontend/sandbox/]
 config_files:
-  - .claude/commands/frnt/solve.md
   - .claude/skills/frnt-solve/SKILL.md
   - Learning/Practice/Frontend/CLAUDE.md
 tags: [system/module]
@@ -34,7 +33,7 @@ tags: [system/module]
 
 ### 数据流
 
-- **输入**: `/frnt/solve <题目>` → 初始化骨架 → 引导实现 → Code Review → 沉淀 card + log
+- **输入**: `/frnt-solve <题目>` → 初始化骨架 → 引导实现 → Code Review → 沉淀 card + log
 
 ### 与其他模块关系
 
@@ -44,4 +43,4 @@ tags: [system/module]
 ## Quick Start
 
 1. `cd Learning/Practice/Frontend/sandbox && npm install` — 首次安装依赖
-2. `/frnt/solve Accordion` — 开始做题
+2. `/frnt-solve Accordion` — 开始做题

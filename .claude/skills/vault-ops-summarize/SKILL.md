@@ -1,7 +1,7 @@
 ---
 name: vault-ops-summarize
 description: >-
-  Summarize notes or documents in the vault. Use for /vault-ops/summarize.
+  Summarize notes or documents in the vault. Use for /vault-ops-summarize.
 disable-model-invocation: true
 ---
 

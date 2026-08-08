@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-06-06
-updated: 2026-08-03
+updated: 2026-08-08
 depends_on: []
 requires:
   cli: [claude]
@@ -16,9 +16,7 @@ scripts: []
 hooks: []
 folders: [Learning/Practice/Grammar/, Learning/Practice/Grammar/Structures/, Learning/Practice/Grammar/Log/]
 config_files:
-  - .claude/commands/grammar/practice.md
   - .claude/skills/grammar-practice/SKILL.md
-  - .claude/commands/grammar/review.md
   - .claude/skills/grammar-review/SKILL.md
   - Learning/Practice/Grammar/CLAUDE.md
 tags: [system/module]
@@ -36,21 +34,21 @@ tags: [system/module]
 
 ### 数据流
 
-- **输入**: `/grammar/practice [structure]` → 选择结构 → 用自己的句子重写 → 沉淀 card + log
-- **回顾**: `/grammar/review` → 按 `updated` 排序展示最久未练的结构
+- **输入**: `/grammar-practice [structure]` → 选择结构 → 用自己的句子重写 → 沉淀 card + log
+- **回顾**: `/grammar-review` → 按 `updated` 排序展示最久未练的结构
 
 ## Quick Start
 
-1. `/grammar/practice cleft sentences` — 练习特定结构
-2. `/grammar/practice` — 从最久未练的结构开始
-3. `/grammar/review` — 复习统计 + 挑结构练习
+1. `/grammar-practice cleft sentences` — 练习特定结构
+2. `/grammar-practice` — 从最久未练的结构开始
+3. `/grammar-review` — 复习统计 + 挑结构练习
 
 ## 配置位置
 
 | 文件 | 用途 |
 |------|------|
 | `Learning/Practice/Grammar/CLAUDE.md` | 模块详细规则 |
-| `.claude/commands/grammar/practice.md` | 练习命令 |
-| `.claude/commands/grammar/review.md` | 复习命令 |
+| `.claude/skills/grammar-practice/SKILL.md` | 练习命令 |
+| `.claude/skills/grammar-review/SKILL.md` | 复习命令 |
 | `Templates/Grammar Structure.md` | Structure card 模板 |
 | `Templates/Grammar Log.md` | 练习 log 模板 |

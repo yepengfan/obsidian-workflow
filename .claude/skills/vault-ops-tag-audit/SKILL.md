@@ -1,7 +1,7 @@
 ---
 name: vault-ops-tag-audit
 description: >-
-  Audit and clean up tags across the vault. Use for /vault-ops/tag-audit.
+  Audit and clean up tags across the vault. Use for /vault-ops-tag-audit.
 disable-model-invocation: true
 ---
 

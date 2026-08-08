@@ -1,7 +1,7 @@
 ---
 name: zettelkasten-retro
 description: >-
-  Run a zettelkasten retrospective session. Use for /zettelkasten/retro.
+  Run a zettelkasten retrospective session. Use for /zettelkasten-retro.
 disable-model-invocation: true
 ---
 

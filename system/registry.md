@@ -123,25 +123,33 @@ const modules = dv.pages('"system/modules"')
   .where(p => p.module && p.commands)
   .sort(p => p.module);
 
-// Module name → command subdirectory mapping
-const cmdDir = {
-  "zettelkasten": "zettelkasten",
-  "work": "work",
-  "learning": "learning",
+// Module name → skill-name prefix, only where it differs from the module name itself
+// (skills live flat in .claude/skills/<prefix>-<command>/SKILL.md, invoked as /<prefix>-<command>)
+const skillPrefix = {
+  "algorithm": "algo",
+  "book-learning": "book",
   "feeds-ai-digest": "feeds",
+  "feeds-engineering-blogs": "feeds",
   "feeds-github-trending": "feeds",
-  "brownbag": "brownbag",
-  "vault-ops": "vault-ops"
+  "frontend": "frnt",
+  "system-design": "sysd"
 };
 
 let cmdMap = [];
 for (const m of modules) {
   const cmds = Array.isArray(m.commands) ? m.commands : [];
-  const dir = cmdDir[m.module] || m.module;
+  const prefix = skillPrefix[m.module] || m.module;
   for (const cmd of cmds) {
-    // module-toggle is a root-level command (no subdirectory)
-    const path = cmd === "module-toggle" ? "/" + cmd : "/" + dir + "/" + cmd;
-    cmdMap.push(["`" + path + "`", m.file.link, m.label || m.module]);
+    // module-toggle is root-level (no prefix); some commands already carry the
+    // module prefix themselves (e.g. learning/learning-init, brownbag/brownbag) —
+    // avoid double-prefixing those.
+    let skillName;
+    if (cmd === "module-toggle" || cmd === prefix || cmd.startsWith(prefix + "-")) {
+      skillName = cmd;
+    } else {
+      skillName = prefix + "-" + cmd;
+    }
+    cmdMap.push(["`/" + skillName + "`", m.file.link, m.label || m.module]);
   }
 }
 

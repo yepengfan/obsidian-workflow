@@ -1,7 +1,7 @@
 ---
 name: feeds-github-trending
 description: >-
-  Run the GitHub trending repos digest pipeline. Use for /feeds/github-trending.
+  Run the GitHub trending repos digest pipeline. Use for /feeds-github-trending.
 disable-model-invocation: true
 ---
 

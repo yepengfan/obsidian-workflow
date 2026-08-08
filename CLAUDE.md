@@ -11,8 +11,8 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Inbox/** — Fleeting notes capture. Quick thoughts from any source (reading, work, life). Processed weekly into Zettelkasten or deleted.
 - **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `topics` (list of keywords for filtering).
 - **Learning/** — Organized into four categories:
-  - `Plans/` — Phased learning projects with endpoints. Each plan lives in a subfolder named by its code (e.g. `Learning/Plans/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier — used as shorthand in all commands (`/learning-log AISA`). Current plans: AISA, STYLE. Managed via `/learning/learning-init`, `/learning/learning-log`, `/learning/learning-review`.
-  - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/CLAUDE.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/CLAUDE.md`), `Grammar/` (advanced English grammar — see `Learning/Practice/Grammar/CLAUDE.md`). Managed via `/algo/solve`, `/sysd/solve`, `/grammar/practice`, `/grammar/review`.
+  - `Plans/` — Phased learning projects with endpoints. Each plan lives in a subfolder named by its code (e.g. `Learning/Plans/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier — used as shorthand in all commands (`/learning-log AISA`). Current plans: AISA, STYLE. Managed via `/learning-init`, `/learning-log`, `/learning-review`.
+  - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/CLAUDE.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/CLAUDE.md`), `Grammar/` (advanced English grammar — see `Learning/Practice/Grammar/CLAUDE.md`). Managed via `/algo-solve`, `/sysd-solve`, `/grammar-practice`, `/grammar-review`.
   - `Books/` — Book reading workflow (see `Learning/Books/CLAUDE.md`).
   - `Resources/` — Loose learning materials and skill builder resources (e.g., system-design-sketchnote).
 - **Note/** — Persistent quick-reference notes (credentials, demo setups, etc.). Unlike Inbox (which is processed weekly), these stay as-is for easy access.
@@ -30,7 +30,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
   - `archive/` — Past years and completed projects
   - `2026/` — Current year daily notes (`YYYY-MM-DD.md`)
   - `Projects/` — Project pages (one per project, created from template)
-  - `Brownbag Sessions/` — Brownbag session plans. Each session lives in its own subfolder (e.g., `Brownbag Sessions/Bedrock Cost Optimization/`). Each session has a unique `id` (BB-1, BB-2, ...), `created` date, and acceptance criteria checklist (`## 验收标准`). Status is auto-inferred from the checklist: all unchecked → planning, partially checked → in-progress, all checked → done. Created via `/brownbag/brownbag <topic>`. Index at `Brownbag Sessions/Brownbag Sessions.md`. Shared assets (e.g., slide templates) stay at the `Brownbag Sessions/` root.
+  - `Brownbag Sessions/` — Brownbag session plans. Each session lives in its own subfolder (e.g., `Brownbag Sessions/Bedrock Cost Optimization/`). Each session has a unique `id` (BB-1, BB-2, ...), `created` date, and acceptance criteria checklist (`## 验收标准`). Status is auto-inferred from the checklist: all unchecked → planning, partially checked → in-progress, all checked → done. Created via `/brownbag <topic>`. Index at `Brownbag Sessions/Brownbag Sessions.md`. Shared assets (e.g., slide templates) stay at the `Brownbag Sessions/` root.
 
 ## Key Files
 
@@ -42,8 +42,8 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Templates/Work Project.md** — Template for project pages.
 - **Templates/Learning Plan.md** — Template for `00_plan.md` (learning plan goals and phases).
 - **Templates/Learning Week.md** — Template for weekly learning logs (`Weeks/YYYY-WXX.md`).
-- **Templates/Algorithm Pattern.md** — Template for algorithm pattern cards (used by `/algo/solve`).
-- **Templates/Algorithm Log.md** — Template for daily algorithm practice logs (used by `/algo/solve`).
+- **Templates/Algorithm Pattern.md** — Template for algorithm pattern cards (used by `/algo-solve`).
+- **Templates/Algorithm Log.md** — Template for daily algorithm practice logs (used by `/algo-solve`).
 - **Templates/Brownbag Session.md** — Template for brownbag session plans (used by `/brownbag` command).
 - **Templates/Home.md** — Reference backup + design decisions log for `Home.md` (note-creation button, toolbar design).
 - **Templates/Work Dashboard.md** — Reference backup + design decisions log for `Work/Work Dashboard.md`.
@@ -59,7 +59,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Attachments**: Place images/media in `Attachments/`. Exception: Learning plan assets (screenshots, diagrams, etc.) go in `Learning/Plans/<CODE>/Attachments/`
 - **New notes**: Place in the appropriate existing folder. If unsure, use `Inbox/`
 - **Zettel notes**: One idea per note, written in your own words (not copy-paste). Use `[[wikilinks]]` in the `Related::` field to connect to other zettel. Title should be a descriptive statement (e.g., "Distributed systems trade consistency for availability").
-- **Inbox notes**: No format required. Just capture the thought. Run `/zettelkasten/inbox-review` weekly to process: convert to zettel or archive to `Inbox/archive/YYYY-MM/`.
+- **Inbox notes**: No format required. Just capture the thought. Run `/zettelkasten-inbox-review` weekly to process: convert to zettel or archive to `Inbox/archive/YYYY-MM/`.
 - **Project tasks**: Group tasks under `### ProjectName` headings in daily notes (e.g., `### IS2`, `### IFM`). The heading name must match the filename in `Work/Projects/`. Dataview queries use `t.section.subpath` to filter tasks by project.
 - **Daily note H1**: Use `# DayName` only (e.g., `# Tuesday`). The date is already in the filename and `date:` frontmatter — repeating it in the H1 is redundant. Both `Templates/Work Daily.md` and the Home.md note-creation button follow this format.
 - **Dataview tag filtering**: Use `p.file.tags.includes("#tag")` (not `p.tags`) in dataviewjs queries for reliable tag matching.
@@ -76,26 +76,45 @@ All vault features are tracked as modules in `system/modules/`. See `system/regi
 
 ### Command Structure
 
-Commands live in `.claude/commands/` (Claude Code slash paths like `/algo/solve`). The same workflows are mirrored as Agent Skills in `.claude/skills/` for Cursor (invoke as `/algo-solve`, `/work-daily`, etc.). Keep command and skill bodies in sync when editing workflows.
+All commands are Agent Skills, living in `.claude/skills/<name>/SKILL.md` — one shared definition used by both Claude Code and Cursor (both merge Commands and Skills into the same `/slash-command` interface). There is no separate `.claude/commands/` tree; skills are the single source of truth.
 
-Commands are organized by module in `.claude/commands/`:
+Naming is flat and hyphenated: `{module}-{command}` (e.g. `/work-daily`, `/algo-solve`, `/zettelkasten-zettel`). A few short/global commands stay as-is with no module prefix (`/brownbag`, `/module-toggle`).
 
 ```
-.claude/commands/
-├── zettelkasten/    # /zettelkasten/zettel, /zettelkasten/retro, ...
-├── work/            # /work/daily, /work/project, ...
-├── learning/        # /learning/learning-init, ...
-├── feeds/           # /feeds/ai-digest, /feeds/github-trending
-├── algo/            # /algo/solve
-├── book/            # /book/book-init, /book/read
-├── brownbag/        # /brownbag/brownbag
-├── sysd/            # /sysd/solve
-├── frnt/            # /frnt/solve
-├── vault-ops/       # /vault-ops/organize, /vault-ops/backup, ...
-└── module-toggle.md # /module-toggle (global)
+.claude/skills/
+├── zettelkasten-zettel/         # /zettelkasten-zettel
+├── zettelkasten-retro/          # /zettelkasten-retro
+├── zettelkasten-backlink/       # /zettelkasten-backlink
+├── zettelkasten-inbox-review/   # /zettelkasten-inbox-review
+├── zettelkasten-project-retro/  # /zettelkasten-project-retro
+├── work-daily/                  # /work-daily
+├── work-project/                # /work-project
+├── work-decision-log/           # /work-decision-log
+├── work-meeting/                # /work-meeting
+├── learning-init/                # /learning-init
+├── learning-log/                 # /learning-log
+├── learning-review/              # /learning-review
+├── feeds-ai-digest/             # /feeds-ai-digest
+├── feeds-github-trending/       # /feeds-github-trending
+├── feeds-engineering-blogs/     # /feeds-engineering-blogs
+├── feeds-all/                   # /feeds-all
+├── algo-solve/                  # /algo-solve
+├── book-init/                   # /book-init
+├── book-read/                   # /book-read
+├── brownbag/                    # /brownbag
+├── sysd-solve/                  # /sysd-solve
+├── frnt-solve/                  # /frnt-solve
+├── grammar-practice/            # /grammar-practice
+├── grammar-review/              # /grammar-review
+├── vault-ops-organize/          # /vault-ops-organize
+├── vault-ops-tag-audit/         # /vault-ops-tag-audit
+├── vault-ops-summarize/         # /vault-ops-summarize
+├── vault-ops-backup/            # /vault-ops-backup
+├── vault-ops-research/          # /vault-ops-research
+└── module-toggle/                # /module-toggle (global)
 ```
 
-Cursor / Agent Skills mirror (`.claude/skills/<name>/SKILL.md`): `algo-solve`, `sysd-solve`, `frnt-solve`, `work-daily`, `zettelkasten-zettel`, `feeds-all`, `module-toggle`, etc. Naming: `{module}-{command}` (e.g. `/work/daily` → `/work-daily`).
+Each `SKILL.md` has `name`, `description`, and `disable-model-invocation: true` frontmatter — the last one means Claude never auto-invokes these from description matching alone; they only run when explicitly typed.
 
 ### Module Toggle
 
@@ -125,7 +144,7 @@ Each module declares external dependencies via the `requires` frontmatter field:
 ### Adding a New Feature
 
 1. Create module manifest: `system/modules/<name>/module.md` with `enabled: true`
-2. Create command files in `.claude/commands/<module>/` with module guard at top, and mirror each in `.claude/skills/<module>-<command>/SKILL.md` for Cursor
+2. Create skill files in `.claude/skills/<module>-<command>/SKILL.md` with module guard at top
 3. Create templates/scripts as needed
 4. The registry auto-discovers the module via Dataview
 5. Update this file (CLAUDE.md) if the feature affects vault structure
@@ -152,10 +171,10 @@ See `Learning/Books/CLAUDE.md` for the full reading workflow.
 When working inside the `Learning/Books/` folder, that file takes precedence for all book-related tasks.
 
 New book onboarding (EPUB/PDF locate + `book_init.py` + metadata confirmation) runs via
-**`/book/book-init <书名>`**. It also backfills `epub_path`/`pdf_path` on older books missing it.
+**`/book-init <书名>`**. It also backfills `epub_path`/`pdf_path` on older books missing it.
 
 Resuming a reading session (pick an in-progress book → chapter → step) runs via
-**`/book/read`**. It's a router into the `Learning/Books/CLAUDE.md` workflow — use it instead
+**`/book-read`**. It's a router into the `Learning/Books/CLAUDE.md` workflow — use it instead
 of natural-language triggers like "继续 {book}", which can collide with the Learning Plans system.
 
 ## Algorithm System
@@ -173,22 +192,22 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
 
 ### Commands
 
-**`/algo/solve <题号或题名>`** — 做题全流程：
+**`/algo-solve <题号或题名>`** — 做题全流程：
 
 1. **引导解题** — 给 hints + pseudocode，不给代码。说「给我看代码」/「我放弃」才给
 2. **代码审核** — 贴代码后审正确性、edge cases、复杂度、风格
 3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
 
 ```
-/algo/solve 15
-/algo/solve two sum
-/algo/solve LC 200 岛屿数量
+/algo-solve 15
+/algo-solve two sum
+/algo-solve LC 200 岛屿数量
 ```
 
 ### Daily Workflow
 
 ```
-做题 → /algo/solve 42
+做题 → /algo-solve 42
          ↓
     Phase 1: hints 引导
     Phase 2: 贴代码审核
@@ -212,22 +231,22 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
 
 ### Commands
 
-**`/sysd/solve <题目>`** — 做题全流程：
+**`/sysd-solve <题目>`** — 做题全流程：
 
 1. **引导设计** — 按 Hello Interview Delivery Framework 6 步引导（Requirements → Core Entities → API → Data Flow → High-Level Design → Deep Dives），不给完整方案。说「给我看方案」/「我放弃」才给。Step 5 生成 Mermaid 架构图
 2. **方案审核** — 审需求覆盖、可扩展性、trade-offs、单点故障、成本
 3. **沉淀** — 归类到已有 Pattern card（含架构图）或新建 + 写当日 Log
 
 ```
-/sysd/solve Design YouTube
-/sysd/solve Design URL Shortener
-/sysd/solve 设计聊天系统
+/sysd-solve Design YouTube
+/sysd-solve Design URL Shortener
+/sysd-solve 设计聊天系统
 ```
 
 ### Daily Workflow
 
 ```
-做题 → /sysd/solve Design YouTube
+做题 → /sysd-solve Design YouTube
          ↓
     Phase 1: Delivery Framework 6 步引导（含 Mermaid 架构图）
     Phase 2: 方案审核
@@ -250,19 +269,19 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
 
 ### Commands
 
-**`/grammar/practice [structure]`** — 练习全流程：
+**`/grammar-practice [structure]`** — 练习全流程：
 
 1. **选结构** — 指定或从最久未练的结构推荐
 2. **重写练习** — 用自己的真实句子，Socratic 引导多版本重写
 3. **沉淀** — 更新已有 Structure card 或新建 + 写当日 Log
 
 ```
-/grammar/practice cleft sentences
-/grammar/practice participle clauses
-/grammar/practice
+/grammar-practice cleft sentences
+/grammar-practice participle clauses
+/grammar-practice
 ```
 
-**`/grammar/review`** — 复习排序 + 统计：
+**`/grammar-review`** — 复习排序 + 统计：
 
 1. 扫描所有 Structure card，按 `updated` 排序（最久未练优先）
 2. 输出 review 表 + 统计（总结构数、本周/月练习次数）
@@ -271,13 +290,13 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
 ### Daily Workflow
 
 ```
-练习 → /grammar/practice cleft sentences
+练习 → /grammar-practice cleft sentences
          ↓
     Phase 1: 选结构 + 回顾功能
     Phase 2: 用自己的句子重写（Socratic 引导）
     Phase 3: 沉淀 structure card + log
          ↓
-复习 → /grammar/review
+复习 → /grammar-review
          ↓
     挑最久未练的 structure 再练 → 循环
 ```
@@ -298,7 +317,7 @@ React & Next.js 前端练习系统。题源: GreatFrontEnd。详细规则见 `Le
 
 ### Commands
 
-**`/frnt/solve <题目>`** — 做题全流程：
+**`/frnt-solve <题目>`** — 做题全流程：
 
 1. **初始化** — 创建 sandbox 骨架文件（UI Component / JS Utility / Frontend System Design）
 2. **引导实现** — 渐进 3 层 hint（需求分析 → 实现策略 → 骨架代码），不给完整代码
@@ -306,9 +325,9 @@ React & Next.js 前端练习系统。题源: GreatFrontEnd。详细规则见 `Le
 4. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
 
 ```
-/frnt/solve Accordion
-/frnt/solve debounce
-/frnt/solve Star Rating
+/frnt-solve Accordion
+/frnt-solve debounce
+/frnt-solve Star Rating
 ```
 
 ### Sandbox
@@ -321,7 +340,7 @@ React & Next.js 前端练习系统。题源: GreatFrontEnd。详细规则见 `Le
 ### Daily Workflow
 
 ```
-做题 → /frnt/solve Accordion
+做题 → /frnt-solve Accordion
          ↓
     Phase 0: 创建骨架 → npm run dev 预览
     Phase 1: 渐进引导（L1 需求分析 → L2 策略 → L3 骨架）

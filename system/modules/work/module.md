@@ -5,7 +5,7 @@ type: work
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-08-03
+updated: 2026-08-08
 depends_on: [dashboard]
 requires:
   cli: [claude]
@@ -16,13 +16,9 @@ scripts: []
 hooks: []
 folders: [Work/]
 config_files:
-  - .claude/commands/work/daily.md
   - .claude/skills/work-daily/SKILL.md
-  - .claude/commands/work/project.md
   - .claude/skills/work-project/SKILL.md
-  - .claude/commands/work/decision-log.md
   - .claude/skills/work-decision-log/SKILL.md
-  - .claude/commands/work/meeting.md
   - .claude/skills/work-meeting/SKILL.md
 tags: [system/module]
 ---
@@ -65,17 +61,17 @@ Work/
 
 ## Quick Start
 
-1. **每日开工** → `/work/daily` — 创建今日工作笔记，自动从昨天延续未完成任务
-2. **新建项目** → `/work/project <name>` — 创建项目页面，Dataview 自动汇总该项目所有任务
-3. **记录决策** → `/work/decision-log` — 记录重要决策（背景、选项、理由、后果）
-4. **会议纪要** → `/work/meeting` — 创建会议笔记（议程、讨论、行动项）
+1. **每日开工** → `/work-daily` — 创建今日工作笔记，自动从昨天延续未完成任务
+2. **新建项目** → `/work-project <name>` — 创建项目页面，Dataview 自动汇总该项目所有任务
+3. **记录决策** → `/work-decision-log` — 记录重要决策（背景、选项、理由、后果）
+4. **会议纪要** → `/work-meeting` — 创建会议笔记（议程、讨论、行动项）
 
 **日常节奏**: 每天 `/daily` 开工 → 任务写在 `### 项目名` 下 → 需要时 `/decision-log` 或 `/meeting`
 
 ## 配置位置
 | 组件 | 位置 |
 |------|------|
-| 命令定义 | `.claude/commands/work/{daily,project,decision-log,meeting}.md` |
+| 命令定义 | `.claude/skills/work-{daily,project,decision-log,meeting}/SKILL.md` |
 | 日记模板 | `Templates/Work Daily.md` |
 | 项目模板 | `Templates/Work Project.md` |
 | 仪表盘 | `Work/Work Dashboard.md` |

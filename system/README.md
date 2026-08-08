@@ -111,7 +111,7 @@ updated: 2026-03-29
 > [!tip] 新功能 = 先建清单，再写代码
 
 1. **创建 module 文件** — `system/modules/<name>/module.md`，填写 frontmatter（含 `enabled: true`）
-2. **创建命令** — 放在 `.claude/commands/<module>/` 子目录，顶部加模块守卫
+2. **创建命令** — 放在 `.claude/skills/<module>-<command>/SKILL.md`，顶部加模块守卫
 3. **实现功能** — 创建模板、脚本等
 4. **注册** — module 文件的 frontmatter 就是注册信息，registry 自动识别
 5. **更新 CLAUDE.md** — 如果影响 vault 结构，同步更新说明
@@ -140,15 +140,19 @@ system/
     ├── dashboard/module.md
     └── vault-ops/module.md
 
-.claude/commands/           # 命令按模块分子目录
-├── zettelkasten/           # zettel, retro, backlink, inbox-review, project-retro
-├── work/                   # daily, project, decision-log, meeting
-├── learning/               # learning-init, learning-log, learning-review
-├── feeds/                  # ai-digest, github-trending
-├── brownbag/               # brownbag
-├── vault-ops/              # organize, tag-audit, summarize, backup, research
-└── module-toggle.md        # 全局命令（不分模块）
+.claude/skills/             # 命令定义（Skill = Claude Code + Cursor 通用）
+├── zettelkasten-zettel/, zettelkasten-retro/, zettelkasten-backlink/,
+│   zettelkasten-inbox-review/, zettelkasten-project-retro/
+├── work-daily/, work-project/, work-decision-log/, work-meeting/
+├── learning-init/, learning-log/, learning-review/
+├── feeds-ai-digest/, feeds-github-trending/, feeds-engineering-blogs/, feeds-all/
+├── brownbag/
+├── vault-ops-organize/, vault-ops-tag-audit/, vault-ops-summarize/,
+│   vault-ops-backup/, vault-ops-research/
+└── module-toggle/           # 全局命令（不分模块）
 ```
+
+每个命令一个 `<name>/SKILL.md`，扁平命名 `{module}-{command}`（如 `work-daily` → `/work-daily`）。
 
 ## 设计原则
 

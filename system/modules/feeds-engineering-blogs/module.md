@@ -5,7 +5,7 @@ type: feed
 status: active
 enabled: true
 created: 2026-03-31
-updated: 2026-08-03
+updated: 2026-08-08
 depends_on: [dashboard]
 requires:
   cli: [claude]
@@ -23,7 +23,6 @@ scripts:
 hooks: []
 folders: [Feeds/Engineering-Blogs/]
 config_files:
-  - .claude/commands/feeds/engineering-blogs.md
   - .claude/skills/feeds-engineering-blogs/SKILL.md
   - scripts/engineering-blogs/prompts/enrich.md
 tags: [system/module]
@@ -63,7 +62,7 @@ Step 3: archive (>14 天报告归档)
 ### 触发方式
 | 方式 | 说明 |
 |------|------|
-| 手动 | `/feeds/engineering-blogs` slash 命令 |
+| 手动 | `/feeds-engineering-blogs` slash 命令 |
 
 ### 输出
 - `Feeds/Engineering-Blogs/YYYY-MM-DD.md` — 中文版
@@ -85,10 +84,10 @@ AWS Architecture · AWS ML · GitHub Engineering · OpenAI · Google DeepMind ·
 ## Quick Start
 
 1. **无需额外 pip 包** — Python 标准库即可（但 pipeline 需要 `ANTHROPIC_API_KEY`）
-2. **手动运行** → `/feeds/engineering-blogs` — 生成今日工程博客精选（中英文双版）
+2. **手动运行** → `/feeds-engineering-blogs` — 生成今日工程博客精选（中英文双版）
 3. **查看结果** → `Feeds/Engineering-Blogs/` 目录下的 `YYYY-MM-DD.md`（中文）和 `YYYY-MM-DD-en.md`（英文）
 
-**日常节奏**: 需要时手动 `/feeds/engineering-blogs` → Home.md Feeds 标签页查看
+**日常节奏**: 需要时手动 `/feeds-engineering-blogs` → Home.md Feeds 标签页查看
 
 ## 配置位置
 | 组件 | 位置 |
@@ -97,7 +96,7 @@ AWS Architecture · AWS ML · GitHub Engineering · OpenAI · Google DeepMind ·
 | 博客列表 | `scripts/engineering-blogs/feeds.py` |
 | 评分提示词 | `scripts/engineering-blogs/prompts/enrich.md` |
 | 权限 | `.claude/settings.json` (Bash allow list) |
-| slash 命令 | `.claude/commands/feeds/engineering-blogs.md` |
+| slash 命令 | `.claude/skills/feeds-engineering-blogs/SKILL.md` |
 
 ---
 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]

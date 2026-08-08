@@ -1,7 +1,7 @@
 ---
 name: learning-init
 description: >-
-  Initialize a new learning plan under Learning/Plans/<CODE>/. Use for /learning/learning-init.
+  Initialize a new learning plan under Learning/Plans/<CODE>/. Use for /learning-init.
 disable-model-invocation: true
 ---
 

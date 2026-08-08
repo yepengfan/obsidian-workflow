@@ -19,7 +19,7 @@ updated: 2026-03-29
 | [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | 所有 slash 命令的运行时 | `npm install -g @anthropic-ai/claude-code` |
 
 > [!warning] 没有 Claude Code = 没有命令
-> 这个 vault 的所有自动化（`/work/daily`、`/zettelkasten/zettel` 等）都是 Claude Code slash 命令。没装 Claude Code 就只能当普通 Obsidian vault 用。
+> 这个 vault 的所有自动化（`/work-daily`、`/zettelkasten-zettel` 等）都是 Claude Code slash 命令（Agent Skills）。没装 Claude Code 就只能当普通 Obsidian vault 用。
 
 ### Obsidian 插件
 
@@ -78,7 +78,7 @@ pip install aiohttp
 ├── Inbox/               ← 快速捕捉
 ├── Feeds/               ← AI/GitHub 摘要
 ├── Templates/           ← 笔记模板
-└── .claude/commands/    ← slash 命令定义
+└── .claude/skills/      ← slash 命令定义（Agent Skills）
 ```
 
 > [!tip] 入口
@@ -93,8 +93,8 @@ pip install aiohttp
 | 模块 | 做什么 | 命令 |
 |------|--------|------|
 | [[system/modules/dashboard/module\|dashboard]] | Home.md 仪表盘 | （无命令，纯 UI） |
-| [[system/modules/work/module\|work]] | 每日工作记录 | `/work/daily`, `/work/project` |
-| [[system/modules/zettelkasten/module\|zettelkasten]] | 永久知识库 | `/zettelkasten/zettel`, `/zettelkasten/inbox-review` |
+| [[system/modules/work/module\|work]] | 每日工作记录 | `/work-daily`, `/work-project` |
+| [[system/modules/zettelkasten/module\|zettelkasten]] | 永久知识库 | `/zettelkasten-zettel`, `/zettelkasten-inbox-review` |
 
 ### 🟡 按需开启
 
@@ -142,7 +142,7 @@ pip install aiohttp
 | `Work/Projects/` | 删除项目页面（保留空文件夹） |
 | `Zettelkasten/` | 删除所有 zettel 或保留你感兴趣的 |
 | `Inbox/` | 清空 |
-| `Learning/AISA/`, `Learning/SYSD/` | 删除（用 `/learning/learning-init` 创建你自己的） |
+| `Learning/AISA/`, `Learning/SYSD/` | 删除（用 `/learning-init` 创建你自己的） |
 | `Feeds/AI-Daily/`, `Feeds/GitHub-Trending/` | 删除旧报告（新的会自动生成） |
 | `Profile/` | 替换为你自己的 Baseball Card |
 | `WeRead/`, `Matter/`, `Instapaper Notes/` | 删除（除非你也用这些 app 并配置了同步） |
@@ -151,7 +151,7 @@ pip install aiohttp
 - `Home.md`, `Work/Work Dashboard.md`, `Work/Weekly View.md`, `Work/Monthly View.md`
 - `Templates/` 下的所有模板
 - `system/` 下的所有模块定义
-- `.claude/` 下的所有命令定义
+- `.claude/` 下的所有命令定义（skills）
 - `sortspec.md`
 
 ## 第五步：开始使用
@@ -167,13 +167,13 @@ system/modules/<module-name>/module.md → ## Quick Start
 ### 每日工作流（Work + Zettelkasten）
 
 ```
-早上: /work/daily           → 创建今日笔记，延续昨日未完成任务
+早上: /work-daily           → 创建今日笔记，延续昨日未完成任务
 工作中: 在 ### 项目名 下写任务
-需要时: /work/meeting       → 记录会议
-需要时: /work/decision-log  → 记录决策
-下班前: /zettelkasten/zettel → 捕捉今天的想法
-每周: /zettelkasten/inbox-review → 清理 Inbox
-每周: /zettelkasten/retro   → 从工作日记提取经验
+需要时: /work-meeting       → 记录会议
+需要时: /work-decision-log  → 记录决策
+下班前: /zettelkasten-zettel → 捕捉今天的想法
+每周: /zettelkasten-inbox-review → 清理 Inbox
+每周: /zettelkasten-retro   → 从工作日记提取经验
 ```
 
 ## 模块依赖关系
@@ -200,7 +200,7 @@ vault-ops (独立)
 ### Q: Home.md 没有自动打开？
 安装 Homepage 插件，设置 → Homepage → 选择 `Home.md`。
 
-### Q: `/work/daily` 等命令无法使用？
+### Q: `/work-daily` 等命令无法使用？
 确保已安装 Claude Code 并在 vault 目录下运行。命令只在 Claude Code 终端里生效。
 
 ### Q: AI Digest 运行失败？

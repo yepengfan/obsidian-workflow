@@ -2,7 +2,7 @@
 name: feeds-all
 description: >-
   Run all daily feed pipelines via the sequential feed orchestrator. Use for
-  /feeds/all, /feeds-all, or when generating all feeds at once.
+  /feeds-all, or when generating all feeds at once.
 disable-model-invocation: true
 ---
 

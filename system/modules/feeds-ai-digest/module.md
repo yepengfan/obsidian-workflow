@@ -5,7 +5,7 @@ type: feed
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-08-03
+updated: 2026-08-08
 depends_on: [dashboard]
 requires:
   cli: [claude]
@@ -25,7 +25,6 @@ scripts:
 hooks: []
 folders: [Feeds/AI-Daily/]
 config_files:
-  - .claude/commands/feeds/ai-digest.md
   - .claude/skills/feeds-ai-digest/SKILL.md
   - scripts/ai-digest/prompts/score.md
   - scripts/ai-digest/prompts/summarize.md
@@ -85,7 +84,7 @@ Phase 4: archive (>14 天报告归档)
 ## Quick Start
 
 1. **首次安装** → `cd scripts/ai-digest && python -m venv .venv && source .venv/bin/activate && pip install aiohttp`
-2. **手动运行** → `/feeds/ai-digest` — 生成今日 AI 摘要（中英文双版）
+2. **手动运行** → `/feeds-ai-digest` — 生成今日 AI 摘要（中英文双版）
 3. **自动运行** → 配置 Shell Commands 插件，在 Obsidian 启动时执行 `bash scripts/ai-digest/run.sh`
 4. **查看结果** → `Feeds/AI-Daily/` 目录下的 `YYYY-MM-DD.md`（中文）和 `YYYY-MM-DD-en.md`（英文）
 
@@ -99,7 +98,7 @@ Phase 4: archive (>14 天报告归档)
 | 摘要提示词 | `scripts/ai-digest/prompts/summarize.md` |
 | Shell Command | `.obsidian/plugins/obsidian-shellcommands/data.json` |
 | 权限 | `.claude/settings.json` (Bash allow list) |
-| slash 命令 | `.claude/commands/feeds/ai-digest.md` |
+| slash 命令 | `.claude/skills/feeds-ai-digest/SKILL.md` |
 
 ---
 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]

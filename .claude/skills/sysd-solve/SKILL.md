@@ -1,7 +1,7 @@
 ---
 name: sysd-solve
 description: >-
-  System design practice workflow — Delivery Framework guidance, review, pattern card logging. Use for /sysd/solve or system design interviews.
+  System design practice workflow — Delivery Framework guidance, review, pattern card logging. Use for /sysd-solve or system design interviews.
 disable-model-invocation: true
 ---
 
@@ -16,12 +16,12 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 
 ### 无参数自动恢复
 
-如果 `$ARGUMENTS` 为空（用户只输入了 `/sysd/solve`）：
+如果 `$ARGUMENTS` 为空（用户只输入了 `/sysd-solve`）：
 
 1. 扫描 `Learning/Practice/System-Design/Solutions/*/progress.md`，找所有 frontmatter 含 `system-design/wip` tag 的文件
 2. **找到 1 个** → 自动恢复该 session（读取 progress.md，跳到上次中断的 Step 继续）
 3. **找到多个** → 列出所有 WIP session（显示题目名 + 开始日期 + 当前进度），问用户要继续哪个
-4. **找到 0 个** → 回复: "没有进行中的练习。请指定题目，如 `/sysd/solve Design YouTube`"
+4. **找到 0 个** → 回复: "没有进行中的练习。请指定题目，如 `/sysd-solve Design YouTube`"
 
 找到要恢复的 session 后，跳到下方"恢复 WIP session"的逻辑继续。
 

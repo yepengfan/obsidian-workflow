@@ -1,12 +1,17 @@
 ---
 tags: template
 for: Home
-updated: 2026-08-07
+updated: 2026-08-08
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-08-08 — Flattened slash-command hints after commands→skills migration
+> - **Why**: Vault-wide migration retired `.claude/commands/` in favor of `.claude/skills/<name>/SKILL.md` as the single source of truth for both Claude Code and Cursor. Nested paths (`/module/command`) no longer resolve — flat hyphenated names (`/module-command`) are now the only valid invocation form.
+> - **Changed**: 3 hardcoded hint strings in dataviewjs blocks — Engineering Blogs empty-state (`/feeds/engineering-blogs` → `/feeds-engineering-blogs`), System Design tab empty-state (`/sysd/solve` → `/sysd-solve`), Frontend tab empty-state (`/frnt/solve` → `/frnt-solve`).
+> - **Verified**: All 9 dataviewjs blocks in Home.md still pass `node --check` after the edit.
 
 > [!note] 2026-08-07 — 📖 读书 card reads WeRead progress live (not a static snapshot)
 > - **Problem**: The 读书 card's `WeRead N%` badge read `m.weread_progress` — a static frontmatter field in each `Learning/Books/<book>/meta.md`, hand-copied at onboarding. It never tracked the live WeRead plugin data, so the badge silently went stale as the user kept reading (values happened to match only by coincidence). There was no sync mechanism — it was a one-time copy.

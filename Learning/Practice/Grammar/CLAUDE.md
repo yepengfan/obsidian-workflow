@@ -22,7 +22,7 @@
 
 ### Phase 1 — Pick & Study
 
-1. 用户指定 structure（如 `/grammar/practice cleft sentences`）
+1. 用户指定 structure（如 `/grammar-practice cleft sentences`）
 2. 如果 structure card 已存在 → 快速回顾 card 上的 "What it does"
 3. 如果不存在 → 引导用户理解该结构的功能和用法，必要时参考 Hewings 相关 unit
 

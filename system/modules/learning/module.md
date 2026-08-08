@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-08-03
+updated: 2026-08-08
 depends_on: [zettelkasten]
 requires:
   cli: [claude]
@@ -16,11 +16,8 @@ scripts: []
 hooks: []
 folders: [Learning/, Learning/Plans/, Learning/Books/, Learning/Resources/]
 config_files:
-  - .claude/commands/learning/learning-init.md
   - .claude/skills/learning-init/SKILL.md
-  - .claude/commands/learning/learning-log.md
   - .claude/skills/learning-log/SKILL.md
-  - .claude/commands/learning/learning-review.md
   - .claude/skills/learning-review/SKILL.md
 tags: [system/module]
 ---
@@ -64,16 +61,16 @@ Learning/
 
 ## Quick Start
 
-1. **发起学习计划** → `/learning/learning-init <plan-name>` — 创建完整文件夹结构（计划、概念图、周记目录）
-2. **每周记录** → `/learning/learning-log <CODE>` — 记录本周学习进展，自动预填当前阶段目标
-3. **阶段复盘** → `/learning/learning-review <CODE>` — 检查进度对齐、提取 zettel 候选、调整下周方向
+1. **发起学习计划** → `/learning-init <plan-name>` — 创建完整文件夹结构（计划、概念图、周记目录）
+2. **每周记录** → `/learning-log <CODE>` — 记录本周学习进展，自动预填当前阶段目标
+3. **阶段复盘** → `/learning-review <CODE>` — 检查进度对齐、提取 zettel 候选、调整下周方向
 
 **日常节奏**: `/learning-init` 启动计划 → 每周 `/learning-log` 记录 → 每 2-4 周 `/learning-review` 复盘
 
 ## 配置位置
 | 组件 | 位置 |
 |------|------|
-| 命令定义 | `.claude/commands/learning/{learning-init,learning-log,learning-review}.md` |
+| 命令定义 | `.claude/skills/{learning-init,learning-log,learning-review}/SKILL.md` |
 | 计划模板 | `Templates/Learning Plan.md` |
 | 周记模板 | `Templates/Learning Week.md` |
 

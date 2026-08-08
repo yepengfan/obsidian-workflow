@@ -1,7 +1,7 @@
 ---
 name: grammar-practice
 description: >-
-  Advanced English grammar structure practice with Socratic rewriting. Use for /grammar/practice or grammar drills.
+  Advanced English grammar structure practice with Socratic rewriting. Use for /grammar-practice or grammar drills.
 disable-model-invocation: true
 ---
 

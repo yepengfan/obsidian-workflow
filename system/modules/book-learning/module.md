@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-07-15
-updated: 2026-08-07
+updated: 2026-08-08
 depends_on: []
 requires:
   cli: [claude]
@@ -18,8 +18,6 @@ scripts: [Learning/Books/book_init.py, Learning/Books/extract_fulltext.py, Learn
 hooks: []
 folders: [Learning/Books/]
 config_files:
-  - .claude/commands/book/book-init.md
-  - .claude/commands/book/read.md
   - .claude/skills/book-init/SKILL.md
   - .claude/skills/book-read/SKILL.md
   - Learning/Books/CLAUDE.md
@@ -50,9 +48,9 @@ tags: [system/module]
 
 ### 数据流
 
-- **新书 onboarding**: `/book/book-init <书名>` → 确认 archetype/channel → 在 `~/Library/ebooks/` 模糊匹配 epub/pdf → 跑 `book_init.py` 生成骨架（按来源格式自动写入 `epub_path`/`pdf_path`）→ 人工补 archetype/output_target
+- **新书 onboarding**: `/book-init <书名>` → 确认 archetype/channel → 在 `~/Library/ebooks/` 模糊匹配 epub/pdf → 跑 `book_init.py` 生成骨架（按来源格式自动写入 `epub_path`/`pdf_path`）→ 人工补 archetype/output_target
 - **读书循环**: Naked read（WeRead/EPUB）→ Feynman sparring → 人写 + AI review，见 `Learning/Books/CLAUDE.md` "Per-unit workflow"
-- **补全遗留书**: `/book/book-init` 的 Retrofit 流程 → 扫描缺 `epub_path`/`pdf_path` 的 `meta.md` → 模糊匹配补全（多候选时必须询问，不猜）
+- **补全遗留书**: `/book-init` 的 Retrofit 流程 → 扫描缺 `epub_path`/`pdf_path` 的 `meta.md` → 模糊匹配补全（多候选时必须询问，不猜）
 
 ## 已知遗留问题
 
@@ -61,5 +59,5 @@ tags: [system/module]
 ## Quick Start
 
 1. **首次安装** → `cd Learning/Books && python3 -m venv .venv && .venv/bin/pip install ebooklib beautifulsoup4 pdfplumber`（仅在 `.venv/` 不存在时需要，`book_init.py` 依赖这三个包）
-2. `/book/book-init "书名"` — 新书 onboarding（含 epub 定位 + book_init.py + 元数据确认）
-3. `/book/book-init` 说「帮我补一下 epub_path」— 扫描并补全遗留书的 epub_path/pdf_path
+2. `/book-init "书名"` — 新书 onboarding（含 epub 定位 + book_init.py + 元数据确认）
+3. `/book-init` 说「帮我补一下 epub_path」— 扫描并补全遗留书的 epub_path/pdf_path

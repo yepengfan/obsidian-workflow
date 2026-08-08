@@ -1,7 +1,7 @@
 ---
 name: zettelkasten-inbox-review
 description: >-
-  Weekly inbox processing — convert to zettel or archive. Use for /zettelkasten/inbox-review.
+  Weekly inbox processing — convert to zettel or archive. Use for /zettelkasten-inbox-review.
 disable-model-invocation: true
 ---
 

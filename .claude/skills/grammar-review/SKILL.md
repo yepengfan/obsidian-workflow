@@ -1,7 +1,7 @@
 ---
 name: grammar-review
 description: >-
-  Review grammar structure cards by recency and show practice stats. Use for /grammar/review.
+  Review grammar structure cards by recency and show practice stats. Use for /grammar-review.
 disable-model-invocation: true
 ---
 
@@ -41,6 +41,6 @@ Highlight structures not practiced in 14+ days with ⚠️.
 ## Step 4 — Drill-down Options
 
 Offer:
-1. **Quick practice** — pick a structure from the least-recently-practiced list → enter `/grammar/practice <structure>` flow
+1. **Quick practice** — pick a structure from the least-recently-practiced list → enter `/grammar-practice <structure>` flow
 2. **Scenario prompt** — give a random work scenario (e.g. "You need to push back on a deadline in a stakeholder meeting") → user picks a structure and writes a sentence using it
 3. **Priority structures not yet built** — remind about structures from the plan that don't have cards yet (conditionals, nominalisation)

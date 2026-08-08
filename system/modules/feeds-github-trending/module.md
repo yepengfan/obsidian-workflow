@@ -5,7 +5,7 @@ type: feed
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-08-03
+updated: 2026-08-08
 depends_on: [dashboard]
 requires:
   cli: [claude]
@@ -24,7 +24,6 @@ scripts:
 hooks: []
 folders: [Feeds/GitHub-Trending/]
 config_files:
-  - .claude/commands/feeds/github-trending.md
   - .claude/skills/feeds-github-trending/SKILL.md
   - scripts/github-trending/prompts/enrich.md
 tags: [system/module]
@@ -79,7 +78,7 @@ Step 3: archive (>14 天报告归档)
 ## Quick Start
 
 1. **无需额外 pip 包** — Python 标准库即可（但 pipeline 需要 `ANTHROPIC_API_KEY`）
-2. **手动运行** → `/feeds/github-trending` — 生成今日 GitHub 热门仓库摘要（中英文双版）
+2. **手动运行** → `/feeds-github-trending` — 生成今日 GitHub 热门仓库摘要（中英文双版）
 3. **(可选)** → 设置 `GITHUB_TOKEN` 环境变量以提高 API 速率限制
 4. **查看结果** → `Feeds/GitHub-Trending/` 目录下的 `YYYY-MM-DD.md`（中文）和 `YYYY-MM-DD-en.md`（英文）
 
@@ -91,7 +90,7 @@ Step 3: archive (>14 天报告归档)
 | 编排器 | `scripts/github-trending/run.sh` |
 | 分类提示词 | `scripts/github-trending/prompts/enrich.md` |
 | 权限 | `.claude/settings.json` (Bash allow list) |
-| slash 命令 | `.claude/commands/feeds/github-trending.md` |
+| slash 命令 | `.claude/skills/feeds-github-trending/SKILL.md` |
 
 ---
 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]

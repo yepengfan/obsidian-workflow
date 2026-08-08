@@ -1,7 +1,7 @@
 ---
 name: feeds-engineering-blogs
 description: >-
-  Run the engineering blogs digest pipeline. Use for /feeds/engineering-blogs.
+  Run the engineering blogs digest pipeline. Use for /feeds-engineering-blogs.
 disable-model-invocation: true
 ---
 

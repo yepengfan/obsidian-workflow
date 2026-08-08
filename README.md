@@ -16,9 +16,9 @@ The combination produces a two-layer system: a **capture layer** (Inbox) where n
 
 ```
 .claude/
-  commands/       # Claude Code slash commands (/zettel, /retro, /daily, /research, etc.)
+  skills/         # Slash commands as Agent Skills — one definition, used by both
+                  # Claude Code and Cursor (/zettelkasten-zettel, /work-daily, /algo-solve, etc.)
   scripts/        # Auto-sync hooks
-  skills/         # Claude Code skills (Obsidian markdown, Bases, Canvas, etc.)
   settings.json   # Hook configuration
 
 Learning/Books/
@@ -27,8 +27,8 @@ Learning/Books/
   Books Index.md  # Dataview-powered book directory + WeRead Library card view
   .bookrc.example # Config template for local paths
 
-.claude/commands/book/
-  book-init.md    # /book/book-init — onboarding + epub_path/pdf_path retrofit
+.claude/skills/book-init/
+  SKILL.md        # /book-init — onboarding + epub_path/pdf_path retrofit
 
 system/modules/book-learning/
   module.md       # Module manifest (registry.md dashboard entry)
@@ -94,7 +94,7 @@ graph TD
 
 ```mermaid
 graph TD
-    INIT["<b>/book/book-init</b><br/>书名 + archetype + channel"]
+    INIT["<b>/book-init</b><br/>书名 + archetype + channel"]
     INIT -->|locate epub in<br/>~/Library/ebooks/| LOCATE[Resolve source file]
     LOCATE -->|book_init.py| GEN[Generate Structure]
 
@@ -130,7 +130,7 @@ graph TD
     style scaffold fill:none,stroke:#ddd,stroke-dasharray:5
 ```
 
-A structured reading workflow: **onboard (`/book/book-init`) → naked read → Feynman sparring → human writes → AI review → permanent knowledge**. Books stall at read-only until material accumulates — not every chapter produces a written article. See `Learning/Books/CLAUDE.md` for the full per-unit workflow, archetypes, and guardrails.
+A structured reading workflow: **onboard (`/book-init`) → naked read → Feynman sparring → human writes → AI review → permanent knowledge**. Books stall at read-only until material accumulates — not every chapter produces a written article. See `Learning/Books/CLAUDE.md` for the full per-unit workflow, archetypes, and guardrails.
 
 ## Knowledge Flow (Zettelkasten)
 
@@ -213,16 +213,16 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 
 | Command | When to use |
 |---------|------------|
-| `/book/book-init <书名>` | Onboard a new book — locate its EPUB/PDF in `~/Library/ebooks/`, run `book_init.py`, confirm archetype/output target |
-| `/book/book-init` (say "帮我补一下 epub_path") | Retrofit — scan existing books for a missing `epub_path`/`pdf_path` and backfill it |
+| `/book-init <书名>` | Onboard a new book — locate its EPUB/PDF in `~/Library/ebooks/`, run `book_init.py`, confirm archetype/output target |
+| `/book-init` (say "帮我补一下 epub_path") | Retrofit — scan existing books for a missing `epub_path`/`pdf_path` and backfill it |
 
 #### Algorithm
 
 | Command | When to use |
 |---------|------------|
-| `/algo/solve <题号或题名>` | 做题全流程：hints 引导 → 代码审核 → 沉淀 pattern card + log |
+| `/algo-solve <题号或题名>` | 做题全流程：hints 引导 → 代码审核 → 沉淀 pattern card + log |
 
-`/algo/solve` 三阶段：
+`/algo-solve` 三阶段：
 1. **引导解题** — 给 hints + pseudocode，不给代码（说「给我看代码」/「我放弃」才给）
 2. **代码审核** — 贴代码后审正确性、edge cases、复杂度、风格
 3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
@@ -231,9 +231,9 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 
 | Command | When to use |
 |---------|------------|
-| `/sysd/solve <题目>` | 做题全流程：7 步框架引导 → 方案审核 → 沉淀 pattern card + log |
+| `/sysd-solve <题目>` | 做题全流程：7 步框架引导 → 方案审核 → 沉淀 pattern card + log |
 
-`/sysd/solve` 三阶段：
+`/sysd-solve` 三阶段：
 1. **引导设计** — 按 7 步框架引导（Requirements → Estimation → API → Data Model → High-Level → Deep Dive → Trade-offs），不给完整方案（说「给我看方案」/「我放弃」才给）
 2. **方案审核** — 审需求覆盖、可扩展性、trade-offs、单点故障、成本
 3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
@@ -395,7 +395,7 @@ cp Learning/Books/.bookrc.example .bookrc
 #   books_dir = "~/Library/ebooks"
 #   vault_dir = "~/Vaults/Workspace"
 
-# book_init.py's venv (used by /book/book-init)
+# book_init.py's venv (used by /book-init)
 cd Learning/Books && python3 -m venv .venv && .venv/bin/pip install ebooklib beautifulsoup4 pdfplumber
 ```
 
