@@ -66,7 +66,9 @@ scripts/engineering-blogs/history.json
 # ── Claude Code config ──
 .claude/*
 !.claude/commands/
-!.claude/skills/
+# no trailing slash: .claude/skills is a symlink (to .agents/skills), not a
+# real directory, and trailing-slash patterns only un-ignore real directories
+!.claude/skills
 !.claude/CLAUDE.md
 .bookrc
 

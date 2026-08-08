@@ -76,17 +76,17 @@ All vault features are tracked as modules in `system/modules/`. See `system/regi
 
 ### Command Structure
 
-All commands are Agent Skills, living in `.claude/skills/<name>/SKILL.md` — the single source of truth, edited nowhere else. There is no separate `.claude/commands/` tree.
+All commands are Agent Skills, living in `.agents/skills/<name>/SKILL.md` — the single source of truth, edited nowhere else. There is no separate `.claude/commands/` tree.
 
-`.claude/skills/` is the real directory. `.agents/skills` and `.codex/skills` are **symlinks** to it (`.agents/skills -> ../.claude/skills`, `.codex/skills -> ../.claude/skills`), so the same SKILL.md files are natively discovered by all three tools without copies:
+`.agents/skills/` is the real, vendor-neutral directory (the "Agent Skills Open Standard" location). `.claude/skills` and `.codex/skills` are **symlinks** to it (`.claude/skills -> ../.agents/skills`, `.codex/skills -> ../.agents/skills`), so the same SKILL.md files are natively discovered by all tools without copies:
 
 | Tool | Native scan path(s) |
 |------|---------------------|
-| Claude Code | `.claude/skills/` only |
-| Cursor | `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, `.codex/skills/` |
-| Codex CLI | `.codex/skills/`, `.agents/skills/` |
+| Claude Code | `.claude/skills/` only (reads through the symlink) |
+| Cursor | `.agents/skills/`, `.claude/skills/`, `.cursor/skills/`, `.codex/skills/` |
+| Codex CLI | `.agents/skills/`, `.codex/skills/` |
 
-Always edit files under `.claude/skills/` — never edit through the `.agents/skills/` or `.codex/skills/` symlinks (same underlying files, but editing via the real path avoids any tool confusion about symlink resolution).
+Always edit files under `.agents/skills/` — never edit through the `.claude/skills/` or `.codex/skills/` symlinks (same underlying files, but editing via the real path avoids any tool confusion about symlink resolution). When a future client only scans a different path, add another symlink pointing at `.agents/skills/` rather than duplicating files.
 
 Naming is flat and hyphenated: `{module}-{command}` (e.g. `/work-daily`, `/algo-solve`, `/zettelkasten-zettel`). A few short/global commands stay as-is with no module prefix (`/brownbag`, `/module-toggle`).
 
