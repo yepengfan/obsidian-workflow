@@ -5,7 +5,7 @@ type: feed
 status: active
 enabled: true
 created: 2026-05-21
-updated: 2026-08-03
+updated: 2026-08-08
 depends_on: [feeds-ai-digest, feeds-github-trending, feeds-engineering-blogs, dashboard]
 requires:
   python: ">=3.13"
@@ -32,7 +32,6 @@ hooks: []
 folders: []
 config_files:
   - .claude/skills/feeds-all/SKILL.md
-  - .claude/commands/feeds/all.md
   - scripts/feed-orchestrator/requirements.txt
   - .obsidian/plugins/obsidian-shellcommands/data.json
 tags: [system/module]
@@ -100,7 +99,7 @@ Anthropic 模式保持 parallel batch（4/5 篇 per call）。
 | Home.md 按钮 | Daily Feeds ▶ |
 | 命令面板 | Execute: Generate All Feeds |
 | CLI | `bash scripts/feed-orchestrator/load-env.sh` |
-| Cursor | `/feeds-all` or `/feeds/all` |
+| Cursor / Claude Code | `/feeds-all` |
 
 ### 输出
 - `Feeds/AI-Daily/YYYY-MM-DD.md` + `-en.md`

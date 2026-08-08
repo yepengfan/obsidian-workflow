@@ -1,7 +1,7 @@
 ---
 name: learning-review
 description: >-
-  Review learning plan progress and phase status. Use for /learning/learning-review.
+  Review learning plan progress and phase status. Use for /learning-review.
 disable-model-invocation: true
 ---
 

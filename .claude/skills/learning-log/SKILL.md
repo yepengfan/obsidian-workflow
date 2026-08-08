@@ -1,7 +1,7 @@
 ---
 name: learning-log
 description: >-
-  Write or update a weekly learning log for a plan. Use for /learning/learning-log.
+  Write or update a weekly learning log for a plan. Use for /learning-log.
 disable-model-invocation: true
 ---
 

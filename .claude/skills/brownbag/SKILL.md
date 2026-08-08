@@ -1,7 +1,7 @@
 ---
 name: brownbag
 description: >-
-  Create a brownbag session plan from Templates/Brownbag Session.md. Use when planning a brownbag talk or /brownbag/brownbag.
+  Create a brownbag session plan from Templates/Brownbag Session.md. Use when planning a brownbag talk or /brownbag.
 disable-model-invocation: true
 ---
 

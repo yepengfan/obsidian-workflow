@@ -119,7 +119,7 @@ Learning/Practice/System-Design/
 
 ### Excalidraw
 - 命名: `<题目简称>.excalidraw.md`（如 `Bitly.excalidraw.md`）
-- `/sysd/solve` 启动时自动创建，预填 Delivery Framework 6 步标题
+- `/sysd-solve` 启动时自动创建，预填 Delivery Framework 6 步标题
 - progress.md 通过 `![[...]]` 嵌入引用
 - 使用未压缩 JSON 格式（`json` 代码块），Excalidraw 插件打开后自动压缩
 

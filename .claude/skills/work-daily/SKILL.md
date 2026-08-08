@@ -1,7 +1,7 @@
 ---
 name: work-daily
 description: >-
-  Create or update today's work daily note with rollover tasks. Use for /work/daily.
+  Create or update today's work daily note with rollover tasks. Use for /work-daily.
 disable-model-invocation: true
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: work-meeting
 description: >-
-  Create a meeting note for a work project. Use for /work/meeting.
+  Create a meeting note for a work project. Use for /work-meeting.
 disable-model-invocation: true
 ---
 

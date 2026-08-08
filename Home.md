@@ -1183,7 +1183,7 @@ const { panels: fPanels } = createTabGroup(dv, [
     }
   } else {
     p.createEl("div", {
-      text: "No engineering blogs report for today yet. Run /feeds/engineering-blogs in Claude Code to generate.",
+      text: "No engineering blogs report for today yet. Run /feeds-engineering-blogs in Claude Code to generate.",
       attr: { style: "font-size:0.85em;color:var(--text-muted);padding:12px;border-radius:8px;background:var(--background-secondary);border:1px dashed var(--background-modifier-border);" }
     });
   }
@@ -1820,7 +1820,7 @@ const { panels: lPanels } = createTabGroup(dv, [
   }
 
   if (totalPatterns === 0) {
-    p.createEl("div", { text: "还没有 patterns — 用 /sysd/solve 开始练题！", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
+    p.createEl("div", { text: "还没有 patterns — 用 /sysd-solve 开始练题！", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
   }
 
   // Link to full dashboard
@@ -1899,7 +1899,7 @@ const { panels: lPanels } = createTabGroup(dv, [
   }
 
   if (totalPatterns === 0 && recentLogs.length === 0) {
-    p.createEl("div", { text: "还没有练习记录 — 用 /frnt/solve 开始做题！", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
+    p.createEl("div", { text: "还没有练习记录 — 用 /frnt-solve 开始做题！", attr: { style: "font-size:0.82em;color:var(--text-muted);padding:6px 0;" } });
   }
 
   // Link to full dashboard

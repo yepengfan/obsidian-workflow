@@ -73,14 +73,14 @@ LIMIT 10
 ## 🎯 Workflow
 
 ```
-练习 → /grammar/practice cleft sentences
+练习 → /grammar-practice cleft sentences
          ↓
     Phase 1: 选结构 + 回顾功能
     Phase 2: 用自己的句子重写（Socratic 引导）
     Phase 3: 沉淀 structure card + examples
     Phase 4: 写 log
          ↓
-复习 → /grammar/review
+复习 → /grammar-review
          ↓
     挑最久未练的 structure 再练 → 循环
 ```

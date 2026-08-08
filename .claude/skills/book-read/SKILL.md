@@ -3,7 +3,7 @@ name: book-read
 description: >-
   Resume a reading session — pick an in-progress book, choose a chapter, and enter
   the Feynman/review workflow. Use when the user wants to study a book they're
-  reading, do a Feynman check, or says /book/read or /book-read.
+  reading, do a Feynman check, or says /book-read.
 disable-model-invocation: true
 ---
 

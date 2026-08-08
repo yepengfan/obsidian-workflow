@@ -1,7 +1,7 @@
 ---
 name: feeds-ai-digest
 description: >-
-  Run the AI daily digest RSS pipeline (fetch, score, summarize, write reports). Use for /feeds/ai-digest or AI news digest generation.
+  Run the AI daily digest RSS pipeline (fetch, score, summarize, write reports). Use for /feeds-ai-digest or AI news digest generation.
 disable-model-invocation: true
 ---
 

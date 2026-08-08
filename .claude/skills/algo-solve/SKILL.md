@@ -3,7 +3,7 @@ name: algo-solve
 description: >-
   Interactive LeetCode solving workflow — Socratic hints (4 layers), code
   review, pattern card and daily log沉淀. Use when the user wants to solve a
-  LeetCode problem, practice algorithms, or says /algo/solve or /algo-solve.
+  LeetCode problem, practice algorithms, or says /algo-solve.
 disable-model-invocation: true
 ---
 

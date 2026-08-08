@@ -1,7 +1,7 @@
 ---
 name: work-decision-log
 description: >-
-  Record a structured decision log entry for a work project. Use for /work/decision-log.
+  Record a structured decision log entry for a work project. Use for /work-decision-log.
 disable-model-invocation: true
 ---
 

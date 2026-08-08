@@ -1,7 +1,7 @@
 ---
 name: zettelkasten-backlink
 description: >-
-  Add or audit backlinks between zettel notes. Use for /zettelkasten/backlink.
+  Add or audit backlinks between zettel notes. Use for /zettelkasten-backlink.
 disable-model-invocation: true
 ---
 

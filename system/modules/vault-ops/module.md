@@ -5,7 +5,7 @@ type: utility
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-08-03
+updated: 2026-08-08
 depends_on: []
 requires:
   cli: [claude, git]
@@ -15,17 +15,11 @@ scripts: []
 hooks: []
 folders: []
 config_files:
-  - .claude/commands/vault-ops/organize.md
   - .claude/skills/vault-ops-organize/SKILL.md
-  - .claude/commands/vault-ops/tag-audit.md
   - .claude/skills/vault-ops-tag-audit/SKILL.md
-  - .claude/commands/vault-ops/summarize.md
   - .claude/skills/vault-ops-summarize/SKILL.md
-  - .claude/commands/vault-ops/backup.md
   - .claude/skills/vault-ops-backup/SKILL.md
-  - .claude/commands/vault-ops/research.md
   - .claude/skills/vault-ops-research/SKILL.md
-  - .claude/commands/module-toggle.md
   - .claude/skills/module-toggle/SKILL.md
 tags: [system/module]
 ---
@@ -48,11 +42,11 @@ Vault 级别的维护和辅助工具集合。不属于特定领域，为整个 v
 ## Quick Start
 
 按需使用，无需日常流程：
-- **整理检查** → `/vault-ops/organize` — 扫描文件组织问题（错位笔记、孤儿文件、缺失链接）
-- **标签审计** → `/vault-ops/tag-audit` — 清理标签命名、统一 taxonomy
-- **笔记摘要** → `/vault-ops/summarize <note|folder>` — 快速了解笔记/文件夹内容概览
-- **备份** → `/vault-ops/backup` — Git 同步 + 推送
-- **网络调研** → `/vault-ops/research <topic>` — 搜索 → 结构化笔记存入 Inbox/
+- **整理检查** → `/vault-ops-organize` — 扫描文件组织问题（错位笔记、孤儿文件、缺失链接）
+- **标签审计** → `/vault-ops-tag-audit` — 清理标签命名、统一 taxonomy
+- **笔记摘要** → `/vault-ops-summarize <note|folder>` — 快速了解笔记/文件夹内容概览
+- **备份** → `/vault-ops-backup` — Git 同步 + 推送
+- **网络调研** → `/vault-ops-research <topic>` — 搜索 → 结构化笔记存入 Inbox/
 
 ### 核心原则
 - `/organize` 和 `/tag-audit` 只报告，不自动修改（需确认）
@@ -63,7 +57,7 @@ Vault 级别的维护和辅助工具集合。不属于特定领域，为整个 v
 ## 配置位置
 | 组件 | 位置 |
 |------|------|
-| 命令定义 | `.claude/commands/vault-ops/{organize,tag-audit,summarize,backup,research}.md` |
+| 命令定义 | `.claude/skills/vault-ops-{organize,tag-audit,summarize,backup,research}/SKILL.md` |
 | 备份脚本 | `~/obsidian-config/sync.sh`（vault 外部） |
 
 ---

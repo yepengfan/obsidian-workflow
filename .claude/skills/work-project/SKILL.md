@@ -1,7 +1,7 @@
 ---
 name: work-project
 description: >-
-  Create or update a work project page from template. Use for /work/project.
+  Create or update a work project page from template. Use for /work-project.
 disable-model-invocation: true
 ---
 

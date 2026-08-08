@@ -1,7 +1,7 @@
 ---
 name: zettelkasten-project-retro
 description: >-
-  Run a project retrospective in the zettelkasten workflow. Use for /zettelkasten/project-retro.
+  Run a project retrospective in the zettelkasten workflow. Use for /zettelkasten-project-retro.
 disable-model-invocation: true
 ---
 

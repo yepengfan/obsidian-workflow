@@ -1,7 +1,7 @@
 ---
 name: book-init
 description: >-
-  Onboard a new book into Learning/Books/ — locate EPUB/PDF, run book_init.py, confirm metadata. Use when adding a book or /book/book-init.
+  Onboard a new book into Learning/Books/ — locate EPUB/PDF, run book_init.py, confirm metadata. Use when adding a book or /book-init.
 disable-model-invocation: true
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: vault-ops-organize
 description: >-
-  Organize vault files and folders. Use for /vault-ops/organize.
+  Organize vault files and folders. Use for /vault-ops-organize.
 disable-model-invocation: true
 ---
 

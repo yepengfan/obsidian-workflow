@@ -1,7 +1,7 @@
 ---
 name: vault-ops-backup
 description: >-
-  Backup the Obsidian vault. Use for /vault-ops/backup.
+  Backup the Obsidian vault. Use for /vault-ops-backup.
 disable-model-invocation: true
 ---
 

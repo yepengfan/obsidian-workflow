@@ -109,9 +109,9 @@ no separate `_capture/` folder — all raw reading reactions live in WeRead.
 
 ## New book onboarding
 
-*Triggered when user says "我要开始读 XXX", or explicitly via `/book/book-init <书名>`*
+*Triggered when user says "我要开始读 XXX", or explicitly via `/book-init <书名>`*
 
-Run via **`/book/book-init`** (see `.claude/commands/book/book-init.md` for the full step-by-step). Summary:
+Run via **`/book-init`** (see `.claude/skills/book-init/SKILL.md` for the full step-by-step). Summary:
 
 ```
 1. Confirm: book title, author, archetype, reading channel (WeRead / EPUB / PDF)
@@ -151,7 +151,7 @@ Run via **`/book/book-init`** (see `.claude/commands/book/book-init.md` for the 
 
 **Retrofitting older books**: books onboarded before this automation may be missing
 `epub_path`/`pdf_path` even though a matching file exists in `~/Library/ebooks/`. Trigger
-`/book/book-init` with "帮我补一下 epub_path" to scan and backfill — always confirm
+`/book-init` with "帮我补一下 epub_path" to scan and backfill — always confirm
 before writing, and never guess between multiple candidate files (e.g. different
 editions or an English/translated pair).
 

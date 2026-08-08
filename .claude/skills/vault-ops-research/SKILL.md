@@ -1,7 +1,7 @@
 ---
 name: vault-ops-research
 description: >-
-  Research a topic and capture findings in the vault. Use for /vault-ops/research.
+  Research a topic and capture findings in the vault. Use for /vault-ops-research.
 disable-model-invocation: true
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: frnt-solve
 description: >-
-  Frontend challenge workflow — sandbox setup, guided implementation, code review, pattern card logging. Use for GreatFrontEnd-style challenges or /frnt/solve.
+  Frontend challenge workflow — sandbox setup, guided implementation, code review, pattern card logging. Use for GreatFrontEnd-style challenges or /frnt-solve.
 disable-model-invocation: true
 ---
 
