@@ -140,7 +140,8 @@ system/
     ├── dashboard/module.md
     └── vault-ops/module.md
 
-.claude/skills/             # 命令定义（Skill = Claude Code + Cursor 通用）
+.claude/skills/             # 命令定义（唯一实体目录，Claude Code + Cursor 原生读取）
+                            # .agents/skills、.codex/skills 是指向此目录的符号链接，供 Codex CLI（及 Cursor 兼容路径）原生发现，勿在这两处直接编辑
 ├── zettelkasten-zettel/, zettelkasten-retro/, zettelkasten-backlink/,
 │   zettelkasten-inbox-review/, zettelkasten-project-retro/
 ├── work-daily/, work-project/, work-decision-log/, work-meeting/

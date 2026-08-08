@@ -76,7 +76,17 @@ All vault features are tracked as modules in `system/modules/`. See `system/regi
 
 ### Command Structure
 
-All commands are Agent Skills, living in `.claude/skills/<name>/SKILL.md` — one shared definition used by both Claude Code and Cursor (both merge Commands and Skills into the same `/slash-command` interface). There is no separate `.claude/commands/` tree; skills are the single source of truth.
+All commands are Agent Skills, living in `.claude/skills/<name>/SKILL.md` — the single source of truth, edited nowhere else. There is no separate `.claude/commands/` tree.
+
+`.claude/skills/` is the real directory. `.agents/skills` and `.codex/skills` are **symlinks** to it (`.agents/skills -> ../.claude/skills`, `.codex/skills -> ../.claude/skills`), so the same SKILL.md files are natively discovered by all three tools without copies:
+
+| Tool | Native scan path(s) |
+|------|---------------------|
+| Claude Code | `.claude/skills/` only |
+| Cursor | `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, `.codex/skills/` |
+| Codex CLI | `.codex/skills/`, `.agents/skills/` |
+
+Always edit files under `.claude/skills/` — never edit through the `.agents/skills/` or `.codex/skills/` symlinks (same underlying files, but editing via the real path avoids any tool confusion about symlink resolution).
 
 Naming is flat and hyphenated: `{module}-{command}` (e.g. `/work-daily`, `/algo-solve`, `/zettelkasten-zettel`). A few short/global commands stay as-is with no module prefix (`/brownbag`, `/module-toggle`).
 
