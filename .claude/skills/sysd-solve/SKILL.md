@@ -14,11 +14,13 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 
 ## Phase 0 — 初始化 Solution 文件夹
 
+> [!WARNING] `Solutions/` 内容被 `.gitignore` 排除（除 `CLAUDE.md`/`00_index.md`）。扫描 WIP session 时**必须用 shell `ls` 枚举文件夹 + `Read` 检查 `progress.md` frontmatter**，禁止用 `Glob`/`Grep` — 它们遵循 `.gitignore`，会静默返回 0 结果，导致误判"没有进行中的练习"。
+
 ### 无参数自动恢复
 
 如果 `$ARGUMENTS` 为空（用户只输入了 `/sysd-solve`）：
 
-1. 扫描 `Learning/Practice/System-Design/Solutions/*/progress.md`，找所有 frontmatter 含 `system-design/wip` tag 的文件
+1. 用 shell `ls Learning/Practice/System-Design/Solutions/` 枚举所有子文件夹，逐个 `Read` 其 `progress.md`，检查 frontmatter 是否含 `system-design/wip` tag（见上方 WARNING，不要用 Glob/Grep）
 2. **找到 1 个** → 自动恢复该 session（读取 progress.md，跳到上次中断的 Step 继续）
 3. **找到多个** → 列出所有 WIP session（显示题目名 + 开始日期 + 当前进度），问用户要继续哪个
 4. **找到 0 个** → 回复: "没有进行中的练习。请指定题目，如 `/sysd-solve Design YouTube`"
@@ -30,7 +32,7 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 ### 有参数时
 
 1. 从 `$ARGUMENTS` 提取题目简称（如 "Design YouTube" → "YouTube", "Bitly" → "Bitly"）
-2. 扫描 `Learning/Practice/System-Design/Solutions/` 下所有 `<题目>-*` 文件夹:
+2. 用 shell `ls Learning/Practice/System-Design/Solutions/` 枚举所有 `<题目>-*` 文件夹（不要用 Glob/Grep，见上方 WARNING）:
    - **找到带 `system-design/wip` tag 的 progress.md** → 读取该 progress.md，恢复到上次中断的位置继续（跳到对应 Step）
    - **找到该题目的文件夹但都无 wip tag** → 告诉用户这题已练习过 N 次，问是否重新练习
    - **不存在** → 创建 Solution 文件夹 + 文件（见下方）
