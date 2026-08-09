@@ -112,10 +112,22 @@ Learning/Practice/System-Design/
 - 练习完成（Phase 3 沉淀结束）后文件夹保留不动，作为学习记录
 
 ### progress.md
-- frontmatter 必须有 `topic`, `started`, `tags: [system-design/wip]`
+- frontmatter 必须有 `topic`, `started`，以及下方生命周期中的一个状态 tag
 - 包含: Progress 表（Delivery Framework 每步状态）、Pending Questions、Key Learnings、下次继续步骤
-- Home.md SD tab 自动检测带 `system-design/wip` tag 的 `progress.md` 并显示 "Continue →" 入口
-- Phase 3 完成后移除 `system-design/wip` tag（文件保留）
+- Home.md SD tab 自动检测 `system-design/wip` 和 `system-design/planned`：WIP 显示 "Continue →"，Planned 显示在待练队列
+- Phase 3 完成后将状态 tag 替换为 `system-design/done`（文件保留）
+
+#### 状态生命周期
+
+```text
+system-design/planned → system-design/wip → system-design/done
+```
+
+- `planned`：学习计划已预建 Solution 骨架，但尚未开始；六步保持全 ⬜。
+- `wip`：当前正在练习。普通 `/sysd-solve <题目>` 新建 session 时直接使用此状态。
+- `done`：设计、审核和 Phase 3 沉淀均已完成。
+- 无参数 `/sysd-solve` 只自动恢复真正的 WIP，不列出 Planned。
+- 指定一个 Planned 题目时，先将其状态替换为 WIP，再从 `progress.md` 记录的下一步开始。
 
 ### Excalidraw
 - 命名: `<题目简称>.excalidraw.md`（如 `Bitly.excalidraw.md`）

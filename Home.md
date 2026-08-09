@@ -1236,6 +1236,13 @@ dv.el("div", "📚 学习计划", {
   attr: { style: "font-size:0.92em;font-weight:700;margin-bottom:6px;color:var(--text-normal);" }
 });
 
+function roadmapTopicMatches(item, topic) {
+  const normalizedTopic = String(topic ?? "").toLowerCase();
+  return Array.from(item?.aliases ?? []).some(alias =>
+    normalizedTopic.includes(String(alias).toLowerCase())
+  );
+}
+
 {
   const container = dv.el("div", "");
 
@@ -1275,6 +1282,31 @@ dv.el("div", "📚 学习计划", {
         ? Math.floor((new Date() - p.started.toJSDate()) / (7 * 24 * 60 * 60 * 1000)) + 1
         : null;
       const currentPhase = p.phase || 1;
+      const isPracticePlan = p.tracking === "system-design-practice";
+      const roadmap = isPracticePlan ? Array.from(p.roadmap ?? []) : [];
+      const practiceSessions = isPracticePlan
+        ? dv.pages('"Learning/Practice/System-Design/Solutions"').where(page => page.topic).array()
+        : [];
+
+      function practiceTags(page) {
+        const values = [...(page.file?.tags ?? []), ...(page.tags ?? [])];
+        return new Set(values.map(value => String(value).replace(/^#/, "")));
+      }
+
+      function practiceMatches(item) {
+        return practiceSessions.filter(page => roadmapTopicMatches(item, page.topic));
+      }
+
+      function practiceState(item) {
+        const matches = practiceMatches(item);
+        const done = matches.some(page => practiceTags(page).has("system-design/done"));
+        const wip = matches.some(page => practiceTags(page).has("system-design/wip"));
+        return { done, wip, matches };
+      }
+
+      const practiceStates = roadmap.map(practiceState);
+      const practiceDone = practiceStates.filter(state => state.done).length;
+      const practiceWip = practiceStates.filter(state => state.wip).length;
 
       // Card
       const card = container.createEl("div", {
@@ -1293,7 +1325,12 @@ dv.el("div", "📚 学习计划", {
         text: `Phase ${currentPhase}`,
         attr: { style: "font-size:0.7em;padding:1px 7px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
       });
-      if (weeksElapsed !== null) {
+      if (isPracticePlan) {
+        row1.createEl("span", {
+          text: `${practiceDone}/${roadmap.length}${practiceWip ? ` · ${practiceWip} active` : ""}`,
+          attr: { style: "font-size:0.7em;color:var(--text-faint);white-space:nowrap;" }
+        });
+      } else if (weeksElapsed !== null) {
         row1.createEl("span", {
           text: `Wk ${weeksElapsed}`,
           attr: { style: "font-size:0.7em;color:var(--text-faint);white-space:nowrap;" }
@@ -1308,20 +1345,39 @@ dv.el("div", "📚 学习计划", {
         });
       }
 
-      // Activity squares (6 weeks on mobile, 10 on desktop)
+      // Weekly activity for time-based plans; roadmap completion for practice plans.
       const dotSize = isMobile ? "8px" : "10px";
       const dotGap = isMobile ? "2px" : "3px";
       const dotsWrap = card.createEl("div", { attr: { style: `display:flex;align-items:center;gap:${dotGap};padding:0 12px;flex-shrink:0;` } });
-      for (const w of [...WEEKS].reverse()) {
-        if (logMap[w]) {
-          dotsWrap.createEl("a", {
-            attr: { class: "internal-link", "data-href": logMap[w].file.path, title: w, style: `width:${dotSize};height:${dotSize};border-radius:2px;background:var(--color-accent);display:inline-block;opacity:0.85;` }
-          });
-        } else {
-          const isCurrent = w === currentWeek;
-          dotsWrap.createEl("div", {
-            attr: { title: w, style: `width:${dotSize};height:${dotSize};border-radius:2px;${isCurrent ? "border:1.5px dashed var(--color-accent);opacity:0.7;" : "background:var(--background-modifier-border);opacity:0.5;"}` }
-          });
+      if (isPracticePlan) {
+        for (let i = 0; i < roadmap.length; i++) {
+          const item = roadmap[i];
+          const state = practiceStates[i];
+          const latest = [...state.matches].sort((a, b) => String(b.started ?? "").localeCompare(String(a.started ?? "")))[0];
+          const style = state.done
+            ? `width:${dotSize};height:${dotSize};border-radius:2px;background:var(--color-accent);display:inline-block;opacity:0.85;`
+            : state.wip
+              ? `width:${dotSize};height:${dotSize};border-radius:2px;border:1.5px dashed var(--color-accent);display:inline-block;opacity:0.85;`
+              : `width:${dotSize};height:${dotSize};border-radius:2px;background:var(--background-modifier-border);display:inline-block;opacity:0.5;`;
+          const attrs = { title: `${item.title}: ${state.done ? "done" : state.wip ? "in progress" : "not started"}`, style };
+          if (latest) {
+            dotsWrap.createEl("a", { attr: { ...attrs, class: "internal-link", "data-href": latest.file.path } });
+          } else {
+            dotsWrap.createEl("div", { attr: attrs });
+          }
+        }
+      } else {
+        for (const w of [...WEEKS].reverse()) {
+          if (logMap[w]) {
+            dotsWrap.createEl("a", {
+              attr: { class: "internal-link", "data-href": logMap[w].file.path, title: w, style: `width:${dotSize};height:${dotSize};border-radius:2px;background:var(--color-accent);display:inline-block;opacity:0.85;` }
+            });
+          } else {
+            const isCurrent = w === currentWeek;
+            dotsWrap.createEl("div", {
+              attr: { title: w, style: `width:${dotSize};height:${dotSize};border-radius:2px;${isCurrent ? "border:1.5px dashed var(--color-accent);opacity:0.7;" : "background:var(--background-modifier-border);opacity:0.5;"}` }
+            });
+          }
         }
       }
     }
@@ -1682,26 +1738,49 @@ const { panels: lPanels } = createTabGroup(dv, [
 {
   const p = lPanels["sd"];
 
-  // WIP detection — show in-progress practice sessions
+  // Practice queue — WIP first, then planned sessions in SYSD roadmap order.
   {
-    const wipFiles = app.vault.getMarkdownFiles().filter(f => {
-      if (!f.path.startsWith("Learning/Practice/System-Design/Solutions/") || f.name !== "progress.md") return false;
-      const cache = app.metadataCache.getFileCache(f);
+    const sessionFiles = app.vault.getMarkdownFiles().filter(f =>
+      f.path.startsWith("Learning/Practice/System-Design/Solutions/") && f.name === "progress.md"
+    );
+    const hasStatus = (file, status) => {
+      const cache = app.metadataCache.getFileCache(file);
       const tags = cache?.frontmatter?.tags || [];
-      return tags.includes("system-design/wip");
-    });
+      return tags.includes(`system-design/${status}`);
+    };
+    const wipFiles = sessionFiles.filter(file => hasStatus(file, "wip"));
+    const plannedFiles = sessionFiles.filter(file => hasStatus(file, "planned"));
+    const sysdPlan = dv.page("Learning/Plans/SYSD/00_plan");
+    const roadmap = Array.from(sysdPlan?.roadmap ?? []);
+
+    const sessionInfo = file => {
+      const parts = file.path.split("/");
+      const folder = parts[parts.length - 2] || "Unknown";
+      const folderName = folder.replace(/-\d{4}-\d{2}-\d{2}$/, "") || folder;
+      const cache = app.metadataCache.getFileCache(file);
+      const fm = cache?.frontmatter || {};
+      const topic = String(fm.topic || folderName);
+      const roadmapIndex = roadmap.findIndex(item => roadmapTopicMatches(item, topic));
+      const item = roadmapIndex >= 0 ? roadmap[roadmapIndex] : null;
+      return {
+        file,
+        folder,
+        folderName,
+        title: item?.title ? String(item.title) : folderName.replace(/-/g, " "),
+        focus: item?.focus ? String(item.focus) : "",
+        started: fm.started || "",
+        roadmapIndex: roadmapIndex >= 0 ? roadmapIndex : Number.MAX_SAFE_INTEGER,
+      };
+    };
+
     if (wipFiles.length > 0) {
       const wipWrap = p.createEl("div", { attr: { style: "margin-bottom:10px;" } });
+      wipWrap.createEl("div", { text: `🔄 进行中 · ${wipFiles.length}`, attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:4px;color:var(--text-muted);" } });
       for (const wf of wipFiles) {
-        const parts = wf.path.split("/");
-        const topic = parts[parts.length - 2] || "Unknown";
-        const topicName = topic.replace(/-\d{4}-\d{2}-\d{2}$/, "") || topic;
-        const cache = app.metadataCache.getFileCache(wf);
-        const fm = cache?.frontmatter || {};
-        const started = fm.started || "";
+        const infoData = sessionInfo(wf);
 
-        const newPath = `Learning/Practice/System-Design/Solutions/${topic}/${topicName}.excalidraw.md`;
-        const oldPath = `Learning/Practice/System-Design/Solutions/${topic}/${topic}.excalidraw.md`;
+        const newPath = `Learning/Practice/System-Design/Solutions/${infoData.folder}/${infoData.folderName}.excalidraw.md`;
+        const oldPath = `Learning/Practice/System-Design/Solutions/${infoData.folder}/${infoData.folder}.excalidraw.md`;
         const excalidrawPath = app.vault.getAbstractFileByPath(newPath) ? newPath : oldPath;
         const card = wipWrap.createEl("div", {
           attr: { style: "display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--background-secondary);border-radius:8px;border-left:3px solid var(--color-orange);margin-bottom:6px;cursor:pointer;" }
@@ -1710,11 +1789,34 @@ const { panels: lPanels } = createTabGroup(dv, [
 
         card.createEl("span", { text: "🔄", attr: { style: "font-size:1.1em;flex-shrink:0;" } });
         const info = card.createEl("div", { attr: { style: "flex:1;min-width:0;" } });
-        info.createEl("div", { text: topic, attr: { style: "font-size:0.85em;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
-        if (started) {
-          info.createEl("div", { text: `Started ${started}`, attr: { style: "font-size:0.65em;color:var(--text-faint);margin-top:1px;" } });
+        info.createEl("div", { text: infoData.title, attr: { style: "font-size:0.85em;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+        const details = [infoData.focus, infoData.started ? `Started ${infoData.started}` : ""].filter(Boolean).join(" · ");
+        if (details) {
+          info.createEl("div", { text: details, attr: { style: "font-size:0.65em;color:var(--text-faint);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
         }
         card.createEl("span", { text: "Continue →", attr: { style: "font-size:0.72em;color:var(--color-orange);white-space:nowrap;flex-shrink:0;" } });
+      }
+    }
+
+    if (plannedFiles.length > 0) {
+      const plannedWrap = p.createEl("div", { attr: { style: "margin-bottom:10px;" } });
+      plannedWrap.createEl("div", { text: `📋 Planned · ${plannedFiles.length}`, attr: { style: "font-size:0.8em;font-weight:600;margin-bottom:4px;color:var(--text-muted);" } });
+      const plannedGrid = plannedWrap.createEl("div", {
+        attr: { style: `display:grid;grid-template-columns:${isMobile ? "1fr" : "repeat(2,minmax(0,1fr))"};gap:5px;` }
+      });
+      const plannedItems = plannedFiles.map(sessionInfo).sort((a, b) => a.roadmapIndex - b.roadmapIndex);
+      for (const item of plannedItems) {
+        const card = plannedGrid.createEl("div", {
+          attr: { style: "display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--background-secondary);border-radius:7px;border-left:3px solid var(--color-accent);cursor:pointer;min-width:0;" }
+        });
+        card.addEventListener("click", () => app.workspace.openLinkText(item.file.path, "", false));
+        card.createEl("span", { text: "◻", attr: { style: "font-size:0.9em;color:var(--color-accent);flex-shrink:0;" } });
+        const info = card.createEl("div", { attr: { style: "flex:1;min-width:0;" } });
+        info.createEl("div", { text: item.title, attr: { style: "font-size:0.76em;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+        if (item.focus) {
+          info.createEl("div", { text: item.focus, attr: { style: "font-size:0.62em;color:var(--text-faint);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" } });
+        }
+        card.createEl("span", { text: "Planned", attr: { style: "font-size:0.6em;color:var(--text-faint);white-space:nowrap;flex-shrink:0;" } });
       }
     }
   }

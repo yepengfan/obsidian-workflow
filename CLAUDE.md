@@ -233,6 +233,7 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
 
 | Path | Purpose |
 |------|---------|
+| `Learning/Practice/System-Design/Solutions/` | 每题一个练习 session，状态生命周期为 `planned → wip → done` |
 | `Learning/Practice/System-Design/Patterns/` | Pattern card（一个 pattern 一个 .md，含设计框架 + 关联题目） |
 | `Learning/Practice/System-Design/Log/` | 每次练习记录（`YYYY-MM-DD.md`） |
 | `Learning/Practice/System-Design/Courses/` | 课程笔记（Hello Interview 等） |
