@@ -34,7 +34,8 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 1. 从 `$ARGUMENTS` 提取题目简称（如 "Design YouTube" → "YouTube", "Bitly" → "Bitly"）
 2. 用 shell `ls Learning/Practice/System-Design/Solutions/` 枚举所有 `<题目>-*` 文件夹（不要用 Glob/Grep，见上方 WARNING）:
    - **找到带 `system-design/wip` tag 的 progress.md** → 读取该 progress.md，恢复到上次中断的位置继续（跳到对应 Step）
-   - **找到该题目的文件夹但都无 wip tag** → 告诉用户这题已练习过 N 次，问是否重新练习
+   - **找到带 `system-design/planned` tag 的 progress.md** → 将 tag 改为 `system-design/wip`，读取该 progress.md，从记录的“下次继续”开始（全空时从 Step 1 开始）
+   - **找到该题目的文件夹但都无 wip/planned tag** → 告诉用户这题已练习过 N 次，问是否重新练习
    - **不存在** → 创建 Solution 文件夹 + 文件（见下方）
 
 3. **创建 Solution 文件夹**:
@@ -53,6 +54,15 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 
 4. 告诉用户: "已创建 Solution 文件夹，打开 Excalidraw 开始画图" + 给出 wikilink
 
+### 预创建路线题
+
+学习计划可以提前创建尚未开始的 Solution 骨架。此类 `progress.md` 使用
+`tags: [system-design/planned]`，六步保持全 ⬜：
+
+- `planned` 不属于进行中 session，无参数 `/sysd-solve` 不应列出或自动恢复它。
+- 用户指定该题时，按上方“有参数时”规则先切换为 `system-design/wip`，再开始引导。
+- Dashboard 中 `planned` 显示为未开始，但可通过已存在的 progress 文件进入题目。
+
 ## 自动 Checkpoint（贯穿 Phase 1-2 全程）
 
 在引导过程中，当以下**任一条件满足**时，自动更新 `progress.md`（Read → 修改 → Write 覆盖）：
@@ -70,7 +80,7 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 
 1. 用户提供了题目名称或描述
 2. 确认题目范围，明确关键约束
-3. 按 7 步框架引导，**不直接给完整设计**
+3. 按 6 步框架引导，**不直接给完整设计**
 4. 用 targeted questions 引导用户思考每一步
 
 **引导原则:**
@@ -133,3 +143,7 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
    - 不存在 → 用 `Templates/SD Log.md` 创建，填充第一条
    - 已存在 → 追加新 `##` section，更新 frontmatter `problems_solved` 数组
    - 包含: pattern wikilink、difficulty、result emoji、notes、requirements 小结、key decisions
+
+5. **标记完成**:
+   - 将 Solution `progress.md` 的状态 tag 从 `system-design/wip` 替换为 `system-design/done`
+   - 保留 progress、Excalidraw、Pattern Card 和 Log 作为完整练习记录

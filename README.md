@@ -231,10 +231,10 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 
 | Command | When to use |
 |---------|------------|
-| `/sysd-solve <题目>` | 做题全流程：7 步框架引导 → 方案审核 → 沉淀 pattern card + log |
+| `/sysd-solve <题目>` | 做题全流程：6 步框架引导 → 方案审核 → 沉淀 pattern card + log |
 
 `/sysd-solve` 三阶段：
-1. **引导设计** — 按 7 步框架引导（Requirements → Estimation → API → Data Model → High-Level → Deep Dive → Trade-offs），不给完整方案（说「给我看方案」/「我放弃」才给）
+1. **引导设计** — 按 6 步框架引导（Requirements → Core Entities → API → Data Flow → High-Level Design → Deep Dives），不给完整方案（说「给我看方案」/「我放弃」才给）
 2. **方案审核** — 审需求覆盖、可扩展性、trade-offs、单点故障、成本
 3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
 
