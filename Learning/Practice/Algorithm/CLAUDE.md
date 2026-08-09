@@ -133,6 +133,10 @@
 - Graph
 - DP
 - Data Structure
+- Backtracking
+- String
+- Enumeration
+- Bit Manipulation
 
 新 category 可按需添加，但优先归入已有类别。
 
