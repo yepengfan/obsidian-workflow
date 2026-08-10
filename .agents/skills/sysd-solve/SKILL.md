@@ -144,6 +144,12 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
    - 已存在 → 追加新 `##` section，更新 frontmatter `problems_solved` 数组
    - 包含: pattern wikilink、difficulty、result emoji、notes、requirements 小结、key decisions
 
-5. **标记完成**:
+5. **引用 Design Patterns / Key Technologies 建筑块文档**（若该题对应学习计划路线的主练项）:
+   - 检查 `Learning/Plans/<CODE>/00_map.md`（如存在）中该题对应的 Design Pattern / Key Technology 条目
+   - 在 Log 对应 section 里加上到 `Design Patterns/<pattern>.md`、`Key Technologies/<tech>.md` 的 wikilink 引用
+   - 这些文档的正文由用户自行维护，**不在此步骤编写或补充内容**；文档应在开始这道题之前就已备好
+   - 若发现对应文档不存在或明显是空壳，告知用户一声即可，不要自动补写
+
+6. **标记完成**:
    - 将 Solution `progress.md` 的状态 tag 从 `system-design/wip` 替换为 `system-design/done`
-   - 保留 progress、Excalidraw、Pattern Card 和 Log 作为完整练习记录
+   - 保留 progress、Excalidraw、Pattern Card、Log 和 Design Pattern/Key Technology 文档作为完整练习记录
