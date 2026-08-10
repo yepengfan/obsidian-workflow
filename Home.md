@@ -1681,7 +1681,22 @@ const { panels: lPanels } = createTabGroup(dv, [
       }
       const barH = wk.count > 0 ? Math.max(6, Math.round((wk.count / maxCnt) * maxH)) : 3;
       const barBg = wk.count > 0 ? "var(--color-accent)" : `rgba(${_r},${_g},${_b},0.1)`;
-      col.createEl("div", { attr: { style: `width:${bw - 4}px;height:${barH}px;border-radius:3px;background:${barBg};` } });
+      const barStyle = `width:${bw - 4}px;height:${barH}px;border-radius:3px;background:${barBg};`;
+      if (wk.count > 0) {
+        const bar = col.createEl("div", {
+          attr: {
+            title: `${wk.start.toFormat("yyyy-MM-dd")} 周 · ${wk.count} 题 · 点击查看本周详情`,
+            style: barStyle + "cursor:pointer;"
+          }
+        });
+        bar.addEventListener("click", () => {
+          app.__algoWeeklyView = app.__algoWeeklyView || {};
+          app.__algoWeeklyView.selectedWeekStart = wk.start.toFormat("yyyy-MM-dd");
+          app.workspace.openLinkText("Learning/Practice/Algorithm/Weekly View.md", "", false);
+        });
+      } else {
+        col.createEl("div", { attr: { style: barStyle } });
+      }
       col.createEl("div", { text: wk.start.toFormat("M/d"), attr: { style: "font-size:0.5em;color:var(--text-faint);margin-top:3px;white-space:nowrap;" } });
     }
   }
@@ -1730,8 +1745,9 @@ const { panels: lPanels } = createTabGroup(dv, [
   }
 
   // Link to full dashboard
-  p.createEl("div", { attr: { style: "margin-top:10px;font-size:0.85em;" } }).innerHTML =
-    '<a class="internal-link" data-href="Learning/Practice/Algorithm/00_index.md">All patterns →</a>';
+  p.createEl("div", { attr: { style: "margin-top:10px;font-size:0.85em;display:flex;gap:14px;" } }).innerHTML =
+    '<a class="internal-link" data-href="Learning/Practice/Algorithm/00_index.md">All patterns →</a>' +
+    '<a class="internal-link" data-href="Learning/Practice/Algorithm/Weekly View.md">Weekly view →</a>';
 }
 
 // ========== SYSTEM DESIGN TAB ==========

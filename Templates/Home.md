@@ -1,12 +1,20 @@
 ---
 tags: template
 for: Home
-updated: 2026-08-08
+updated: 2026-08-11
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-08-11 — Clickable bars in Algorithm weekly activity chart
+> - **Why**: The `📝 最近做题` bar chart (Algorithm tab, `🏋️ 长期练习`) only visualized weekly problem counts — there was no way to jump from a bar to the log(s) behind it.
+> - **Data**: The per-week aggregation loop now keeps the matching log pages (`weekLogs`), not just the summed count — `weeks.push({ start: ws, count: cnt, logs: weekLogs })`.
+> - **Click target**: Algorithm logs are per-day, not per-week, so a week can match multiple daily log files. Each non-empty bar links to that week's **most recent** daily log (`[...wk.logs].sort((a,b) => dv.date(b.date).ts - dv.date(a.date).ts)[0]`), consistent with the "latest match" convention already used by the practice-plan roadmap dots elsewhere in `Home.md`.
+> - **Implementation**: Bar element switches from a plain `<div>` to `class="internal-link" data-href="<log path>"` (same convention as the weekly activity dots and roadmap dots) when `wk.logs.length > 0`, so Obsidian's built-in internal-link click handling opens it with no extra JS listener. `title` tooltip shows the week range, count, and target log date. Zero-count weeks remain plain, non-interactive `<div>`s.
+> - **Fix (same day)**: The `internal-link`/`data-href` anchor didn't respond to clicks in practice. Replaced with a plain `<div>` + `bar.addEventListener("click", () => app.workspace.openLinkText(target.file.path, "", false))` — the same direct-call pattern already used by the SD tab's "Planned" session cards — instead of relying on Obsidian's automatic internal-link click delegation.
+> - **Pivot (same day)**: The click destination itself was wrong, not just non-functional — jumping to one arbitrary day's raw log loses the other days' problems when a week spans multiple logs. Once `Learning/Practice/Algorithm/Weekly View.md` (dedicated week-aggregated view, see its own module notes) existed, the bar now sets `app.__algoWeeklyView.selectedWeekStart = wk.start.toFormat("yyyy-MM-dd")` and navigates to that page instead of a daily log file. `Weekly View.md` already reads this same `app.__algoWeeklyView` state on load to restore the selected week (added for its own click-persistence fix), so no changes were needed there — both pages compute Monday-anchored week boundaries identically, so the date strings always match. The now-unused per-week `logs` array and "latest log" sort were removed from the aggregation loop, reverting to a plain `count`.
 
 > [!note] 2026-08-08 — Flattened slash-command hints after commands→skills migration
 > - **Why**: Vault-wide migration retired `.claude/commands/` in favor of `.claude/skills/<name>/SKILL.md` as the single source of truth for both Claude Code and Cursor. Nested paths (`/module/command`) no longer resolve — flat hyphenated names (`/module-command`) are now the only valid invocation form.
