@@ -254,8 +254,10 @@ asks "补一下地图 / 预填". Automatic, but bounded (see below) — never a 
 3. Set `progress.chNN.map = done` (leave `understanding: not_started`).
 
 **Bounds / guards**:
-- Only chapters with the read signal and no existing map. Never re-generate a map
-  that's already `done` (don't clobber). Never touch a chapter's `### 我的理解`.
+- Only chapters with the read signal and no existing map. Skip a chapter if **either**
+  `progress.chNN.map` is already `done` **or** `understanding.md` already contains its
+  `## Ch{N}. …` heading (handles partial runs / content written without tracker update).
+  Never re-generate or append a duplicate. Never touch a chapter's `### 我的理解`.
 - If the full-text cache is missing/stale or the book is PDF/iBooks-only, skip the
   batch and tell the user why (they can still do manual per-chapter).
 

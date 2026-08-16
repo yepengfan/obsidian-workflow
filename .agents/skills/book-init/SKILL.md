@@ -48,7 +48,7 @@ This generates `Learning/Books/{Book Title}/` with `meta.md`, `MOC.md`, `chapter
 
 For `.epub` sources it also auto-fills, when found — **do not ask the user to re-supply these either**:
 - `cover:` — the EPUB's embedded cover image, extracted to `<book>/cover.{ext}` (vault-relative path). This is the primary cover source for books with no WeRead sync (e.g. iBooks-only channel); Home.md's card resolves it via `app.vault.getResourcePath()`.
-- `ibooks_source:` — vault-relative path to a fuzzy-matched `ibooks-highlights/{title}.md` (Apple Books highlights export), analogous to `weread_source` but for the iBooks reading channel. Unlike WeRead's per-book folder, this is a single flat file with no chapter headings and no reading-progress field — metadata only, no chapter linking.
+- `ibooks_source:` — vault-relative path to an **exact-stem-matched** `ibooks-highlights/{title}.md` (Apple Books highlights export), analogous to `weread_source` but for the iBooks reading channel. Unlike WeRead's per-book folder, this is a single flat file with no chapter headings and no reading-progress field — metadata only, no chapter linking. Fuzzy filename matches are printed but **not** auto-written (confirm in Step 4).
 
 If `--title` produced a folder name the user doesn't like (bad EPUB metadata), rerun with `--title "Correct Title"` — do not manually rename files.
 
@@ -68,7 +68,7 @@ weread_source: "WeRead/{Folder}/{File}.md"   # only if a WeRead sync exists for 
 
 Check whether a matching `WeRead/` folder exists for this book title; if so, add `weread_source` even when the primary reading channel is EPUB (matches the pattern used by existing books).
 
-`ibooks_source` and `cover` (when a matching `ibooks-highlights/*.md` file or an embedded EPUB cover was found) are already auto-filled by Step 3 — don't add them manually or ask the user for them. If the reading channel is iBooks but no `ibooks-highlights/{title}.md` file exists yet (user hasn't synced highlights), leave `ibooks_source` unset — do not fabricate a path.
+`cover` is auto-filled by Step 3 when an embedded EPUB cover was extracted — don't re-supply it. For `ibooks_source`: if Step 3 auto-filled it (exact filename match), leave it; if Step 3 printed fuzzy iBooks candidate(s) instead, list them and ask the user which to use before adding `ibooks_source` to `meta.md`. If the reading channel is iBooks but no export file exists yet, leave `ibooks_source` unset — do not fabricate a path.
 
 ## Step 5 — Build the full-text cache (EPUB only)
 
