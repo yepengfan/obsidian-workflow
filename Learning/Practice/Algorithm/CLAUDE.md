@@ -27,6 +27,7 @@
 4. 用户贴代码 → 审核正确性、edge cases、复杂度
 5. Bug fixing → 指出具体行，targeted fix，不重写
 6. 通过后 → **询问用户是否沉淀** → 用户确认后 → 沉淀 pattern card + 写 log（若发现这个 pattern 由已有/新的可复用原子技术组合而成，见 Atom Card Rules）
+7. 周赛/限时练习：Phase 2 选「否」跳过沉淀即可（不再自动识别周赛）
 
 ## 心法 (Guiding Heuristics)
 
@@ -108,7 +109,7 @@
 - 包含 pattern wikilink `[[pattern name]]`、difficulty、result emoji、notes、complexity
 - frontmatter `problems_solved` 数组与正文 sections 保持一致
 - 文件名: `YYYY-MM-DD.md`，日期为**解题日期**（solve date），非沉淀 session 的当天
-- 补沉淀：Phase 3 开始前确认解题日期；默认今天，**补沉淀、重跑同一题、或用户说「昨天做的」等** → 必须显式询问，不可静默默认今天
+- 补沉淀：Phase 3 开始前确认解题日期；先问「解题是今天吗？」— 若否、补沉淀、重跑同一题等 → 确认具体日期
 - 如果该日 log 已存在，追加新 section（不覆盖）
 
 ## Category Values

@@ -66,8 +66,9 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 ## Phase 3 — 沉淀（仅在用户确认后执行）
 
 1. **确认解题日期**（solve date，格式 YYYY-MM-DD）:
-   - 默认今天；**补沉淀、重跑同一题、或用户说「昨天做的」等** → 必须显式询问，不可静默默认今天
-   - 其他不确定解题日的情况 → 用 `AskQuestion` 或明确提问确认日期
+   - 进入 Phase 3 时先问：**「解题是今天吗？」**
+   - 若否、不确定、补沉淀、重跑同一题、或用户说「昨天做的」等 → 确认具体日期，不可静默默认今天
+   - 若确认是今天 → 使用 session 日期
    - 后续 pattern Problems 表格日期与 log 文件名均使用此日期
 
 2. **判断 pattern 归属**:
