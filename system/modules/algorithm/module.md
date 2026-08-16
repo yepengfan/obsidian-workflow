@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-07
-updated: 2026-08-11
+updated: 2026-08-17
 depends_on: []
 requires:
   cli: [claude]
@@ -34,7 +34,7 @@ LeetCode 算法练习模块。交互式解题引导 → 代码审核 → Pattern
 
 ### 数据流
 
-- **输入**: `/algo-solve <LC#>` → 引导解题 → 代码审核 → 沉淀 card + log
+- **输入**: `/algo-solve <LC#>` → 引导解题 → 代码审核 → 用户确认 → 沉淀 card + log
 
 ## Quick Start
 

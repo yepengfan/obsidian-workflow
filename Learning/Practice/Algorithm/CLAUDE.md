@@ -26,18 +26,7 @@
 3. 只在用户明确说 "show me the code" / "给我看代码" / "我放弃" 时给完整代码
 4. 用户贴代码 → 审核正确性、edge cases、复杂度
 5. Bug fixing → 指出具体行，targeted fix，不重写
-6. 通过后 → 沉淀 pattern card + 写 log（若发现这个 pattern 由已有/新的可复用原子技术组合而成，见 Atom Card Rules）
-
-### 周赛模式
-
-识别为**周赛（Weekly Contest）**时，跳过 Phase 3 沉淀（不写 pattern card、不写 log）。仅执行 Phase 1 引导 + Phase 2 代码审核。
-
-识别信号（满足任一即可）：
-- 截图/题目含分数 badge（如 "3 分"、"5 分"、"7 分"）— 这是周赛计分
-- 用户明确说 "周赛" / "contest" / "比赛"
-- 题目标题含 "Q1." "Q2." "Q3." "Q4." 前缀
-
-周赛中引导节奏可加快：Easy 题可压缩 L1-L3 为一轮确认，优先保证做题速度。
+6. 通过后 → **询问用户是否沉淀** → 用户确认后 → 沉淀 pattern card + 写 log（若发现这个 pattern 由已有/新的可复用原子技术组合而成，见 Atom Card Rules）
 
 ## 心法 (Guiding Heuristics)
 

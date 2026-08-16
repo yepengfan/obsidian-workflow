@@ -57,9 +57,13 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
    - **代码风格**: Python 3 best practices，对照 `Learning/Practice/Algorithm/CLAUDE.md` 的「Python 陷阱」清单
 3. 如果有 bug → 指出具体行和原因，**不重写**
 4. 与最优解比较（概念优先，代码仅在用户要求时给出）
-5. 代码通过后进入 Phase 3
+5. 代码审核通过后 → **不自动进入 Phase 3**:
+   - 用 1 句话预判本题 pattern 归属（无需读全量 Patterns）
+   - 用 `AskQuestion` 或明确 yes/no 提问：**「要沉淀到 pattern card + 今日 log 吗？」**
+   - **是** → 进入 Phase 3
+   - **否** → 结束 session，不写任何 vault 文件；可附一句「之后想补沉淀再说 `/algo-solve` 同一题」
 
-## Phase 3 — 沉淀
+## Phase 3 — 沉淀（仅在用户确认后执行）
 
 1. **判断 pattern 归属**:
    - 读取 `Learning/Practice/Algorithm/Patterns/` 下所有文件的 frontmatter + `## Key Insight`（如有 `## Composed Of` 一并看；不读 Template/Gotchas/Problems，见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Efficiency Rules）
