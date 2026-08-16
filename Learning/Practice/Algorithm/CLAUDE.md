@@ -26,18 +26,8 @@
 3. 只在用户明确说 "show me the code" / "给我看代码" / "我放弃" 时给完整代码
 4. 用户贴代码 → 审核正确性、edge cases、复杂度
 5. Bug fixing → 指出具体行，targeted fix，不重写
-6. 通过后 → 沉淀 pattern card + 写 log（若发现这个 pattern 由已有/新的可复用原子技术组合而成，见 Atom Card Rules）
-
-### 周赛模式
-
-识别为**周赛（Weekly Contest）**时，跳过 Phase 3 沉淀（不写 pattern card、不写 log）。仅执行 Phase 1 引导 + Phase 2 代码审核。
-
-识别信号（满足任一即可）：
-- 截图/题目含分数 badge（如 "3 分"、"5 分"、"7 分"）— 这是周赛计分
-- 用户明确说 "周赛" / "contest" / "比赛"
-- 题目标题含 "Q1." "Q2." "Q3." "Q4." 前缀
-
-周赛中引导节奏可加快：Easy 题可压缩 L1-L3 为一轮确认，优先保证做题速度。
+6. 通过后 → **询问用户是否沉淀** → 用户确认后 → 沉淀 pattern card + 写 log（若发现这个 pattern 由已有/新的可复用原子技术组合而成，见 Atom Card Rules）
+7. 周赛/限时练习：Phase 2 选「否」跳过沉淀即可（不再自动识别周赛）
 
 ## 心法 (Guiding Heuristics)
 
@@ -77,8 +67,8 @@
 ## Pattern Card Rules
 
 - **归类前必须先查已有 pattern**: 用 `Glob("Learning/Practice/Algorithm/Patterns/*.md")` 列出所有文件名（不要用 shell glob，中文/括号文件名会静默失败）。扫描文件名判断是否有匹配的 pattern，有疑问时只读 frontmatter + `## Key Insight`（有 `## Composed Of` 一并看）确认（不读 Template/Gotchas/Problems，见 Efficiency Rules）。**绝不跳过此步直接新建。**
-- **已有 pattern**: 加题号到 frontmatter `problems[]` + 正文 Problems 表格加一行 + 更新 `updated` 日期
-- **新 pattern**: 创建新文件（用 `Templates/Algorithm Pattern.md`），id 取当前最大值 +1，填充所有字段
+- **已有 pattern**: 加题号到 frontmatter `problems[]` + 正文 Problems 表格加一行（Date 列用确认的解题日期，非沉淀 session 当天）+ 更新 `updated` 日期
+- **新 pattern**: 创建新文件（用 `Templates/Algorithm Pattern.md`），id 取当前最大值 +1，填充所有字段；Problems 表格首行 Date 列同样用解题日期
 - `difficulty` 指 pattern 理解难度，非单题难度
 - 文件名 = pattern title（去掉文件系统非法字符 `/ \ : * ? " < > |`）
 - `tags` 格式: `[leetcode/pattern, leetcode/{category-slug}]`
@@ -118,8 +108,9 @@
 - 每道题一个 `##` section
 - 包含 pattern wikilink `[[pattern name]]`、difficulty、result emoji、notes、complexity
 - frontmatter `problems_solved` 数组与正文 sections 保持一致
-- 文件名: `YYYY-MM-DD.md`
-- 如果当天 log 已存在，追加新 section（不覆盖）
+- 文件名: `YYYY-MM-DD.md`，日期为**解题日期**（solve date），非沉淀 session 的当天
+- 补沉淀：Phase 3 开始前确认解题日期；先问「解题是今天吗？」— 若否、补沉淀、重跑同一题等 → 确认具体日期
+- 如果该日 log 已存在，追加新 section（不覆盖）
 
 ## Category Values
 

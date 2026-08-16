@@ -207,7 +207,7 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
 
 1. **引导解题** — 给 hints + pseudocode，不给代码。说「给我看代码」/「我放弃」才给
 2. **代码审核** — 贴代码后审正确性、edge cases、复杂度、风格
-3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
+3. **沉淀**（用户确认后）— 归类到已有 Pattern card 或新建 + 写解题日期的 Log
 
 ```
 /algo-solve 15
@@ -222,6 +222,7 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
          ↓
     Phase 1: hints 引导
     Phase 2: 贴代码审核
+    用户确认是否沉淀
     Phase 3: 沉淀 pattern + log
 ```
 

@@ -57,37 +57,49 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
    - **代码风格**: Python 3 best practices，对照 `Learning/Practice/Algorithm/CLAUDE.md` 的「Python 陷阱」清单
 3. 如果有 bug → 指出具体行和原因，**不重写**
 4. 与最优解比较（概念优先，代码仅在用户要求时给出）
-5. 代码通过后进入 Phase 3
+5. 代码审核通过后 → **不自动进入 Phase 3**:
+   - 用 1 句话预判本题 pattern 归属（无需读全量 Patterns）
+   - 用 `AskUserQuestion` / `AskQuestion` 或明确 yes/no 提问：**「要沉淀到 pattern card + daily log 吗？」**
+   - **是** → 进入 Phase 3
+   - **否** → 结束 session，不写任何 vault 文件；可附一句「之后补沉淀时重跑 `/algo-solve` 同一题（需重新完成引导与审核），Phase 3 开始时会确认解题日期」
 
-## Phase 3 — 沉淀
+## Phase 3 — 沉淀（仅在用户确认后执行）
 
-1. **判断 pattern 归属**:
+1. **确认解题日期**（solve date，格式 YYYY-MM-DD）:
+   - 进入 Phase 3 时先问：**「解题是今天吗？」**
+   - 若否、不确定、补沉淀、重跑同一题、或用户说「昨天做的」等 → 确认具体日期，不可静默默认今天
+   - 若确认是今天 → 使用 session 日期
+   - 后续 pattern Problems 表格日期与 log 文件名均使用此日期
+
+2. **判断 pattern 归属**:
    - 读取 `Learning/Practice/Algorithm/Patterns/` 下所有文件的 frontmatter + `## Key Insight`（如有 `## Composed Of` 一并看；不读 Template/Gotchas/Problems，见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Efficiency Rules）
    - 判断该题属于哪个已有 pattern，或是否需要新建
    - 告诉用户归类结果，确认后继续
 
-2. **已有 pattern → 更新**:
+3. **已有 pattern → 更新**:
    - 在 frontmatter `problems` 数组末尾加题号
-   - 在正文 Problems 表格加一行（题号、名称、难度、今天日期）
+   - 在正文 Problems 表格加一行（题号、名称、难度、步骤 1 的解题日期）
    - 更新 frontmatter `updated` 为今天
    - 如果有新的 Gotcha 发现，追加到 Gotchas section
 
-3. **新 pattern → 创建**:
+4. **新 pattern → 创建**:
    - 用 `Templates/Algorithm Pattern.md` 模板
    - `id`: 读取所有现有 card 的 id，取最大值 +1
-   - 填充: title, category, tags, problems, Key Insight, Trigger (如适用), Composed Of (是否填写见步骤 5), Template, Gotchas
+   - 填充: title, category, tags, problems, Key Insight, Trigger (如适用), Composed Of (是否填写见步骤 6), Template, Gotchas
+   - 在 Problems 表格加首行（题号、名称、难度、步骤 1 的解题日期）
+   - frontmatter `created` / `updated` 用沉淀 session 当天（今天），与 Problems 表格 Date 列（解题日期）区分
    - `difficulty`: 基于 pattern 复杂度评估
 
-4. **写 Log**:
-   - 检查 `Learning/Practice/Algorithm/Log/YYYY-MM-DD.md` 是否存在
-   - 不存在 → 用 `Templates/Algorithm Log.md` 创建，填充第一条
+5. **写 Log**:
+   - 检查 `Learning/Practice/Algorithm/Log/{solve-date}.md` 是否存在（solve date 来自步骤 1）
+   - 不存在 → 用 `Templates/Algorithm Log.md` 创建，`date` frontmatter 填 solve date，填充第一条
    - 已存在 → 追加新 `##` section，更新 frontmatter `problems_solved` 数组
    - 包含: pattern wikilink、difficulty、result emoji、notes、complexity
 
-5. **检查 Atom 提炼机会**（粒度标准见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Atom Card Rules）:
+6. **检查 Atom 提炼机会**（粒度标准见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Atom Card Rules）:
    - 用 `Glob` 列出 `Atoms/` 全部文件名（= atom title，文件名约定见 CLAUDE.md）+ `Patterns/` 全部文件名（不要用 shell glob，理由同 Pattern Card Rules 第一条）
    - 逐一读取每张 pattern 卡的 `## Key Insight`（如有 `## Composed Of` 一并看）——只需要这一小段，不必读 Gotchas/Template/Problems，避免不必要的开销
    - 本次涉及的 pattern 卡核心机制，是否已被某个已有 atom 覆盖？若是 → 补充/确认 `## Composed Of` 链接，并把该 atom frontmatter 的 `updated` 改成今天
    - 是否有一个可复用的技术，同时出现在本次卡和至少一张**其他任意**已有 pattern 卡的 Key Insight 里（不限于本次刚好接触到的卡），但还没有对应 atom？若是 → 新建 atom card，双方都加 `## Composed Of` 链接
    - 是否构成"原子"（而非实现细节）拿不准时，默认跳过不新建——宁可漏掉，也不要把上次过度提炼、之后被迫撤销重来的错误再犯一次
-   - 以上都不适用（本次是新建 pattern 且步骤 3 已用模板创建）时 → 删除该卡片里空的 `## Composed Of` 小节及其占位注释，不要把未填写的模板占位符留在正文里
+   - 以上都不适用（本次是新建 pattern 且步骤 4 已用模板创建）时 → 删除该卡片里空的 `## Composed Of` 小节及其占位注释，不要把未填写的模板占位符留在正文里
