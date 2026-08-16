@@ -1408,20 +1408,34 @@ dv.el("div", "📖 读书", {
   } else {
     const archLabel = { "technical-reference": "tech-ref", "cognitive-mental-model": "cognitive" };
 
+    // A `cover:` value is either a remote URL (WeRead-hosted covers) or a
+    // vault-relative path (book_init.py auto-extracts the EPUB's embedded
+    // cover to `<book>/cover.{ext}` for books without a WeRead sync, e.g.
+    // iBooks-only reading channels). Local paths need app.vault.getResourcePath
+    // to become a usable <img src> — remote URLs are already usable as-is.
+    function resolveCoverUrl(coverValue) {
+      if (!coverValue) return null;
+      const str = String(coverValue);
+      if (/^https?:\/\//i.test(str)) return str;
+      const file = app.vault.getAbstractFileByPath(str);
+      return file ? app.vault.getResourcePath(file) : null;
+    }
+
     // Resolve a book's cover image. Priority:
     //   1. explicit `cover:` on the book's own meta.md — lets a book pin a
-    //      specific edition's cover (e.g. DDIA 2nd ed) regardless of folder name
+    //      specific edition's cover (e.g. DDIA 2nd ed) regardless of folder name,
+    //      or a book with no WeRead sync (iBooks-only) surface its EPUB cover
     //   2. fallback: `cover:` frontmatter on any note inside WeRead/<bookName>/
     // Returns null if neither is found — caller shows a placeholder icon.
     function findBookCover(meta, bookName) {
-      if (meta?.cover) return String(meta.cover);
+      if (meta?.cover) return resolveCoverUrl(meta.cover);
       const wrFolder = app.vault.getAbstractFileByPath(`WeRead/${bookName}`);
       if (!wrFolder || !wrFolder.children) return null;
       for (const child of wrFolder.children) {
         if (child.extension !== "md") continue;
         const cache = app.metadataCache.getFileCache(child);
         const cover = cache?.frontmatter?.cover;
-        if (cover) return String(cover);
+        if (cover) return resolveCoverUrl(cover);
       }
       return null;
     }
@@ -1445,14 +1459,33 @@ dv.el("div", "📖 读书", {
       const folder = m.file.folder;              // Learning/Books/<Title>
       const bookName = folder.split("/").pop();
       const mocPath = `${folder}/MOC.md`;
+      const understandingPath = `${folder}/understanding.md`;
+      const understandingExists = !!app.vault.getAbstractFileByPath(understandingPath);
+      // Chapter heading in understanding.md is "Ch{N}. {title}" (strip leading "N." or "N "
+      // from skeleton title — same regex as book_init.py chapter_filename_stem). Encode # in
+      // the fragment so titles like "C# …" don't truncate the data-href URL.
+      const chHeading = (c) => `Ch${c.chapter}. ${String(c.title || "").replace(/^\d+[\.\s]+/, "")}`;
+      const chAnchor = (c) => `${understandingPath}#${chHeading(c).replace(/#/g, "%23")}`;
+      const chLink = (c) => understandingExists ? chAnchor(c) : c.file.path;
 
-      // Scan chapter skeletons for Feynman progress.
+      // Chapter progress from meta.md's progress tracker (understanding = 落盘 done).
       const chapters = dv.pages(`"${folder}/chapters"`)
         .where(c => c.chapter !== undefined)
         .sort(c => c.chapter, "asc");
       const total = chapters.length;
-      const doneCh = chapters.where(c => c.feynman && c.feynman !== "not_started").length;
-      const current = chapters.find(c => !c.feynman || c.feynman === "not_started");
+      const prog = m.progress || {};
+      const chKey = (n) => "ch" + String(n).padStart(2, "0");
+      const isChDone = (c) => {
+        const p = prog[chKey(c.chapter)];
+        return !!(p && p.understanding && p.understanding !== "not_started");
+      };
+      const isChMapped = (c) => {
+        const p = prog[chKey(c.chapter)];
+        return !!(p && p.map && p.map !== "not_started");
+      };
+      const doneCh = chapters.where(c => isChDone(c)).length;   // 理解落盘完成数
+      const mapCh = chapters.where(c => isChMapped(c)).length;  // 地图预填数
+      const current = chapters.find(c => !isChDone(c));
       const currentNum = current ? current.chapter : (total > 0 ? total : null);
 
       // Card (mirrors 学习计划 card style) — accent bar + cover thumbnail + content
@@ -1509,10 +1542,10 @@ dv.el("div", "📖 读书", {
         });
       }
 
-      // Row 2: author · feynman x/N · Ch current/total · WeRead %
+      // Row 2: author · 图{mapped}/理解{done} · Ch current/total · WeRead %
       const bits = [];
       if (m.author) bits.push(m.author);
-      if (total > 0) bits.push(`费曼 ${doneCh}/${total}`);
+      if (total > 0) bits.push(`图${mapCh}/理解${doneCh}`);
       if (total > 0) bits.push(doneCh === total ? "✓ 完成" : `Ch${currentNum}/${total}`);
       const wr = findWeReadProgress(m);
       if (wr) bits.push(`WeRead ${wr}`);
@@ -1523,31 +1556,43 @@ dv.el("div", "📖 读书", {
         });
       }
 
-      // Chapter progress dots (Feynman done = filled, current = dashed, else muted)
+      // Chapter progress dots (落盘 done = filled, current = dashed, else muted)
       if (total > 0) {
         const dotSize = isMobile ? "8px" : "10px";
         const dotGap = isMobile ? "2px" : "3px";
         const dotsWrap = body.createEl("div", { attr: { style: `display:flex;align-items:center;gap:${dotGap};margin-top:7px;flex-wrap:wrap;` } });
         for (const c of chapters) {
-          const isDone = c.feynman && c.feynman !== "not_started";
-          const isCurrent = currentNum && c.chapter === currentNum && !isDone;
+          const isDone = isChDone(c);          // 理解已落盘
+          const isMapped = !isDone && isChMapped(c); // 地图已预填、待补理解
+          const stateLabel = isDone ? " · 已落盘" : isMapped ? " · 地图已预填，待补理解" : "";
           dotsWrap.createEl("a", {
             attr: {
               class: "internal-link",
-              "data-href": c.file.path,
-              title: `Ch${c.chapter}: ${c.title || ""}`,
+              "data-href": chLink(c),
+              title: `Ch${c.chapter}: ${c.title || ""}${stateLabel}`,
               style: `width:${dotSize};height:${dotSize};border-radius:2px;display:inline-block;` +
                 (isDone ? "background:var(--color-accent);opacity:0.85;"
-                        : isCurrent ? "border:1.5px dashed var(--color-accent);opacity:0.7;"
+                        : isMapped ? "border:1.5px solid var(--color-accent);opacity:0.65;"
                                     : "background:var(--background-modifier-border);opacity:0.5;")
             }
           });
         }
       }
 
-      // Row: ▶ 开始阅读 — own row, right-aligned, never crowds the title/pills above.
-      // Opens the book MOC (becomes linked_note), then opens Claudian chat.
-      const btnRow = body.createEl("div", { attr: { style: "display:flex;justify-content:flex-end;margin-top:7px;" } });
+      // Row: 📝 落盘 link (left) + ▶ 开始阅读 (right). 落盘 opens understanding.md
+      // directly; 开始阅读 opens the book MOC (becomes linked_note) then Claudian chat.
+      const btnRow = body.createEl("div", { attr: { style: "display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px;" } });
+      btnRow.createEl("a", {
+        text: "📝 落盘",
+        attr: {
+          class: "internal-link",
+          "data-href": understandingExists ? understandingPath : mocPath,
+          title: understandingExists
+            ? "打开本书的 understanding.md（落盘记录）"
+            : "understanding.md 尚未创建 — 打开 MOC（运行 /book-read 开始落盘）",
+          style: "font-size:0.7em;color:var(--text-muted);text-decoration:none;white-space:nowrap;"
+        }
+      });
       const startBtn = btnRow.createEl("button", {
         text: "▶ 开始阅读",
         attr: { style: "font-size:0.7em;padding:2px 9px;border-radius:6px;border:1px solid var(--color-accent);background:var(--color-accent);color:#fff;cursor:pointer;white-space:nowrap;" }
