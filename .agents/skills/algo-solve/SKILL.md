@@ -87,6 +87,7 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
    - `id`: 读取所有现有 card 的 id，取最大值 +1
    - 填充: title, category, tags, problems, Key Insight, Trigger (如适用), Composed Of (是否填写见步骤 6), Template, Gotchas
    - 在 Problems 表格加首行（题号、名称、难度、步骤 1 的解题日期）
+   - frontmatter `created` / `updated` 用沉淀 session 当天（今天），与 Problems 表格 Date 列（解题日期）区分
    - `difficulty`: 基于 pattern 复杂度评估
 
 5. **写 Log**:
