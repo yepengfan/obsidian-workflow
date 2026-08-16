@@ -39,11 +39,13 @@ that goes stale; PR #156 demoted it to fallback-only). Instead:
 Read the chosen book's `MOC.md` (chapter list) and `meta.md`'s `progress:` tracker.
 
 **First, run progress-driven pre-fill** (see `Learning/Books/CLAUDE.md` →
-"Progress-driven pre-fill (batch)"): ensure the full-text cache exists, detect read
-chapters (WeRead sections with ≥1 highlight), and for any read chapter without a map
-yet, generate + append its map to `understanding.md` and set `progress.chNN.map = done`.
-Skip silently for iBooks-only / PDF / cache-missing books (note why). Then build the
-table from the now-current tracker.
+"Progress-driven pre-fill (batch)"): check the full-text cache per that file's
+"Session-start check" — **build if missing** (no confirmation needed); **if stale**
+(source hash changed), ask before rebuilding and skip pre-fill until confirmed.
+Then detect read chapters (WeRead sections with ≥1 highlight) and for any read chapter
+without a map yet, generate + append its map to `understanding.md` and set
+`progress.chNN.map = done`. Skip silently for iBooks-only / PDF / no-cache books
+(note why). Then build the table from the now-current tracker.
 
 **Report a progress table in conversation** (not `AskUserQuestion` — chapters often exceed 4),
 then let the user say a chapter number. Use the exact table format from
@@ -74,8 +76,8 @@ Use `AskUserQuestion` to choose which part of the reading loop to enter:
 ## Step 4 — Load context and enter
 
 Load context per `Learning/Books/CLAUDE.md` → "Context loading" (that section is the single
-source of truth for the sequence — do not restate it here). This includes ensuring the
-full-text cache exists (build it if missing) so the chapter map can be generated.
+source of truth for the sequence — do not restate it here). For the full-text cache, follow
+that file's "Session-start check": build if missing; ask before rebuilding if stale.
 
 Then enter the step chosen in Step 3, following that file's rules exactly. For 落盘理解:
 - If Step 2's pre-fill already set `progress.chNN.map = done` for this chapter, **skip map
