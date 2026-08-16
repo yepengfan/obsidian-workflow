@@ -1460,9 +1460,13 @@ dv.el("div", "📖 读书", {
       const bookName = folder.split("/").pop();
       const mocPath = `${folder}/MOC.md`;
       const understandingPath = `${folder}/understanding.md`;
-      // Chapter heading in understanding.md is "Ch{N}. {title}" (title without its
-      // leading "N. "); build the same string so a dot links straight to that section.
-      const chAnchor = (c) => `${understandingPath}#Ch${c.chapter}. ${String(c.title || "").replace(/^\d+\.\s*/, "")}`;
+      const understandingExists = !!app.vault.getAbstractFileByPath(understandingPath);
+      // Chapter heading in understanding.md is "Ch{N}. {title}" (strip leading "N." or "N "
+      // from skeleton title — same regex as book_init.py chapter_filename_stem). Encode # in
+      // the fragment so titles like "C# …" don't truncate the data-href URL.
+      const chHeading = (c) => `Ch${c.chapter}. ${String(c.title || "").replace(/^\d+[\.\s]+/, "")}`;
+      const chAnchor = (c) => `${understandingPath}#${chHeading(c).replace(/#/g, "%23")}`;
+      const chLink = (c) => understandingExists ? chAnchor(c) : c.file.path;
 
       // Chapter progress from meta.md's progress tracker (understanding = 落盘 done).
       const chapters = dv.pages(`"${folder}/chapters"`)
@@ -1564,7 +1568,7 @@ dv.el("div", "📖 读书", {
           dotsWrap.createEl("a", {
             attr: {
               class: "internal-link",
-              "data-href": chAnchor(c),
+              "data-href": chLink(c),
               title: `Ch${c.chapter}: ${c.title || ""}${stateLabel}`,
               style: `width:${dotSize};height:${dotSize};border-radius:2px;display:inline-block;` +
                 (isDone ? "background:var(--color-accent);opacity:0.85;"
@@ -1582,8 +1586,10 @@ dv.el("div", "📖 读书", {
         text: "📝 落盘",
         attr: {
           class: "internal-link",
-          "data-href": understandingPath,
-          title: "打开本书的 understanding.md（落盘记录）",
+          "data-href": understandingExists ? understandingPath : mocPath,
+          title: understandingExists
+            ? "打开本书的 understanding.md（落盘记录）"
+            : "understanding.md 尚未创建 — 打开 MOC（运行 /book-read 开始落盘）",
           style: "font-size:0.7em;color:var(--text-muted);text-decoration:none;white-space:nowrap;"
         }
       });
