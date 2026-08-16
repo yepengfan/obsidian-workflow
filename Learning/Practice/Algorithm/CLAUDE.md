@@ -107,8 +107,9 @@
 - 每道题一个 `##` section
 - 包含 pattern wikilink `[[pattern name]]`、difficulty、result emoji、notes、complexity
 - frontmatter `problems_solved` 数组与正文 sections 保持一致
-- 文件名: `YYYY-MM-DD.md`
-- 如果当天 log 已存在，追加新 section（不覆盖）
+- 文件名: `YYYY-MM-DD.md`，日期为**解题日期**（solve date），非沉淀 session 的当天
+- 补沉淀：Phase 3 开始前确认解题日期；默认今天，用户说「补沉淀」或解题日非今天时显式询问
+- 如果该日 log 已存在，追加新 section（不覆盖）
 
 ## Category Values
 

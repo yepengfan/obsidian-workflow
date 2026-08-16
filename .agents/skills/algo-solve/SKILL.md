@@ -61,7 +61,7 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
    - 用 1 句话预判本题 pattern 归属（无需读全量 Patterns）
    - 用 `AskQuestion` 或明确 yes/no 提问：**「要沉淀到 pattern card + 今日 log 吗？」**
    - **是** → 进入 Phase 3
-   - **否** → 结束 session，不写任何 vault 文件；可附一句「之后想补沉淀再说 `/algo-solve` 同一题」
+   - **否** → 结束 session，不写任何 vault 文件；可附一句「之后补沉淀时重跑 `/algo-solve` 同一题，Phase 3 会询问解题日期，log 写入该日期的 YYYY-MM-DD.md」
 
 ## Phase 3 — 沉淀（仅在用户确认后执行）
 
@@ -72,7 +72,7 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 
 2. **已有 pattern → 更新**:
    - 在 frontmatter `problems` 数组末尾加题号
-   - 在正文 Problems 表格加一行（题号、名称、难度、今天日期）
+   - 在正文 Problems 表格加一行（题号、名称、难度、解题日期 — 见步骤 4）
    - 更新 frontmatter `updated` 为今天
    - 如果有新的 Gotcha 发现，追加到 Gotchas section
 
@@ -83,8 +83,9 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
    - `difficulty`: 基于 pattern 复杂度评估
 
 4. **写 Log**:
-   - 检查 `Learning/Practice/Algorithm/Log/YYYY-MM-DD.md` 是否存在
-   - 不存在 → 用 `Templates/Algorithm Log.md` 创建，填充第一条
+   - **确认解题日期**（solve date，格式 YYYY-MM-DD）：默认今天；若用户是补沉淀、说「昨天做的」等，或 session 日非解题日 → 用 `AskQuestion` 或明确提问确认日期
+   - 检查 `Learning/Practice/Algorithm/Log/{solve-date}.md` 是否存在
+   - 不存在 → 用 `Templates/Algorithm Log.md` 创建，`date` frontmatter 填 solve date，填充第一条
    - 已存在 → 追加新 `##` section，更新 frontmatter `problems_solved` 数组
    - 包含: pattern wikilink、difficulty、result emoji、notes、complexity
 
