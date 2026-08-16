@@ -24,7 +24,7 @@ If the user already gave all of these in `$ARGUMENTS`, skip re-asking and confir
 
 ## Step 2 — Locate the source file (EPUB/PDF only)
 
-Skip this step entirely if reading channel is pure WeRead.
+Skip this step entirely if reading channel is pure WeRead or pure iBooks (no local EPUB/PDF).
 
 Ebooks are synced from S3 to `~/Library/ebooks/` (see `Learning/Books/.bookrc.example`). Search there first instead of asking the user for a path:
 
@@ -52,7 +52,7 @@ For `.epub` sources it also auto-fills, when found — **do not ask the user to 
 
 If `--title` produced a folder name the user doesn't like (bad EPUB metadata), rerun with `--title "Correct Title"` — do not manually rename files.
 
-If the reading channel is pure WeRead (no EPUB/PDF), skip this step and create the folder structure manually: `{BookTitle}/` with `meta.md`, `MOC.md`, `understanding.md`, `chapters/`, and `notes/` — see `Learning/Books/CLAUDE.md` → "Per-book folder structure" (no `epub_path`/`pdf_path` field in that case).
+If the reading channel is pure WeRead or pure iBooks (no EPUB/PDF), skip this step and create the folder structure manually: `{BookTitle}/` with `meta.md`, `MOC.md`, `understanding.md`, `chapters/`, and `notes/` — see `Learning/Books/CLAUDE.md` → "Per-book folder structure" (no `epub_path`/`pdf_path` field in that case).
 
 ## Step 4 — Fill in fields book_init.py doesn't know
 
@@ -79,7 +79,7 @@ The per-chapter map is generated from the book's actual text, so building the fu
   --book "Learning/Books/{Book Title}"
 ```
 
-- Skip for pure-WeRead or PDF-only books (extractor is EPUB-only). Note it in the report so the user knows chapter maps won't be auto-generated for that book.
+- Skip for pure-WeRead, pure-iBooks, or PDF-only books (extractor is EPUB-only). Note it in the report — chapter maps for these books use capture-layer highlights only (no full-text cache).
 - If it errors on a **chapter-count mismatch** (`chapters/` disagrees with the EPUB TOC — TOC-noise duplicates), don't guess: report it and leave the cache unbuilt; the book still works with a highlights-only record.
 
 ## Step 6 — Report

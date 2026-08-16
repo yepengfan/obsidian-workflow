@@ -163,9 +163,12 @@ not size/mtime — is the staleness signal); `--force` rebuilds anyway.
 *Trigger: "落盘" / "第 N 章" / "帮我记一下这章" / picking a chapter via `/book-read`*
 
 ```
-1. Ensure the full-text cache exists (build if missing).
-2. AI generates the chapter's 思维导图 + 核心概念 from the full-text cache
-   + the book's capture-layer highlights.
+1. Ensure the full-text cache exists (build if missing) — **EPUB books only**.
+   PDF-only / pure-iBooks books cannot build a cache (`extract_fulltext.py` is
+   EPUB-only). For those, generate the map from the capture layer + chapter skeleton
+   only (highlights-only — sparser, but the loop still works).
+2. AI generates the chapter's 思维导图 + 核心概念 from the full-text cache (when
+   available) + the book's capture-layer highlights.
 3. AI shows it to the human.
 4. Human adds "我的理解" in their own words — the thin "so what" layer.
 5. AI does ONE quick pass: correct factual errors, flag notable omissions.
