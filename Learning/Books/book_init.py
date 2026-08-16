@@ -28,6 +28,14 @@ import sys
 from datetime import date
 from pathlib import Path
 
+# This script always lives at "{vault}/Learning/Books/book_init.py", regardless of
+# how the caller's --output argument is spelled (relative, absolute, differently
+# depthed) — so derive the vault root from the script's own location rather than
+# from --output. (--output's parent was previously assumed to *be* the vault root,
+# which broke find_weread/find_ibooks/cover-path resolution whenever --output was
+# anything other than exactly "{vault}/Books".)
+VAULT_ROOT = Path(__file__).resolve().parent.parent.parent
+
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -516,7 +524,7 @@ def main():
     chapters_dir.mkdir(parents=True, exist_ok=True)
 
     # Check for WeRead notes
-    vault_dir = output_root.parent  # Books/ -> vault root
+    vault_dir = VAULT_ROOT
     weread_name, weread_headings = find_weread(vault_dir, title)
     weread_matched = 0
     if weread_name:
