@@ -59,7 +59,7 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 4. 与最优解比较（概念优先，代码仅在用户要求时给出）
 5. 代码审核通过后 → **不自动进入 Phase 3**:
    - 用 1 句话预判本题 pattern 归属（无需读全量 Patterns）
-   - 用 `AskQuestion` 或明确 yes/no 提问：**「要沉淀到 pattern card + daily log 吗？」**
+   - 用 `AskUserQuestion` / `AskQuestion` 或明确 yes/no 提问：**「要沉淀到 pattern card + daily log 吗？」**
    - **是** → 进入 Phase 3
    - **否** → 结束 session，不写任何 vault 文件；可附一句「之后补沉淀时重跑 `/algo-solve` 同一题（需重新完成引导与审核），Phase 3 开始时会确认解题日期」
 
