@@ -433,7 +433,8 @@ def write_moc(out_dir: Path, title: str, parts: dict, filenames: dict):
     lines += [
         '## Working Notes',
         '',
-        '## Feynman Checks',
+        '## Understanding',
+        '- [[understanding]]',
         '',
         '## WeRead',
         '> WeRead 划线和批注见 `WeRead/` 对应书目',
@@ -541,9 +542,18 @@ def main():
     if ext == '.epub':
         cover_abs_path = extract_epub_cover(filepath, out_dir)
         if cover_abs_path:
-            cover_rel_path = str(Path(cover_abs_path).relative_to(vault_dir)) \
-                if Path(cover_abs_path).is_absolute() else cover_abs_path
-            print(f"🖼️   Cover extracted: {cover_rel_path}")
+            cover_path = Path(cover_abs_path)
+            if cover_path.is_absolute():
+                try:
+                    cover_rel_path = str(cover_path.relative_to(vault_dir))
+                except ValueError:
+                    # Cover landed outside VAULT_ROOT (e.g. --output outside the vault) —
+                    # skip the cover: field rather than aborting onboarding mid-flight.
+                    cover_rel_path = None
+            else:
+                cover_rel_path = cover_abs_path
+            if cover_rel_path:
+                print(f"🖼️   Cover extracted: {cover_rel_path}")
 
     # Generate chapter files and collect filenames for map links
     filenames = {}  # chapter_title -> filename stem

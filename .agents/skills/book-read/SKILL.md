@@ -77,7 +77,9 @@ Load context per `Learning/Books/CLAUDE.md` → "Context loading" (that section 
 source of truth for the sequence — do not restate it here). This includes ensuring the
 full-text cache exists (build it if missing) so the chapter map can be generated.
 
-Then enter the step chosen in Step 3, following that file's rules exactly. For 落盘理解, that
-means generating the 思维导图 + 核心概念 first (from the full-text cache + capture-layer
-highlights), showing it, then prompting the user for their own understanding — per that file's
-"The capture loop".
+Then enter the step chosen in Step 3, following that file's rules exactly. For 落盘理解:
+- If Step 2's pre-fill already set `progress.chNN.map = done` for this chapter, **skip map
+  generation** — show the existing map from `understanding.md` and go straight to prompting
+  for the user's own understanding (per `Learning/Books/CLAUDE.md` → "The capture loop").
+- Otherwise, generate the 思维导图 + 核心概念 first (from the full-text cache + capture-layer
+  highlights), show it, then prompt for the user's understanding.

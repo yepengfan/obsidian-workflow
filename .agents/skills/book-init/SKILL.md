@@ -18,7 +18,7 @@ Parse `$ARGUMENTS` for a book title (and author, if given). Confirm with the use
 - **Book title** (exact, used for the vault folder name)
 - **Author**
 - **Archetype**: `technical-reference` or `cognitive-mental-model` (ask if unclear — a light tag for granularity/reflection style, see `Learning/Books/CLAUDE.md` → "Book archetypes")
-- **Reading channel**: WeRead / EPUB / PDF / EPUB + WeRead
+- **Reading channel**: WeRead / iBooks / EPUB / PDF / EPUB + WeRead / EPUB + iBooks
 
 If the user already gave all of these in `$ARGUMENTS`, skip re-asking and confirm briefly instead.
 
@@ -52,7 +52,7 @@ For `.epub` sources it also auto-fills, when found — **do not ask the user to 
 
 If `--title` produced a folder name the user doesn't like (bad EPUB metadata), rerun with `--title "Correct Title"` — do not manually rename files.
 
-If the reading channel is pure WeRead (no EPUB/PDF), skip this step and create the folder structure manually per `Learning/Books/CLAUDE.md` step 3 (no `epub_path`/`pdf_path` field in that case).
+If the reading channel is pure WeRead (no EPUB/PDF), skip this step and create the folder structure manually: `{BookTitle}/` with `meta.md`, `MOC.md`, `understanding.md`, `chapters/`, and `notes/` — see `Learning/Books/CLAUDE.md` → "Per-book folder structure" (no `epub_path`/`pdf_path` field in that case).
 
 ## Step 4 — Fill in fields book_init.py doesn't know
 
