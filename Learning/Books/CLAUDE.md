@@ -248,6 +248,9 @@ asks "补一下地图 / 预填". Automatic, but bounded (see below) — never a 
 2. Append its `## Ch{N}. {title}` block to `understanding.md`: map block filled; the
    `### 我的理解` block pre-seeded with the reader's `💭` annotations for that chapter
    (verbatim, under `> 📥`), else left as an empty placeholder.
+   **Heading convention**: strip the leading `N. ` from the chapter skeleton title
+   (e.g. skeleton `1. Analyzing Business Domains` → `## Ch1. Analyzing Business Domains`).
+   This must match `Home.md`'s `chAnchor()` so chapter dots link to the right section.
 3. Set `progress.chNN.map = done` (leave `understanding: not_started`).
 
 **Bounds / guards**:
@@ -268,7 +271,7 @@ Per chapter, appended by date. AI writes the map block; the human's block is
 transcribed **verbatim**.
 
 ```markdown
-## Ch{N}. {Chapter title}
+## Ch{N}. {Chapter title — strip leading "N. " from skeleton title}
 {date}
 
 ### 结构地图与核心概念（AI）
