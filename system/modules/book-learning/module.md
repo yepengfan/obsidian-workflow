@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-07-15
-updated: 2026-08-08
+updated: 2026-08-16
 depends_on: []
 requires:
   cli: [claude]
@@ -30,16 +30,17 @@ tags: [system/module]
 
 ## Overview
 
-深度读书笔记系统。捕获层（WeRead 自动同步划线）+ 生产层（Feynman 费曼测试 → 人写 → AI review），每本书一个独立文件夹。详细工作流见 `Learning/Books/CLAUDE.md`（本文件不重复，只做治理层描述）。
+深度读书笔记系统，以**高效落盘**为核心。捕获层（WeRead + Apple Books/iBooks 自动同步划线）+ 生产层（每章一条 `understanding.md` 记录：AI 生成思维导图+核心概念 → 人补自己的理解 → AI 一遍核对），每本书一个独立文件夹。详细工作流见 `Learning/Books/CLAUDE.md`（本文件不重复，只做治理层描述）。
 
 ## 架构
 
-- **`{BookTitle}/meta.md`**: frontmatter 驱动 — archetype、output_target、reading_channel、progress tracker，以及（EPUB/PDF 书）`epub_path`/`pdf_path`（按来源格式二选一）指向 `~/Library/ebooks/` 下的实体文件
-- **`{BookTitle}/MOC.md`**: 纯索引，链接到 meta + chapters + notes + feynman
+- **`{BookTitle}/meta.md`**: frontmatter 驱动 — archetype、reading_channel、progress tracker（每章 `map`/`understanding` 两字段），以及（EPUB/PDF 书）`epub_path`/`pdf_path`（按来源格式二选一）指向 `~/Library/ebooks/` 下的实体文件；`cover`（`book_init.py` 自动从 EPUB 提取内嵌封面到 `<book>/cover.{ext}`）；`weread_source` / `ibooks_source`（二选一或都有；WeRead 有按章划线+阅读进度，iBooks 是单扁平文件、章节归属不可靠、无进度字段）
+- **`{BookTitle}/understanding.md`**: **主产物**。按章记录，每章两块——`结构地图与核心概念（AI）` + `我的理解（你的话，原文转录）`。系统的终点输出
+- **`{BookTitle}/.fulltext_cache/`**: 全书正文文本缓存，`extract_fulltext.py` 生成。**标准输入步骤**（不再是 opt-in）——章节思维导图基于原文生成。仅 EPUB。详见 `Learning/Books/CLAUDE.md` → "Full-text cache"
+- **`{BookTitle}/MOC.md`**: 纯索引，链接到 meta + chapters + notes + understanding
 - **`{BookTitle}/chapters/`**: `book_init.py` 生成的章节骨架，只读参考
 - **`{BookTitle}/notes/`**: 按需的 sources/research 记录
-- **`{BookTitle}/feynman/`**: 费曼测试结果日志（✅/⚠️，按日期追加）
-- **`{BookTitle}/.fulltext_cache/`**（可选，per-book opt-in）: 全书正文文本缓存，`extract_fulltext.py` 生成，仅用于自由问答/话题讨论，不影响费曼检查的"先讲后审"顺序。详见 `Learning/Books/CLAUDE.md` → "Full-text cache"
+- **`{BookTitle}/feynman/`**（legacy）: 旧版费曼测试日志，只读存档，新流程不再写入
 - **`_archive/`**: 旧版目录结构迁移前的存档（如 `DDIA-old-00_meta.md`）
 
 ### Ebook 存储
@@ -48,8 +49,8 @@ tags: [system/module]
 
 ### 数据流
 
-- **新书 onboarding**: `/book-init <书名>` → 确认 archetype/channel → 在 `~/Library/ebooks/` 模糊匹配 epub/pdf → 跑 `book_init.py` 生成骨架（按来源格式自动写入 `epub_path`/`pdf_path`）→ 人工补 archetype/output_target
-- **读书循环**: Naked read（WeRead/EPUB）→ Feynman sparring → 人写 + AI review，见 `Learning/Books/CLAUDE.md` "Per-unit workflow"
+- **新书 onboarding**: `/book-init <书名>` → 确认 archetype/channel → 在 `~/Library/ebooks/` 模糊匹配 epub/pdf → 跑 `book_init.py` 生成骨架（自动写入 `epub_path`/`pdf_path`）→ 人工补 archetype → 建全文缓存 `extract_fulltext.py`
+- **读书循环（落盘）**: 捕获（WeRead/iBooks 划线）→ AI 生成本章思维导图+核心概念（基于全文缓存）→ 人补自己的理解 → AI 一遍核对 → 两块并存落盘 `understanding.md`，见 `Learning/Books/CLAUDE.md` "The capture loop"
 - **补全遗留书**: `/book-init` 的 Retrofit 流程 → 扫描缺 `epub_path`/`pdf_path` 的 `meta.md` → 模糊匹配补全（多候选时必须询问，不猜）
 
 ## 已知遗留问题

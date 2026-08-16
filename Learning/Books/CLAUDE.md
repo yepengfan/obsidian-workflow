@@ -1,109 +1,344 @@
 # CLAUDE.md — Reading & Note-Taking Workflow
 
-This vault is a reading system with two layers: **capture** (WeRead — highlights
-and annotations sync automatically) and **production** (only books that earn
-it — Feynman + research + output). You (the AI agent) operate inside it under the
-rules below. They are not suggestions.
+This vault is a reading system with two layers:
+
+- **Capture** — highlights and annotations sync automatically from **WeRead** and/or
+  **Apple Books (iBooks)**. You do nothing; the plugins keep them fresh.
+- **Production** — for each chapter worth it, a per-chapter record lands in
+  `understanding.md`: an **AI-generated structural map (mind map + core concepts)**
+  plus **your own understanding in your own words**.
+
+You (the AI agent) operate inside it under the rules below. They are not suggestions.
 
 ---
 
 ## The red line (non-negotiable)
 
-Everything else serves this one rule:
+The system's goal is **getting your own understanding on disk with low friction** —
+efficiently, chapter by chapter, in a form that is genuinely *yours*.
 
-> **You compress the understanding loop. The human writes the prose.**
+> **AI builds the structure and verifies facts. The human supplies the understanding.**
 
-- You may **never** write article paragraphs, polished summaries meant as final
-  text, or any prose destined for publication.
-- If asked to "draft this", "write this section", or "just put it in my words" —
-  **decline and redirect** to sparring or review. That phrasing is exactly how
-  the line gets crossed; treat it as the trigger to stop, not to help.
-- Generated prose breaks the compounding. The article is a *byproduct* of the
-  human's understanding, never your output.
+- AI **may** generate a chapter's structural map (mind map + core concepts) as the
+  **input** to each chapter, and store it — clearly labelled as AI-generated.
+- AI **may not** write the human's *understanding* for them. The "我的理解" block is
+  the human's own words; AI transcribes, corrects facts, and flags omissions —
+  never authors, paraphrases, or polishes it.
+- The map is a scaffold to react to, not a substitute for understanding. The value
+  is the thin layer the human adds on top.
+- **Anti-slop still holds** (see that section): the map is the AI's own structural
+  归纳 + a concept list, never a reproduction of long passages from the book.
 
 ---
 
 ## Session start
 
 At the start of a reading session, confirm three things before doing anything:
-**which book, which unit (chapter/concept), and which step of the workflow** we're
-at.
+**which book, which chapter, and which step** we're at.
 
-- If the user already stated all three (e.g. "DDIA 第 5 章，费曼测试"), skip
-  confirmation and enter the step directly.
+- If the user already stated all three (e.g. "DDD 第 1 章，落盘"), skip confirmation
+  and enter the step directly.
 - If incomplete, ask only what's missing — don't dump all three questions at once.
 
 ### Context loading (before entering any step)
 
 ```
-1. Read {BookTitle}/meta.md       → archetype, output target, progress tracker
-2. Read {BookTitle}/MOC.md        → current progress, available chapters/notes
-3. Read WeRead notes for the chapter (if available) → user's highlights and annotations
-4. Load archetype-specific Feynman question style
+1. Read {BookTitle}/meta.md       → archetype, capture sources, progress tracker
+2. Read {BookTitle}/MOC.md        → current progress, available chapters
+3. Ensure the full-text cache exists (build it if missing — see "Full-text cache")
+4. Read the chapter's capture-layer highlights (WeRead per-chapter / iBooks flat)
 5. Enter the requested step
 ```
 
 ### Cross-session progress display
 
-When the user says "继续 {Book}" without specifying a chapter, show the full
-progress table from `meta.md`:
+When the user says "继续 {Book}" without specifying a chapter, show the progress
+table from `meta.md`'s `progress` tracker:
 
 ```
-📖 DDIA — 上次进度
+📖 DDD — 上次进度
 
-Ch3 Storage:     ✅ feynman(全过)   ✅ write
-Ch4 Encoding:    ✅ feynman(反方⚠️) ○ write
-Ch5 Replication: ○ feynman           ○ write
-Ch6 Partition:   ○ 未开始
+Ch1 Analyzing Business Domains:   ✅ map  ✅ understanding
+Ch2 Discovering Domain Knowledge: ✅ map  ○ understanding
+Ch3 Managing Domain Complexity:   ○ 未开始
+...
 
-（Sources 按需，不在进度表里追踪）
-继续哪章？读 / 费曼 / 写？
+继续哪章？
 ```
+
+Derive marks from `progress` tracker: a `map`/`understanding` field absent or
+`not_started` → ○, `done` → ✅. Empty tracker (`progress: {}`) → all chapters ○.
 
 ---
 
-## Your four roles (fixed, regardless of book)
+## Capture layers (WeRead + Apple Books)
 
-1. **Feynman sparring partner** — the human explains a concept in their own words;
-   you probe *exactly* where their causal reasoning is vague: "why this and not
-   that?", "what breaks if you remove it?", "what does the alternative cost?"
-   You ask. You do not answer for them.
-2. **Research assistant** — locate the canonical paper/source a chapter cites;
-   verify facts; check how an older idea has been updated (e.g. a 1st-edition
-   concept in the cloud era / 2nd edition).
-3. **Structure & accuracy review** — after the human writes, flag logical gaps
-   and technical errors. Provide factual corrections, structural suggestions,
-   and directional hints. Critique; do not rewrite.
-4. **Differentiation prompt** — push the human to connect the material to their
-   real context (their replatform work, other books they've read).
+Two capture channels feed the system; a book uses one or both, declared in
+`meta.md`:
 
-What changes per book is only *granularity*, *output form*, and *question style*.
-These four roles never change.
+- **WeRead** (`weread_source`) — plugin-synced folder under `WeRead/`. Has
+  **per-chapter** highlight sections and a live `progress:` reading-percentage field
+  (single source of truth for progress; Home.md reads it live).
+- **Apple Books / iBooks** (`ibooks_source`) — a single flat file under
+  `ibooks-highlights/{title}.md`. Contains the actual highlights and notes, but:
+  chapter attribution is unreliable (`📖 Chapter:: N/A`; only the highlight-link's
+  `epubcfi` carries a `chNN_id` hint), it's one flat file with no per-chapter
+  sections, and it has no reading-progress field.
+
+Both are **read-only** (managed by their plugins). Never modify or move `WeRead/`,
+`ibooks-highlights/`, `Matter/`, or `Instapaper Notes/`.
+
+**How the map uses them:** WeRead highlights can be filtered by chapter directly.
+iBooks highlights are fed as a whole and aligned to chapters via the full-text
+cache's real chapter structure (epubcfi parsing is a possible future enhancement,
+not relied on today).
+
+---
+
+## Full-text cache (standard input step)
+
+The chapter map is generated from the book's **actual text**, so a full-text cache
+is a **standard input step** for every book that can have one — no longer opt-in.
+
+### Building / refreshing
+
+```bash
+"Learning/Books/.venv/bin/python3" Learning/Books/extract_fulltext.py \
+  --book "Learning/Books/{BookTitle}"
+```
+
+Reads `epub_path`/`pdf_path` from `meta.md`. Reports "up to date" if the source's
+content hash matches the manifest (a same-content S3 re-sync touches mtime, so hash —
+not size/mtime — is the staleness signal); `--force` rebuilds anyway.
+
+- **EPUB only.** PDF sources are not supported yet (PDF chapter-detection is
+  page-heuristic and doesn't map back to `chapters/` reliably).
+- **Requires `chapters/` to match the EPUB TOC.** If the chapter count disagrees
+  (e.g. `book_init.py` emitted TOC-noise duplicates), the extractor refuses to guess
+  the pairing — reconcile `chapters/` first. (Known: Thinking, Fast and Slow has this
+  mismatch and has no cache yet.)
+
+### Two layers — don't conflate them
+
+1. **Layer 1 — on-disk text cache (persistent, per-book)**: `{BookTitle}/.fulltext_cache/`,
+   one `.txt` per chapter (stems match `chapters/*.md`), plus `_manifest.json`
+   (source path + content hash) for staleness. Covered by the existing
+   `/Learning/Books/*` `.gitignore` rule — no new ignore rules needed.
+2. **Layer 2 — session search index (ephemeral, in-memory)**: built fresh each
+   session from Layer 1 via the session's search tool. Never written to disk.
+
+### Session-start check
+
+- **Cache missing** → build it (it's a standard step now; building is read-only-ish
+  and cheap). If the source is a PDF or the chapter count mismatches, skip the map
+  and fall back to a highlights-only record; tell the user why.
+- **Cache present, session index empty** → re-index the `.fulltext_cache/*.txt`
+  into the session search tool. No confirmation needed.
+- **Cache present but stale** (source hash changed — corrected re-download / edition
+  swap) → tell the user and ask before rebuilding.
 
 ---
 
 ## Folder boundaries (enforce strictly)
 
-- `{BookTitle}/feynman/` — Feynman check results. AI writes the structured
-  ✅/⚠️ outcome log after each sparring session. Content is a factual record of
-  what the human explained well vs. where gaps remain — not prose.
-- `{BookTitle}/notes/` — per-chapter working notes (sources, research results,
-  differentiation connections). AI writes factual records here.
+- `{BookTitle}/understanding.md` — the per-chapter record. Two blocks per chapter:
+  `### 结构地图与核心概念（AI）` (AI-generated, labelled) + `### 我的理解（你的话，原文）`
+  (the human's own words, transcribed verbatim — never AI-authored). This is the
+  system's **terminal output**.
+- `{BookTitle}/notes/` — on-demand working notes (sources, research). AI writes
+  factual records here when the research step is invoked.
 - `{BookTitle}/chapters/` — chapter skeleton generated by `book_init.py`.
   **Read-only reference.** Do not modify.
-- `articles/` — publication-bound drafts. **Read, annotate, critique only.
-  Never write prose here.**
-- `articles/{slug}/` — per-book article series (e.g. `articles/ddia/` for DDIA,
-  on Medium). Same rules as `articles/`.
-- `journal/` — (future) private decision/bias log for cognitive books. You may
-  prompt and question; never fabricate entries. **Not yet created — will be added
-  when needed.**
+- `{BookTitle}/.fulltext_cache/` — full-text cache (see above). Machine-managed.
+- **Capture folders** (`WeRead/`, `ibooks-highlights/`) — read-only, plugin-managed.
 
-### Capture layer
+> **Retired:** `{BookTitle}/feynman/` and the `articles/` publication downstream no
+> longer exist in this workflow. Existing `feynman/` folders in older books are
+> left as read-only legacy archives; do not extend them.
 
-**WeRead** serves as the capture layer. Highlights and annotations sync
-automatically to the `WeRead/` folder (read-only, managed by plugin). There is
-no separate `_capture/` folder — all raw reading reactions live in WeRead.
+---
+
+## The capture loop (per chapter)
+
+*Trigger: "落盘" / "第 N 章" / "帮我记一下这章" / picking a chapter via `/book-read`*
+
+```
+1. Ensure the full-text cache exists (build if missing).
+2. AI generates the chapter's 思维导图 + 核心概念 from the full-text cache
+   + the book's capture-layer highlights.
+3. AI shows it to the human.
+4. Human adds "我的理解" in their own words — the thin "so what" layer.
+5. AI does ONE quick pass: correct factual errors, flag notable omissions.
+6. AI stores both blocks (verbatim for the human's block) into understanding.md.
+7. AI updates the progress tracker (map: done, understanding: done).
+```
+
+### Step 2 — Generate the map (AI, input end)
+
+From the chapter's full text + highlights, produce:
+
+- **思维导图** — a nested markdown bullet list (renders as a mind map via Obsidian's
+  Mind Map plugin, and reads fine as a plain outline). Structure: the chapter's main
+  branches → sub-points. This is *your* structural 归纳, not copied sentences.
+- **核心概念** — a short list of the chapter's key concepts, each a term + a
+  one-line plain-language gloss.
+
+**Integrate the reader's capture** (combine book + the reader's own reading, not just
+the book):
+- **Highlights (`📌`)** — mark the map bullets the reader highlighted with a trailing
+  `📌` so the map reflects where *they* focused, not just the AI's structural read.
+- **Annotations (`💭`)** — the reader's own comments are their own thinking, closer to
+  understanding than to the map. Do **not** bury them in the AI map — carry each one
+  **verbatim** into the `### 我的理解` block as a **pre-fill seed** (see record format),
+  labelled as coming from their WeRead/iBooks note. The reader continues from there.
+  This is still the reader's own words, so the red line holds.
+
+Keep it tight. Anti-slop: no long verbatim passages; 1-2 short quotes at most to
+anchor a point.
+
+### Step 3-4 — Human's understanding (production end)
+
+Prompt lightly, one thing at a time, and offer a fill-in-the-blank scaffold if the
+human freezes (the scaffold gives sentence structure only, never the content):
+
+> "看完这张图，用你自己的话说说：这章对你最重要的一两点是什么？为什么？"
+
+The human answers briefly, in their own words. No jargon ban, no multi-round
+grilling, no "再具体点" loops — this is capture, not an exam.
+
+### Step 5 — Quick verify (AI, one pass)
+
+Check the human's understanding against the full text / skeleton:
+
+- 🔴 factual error → point it out + give the correct fact (do not rewrite their prose)
+- ○ notable omission → "这章还讲了 X，你没提，要补吗？"
+
+One pass, then stop. The human decides whether to fold corrections in.
+
+### On-demand — Find sources / verify (Research assistant)
+*Trigger: "帮我找论文" / "这章引用了什么" / "帮我验证" / "这个说法还成立吗"*
+
+Optional, invoked only when the human wants to go deeper. AI lists the canonical
+sources the chapter cites, verifies facts, checks what's changed since publication.
+Output: `{BookTitle}/notes/{chapter-slug}.md` under `## Sources` / `## Research`.
+
+---
+
+## Progress-driven pre-fill (batch)
+
+The map (input end) is pre-filled **in batch, up to the reading frontier**, so
+`understanding.md` is always populated as far as you've read and you only ever add
+the "我的理解" block.
+
+**Trigger**: on entering a book (via `/book-read` selecting it), or when the user
+asks "补一下地图 / 预填". Automatic, but bounded (see below) — never a background job.
+
+**"Read" signal** (which chapters to pre-fill):
+- **WeRead books**: a chapter counts as read if its per-chapter section in the
+  `weread_source` note has ≥1 highlight (`📌`). More reliable than the raw reading
+  percentage, and it naturally skips TOC-noise chapters (they have no WeRead section
+  / no highlights).
+- **iBooks-only books**: chapter attribution is unreliable (flat file, `Chapter:: N/A`),
+  so there's no dependable per-chapter read signal — fall back to manual per-chapter
+  pre-fill for these.
+
+**Action** — for each read chapter whose `progress.chNN.map` is not `done`:
+1. Generate the map (思维导图 + 核心概念) from the full-text cache + that chapter's
+   highlights, marking highlighted bullets with `📌`.
+2. Append its `## Ch{N}. {title}` block to `understanding.md`: map block filled; the
+   `### 我的理解` block pre-seeded with the reader's `💭` annotations for that chapter
+   (verbatim, under `> 📥`), else left as an empty placeholder.
+3. Set `progress.chNN.map = done` (leave `understanding: not_started`).
+
+**Bounds / guards**:
+- Only chapters with the read signal and no existing map. Never re-generate a map
+  that's already `done` (don't clobber). Never touch a chapter's `### 我的理解`.
+- If the full-text cache is missing/stale or the book is PDF/iBooks-only, skip the
+  batch and tell the user why (they can still do manual per-chapter).
+
+**After**: report which chapters got maps and are now awaiting your understanding,
+then let the user pick one to fill. The capture loop's map-generation step (①-②) is
+skipped for a chapter that's already pre-filled — go straight to prompting for "我的理解".
+
+---
+
+## understanding.md record format
+
+Per chapter, appended by date. AI writes the map block; the human's block is
+transcribed **verbatim**.
+
+```markdown
+## Ch{N}. {Chapter title}
+{date}
+
+### 结构地图与核心概念（AI）
+
+**思维导图**
+- 主分支 A
+  - 子点 a1
+  - 子点 a2
+- 主分支 B
+  - ...
+
+**核心概念**
+- {概念}：{一句话大白话解释}
+- ...
+
+### 我的理解（你的话，原文）
+
+> 📥 来自你的批注（seed，你接着写）：
+> - "{book sentence the annotation was on}" → {your 💭 annotation, verbatim}
+
+{human's own words, verbatim — added when the reader fills it}
+```
+
+The `📥 seed` block is pre-filled from the reader's `💭` annotations for that chapter
+(verbatim). If the chapter has no annotations, the seed block is omitted and `### 我的理解`
+is just an empty placeholder. The reader's freshly-written understanding goes below the
+seed. If the human revisits a chapter later and their understanding changes, append a new
+dated block under the same heading rather than overwriting — this is a running record.
+
+**Does NOT**: generate flashcards, extract zettel, or write the human's understanding.
+
+---
+
+## Progress tracker
+
+Each book's `meta.md` frontmatter contains a progress tracker:
+
+```yaml
+progress:
+  ch01:
+    map: done            # 2026-08-16, AI 思维导图 + 核心概念 已生成
+    understanding: done  # 2026-08-16, 你的话已落盘
+  ch02:
+    map: not_started
+    understanding: not_started
+```
+
+Two fields per chapter: `map` and `understanding`. AI updates it at the end of the
+capture loop; session start reads it to reconstruct progress. Home.md's book card
+reads `understanding` from this tracker for its `落盘 X/Y` badge and chapter dots.
+
+> **Legacy:** older books may still carry `feynman`/`write` fields — treat them as
+> read-only history; don't write them going forward.
+
+---
+
+## Finishing a book (lightweight)
+
+*Triggered when user says "我读完了这本书" / "{Book} 读完了"*
+
+No AI-driven interview. Just:
+
+1. Show the progress table (which chapters have `understanding: done`, which don't).
+   Inform, don't block.
+2. Update `meta.md`: `status: finished`, `finished: {date}`.
+3. The meta.md reflection sections (`## 跨章回顾` / `## 全局连接` / `## 读后感`) stay
+   for the human to fill **if they want** — AI may ask a prompting question, never
+   fills them.
+
+**Does NOT**: generate a book summary, extract zettel, or write synthesis.
 
 ---
 
@@ -111,433 +346,56 @@ no separate `_capture/` folder — all raw reading reactions live in WeRead.
 
 *Triggered when user says "我要开始读 XXX", or explicitly via `/book-init <书名>`*
 
-Run via **`/book-init`** (see `.claude/skills/book-init/SKILL.md` for the full step-by-step). Summary:
+Run via **`/book-init`** (see `.agents/skills/book-init/SKILL.md` for the full
+step-by-step). In brief:
 
 ```
-1. Confirm: book title, author, archetype, reading channel (WeRead / EPUB / PDF)
-   - Archetype options: technical reference / cognitive-mental-model
-   - Archetype determines output target and Feynman question style
-   - More archetypes can be added as new patterns emerge
-
-2. If EPUB/PDF available:
-   a. Search ~/Library/ebooks/ for a matching file (fuzzy match on title).
-      Multiple candidates (editions/translations) → ask which one, never guess.
-   b. Run book_init.py for the chapter skeleton:
-      "Learning/Books/.venv/bin/python3" Learning/Books/book_init.py \
-        --file "{resolved path}" --output "Learning/Books"
-      This writes `epub_path`/`pdf_path` (resolved absolute path, keyed by source
-      format) into meta.md's frontmatter automatically — no manual step needed.
-
-3. Create per-book folder structure:
-   Learning/Books/{BookTitle}/
-   ├── MOC.md          ← pure index linking to all content
-   ├── meta.md         ← metadata + progress tracker + reading meta questions
-   │                      (epub_path/pdf_path auto-filled by book_init.py)
-   ├── chapters/       ← book_init.py skeleton (if generated)
-   ├── notes/          ← per-chapter working notes
-   └── feynman/        ← Feynman check results
-
-4. Update Books Index.md
-   - Dataview auto-discovers from meta.md, no manual edit needed
-
-5. Confirm output target:
-   - technical reference → articles/{slug}/
-   - cognitive → journal/ (to be created when needed)
-
-6. Report:
-   "✅ {BookTitle} 已加入系统，archetype: {X}, output: {Y}。
-    开始读书时告诉我你在读哪个 chapter/concept。"
+1. Confirm: title, author, archetype, reading channel (WeRead / iBooks / EPUB / mix).
+2. If EPUB/PDF available: locate it under ~/Library/ebooks/ (fuzzy match; ask when
+   multiple candidates), run book_init.py to generate the chapter skeleton +
+   meta.md/MOC.md/chapters//notes/ + understanding.md placeholder.
+3. Fill meta.md fields book_init.py can't infer (archetype, capture sources).
+4. Build the full-text cache (extract_fulltext.py) so the chapter map can be
+   generated — standard step for EPUB books.
+5. Books Index.md auto-discovers via Dataview; no manual edit.
 ```
 
-**Retrofitting older books**: books onboarded before this automation may be missing
-`epub_path`/`pdf_path` even though a matching file exists in `~/Library/ebooks/`. Trigger
-`/book-init` with "帮我补一下 epub_path" to scan and backfill — always confirm
-before writing, and never guess between multiple candidate files (e.g. different
-editions or an English/translated pair).
-
----
-
-## Full-text cache (optional, per-book opt-in)
-
-*Not part of the default per-unit workflow. Exists only for books where the human has
-explicitly asked the AI to be able to answer free-form questions/discussion using the
-book's actual content, instead of general knowledge + WeRead highlights alone.*
-
-### Why this exists, and its boundary
-
-The default reading workflow (see "Per-unit workflow" below) deliberately keeps the AI
-from reading chapter full text — Step 1 (naked read) and the Feynman check depend on the
-human explaining first, unprompted by book content. This section is the **opt-in
-exception**, scoped narrowly:
-
-- **Usable for**: free-form Q&A / topic discussion when the human asks about specific
-  content in a book that has this cache built.
-- **NOT usable for**: Feynman check openers or follow-ups (still "explain in your own
-  words first" — the AI must not use book content to hint at or lead toward an answer;
-  **scoped exception**: hint-on-request during follow-ups may draw on book content
-  including this cache for the scenario's setup, but never for its conclusion — see
-  "Hint on explicit request" under Interrogation rules), and never for generating article
-  prose (anti-slop red line applies regardless of whether the AI has "read" the book —
-  quote only 1-2 sentences to verify/support a point, never reproduce long passages).
-- Ask before building this for a book that doesn't already have it — it's a deliberate
-  trade-off, not a default step of onboarding or per-unit workflow. When the human agrees,
-  record the decision in that book's own `meta.md` (gitignored per-book state, not this
-  file) so future sessions don't have to re-confirm, e.g.:
-
-  ```markdown
-  ## AI 协作边界（本书专属约定 · {date}）
-
-  - **全书正文已缓存 + 索引**：EPUB {N} 章正文已提取到本书目录下的 `.fulltext_cache/`
-    （机制见 `Learning/Books/CLAUDE.md` → "Full-text cache"）。仅限自由问答/话题讨论场景
-    使用，费曼检查与 anti-slop 红线不受影响。
-  ```
-
-### Two layers — don't conflate them
-
-1. **Layer 1 — on-disk text cache (persistent, per-book)**: `{BookTitle}/.fulltext_cache/`,
-   one `.txt` per chapter, filenames matching `chapters/*.md` stems exactly, plus a
-   `_manifest.json` (source path + content hash, with size/mtime kept only as
-   human-readable metadata) used to detect staleness. Already covered by the existing
-   `/Learning/Books/*` `.gitignore` rule — no new ignore rules needed when creating this
-   folder for a book.
-2. **Layer 2 — session search index (ephemeral, in-memory)**: built fresh each session
-   from Layer 1's text files via the search/index tool available in that session. Never
-   written to disk. Cheap to rebuild (seconds for a ~13-chapter book).
-
-### Building / refreshing the cache
-
-```bash
-"Learning/Books/.venv/bin/python3" Learning/Books/extract_fulltext.py \
-  --book "Learning/Books/{BookTitle}"
-```
-
-Reads `epub_path`/`pdf_path` from that book's `meta.md` — no need to pass the source path
-again. Skips work and reports "up to date" if the source file's content hash already
-matches the manifest (a same-content S3 re-sync can still touch mtime, so hash — not
-size/mtime — is the actual staleness signal); pass `--force` to rebuild anyway. PDF
-sources are not yet supported (only EPUB) — the PDF chapter-detection in `book_init.py`
-is page-heuristic and not reliable enough to map back to `chapters/` automatically.
-
-### Session-start check (for books with this cache)
-
-When a session's free-form discussion touches a book, check whether it has
-`.fulltext_cache/_manifest.json`:
-
-- **Missing entirely** → this book hasn't opted in, or the cache was never built. Answer
-  from general knowledge + WeRead as usual; don't build the cache unprompted (see
-  boundary above).
-- **Present but the search index for this session is empty** → Layer 2 only; re-index
-  the `.fulltext_cache/*.txt` files into the session's search tool. No confirmation
-  needed — this is read-only, in-memory, and reversible by construction.
-- **Present but `extract_fulltext.py` would report staleness** (source ebook file's
-  content hash changed since the cache was built — e.g. a corrected re-download or an
-  edition swap) → tell the user and ask before rebuilding, per this vault's "confirm
-  before modifying" rule, since rebuilding writes files.
-
----
-
-## Per-unit workflow (3 steps)
-
-> **History note:** this used to be a 6-step flow. Three books (DDIA, Fundamentals
-> of Software Architecture, Thinking Fast and Slow) all stalled at the empty-shell
-> stage under it. The flow below is the deliberately-simplified version: the
-> minimum that still forces real understanding. Sources/research are now
-> **on-demand**, not a mandatory per-chapter step; differentiation is folded into
-> the Feynman check; and **"one chapter = one article" is dissolved** — Feynman is
-> per-chapter (cheap, spoken), articles are written only when enough material has
-> accumulated (may span 2-3 chapters, or a single rich chapter).
-
-```
-Read (WeRead highlights / EPUB) → Feynman sparring → You write + I review
-                               ↑
-                    on-demand: stuck / doubtful → ask me to find a source
-                    differentiation questions are folded in here
-```
-
-### Step 1 — Naked read
-Human reads the primary text in WeRead. No AI. Highlights and annotations sync
-automatically.
-
-### Step 2 — Feynman check (Role 1: sparring + Role 4: differentiation)
-*Trigger: "费曼测试" / "我来解释一下" / "帮我检查理解"*
-
-**Preparation (before the human speaks):**
-```
-1. Read chapters/{chapter} skeleton (if exists) → chapter scope
-2. Read notes/{chapter}.md (if exists)  → existing sources
-3. Read WeRead highlights for chapter   → what the user focused on
-4. Do NOT give hints. Open with:
-   "用你自己的话解释一下这章的核心内容。"
-```
-
-**Interrogation rules:**
-- Ask **one** question at a time
-- Start simple ("X 是什么意思？"), then escalate ("为什么？举个例子？")
-- Vague answer → "能不能更具体？"
-- Correct answer → push deeper
-- Wrong answer → **correct directly**, do not be polite about gaps
-- **Hint on explicit request** ("提示一下" / "给点提示") — default is still no unprompted
-  hints. When asked, give a concrete scenario/example the human can reason from — never a
-  bare keyword/topic-scope pointer, and never the book's own conclusion stated directly.
-  This covers time-lag forgetting (read the chapter a while ago, details are rusty) as a
-  failure mode distinct from never having understood it — the check should still end in
-  the human reasoning it out, not nodding along to an AI explanation.
-  - **Sourcing the scenario**: may draw on the book's actual content (including
-    `.fulltext_cache`, when present) to construct the scenario's setup/situation — but
-    must never state or closely paraphrase the book's own conclusion/verdict for that
-    scenario. The human must still reach the conclusion through their own reasoning. (This
-    is a scoped exception to the Full-text cache section's general "must not use book
-    content to hint at or lead toward an answer" rule — see that section.)
-  - **Follow-up comparison**: whether to compare the human's answer against the book
-    afterward depends on what the hint was for. **Core mechanism/derivation** (the causal
-    chain the section's main point rests on — why a trade-off holds, how one step leads to
-    the next) → do compare against the book once the human answers. **Background/context
-    recall** (supporting facts that aren't themselves the core reasoning — a timeline, a
-    definition, "what happened before X") → confirming the answer is correct is enough, no
-    forced comparison. When unsure which bucket a point falls into, default to comparing —
-    skipping a needed check is worse than one extra confirmation.
-- Archetype-specific question style:
-  - technical reference → "what breaks if not this? what does the alternative cost?"
-  - cognitive → "你自己什么时候犯过这个 bias？具体场景？"
-- **Fold in differentiation** — as the check converges, push the human to connect
-  the material to their real context: "你在工作里遇到过类似问题吗？用这章的框架
-  重看当时的决策会改什么？" AI asks, human answers — AI does not answer for them.
-
-**Guardrails (default ON — these replace the AI's subjective "讲得不错" judgment):**
-
-The enemy is *feeling* like you understood. A check you can pass by reciting or
-sounding fluent is worthless. These three create friction you cannot fake:
-
-| # | Guardrail | Catches | How |
-|---|-----------|---------|-----|
-| 🟢 1 | **Zero-jargon** | Term-shufflers (reciting a definition ≠ understanding) | Ban the book's terms. Explaining "event sourcing" may not use "event"/"sourcing"/"log" — force plain language + analogy. Stalls without the label = only memorized the label. |
-| 🟢 2 | **Predict-then-check** | The knowing illusion (obvious *only after* reading) | Before a section with a clear trade-off, AI poses a scenario and asks the human to predict the outcome; then compare against the book. A wrong prediction exposes the real blind spot. |
-| 🟡 3 | **Steel-man the alternative** | One-directional understanding (only knows why to use it) | Not just "why CQRS" but "when NOT to — where plain CRUD wins." Real grasp of a pattern = knowing its boundary and cost. |
-
-**Pass criterion (objective, replaces subjective judgment):**
-Explains zero-jargon + can state the alternative's cost + prediction held →
-mark ✅. Any one fails → mark ⚠️ and log it as an open gap.
-
-**End conditions (any of these):**
-- User says to stop → stop immediately
-- Natural convergence → 2-3 consecutive questions answered clearly (all guardrails passed)
-- AI judges all core concepts covered, no new gaps found
-
-**Output — written to `{BookTitle}/feynman/{chapter-slug}.md`:**
-```markdown
-# {Chapter} — Feynman Check
-
-## {date}
-### ✅ 讲清楚的（zero-jargon + 反方 + 预测均过）
-- ...
-
-### ⚠️ 仍然模糊的（哪道 guardrail 没过）
-- ...
-
-### 🔗 差异化连接（跟工作/其他书的关联）
-- ...
-```
-
-Multiple sessions for the same chapter are **appended** by date in the same file
-to track gap closure over time.
-
-**Does NOT**: generate flashcards, extract zettel, write prose.
-
-### On-demand — Find sources / verify (Role 2: Research assistant)
-*Trigger: "帮我找论文" / "这章引用了什么" / "帮我验证" / "这个说法还成立吗"*
-
-**Not a mandatory step anymore.** Invoked only when the human hits something
-doubtful or wants to go deeper. Also, after a Feynman check surfaces a factual
-gap, AI may *suggest* — never auto-execute — "这几个点要不要我帮你查一下？"
-
-When invoked, AI lists the canonical sources the chapter cites (primary papers
-first, at most one explainer), verifies facts, and checks what has changed since
-publication.
-
-Output: `{BookTitle}/notes/{chapter-slug}.md` under `## Sources` / `## Research`
-
-### Step 3 — Human writes + Review (Role 3: Structure & accuracy review)
-*Trigger: human finishes writing, says "帮我 review" / "看看有什么问题"*
-
-**Not every chapter produces an article.** Write only when enough material has
-accumulated — could be one rich chapter, could be 2-3 combined. Feynman keeps
-pace with reading; writing does not have to.
-
-The human writes in the output target (e.g. `articles/{slug}/{article-slug}.md`).
-AI does not participate in writing. After the human finishes, AI reviews:
-
-**Review dimensions:**
-
-| Dimension | What AI does | Red line |
-|-----------|-------------|----------|
-| 🔴 Technical errors | Point out error + give the correct fact | Do not rewrite |
-| 🟡 Logical gaps | Identify jumps/contradictions in argument | Suggest direction, do not fill |
-| 🔵 Structure | Suggest reordering, point out unclear sections | Give specific move instructions, do not rewrite |
-| ○ Omissions | Cross-check against feynman results + chapter skeleton | List missing concepts with key-point hints |
-
-**AI may**: correct facts, give restructure instructions, give key-point hints
-for omissions, suggest angles for rephrasing, verify citations.
-
-**AI may NOT**: rewrite paragraphs, polish prose, write transitions, generate
-drafts.
-
-**Output format:**
-```markdown
-## Review: {Chapter}
-
-### 🔴 技术错误
-- "quorum 要求 W+R≥N" → 应该是 W+R>N
-
-### 🟡 逻辑 gap
-- 第 3 段从 single-leader 直接跳到 leaderless，没解释为什么
-
-### 🔵 结构建议
-- "一致性"这段放在 replication 之前更自然
-
-### ○ 遗漏
-- Feynman 中提到的 read-your-writes consistency 未出现
-```
-
-User can iterate: "再 review 一次" — AI compares against previous findings.
-
-> **Differentiation** is no longer a separate step — it is folded into the
-> Feynman check (Step 2). See the "Fold in differentiation" rule there.
-
----
-
-## After every step
-
-Display the chapter's full progress — inform, do not push:
-
-```
-✅ {Step} 完成
-
-这章的进度：
-  ✅ Feynman — 刚完成，zero-jargon 过，反方 ⚠️ 1 个 gap 待关闭
-  ○ Sources — 按需（未触发）
-  ○ Write — 未开始（攒够材料再写）
-```
-
-The human decides what to do next. AI does not push to the next step.
-
----
-
-## Progress tracker
-
-Each book's `meta.md` frontmatter contains an explicit progress tracker:
-
-```yaml
-progress:
-  ch05:
-    feynman: done         # 2026-06-14, zero-jargon ✅, 反方 ⚠️ 1 gap open
-    write: not_started
-  ch06:
-    feynman: not_started
-    write: not_started
-```
-
-Only two fields are tracked now: `feynman` and `write`. Sources/research are
-on-demand and not tracked here. AI updates this tracker at the end of each step.
-Session start reads it to reconstruct progress.
-
----
-
-## FINAL workflow (finishing a book)
-
-*Triggered when user says "我读完了这本书" / "{Book} 读完了"*
-
-### Step 1 — Progress check
-Read `meta.md` progress tracker. List:
-- Which chapters have all steps completed
-- Which chapters have unclosed gaps
-
-Display full status table. Do not block completion — inform and let the user
-decide whether to go back and close gaps.
-
-### Step 2 — Cross-chapter review
-Based on all `notes/` and `feynman/` content, **ask the human** (do not
-summarize for them):
-- "跨章节看，你觉得这本书最核心的 3 个 idea 是什么？"
-- "有没有哪两章的内容看起来矛盾？"
-- "读完之后，你对 X 的理解跟读之前有什么不同？"
-
-### Step 3 — Global differentiation
-Unlike per-chapter differentiation (fine-grained), this is macro-level:
-- "读完 DDIA 之后，你对 replatform 整体架构的看法变了吗？"
-- "有没有想回去改的决策？"
-
-Per-chapter differentiation cannot do this because early chapters don't have
-context from later ones.
-
-### Step 4 — Update meta.md
-
-```yaml
-status: finished
-finished: 2026-08-01
-```
-
-Add sections for the human to fill:
-```markdown
-## 跨章回顾
-（Feynman-style: AI 问，你答，记录要点）
-
-## 全局连接
-（读完整本后的宏观 differentiation）
-
-## 读后感
-（你自己写——这本书改变了什么？值不值得推荐？）
-```
-
-**Does NOT**: generate book summary, extract zettel, write synthesis.
-
----
-
-## Book archetypes
-
-### DDIA, 2nd ed. — *technical reference*
-- **Granularity:** chapter by chapter.
-- **Output:** public article series (Medium). Lives in `articles/ddia/`.
-- **Angle (the differentiator):** a working tech-lead connecting DDIA theory to
-  real brownfield multi-tenant replatform decisions — sharding, consistent
-  hashing, the 13 submodules. This angle is the part only the human has; it is
-  also the part you cannot write for them.
-- **Feynman question style:** "what breaks if not this? why is this *the*
-  trade-off? what does the alternative cost?"
-- **Edition caveat:** the 2nd ed. reorganized/renumbered chapters and rewrote
-  some (e.g. consistency & consensus). When using 1st-ed explainers, map chapters
-  carefully — do not trust old numbering.
-- **Supporting sources per chapter** = the papers DDIA itself cites (e.g. storage
-  → LSM-tree, Bigtable, "The Log"; partitioning → consistent hashing, Dynamo).
-  Confirm live links when reaching each chapter; don't cite from memory.
-
-### Thinking, Fast and Slow (思考快与慢) — *cognitive / mental-model*
-- **Granularity:** per concept, not per chapter. Atomic cards.
-- **Output:** private decision/bias journal — **NOT articles.** Output target
-  `journal/` will be created when this book begins active work.
-- **Failure mode to avoid:** summarizing every bias and changing nothing. The
-  value is catching yourself exhibiting a bias in a *real* decision and logging
-  the instance.
-- **Feynman question style:** "where did you fall for this exact bias yourself —
-  recently, concretely?"
-- Do **not** push this book toward a public article unless a genuinely original,
-  lived angle emerges. The default output is the journal.
+**Retrofitting older books**: missing `epub_path`/`pdf_path` can be backfilled via
+`/book-init` "帮我补一下 epub_path" — confirm before writing, never guess between
+editions/translations.
 
 ---
 
 ## Anti-slop / copyright (same act, two reasons)
 
-- Never reproduce the book's figures or large passages. The human rewrites in
-  their own words and draws their own diagrams.
-- This is both copyright-safe and the thing that forces real understanding:
-  **a note you can't write in your own words is a note you don't understand yet.**
+- Never reproduce the book's figures or large passages. The AI map is a structural
+  归纳 in its own words + a concept list; the human's block is the human's own words.
+- 1-2 short quotes at most, to anchor or verify a point — never long passages.
+- This is both copyright-safe and the thing that keeps the record genuinely yours:
+  **a note you can't put in your own words is a note you haven't understood yet.**
 
 ---
 
 ## Variable investment
 
-Most books stay in WeRead only — read, enjoyed, a few highlights, done. A book
-gets upgraded to the production layer **only when it proves itself worth it
-during capture.** Don't pre-decide a book deserves an article. Let it earn it.
+Most books stay in WeRead/iBooks only — read, enjoyed, a few highlights, done. A book
+gets upgraded to the production layer (chapter maps + understanding) **only when it
+proves itself worth it during capture.** Don't pre-decide a book deserves it.
+
+---
+
+## Book archetypes
+
+Archetype is a light tag in `meta.md` (`technical-reference` / `cognitive-mental-model`).
+It no longer drives a question style (the Feynman flow is retired). It mainly signals
+granularity and whether a book leans toward a private reflection style:
+
+- **technical-reference** (e.g. DDIA, Learning DDD, Hard Parts) — chapter by chapter;
+  the map + understanding record is the output.
+- **cognitive / mental-model** (e.g. Thinking, Fast and Slow) — per concept rather than
+  strictly per chapter; the "我的理解" block leans toward "where does this show up in a
+  real decision of mine?" The default output is still the understanding record, not a
+  public article.
 
 ---
 
@@ -545,18 +403,17 @@ during capture.** Don't pre-decide a book deserves an article. Let it earn it.
 
 ```
 Learning/Books/{BookTitle}/
-├── MOC.md          ← pure index: links to all content + cross-folder links
-├── meta.md         ← archetype, status, progress tracker, reading meta questions
-├── chapters/       ← book_init.py skeleton (read-only)
-├── notes/          ← per-chapter working notes (sources, research, differentiation)
-└── feynman/        ← Feynman check result logs (✅/⚠️, appended by date)
+├── MOC.md            ← pure index: links to all content
+├── meta.md           ← archetype, capture sources, progress tracker, reading meta
+├── chapters/         ← book_init.py skeleton (read-only)
+├── notes/            ← on-demand working notes (sources, research)
+├── understanding.md  ← per-chapter record: AI map + your understanding (terminal output)
+└── .fulltext_cache/  ← full-text cache (machine-managed, gitignored)
 ```
 
 ---
 
 ## This file is alive
 
-This workflow is being built evolutionarily, with DDIA + Thinking, Fast and Slow
-as the first two cases — deliberately two different archetypes, to force the
-system to generalize instead of overfitting to one book's shape. Expect this file
-to change as patterns emerge.
+This workflow is being rebuilt around low-friction capture, with Learning DDD as the
+first iteration. Expect it to keep changing as the loop is used and refined.

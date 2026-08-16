@@ -10,14 +10,14 @@ disable-model-invocation: true
 
 New book onboarding: $ARGUMENTS
 
-Read `Learning/Books/CLAUDE.md` for the full reading workflow this book will enter (archetypes, per-unit steps, folder boundaries). This command only handles **onboarding a new book** (the "New book onboarding" section there is the source of truth for that scope) — it does not touch the per-unit Feynman/write/review cycle that follows, which is a separate, ongoing workflow described later in that same file.
+Read `Learning/Books/CLAUDE.md` for the full reading workflow this book will enter (capture layers, the capture loop, folder boundaries). This command only handles **onboarding a new book** (the "New book onboarding" section there is the source of truth for that scope) — it does not touch the per-chapter capture cycle that follows, which is a separate, ongoing workflow described later in that same file.
 
 ## Step 1 — Confirm book identity
 
 Parse `$ARGUMENTS` for a book title (and author, if given). Confirm with the user:
 - **Book title** (exact, used for the vault folder name)
 - **Author**
-- **Archetype**: `technical-reference` or `cognitive-mental-model` (ask if unclear — this drives output target and Feynman question style, see `Learning/Books/CLAUDE.md` → "Book archetypes")
+- **Archetype**: `technical-reference` or `cognitive-mental-model` (ask if unclear — a light tag for granularity/reflection style, see `Learning/Books/CLAUDE.md` → "Book archetypes")
 - **Reading channel**: WeRead / EPUB / PDF / EPUB + WeRead
 
 If the user already gave all of these in `$ARGUMENTS`, skip re-asking and confirm briefly instead.
@@ -44,7 +44,11 @@ ls ~/Library/ebooks | grep -i "<title fragment>"
   --output "Learning/Books"
 ```
 
-This generates `Learning/Books/{Book Title}/` with `meta.md`, `MOC.md`, `chapters/`, `notes/`, `feynman/`. `meta.md`'s frontmatter already contains the resolved absolute path of the source file — keyed as `epub_path` for `.epub` sources, `pdf_path` for `.pdf` sources — **do not ask the user to re-supply it**, and do not manually re-type it elsewhere.
+This generates `Learning/Books/{Book Title}/` with `meta.md`, `MOC.md`, `chapters/`, `notes/`, and `understanding.md` (the per-chapter capture record — the system's terminal output). `meta.md`'s frontmatter already contains the resolved absolute path of the source file — keyed as `epub_path` for `.epub` sources, `pdf_path` for `.pdf` sources — **do not ask the user to re-supply it**, and do not manually re-type it elsewhere.
+
+For `.epub` sources it also auto-fills, when found — **do not ask the user to re-supply these either**:
+- `cover:` — the EPUB's embedded cover image, extracted to `<book>/cover.{ext}` (vault-relative path). This is the primary cover source for books with no WeRead sync (e.g. iBooks-only channel); Home.md's card resolves it via `app.vault.getResourcePath()`.
+- `ibooks_source:` — vault-relative path to a fuzzy-matched `ibooks-highlights/{title}.md` (Apple Books highlights export), analogous to `weread_source` but for the iBooks reading channel. Unlike WeRead's per-book folder, this is a single flat file with no chapter headings and no reading-progress field — metadata only, no chapter linking.
 
 If `--title` produced a folder name the user doesn't like (bad EPUB metadata), rerun with `--title "Correct Title"` — do not manually rename files.
 
@@ -52,25 +56,41 @@ If the reading channel is pure WeRead (no EPUB/PDF), skip this step and create t
 
 ## Step 4 — Fill in fields book_init.py doesn't know
 
-`book_init.py` cannot infer `archetype`, `output_target`, or `reading_channel` (WeRead-only books also need `weread_source`). After generation, edit `meta.md` frontmatter to add:
+`book_init.py` cannot infer `archetype` or `reading_channel` (WeRead-only books also need `weread_source`). After generation, edit `meta.md` frontmatter to add:
 
 ```yaml
 archetype: <technical-reference | cognitive-mental-model>
-output_target: <articles/{slug}/ | journal/>
-reading_channel: <EPUB | WeRead | EPUB + WeRead>
+reading_channel: <EPUB | WeRead | iBooks | EPUB + WeRead | EPUB + iBooks>
 weread_source: "WeRead/{Folder}/{File}.md"   # only if a WeRead sync exists for this book
+# output_target is optional — the per-chapter understanding.md record is the default output;
+# only add it if this book has a dedicated downstream (rare).
 ```
 
 Check whether a matching `WeRead/` folder exists for this book title; if so, add `weread_source` even when the primary reading channel is EPUB (matches the pattern used by existing books).
 
-## Step 5 — Report
+`ibooks_source` and `cover` (when a matching `ibooks-highlights/*.md` file or an embedded EPUB cover was found) are already auto-filled by Step 3 — don't add them manually or ask the user for them. If the reading channel is iBooks but no `ibooks-highlights/{title}.md` file exists yet (user hasn't synced highlights), leave `ibooks_source` unset — do not fabricate a path.
+
+## Step 5 — Build the full-text cache (EPUB only)
+
+The per-chapter map is generated from the book's actual text, so building the full-text cache is a **standard onboarding step** for EPUB books:
+
+```bash
+"Learning/Books/.venv/bin/python3" Learning/Books/extract_fulltext.py \
+  --book "Learning/Books/{Book Title}"
+```
+
+- Skip for pure-WeRead or PDF-only books (extractor is EPUB-only). Note it in the report so the user knows chapter maps won't be auto-generated for that book.
+- If it errors on a **chapter-count mismatch** (`chapters/` disagrees with the EPUB TOC — TOC-noise duplicates), don't guess: report it and leave the cache unbuilt; the book still works with a highlights-only record.
+
+## Step 6 — Report
 
 ```
 ✅ {BookTitle} 已加入系统
-   archetype: {X} · output: {Y} · channel: {Z}
+   archetype: {X} · channel: {Z}
    epub_path/pdf_path: {path, or "—" if WeRead-only}
+   full-text cache: {✅ N 章, or "— (WeRead/PDF only)", or "⚠️ 章节不匹配，未建"}
 
-开始读书时告诉我你在读哪个 chapter/concept。
+开始读书时告诉我你在读哪一章。
 ```
 
 Do not push further — Books Index.md discovers the new book automatically via Dataview (reads `status: reading` from `meta.md`), no manual index edit needed.

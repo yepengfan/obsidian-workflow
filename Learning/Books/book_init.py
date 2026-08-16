@@ -15,7 +15,7 @@ Generates a ready-to-use Obsidian note structure for deep reading:
     │   ├── Ch01_{title}.md
     │   └── ...
     ├── notes/
-    └── feynman/
+    └── understanding.md   (per-chapter capture record: AI map + your understanding)
 
 Dependencies:
     pip install ebooklib beautifulsoup4 pdfplumber
@@ -101,6 +101,28 @@ def match_weread_heading(chapter_title: str, weread_headings: set) -> str | None
     for h in weread_headings:
         if chapter_title in h or h in chapter_title:
             return h
+    return None
+
+
+# ── iBooks integration ────────────────────────────────────────────────────────
+
+def find_ibooks(vault_dir: Path, book_title: str) -> str | None:
+    """
+    Find a matching Apple Books highlights export in ibooks-highlights/.
+    Unlike WeRead's per-book folder, this plugin exports one flat .md file per
+    book (no per-chapter headings), so there's nothing to link chapters
+    against — this only returns the vault-relative path for meta.md's
+    `ibooks_source` field.
+    """
+    ibooks_dir = vault_dir / "ibooks-highlights"
+    if not ibooks_dir.exists():
+        return None
+
+    candidates = list(ibooks_dir.glob("*.md"))
+    candidates.sort(key=lambda f: (f.stem != book_title, -len(f.stem)))
+    for f in candidates:
+        if book_title in f.stem or f.stem in book_title:
+            return f"ibooks-highlights/{f.name}"
     return None
 
 
@@ -233,6 +255,45 @@ def parse_epub(filepath: str):
     return title, author, parts, chapter_items
 
 
+def extract_epub_cover(filepath: str, out_dir: Path) -> str | None:
+    """
+    Extract the embedded cover image from an EPUB and save it as
+    {out_dir}/cover.{ext}. Tries, in order:
+      1. EPUB3 `properties="cover-image"` item (ebooklib.ITEM_COVER)
+      2. EPUB2 `<meta name="cover" content="{id}"/>` in the OPF
+      3. Any image item whose filename contains "cover"
+    Returns the saved file's path (str) relative to nothing in particular —
+    caller is responsible for turning it into a vault-relative path. None if
+    no cover could be found.
+    """
+    import ebooklib
+    from ebooklib import epub
+
+    book = epub.read_epub(filepath)
+
+    cover_item = next(iter(book.get_items_of_type(ebooklib.ITEM_COVER)), None)
+
+    if cover_item is None:
+        cover_meta = book.get_metadata('OPF', 'cover')
+        cover_id = cover_meta[0][1].get('content') if cover_meta else None
+        if cover_id:
+            cover_item = book.get_item_with_id(cover_id)
+
+    if cover_item is None:
+        for item in book.get_items_of_type(ebooklib.ITEM_IMAGE):
+            if 'cover' in item.get_name().lower():
+                cover_item = item
+                break
+
+    if cover_item is None:
+        return None
+
+    ext = Path(cover_item.get_name()).suffix or '.jpg'
+    cover_path = out_dir / f'cover{ext}'
+    cover_path.write_bytes(cover_item.get_content())
+    return str(cover_path)
+
+
 # ── PDF parsing ───────────────────────────────────────────────────────────────
 
 def parse_pdf(filepath: str):
@@ -294,14 +355,17 @@ def _yaml_escape(s: str) -> str:
 
 
 def write_meta(out_dir: Path, title: str, author: str,
-               source_path: str = None, source_key: str = "epub_path"):
+               source_path: str = None, source_key: str = "epub_path",
+               cover_path: str = None, ibooks_source: str = None):
     source_line = f'\n{source_key}: "{_yaml_escape(source_path)}"' if source_path else ""
+    cover_line = f'\ncover: "{_yaml_escape(cover_path)}"' if cover_path else ""
+    ibooks_line = f'\nibooks_source: "{_yaml_escape(ibooks_source)}"' if ibooks_source else ""
     content = f"""---
 title: "{_yaml_escape(title)}"
 author: "{_yaml_escape(author)}"
 archetype:
 output_target:
-reading_channel:{source_line}
+reading_channel:{source_line}{cover_line}{ibooks_line}
 status: reading
 started: {date.today()}
 finished:
@@ -458,6 +522,21 @@ def main():
     if weread_name:
         print(f"📚  Found WeRead notes: {weread_name}")
 
+    # Check for Apple Books (iBooks) highlights export
+    ibooks_source = find_ibooks(vault_dir, title)
+    if ibooks_source:
+        print(f"📚  Found iBooks highlights: {ibooks_source}")
+
+    # Extract embedded cover image (EPUB only — PDF cover extraction isn't
+    # reliable enough to bother with, matching the fulltext-cache limitation)
+    cover_rel_path = None
+    if ext == '.epub':
+        cover_abs_path = extract_epub_cover(filepath, out_dir)
+        if cover_abs_path:
+            cover_rel_path = str(Path(cover_abs_path).relative_to(vault_dir)) \
+                if Path(cover_abs_path).is_absolute() else cover_abs_path
+            print(f"🖼️   Cover extracted: {cover_rel_path}")
+
     # Generate chapter files and collect filenames for map links
     filenames = {}  # chapter_title -> filename stem
     ch_num = 1
@@ -476,12 +555,20 @@ def main():
 
     abs_source_path = str(Path(filepath).expanduser().resolve())
     source_key = "epub_path" if ext == '.epub' else "pdf_path"
-    write_meta(out_dir, title, author, source_path=abs_source_path, source_key=source_key)
+    write_meta(out_dir, title, author, source_path=abs_source_path, source_key=source_key,
+               cover_path=cover_rel_path, ibooks_source=ibooks_source)
     write_moc(out_dir, title, parts, filenames)
 
-    # Create notes/ and feynman/ directories
+    # Create notes/ directory and the understanding.md capture record placeholder
     (out_dir / "notes").mkdir(exist_ok=True)
-    (out_dir / "feynman").mkdir(exist_ok=True)
+    understanding_file = out_dir / "understanding.md"
+    if not understanding_file.exists():
+        understanding_file.write_text(
+            f"# {title} — Understanding\n\n"
+            "> 每章一条记录：AI 生成的结构地图 + 核心概念，加上你自己的话的理解。\n"
+            "> 机制见 `Learning/Books/CLAUDE.md` → \"The capture loop\"。\n",
+            encoding="utf-8",
+        )
 
     # Summary
     n_chapters = len(chapter_items)
@@ -491,6 +578,10 @@ def main():
     print(f"✅  meta.md ready to fill")
     if weread_name:
         print(f"✅  WeRead linked: {weread_matched}/{n_chapters} chapters")
+    if ibooks_source:
+        print(f"✅  iBooks source linked: {ibooks_source}")
+    if cover_rel_path:
+        print(f"✅  Cover image: {cover_rel_path}")
     print(f"\n📁  Output: {out_dir}")
     print(f"\n👉  Next: open meta.md in Obsidian and fill in your reading goals.")
 

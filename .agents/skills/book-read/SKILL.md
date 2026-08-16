@@ -2,8 +2,8 @@
 name: book-read
 description: >-
   Resume a reading session — pick an in-progress book, choose a chapter, and enter
-  the Feynman/review workflow. Use when the user wants to study a book they're
-  reading, do a Feynman check, or says /book-read.
+  the capture (落盘) workflow. Use when the user wants to study a book they're
+  reading, record their understanding of a chapter, or says /book-read.
 disable-model-invocation: true
 ---
 
@@ -14,7 +14,7 @@ Resume a reading session: $ARGUMENTS
 
 This command is a **router**, not the workflow itself. Its only job is to pick the right
 **book + chapter + step**, load context, then hand off to the real reading workflow in
-`Learning/Books/CLAUDE.md`. Do **not** duplicate Feynman/review rules here — that file is
+`Learning/Books/CLAUDE.md`. Do **not** duplicate the capture-loop rules here — that file is
 the single source of truth. Read it before entering any step.
 
 ## Step 1 — Pick the book
@@ -31,22 +31,29 @@ that goes stale; PR #156 demoted it to fallback-only). Instead:
 
 - **`$ARGUMENTS` names/fuzzy-matches exactly one reading book** → use it, skip the prompt.
 - **Only one reading book exists** → use it, skip the prompt.
-- **Otherwise** → use `AskUserQuestion` to let the user pick (reading books are few, ≤4;
-  build options dynamically from the scan — never hardcode titles). Show `title · author ·
-  WeRead N%` (live) per option.
+- **Otherwise** → use `AskUserQuestion` to let the user pick (build options dynamically from
+  the scan — never hardcode titles). Show `title · author · WeRead N%` (live) per option.
 
 ## Step 2 — Pick the chapter
 
 Read the chosen book's `MOC.md` (chapter list) and `meta.md`'s `progress:` tracker.
+
+**First, run progress-driven pre-fill** (see `Learning/Books/CLAUDE.md` →
+"Progress-driven pre-fill (batch)"): ensure the full-text cache exists, detect read
+chapters (WeRead sections with ≥1 highlight), and for any read chapter without a map
+yet, generate + append its map to `understanding.md` and set `progress.chNN.map = done`.
+Skip silently for iBooks-only / PDF / cache-missing books (note why). Then build the
+table from the now-current tracker.
 
 **Report a progress table in conversation** (not `AskUserQuestion` — chapters often exceed 4),
 then let the user say a chapter number. Use the exact table format from
 `Learning/Books/CLAUDE.md` → "Cross-session progress display" (single source of truth — follow
 it rather than re-inventing a layout here).
 
-Derive each chapter's marks from meta.md's `progress:` tracker: a `feynman`/`write` field that
-is absent or `not_started` → ○, `in_progress` → ⚠️, `done` → ✅. If the tracker is empty
-(`progress: {}`, a freshly onboarded book), show all chapters as ○ 未开始.
+Derive each chapter's marks from meta.md's `progress:` tracker: the `map` and `understanding`
+fields — absent or `not_started` → ○, `done` → ✅. If the tracker is empty (`progress: {}`, a
+freshly onboarded book), show all chapters as ○ 未开始. (Older books may still carry legacy
+`feynman`/`write` fields — ignore them for display.)
 
 ⚠️ **EPUB metadata noise**: `book_init.py` sometimes emits duplicate/placeholder chapters from
 a messy EPUB TOC (e.g. Learning DDD's `Ch17–Ch32` are just "Chapter 1"–"Chapter 16" repeats of
@@ -58,18 +65,19 @@ contains TOC noise so the user isn't misled.
 
 Use `AskUserQuestion` to choose which part of the reading loop to enter:
 
-- **费曼测试** — Feynman sparring (the most common; `Learning/Books/CLAUDE.md` → Step 2)
+- **落盘理解** — the capture loop: AI generates the chapter's 思维导图 + 核心概念, you add your
+  understanding in your own words, AI verifies and stores both (`Learning/Books/CLAUDE.md` →
+  "The capture loop"). The most common step.
 - **查 source / 验证** — on-demand research (that file → "Find sources / verify")
-- **我写你 review** — structure & accuracy review of what the user wrote (that file → Step 3)
 - **只是继续读** — no AI step; just surface context and progress, then stop
 
 ## Step 4 — Load context and enter
 
 Load context per `Learning/Books/CLAUDE.md` → "Context loading" (that section is the single
-source of truth for the sequence — do not restate it here). If the chosen step is 费曼测试,
-also do that file's Feynman "Preparation" reads (chapter skeleton + existing notes) before
-opening.
+source of truth for the sequence — do not restate it here). This includes ensuring the
+full-text cache exists (build it if missing) so the chapter map can be generated.
 
-Then enter the step chosen in Step 3, following that file's rules exactly. For 费曼测试, that
-means opening with "用你自己的话解释一下这章的核心内容。" and giving **no** hints — do not let
-this router's context-loading leak book content into the opener.
+Then enter the step chosen in Step 3, following that file's rules exactly. For 落盘理解, that
+means generating the 思维导图 + 核心概念 first (from the full-text cache + capture-layer
+highlights), showing it, then prompting the user for their own understanding — per that file's
+"The capture loop".

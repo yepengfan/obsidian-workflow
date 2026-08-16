@@ -1,12 +1,26 @@
 ---
 tags: template
 for: Home
-updated: 2026-08-11
+updated: 2026-08-16
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-08-16 — 📖 读书 card progress: 费曼 → 落盘 (reading system rebuilt around capture)
+> - **Why**: The book-learning system was rebuilt around low-friction capture (see `Learning/Books/CLAUDE.md`). The deep Feynman/guardrail flow and the `articles/` write-review downstream are retired. Each chapter now produces one `understanding.md` record: an AI-generated 思维导图+核心概念 map plus the reader's own understanding, backed by a standard full-text cache (`.fulltext_cache/`, `extract_fulltext.py`). Capture layer is now dual: WeRead + Apple Books/iBooks.
+> - **Card change**: The progress badge/dots no longer read a `feynman` field off `chapters/*.md` (that field never existed on the skeletons, so the badge was stuck at 0/N). They now read `meta.md`'s `progress` tracker — per-chapter `understanding` field. Badge relabeled `费曼 X/N` → `落盘 X/N`; a chapter counts as done when `progress.chNN.understanding` is set and not `not_started`. `chKey(n)` zero-pads the chapter number to match tracker keys (`ch01`, `ch02`, …).
+> - **Progress tracker fields**: `feynman`/`write` → `map`/`understanding` per chapter. Older books keep legacy fields as read-only history (ignored by the card).
+> - **Access to the 落盘 file from Home**: added a `📝 落盘` link on each card (left of ▶ 开始阅读) that opens `<book>/understanding.md` directly. Chapter dots now link to that chapter's section in understanding.md (`understanding.md#Ch{N}. {title}`) instead of the read-only `chapters/` skeleton — `chAnchor(c)` builds the heading string by stripping the leading `N. ` from `c.title` to match the record's `## Ch{N}. {title}` heading format. Not-yet-落盘 chapters have no heading yet, so those dots just open the file top.
+> - **Two-stage progress (map pre-fill vs understanding)**: the capture system pre-fills the AI map per chapter (progress `map`), then the reader adds their understanding (progress `understanding`). Badge shows both: `图{mapCh}/理解{doneCh}` (was `落盘 {doneCh}/{total}`). Dots have three states: understanding done = solid accent; map pre-filled but understanding pending = accent **outline** (via `isChMapped`); neither = muted. `Ch{current}/{total}` bit unchanged (current = first chapter without understanding).
+> - **Unchanged**: card layout, title→MOC link, cover resolution, live WeRead progress read, ▶ 开始阅读 button.
+
+> [!note] 2026-08-13 — 📖 读书 card covers now support local (non-WeRead) sources
+> - **Problem**: `findBookCover()` returned `meta.cover` as a raw string and passed it straight into `<img src>`. That works for WeRead-hosted covers (`https://res.weread.qq.com/...`) but silently 404s for books with no WeRead sync — e.g. books read via Apple Books (`ibooks_source`), which have no `cover:` field to fall back on at all.
+> - **Fix**: `book_init.py` now auto-extracts the EPUB's embedded cover image (EPUB3 `cover-image` property → EPUB2 OPF `<meta name="cover">` → filename fallback) to `<book>/cover.{ext}` and writes it into `meta.md`'s `cover:` field at onboarding time — independent of reading channel. Added `resolveCoverUrl()` in `Home.md`: remote `http(s)` URLs pass through unchanged (WeRead case), vault-relative paths are resolved via `app.vault.getResourcePath()` into a usable `<img src>` (new EPUB-extracted case). Both call sites in `findBookCover()` (explicit `meta.cover` and the WeRead-folder fallback) route through it.
+> - **`ibooks_source` as a first-class field**: Added alongside `weread_source` for books read via Apple Books — `book_init.py`'s new `find_ibooks()` fuzzy-matches `ibooks-highlights/*.md` by title the same way `find_weread()` matches `WeRead/*/`. Unlike WeRead's per-book folder with per-chapter headings, Apple Books' plugin export is one flat file per book with no chapter structure, so it's onboarding-time metadata only (no chapter-level linking, no live progress — Apple Books highlights exports don't carry a reading-percentage field).
+> - **Backfill**: Existing books onboarded before this change don't get a cover retroactively — `extract_epub_cover()` was run once manually for already-onboarded books that needed it.
 
 > [!note] 2026-08-11 — Clickable bars in Algorithm weekly activity chart
 > - **Why**: The `📝 最近做题` bar chart (Algorithm tab, `🏋️ 长期练习`) only visualized weekly problem counts — there was no way to jump from a bar to the log(s) behind it.
