@@ -21,11 +21,11 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 如果 `$ARGUMENTS` 为空（用户只输入了 `/sysd-solve`）：
 
 1. 用 shell `ls Learning/Practice/System-Design/Solutions/` 枚举所有子文件夹，逐个 `Read` 其 `progress.md`，检查 frontmatter 是否含 `system-design/wip` tag（见上方 WARNING，不要用 Glob/Grep）
-2. **找到 1 个** → 自动恢复该 session（读取 progress.md，跳到上次中断的 Step 继续）
+2. **找到 1 个** → 自动恢复该 session（按下方"恢复 Session"逻辑同时检查 progress.md 与 Excalidraw，跳到上次中断的 Step 继续）
 3. **找到多个** → 列出所有 WIP session（显示题目名 + 开始日期 + 当前进度），问用户要继续哪个
 4. **找到 0 个** → 回复: "没有进行中的练习。请指定题目，如 `/sysd-solve Design YouTube`"
 
-找到要恢复的 session 后，跳到下方"恢复 WIP session"的逻辑继续。
+找到要恢复的 session 后，按下方"恢复 Session（读取完整状态）"的逻辑继续。
 
 ---
 
@@ -33,8 +33,8 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 
 1. 从 `$ARGUMENTS` 提取题目简称（如 "Design YouTube" → "YouTube", "Bitly" → "Bitly"）
 2. 用 shell `ls Learning/Practice/System-Design/Solutions/` 枚举所有 `<题目>-*` 文件夹（不要用 Glob/Grep，见上方 WARNING）:
-   - **找到带 `system-design/wip` tag 的 progress.md** → 读取该 progress.md，恢复到上次中断的位置继续（跳到对应 Step）
-   - **找到带 `system-design/planned` tag 的 progress.md** → 将 tag 改为 `system-design/wip`，读取该 progress.md，从记录的“下次继续”开始（全空时从 Step 1 开始）
+   - **找到带 `system-design/wip` tag 的 progress.md** → 按下方"恢复 Session"逻辑同时检查 progress.md 与 Excalidraw，恢复到上次中断的位置继续（跳到对应 Step）
+   - **找到带 `system-design/planned` tag 的 progress.md** → 将 tag 改为 `system-design/wip`，按下方"恢复 Session"逻辑同时检查 progress.md 与 Excalidraw，从记录的"下次继续"开始（全空时从 Step 1 开始）
    - **找到该题目的文件夹但都无 wip/planned tag** → 告诉用户这题已练习过 N 次，问是否重新练习
    - **不存在** → 创建 Solution 文件夹 + 文件（见下方）
 
@@ -60,8 +60,19 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 `tags: [system-design/planned]`，六步保持全 ⬜：
 
 - `planned` 不属于进行中 session，无参数 `/sysd-solve` 不应列出或自动恢复它。
-- 用户指定该题时，按上方“有参数时”规则先切换为 `system-design/wip`，再开始引导。
+- 用户指定该题时，按上方"有参数时"规则先切换为 `system-design/wip`，再开始引导。
 - Dashboard 中 `planned` 显示为未开始，但可通过已存在的 progress 文件进入题目。
+
+### 恢复 Session（读取完整状态）
+
+> [!WARNING] 恢复任何 session 时（无参数自动恢复 / 有参数命中 wip / 有参数命中 planned）**禁止只读 progress.md**。用户可能已经直接在 Excalidraw 画布上写了 FR/NFR/BoE/Core Entities/API 等草稿，但还没同步回 progress.md——只读 progress.md 会重复提问用户已经想清楚的内容。
+
+1. `Read` 该 session 的 `progress.md`，获取 Progress 表、Pending Questions、Key Learnings、下次继续
+2. `Read` 同文件夹下的 `<题目>.excalidraw.md`，查看 `## Text Elements` 到 `%%` 之间的文字内容（这是未压缩的画布文字，不需要解压 `Drawing` 部分的 compressed-json）
+3. **对比两者**：
+   - Excalidraw 里有 progress.md 未记录或不一致的内容 → 先更新 progress.md（对应 Step 的 Notes、Key Learnings 补齐 Excalidraw 里的草稿），再继续引导
+   - 两者一致 → 直接按 progress.md 的"下次继续"恢复引导
+4. 从"下次继续"记录的位置接着引导，**不要重复提问 Excalidraw 里已经写清楚的内容**——只针对缺失或空白的部分继续引导
 
 ## 自动 Checkpoint（贯穿 Phase 1-2 全程）
 
