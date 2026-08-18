@@ -70,7 +70,10 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 1. `Read` 该 session 的 `progress.md`，获取 Progress 表、Pending Questions、Key Learnings、下次继续
 2. 用 shell `ls` 该 session 文件夹，找到其中的 `*.excalidraw.md` 文件（文件名用的是创建时的题目简称，可能与 progress.md `topic` 字段（完整题目描述）或本次 `$ARGUMENTS` 不完全一致——不要假设文件名，以 `ls` 结果为准），`Read` 它，查看 `## Text Elements` 到 `%%` 之间的文字内容（这是未压缩的画布文字，不需要解压 `Drawing` 部分的 compressed-json）
 3. **对比两者**（先排除下方 NOTE 中的模板占位符，只对比占位符之外的实际内容）：
-   - Excalidraw 里有 progress.md 未记录或不一致的内容 → 先更新 progress.md（对应 Step 的 Notes、Key Learnings 补齐 Excalidraw 里的草稿），再继续引导
+   - Excalidraw 里有 progress.md 未记录或不一致的内容 → 先更新 progress.md，再继续引导：
+     - 对应 Step 的 Notes、Key Learnings 补齐 Excalidraw 里的草稿
+     - 根据补齐后的实际完成度，同步更新 Progress 表对应 Step 的状态标记（⬜/🔄/✅）
+     - 同步更新"下次继续"字段为同步后的最新下一步行动，避免下一步基于过期指针恢复引导
    - 两者一致（或 Excalidraw 里只有模板占位符、没有用户填写的内容）→ 直接按 progress.md 的"下次继续"恢复引导
 4. 从"下次继续"记录的位置接着引导，**不要重复提问 Excalidraw 里已经写清楚的内容**——只针对缺失或空白的部分继续引导
 
