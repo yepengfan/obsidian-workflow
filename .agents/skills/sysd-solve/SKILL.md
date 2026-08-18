@@ -75,7 +75,7 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
      - 根据补齐后的实际完成度，同步更新 Progress 表对应 Step 的状态标记（⬜/🔄/✅）
      - 同步更新"下次继续"字段为同步后的最新下一步行动，避免下一步基于过期指针恢复引导
    - 两者一致（或 Excalidraw 里只有模板占位符、没有用户填写的内容）→ 直接按 progress.md 的"下次继续"恢复引导
-4. 从"下次继续"记录的位置接着引导，**不要重复提问 Excalidraw 里已经写清楚的内容**——只针对缺失或空白的部分继续引导
+4. 从"下次继续"记录的位置接着引导，**不要重复提问 Excalidraw 里已经写清楚的内容**——只针对缺失或空白的部分继续引导。若"下次继续"为空（新建的 planned/wip session，尚未触发过自动 checkpoint，Excalidraw 也只有模板占位符）→ 从 Step 1 开始引导
 
 > [!NOTE] 模板占位符不算用户内容。`node scripts/sd-excalidraw-template.js` 预填的以下文本元素是固定模板骨架，**不代表用户已完成对应 Step**，对比时应忽略：
 > - 标题行本身（如 `Design: <题目>`、`1. Requirements`、`Functional Requirements`、`Non-Functional Requirements`、`Below the line (out of scope)`、`Back-of-Envelope`、`2. Core Entities`、`3. API / Interface`、`4. Data Flow`、`Write Flow:`、`Read Flow:`、`5. High-Level Design`、`6. Deep Dives`）
