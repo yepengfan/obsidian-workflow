@@ -68,11 +68,17 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 > [!WARNING] 恢复任何 session 时（无参数自动恢复 / 有参数命中 wip / 有参数命中 planned）**禁止只读 progress.md**。用户可能已经直接在 Excalidraw 画布上写了 FR/NFR/BoE/Core Entities/API 等草稿，但还没同步回 progress.md——只读 progress.md 会重复提问用户已经想清楚的内容。
 
 1. `Read` 该 session 的 `progress.md`，获取 Progress 表、Pending Questions、Key Learnings、下次继续
-2. `Read` 同文件夹下的 `<题目>.excalidraw.md`，查看 `## Text Elements` 到 `%%` 之间的文字内容（这是未压缩的画布文字，不需要解压 `Drawing` 部分的 compressed-json）
-3. **对比两者**：
+2. 用 shell `ls` 该 session 文件夹，找到其中的 `*.excalidraw.md` 文件（文件名用的是创建时的题目简称，可能与 progress.md `topic` 字段（完整题目描述）或本次 `$ARGUMENTS` 不完全一致——不要假设文件名，以 `ls` 结果为准），`Read` 它，查看 `## Text Elements` 到 `%%` 之间的文字内容（这是未压缩的画布文字，不需要解压 `Drawing` 部分的 compressed-json）
+3. **对比两者**（先排除下方 NOTE 中的模板占位符，只对比占位符之外的实际内容）：
    - Excalidraw 里有 progress.md 未记录或不一致的内容 → 先更新 progress.md（对应 Step 的 Notes、Key Learnings 补齐 Excalidraw 里的草稿），再继续引导
-   - 两者一致 → 直接按 progress.md 的"下次继续"恢复引导
+   - 两者一致（或 Excalidraw 里只有模板占位符、没有用户填写的内容）→ 直接按 progress.md 的"下次继续"恢复引导
 4. 从"下次继续"记录的位置接着引导，**不要重复提问 Excalidraw 里已经写清楚的内容**——只针对缺失或空白的部分继续引导
+
+> [!NOTE] 模板占位符不算用户内容。`node scripts/sd-excalidraw-template.js` 预填的以下文本元素是固定模板骨架，**不代表用户已完成对应 Step**，对比时应忽略：
+> - 标题行本身（如 `Design: <题目>`、`1. Requirements`、`Functional Requirements`、`Non-Functional Requirements`、`Below the line (out of scope)`、`Back-of-Envelope`、`2. Core Entities`、`3. API / Interface`、`4. Data Flow`、`Write Flow:`、`Read Flow:`、`5. High-Level Design`、`6. Deep Dives`）
+> - 空的编号占位符（如 `1.\n2.\n3.\n4.\n5.` 或 `1.\n2.`，编号后没有实际文字）
+> - 空的 Back-of-Envelope 提示行（`- read/write ratio:`、`- QPS:`、`- storage:`，冒号后没有填值）
+> 只有当这些占位符被用户追加/替换成实际文字后，才算作已完成的草稿内容。
 
 ## 自动 Checkpoint（贯穿 Phase 1-2 全程）
 
