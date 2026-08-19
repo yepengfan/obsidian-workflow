@@ -61,14 +61,13 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
    - 用 1 句话预判本题 pattern 归属（无需读全量 Patterns）
    - 用 `AskUserQuestion` / `AskQuestion` 或明确 yes/no 提问：**「要沉淀到 pattern card + daily log 吗？」**
    - **是** → 进入 Phase 3
-   - **否** → 结束 session，不写任何 vault 文件；可附一句「之后补沉淀时重跑 `/algo-solve` 同一题（需重新完成引导与审核），Phase 3 开始时会确认解题日期」
+   - **否** → 结束 session，不写任何 vault 文件；可附一句「之后补沉淀时重跑 `/algo-solve` 同一题（需重新完成引导与审核）」
 
 ## Phase 3 — 沉淀（仅在用户确认后执行）
 
-1. **确认解题日期**（solve date，格式 YYYY-MM-DD）:
-   - 进入 Phase 3 时先问：**「解题是今天吗？」**
-   - 若否、不确定、补沉淀、重跑同一题、或用户说「昨天做的」等 → 确认具体日期，不可静默默认今天
-   - 若确认是今天 → 使用 session 日期
+1. **解题日期**（solve date，格式 YYYY-MM-DD）:
+   - **默认 session 当天**，不要询问
+   - 仅当用户**已经**明确给出另一天（如「昨天做的」「补 2026-08-19」）时改用该日期；没给就用当天
    - 后续 pattern Problems 表格日期与 log 文件名均使用此日期
 
 2. **判断 pattern 归属**:
