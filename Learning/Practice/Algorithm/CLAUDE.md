@@ -67,7 +67,7 @@
 ## Pattern Card Rules
 
 - **归类前必须先查已有 pattern**: 用 `Glob("Learning/Practice/Algorithm/Patterns/*.md")` 列出所有文件名（不要用 shell glob，中文/括号文件名会静默失败）。扫描文件名判断是否有匹配的 pattern，有疑问时只读 frontmatter + `## Key Insight`（有 `## Composed Of` 一并看）确认（不读 Template/Gotchas/Problems，见 Efficiency Rules）。**绝不跳过此步直接新建。**
-- **已有 pattern**: 加题号到 frontmatter `problems[]` + 正文 Problems 表格加一行（Date 列用确认的解题日期，非沉淀 session 当天）+ 更新 `updated` 日期
+- **已有 pattern**: 加题号到 frontmatter `problems[]` + 正文 Problems 表格加一行（Date 列用解题日期，默认 session 当天）+ 更新 `updated` 日期
 - **新 pattern**: 创建新文件（用 `Templates/Algorithm Pattern.md`），id 取当前最大值 +1，填充所有字段；Problems 表格首行 Date 列同样用解题日期
 - `difficulty` 指 pattern 理解难度，非单题难度
 - 文件名 = pattern title（去掉文件系统非法字符 `/ \ : * ? " < > |`）
@@ -109,7 +109,7 @@
 - 包含 pattern wikilink `[[pattern name]]`、difficulty、result emoji、notes、complexity
 - frontmatter `problems_solved` 数组与正文 sections 保持一致
 - 文件名: `YYYY-MM-DD.md`，日期为**解题日期**（solve date）
-- 解题日期默认 session 当天，**不要询问**。用户明确给出另一天时改用该日期；若说补沉淀/重跑但没给日期，问一次原解题日期，禁止静默写成当天
+- 解题日期默认 session 当天，**不要询问**。仅当用户已经明确给出另一天时改用该日期；没给就用当天
 - 如果该日 log 已存在，追加新 section（不覆盖）
 
 ## Category Values
