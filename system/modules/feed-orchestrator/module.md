@@ -5,14 +5,14 @@ type: feed
 status: active
 enabled: true
 created: 2026-05-21
-updated: 2026-08-08
+updated: 2026-08-19
 depends_on: [feeds-ai-digest, feeds-github-trending, feeds-engineering-blogs, dashboard]
 requires:
   python: ">=3.13"
   pip: [anthropic, aiohttp]
   plugins: [dataview, obsidian-shellcommands]
   env:
-    FEED_LLM_BACKEND: "(optional) anthropic or cursor; inferred from credentials when unset"
+    FEED_LLM_BACKEND: "(optional) anthropic or cursor; defaults to cursor when agent CLI is on PATH, else falls back to anthropic credentials"
     ANTHROPIC_API_KEY: "(required when FEED_LLM_BACKEND=anthropic) Anthropic API key for Haiku"
     ANTHROPIC_AUTH_TOKEN: "(optional) Alternative Anthropic auth token"
     CURSOR_API_KEY: "(optional) Cursor API key for headless cursor backend; agent login also works"
