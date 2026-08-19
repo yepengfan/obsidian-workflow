@@ -109,7 +109,7 @@
 - 包含 pattern wikilink `[[pattern name]]`、difficulty、result emoji、notes、complexity
 - frontmatter `problems_solved` 数组与正文 sections 保持一致
 - 文件名: `YYYY-MM-DD.md`，日期为**解题日期**（solve date）
-- 解题日期默认 session 当天，**不要询问**。仅当用户明确给出另一天（补沉淀、昨天做的等）时改用该日期
+- 解题日期默认 session 当天，**不要询问**。用户明确给出另一天时改用该日期；若说补沉淀/重跑但没给日期，问一次原解题日期，禁止静默写成当天
 - 如果该日 log 已存在，追加新 section（不覆盖）
 
 ## Category Values
