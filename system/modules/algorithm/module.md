@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-07
-updated: 2026-08-17
+updated: 2026-08-20
 depends_on: []
 requires:
   cli: [claude]
