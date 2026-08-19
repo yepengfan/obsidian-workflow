@@ -20,7 +20,7 @@ Typical runtime per feed:
 ```bash
 bash scripts/feed-orchestrator/load-env.sh
 ```
-When `FEED_LLM_BACKEND` is unset, the backend is inferred: Anthropic if `ANTHROPIC_API_KEY` / `ANTHROPIC_AUTH_TOKEN` is set, otherwise Cursor CLI if `agent` is on PATH. Override explicitly with `FEED_LLM_BACKEND=anthropic` or `FEED_LLM_BACKEND=cursor`.
+When `FEED_LLM_BACKEND` is unset, the backend is inferred: Cursor CLI if `agent` is on PATH (default — subscription auth doesn't expire), otherwise Anthropic if `ANTHROPIC_API_KEY` / `ANTHROPIC_AUTH_TOKEN` is set. Override explicitly with `FEED_LLM_BACKEND=anthropic` or `FEED_LLM_BACKEND=cursor`.
 
 ## Instructions
 
@@ -32,7 +32,7 @@ When `FEED_LLM_BACKEND` is unset, the backend is inferred: Anthropic if `ANTHROP
    ```bash
    bash scripts/feed-orchestrator/load-env.sh
    ```
-   Runs each enabled feed one after another. Respects `FEED_LLM_BACKEND` (credential-based default when unset).
+   Runs each enabled feed one after another. Respects `FEED_LLM_BACKEND` (defaults to Cursor CLI when unset, falling back to Anthropic credentials).
 
    **Option B** — legacy per-feed `run.sh` scripts (Claude CLI only; each feed is a separate process and may be started in parallel manually):
    - **AI Digest** (if enabled): `bash scripts/ai-digest/run.sh`

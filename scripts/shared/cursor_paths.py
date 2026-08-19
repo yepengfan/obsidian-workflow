@@ -49,12 +49,16 @@ def cursor_cli_available(path: str | None = None) -> bool:
 
 
 def resolve_default_feed_backend() -> str:
-    """Infer FEED_LLM_BACKEND when unset (matches load-env.sh)."""
-    if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
-        return "anthropic"
+    """Infer FEED_LLM_BACKEND when unset (matches load-env.sh).
+
+    Prefers Cursor CLI (subscription auth, doesn't expire) over Anthropic
+    credentials, which are often a proxy token that can silently expire.
+    """
     if cursor_cli_available():
         return "cursor"
+    if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+        return "anthropic"
     raise RuntimeError(
-        "No LLM backend available. Set ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN, "
-        "or install Cursor CLI (agent on PATH)."
+        "No LLM backend available. Install Cursor CLI (agent on PATH), "
+        "or set ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN."
     )

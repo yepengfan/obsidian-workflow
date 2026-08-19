@@ -23,12 +23,14 @@ fi
 source "$SHARED_DIR/cursor-paths.sh"
 export PATH="$(cursor_augment_path)"
 
-# Default LLM backend when unset: prefer credentials over hardcoded cursor
+# Default LLM backend when unset: prefer Cursor CLI (subscription auth,
+# doesn't expire) over Anthropic credentials (often a proxy token that can
+# silently expire).
 if [ -z "${FEED_LLM_BACKEND:-}" ]; then
-  if [ -n "${ANTHROPIC_API_KEY:-}" ] || [ -n "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
-    export FEED_LLM_BACKEND=anthropic
-  elif cursor_cli_available; then
+  if cursor_cli_available; then
     export FEED_LLM_BACKEND=cursor
+  elif [ -n "${ANTHROPIC_API_KEY:-}" ] || [ -n "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
+    export FEED_LLM_BACKEND=anthropic
   fi
   # else: leave unset — orchestrator validates credentials at enrich time
 fi
