@@ -65,6 +65,16 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 
 ## Phase 3 — 沉淀（仅在用户确认后执行）
 
+**进入 Phase 3 后立即调用 `TodoWrite` 创建以下任务板（merge: false），再开始执行：**
+
+```
+1. 确定解题日期
+2. 扫 Patterns/ + 判断归属（新建 or 更新）
+3. 写 Pattern card
+4. 写 Log
+5. Atom check
+```
+
 1. **解题日期**（solve date，格式 YYYY-MM-DD）:
    - **默认 session 当天**，不要询问
    - 仅当用户**已经**明确给出另一天（如「昨天做的」「补 2026-08-19」）时改用该日期；没给就用当天
