@@ -62,8 +62,8 @@ If the reading channel is pure WeRead or pure iBooks (no EPUB/PDF), skip this st
 archetype: <technical-reference | cognitive-mental-model>
 reading_channel: <EPUB | WeRead | iBooks | EPUB + WeRead | EPUB + iBooks>
 weread_source: "WeRead/{Folder}/{File}.md"   # only if a WeRead sync exists for this book
-# output_target is optional — the per-chapter understanding.md record is the default output;
-# only add it if this book has a dedicated downstream (rare).
+# No output_target field — the publication layer is always in-book article.md,
+# generated on demand via /book-write (see Learning/Books/CLAUDE.md → "Publication layer").
 ```
 
 Check whether a matching `WeRead/` folder exists for this book title; if so, add `weread_source` even when the primary reading channel is EPUB (matches the pattern used by existing books).
