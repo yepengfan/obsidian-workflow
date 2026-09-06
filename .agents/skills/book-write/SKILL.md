@@ -68,7 +68,7 @@ format in `Learning/Books/CLAUDE.md`). Never overwrite the reader's own prose in
 article.md; append/update only the AI skeleton blocks.
 
 ### Chapter-level skeleton
-Append a `## Ch{N}. {title}` section under `## 章级骨架（写作素材）` containing:
+Append a `### Ch{N}. {title}` section under `## 章级骨架（写作素材）` containing:
 - **骨架** — 3–6 candidate section headings you could build a post-section around, drawn
   from the chapter's mind-map branches (writing-oriented, not a mind map).
 - **重点** — the chapter's must-include points (concept + one-line why-it-matters).

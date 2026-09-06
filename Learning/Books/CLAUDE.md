@@ -358,7 +358,7 @@ works even with gaps, but flags which chapters still lack `我的理解`.
 
 ### Two granularities
 
-- **Chapter-level** (读完一章): append a `## Ch{N}. {title}` section under `## 章级骨架（写作素材）`
+- **Chapter-level** (读完一章): append a `### Ch{N}. {title}` section under `## 章级骨架（写作素材）`
   with **骨架** (3–6 candidate section headings), **重点** (concept + one-line why), and
   **可用 seed** (that chapter's `📌` + `我的理解`, verbatim, under `> 📥`).
 - **Book-level** (读完整本): generate/refresh the top `## 文章大纲（书级）` block —
