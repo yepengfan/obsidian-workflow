@@ -378,7 +378,6 @@ def write_meta(out_dir: Path, title: str, author: str,
 title: "{_yaml_escape(title)}"
 author: "{_yaml_escape(author)}"
 archetype:
-output_target:
 reading_channel:{source_line}{cover_line}{ibooks_line}
 status: reading
 started: {date.today()}
