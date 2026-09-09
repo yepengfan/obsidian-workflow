@@ -71,8 +71,8 @@ Use `AskUserQuestion` to choose which part of the reading loop to enter:
   understanding in your own words, AI verifies and stores both (`Learning/Books/CLAUDE.md` →
   "The capture loop"). The most common step.
 - **查 source / 验证** — on-demand research (that file → "Find sources / verify")
-- **写读后骨架** — the publication layer: AI distills a writing skeleton (骨架 + 重点) into
-  `article.md` for this chapter (or the whole book), then you write the 读后文章 from it
+- **写读后骨架** — the publication layer: AI distills a per-chapter 骨架（这章在讲什么）
+  into `article.md` for this chapter, then you write that chapter's 我的总结
   (`Learning/Books/CLAUDE.md` → "Publication layer — 写作骨架"; same as `/book-write`)
 - **只是继续读** — no AI step; just surface context and progress, then stop
 

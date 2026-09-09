@@ -325,12 +325,15 @@ dated block under the same heading rather than overwriting — this is a running
 
 *Trigger: "帮我整理骨架" / "我要写读后" / picking a book/chapter via `/book-write`*
 
-The third layer. When a chapter or a whole book is worth writing up, AI distills a
-**writing skeleton** (骨架 + 重点) into `{BookTitle}/article.md`, and the human writes the
-读后文章 by following it — in the same file, below the skeleton. This is *not* the map:
-the map (understanding.md) is a comprehension scaffold; the skeleton is writing-oriented
-(candidate section headings + must-include points + which of your own highlights/理解 to
-draw on).
+The third layer. `{BookTitle}/article.md` is a summary-writing surface with two levels:
+a **per-chapter summary** for every chapter (每章一个 AI 骨架「这章在讲什么」+ your own
+`我的总结`) and one **全书总结** at the end (AI 全书脉络骨架 + your whole-book summary).
+AI distills the 骨架; the human writes every 总结. This is *not* the map: the map
+(understanding.md) is a detailed comprehension mind-map; the article 骨架 is a tight
+"what is this chapter/book about" scaffold you write a summary against.
+
+Workflow: read a chapter → its 骨架 appears → you write that chapter's 我的总结. Repeat per
+chapter. When the book is done → generate the 全书总结 骨架 → you write the whole-book summary.
 
 ### Red line (unchanged)
 
@@ -356,57 +359,58 @@ Precondition: a chapter-level skeleton needs that chapter's `## Ch{N}.` block to
 understanding.md first (run the capture loop / `/book-read` if not). A book-level skeleton
 works even with gaps, but flags which chapters still lack `我的理解`.
 
-### Two granularities
+### Two levels
 
-- **Chapter-level** (读完一章): append a `### Ch{N}. {title}` section under `## 章级骨架（写作素材）`
-  with **骨架** (3–6 candidate section headings), **重点** (concept + one-line why), and
-  **可用 seed** (that chapter's `📌` + `我的理解`, verbatim, under `> 📥`).
-- **Book-level** (读完整本): generate/refresh the top `## 文章大纲（书级）` block —
-  **切入角度** (1–2 candidate angles, reader picks), **分节大纲** (ordered section headings,
-  each with a 1-line 要点 + which chapters to draw from), **待补** (chapters missing 我的理解).
-  For `technical-reference` books, bias the outline toward a reference-friendly shape
-  (问题 → 可复用模型/概念 → 适用条件与取舍 → 我会怎么用 → 存疑/不同意) so the finished
-  post doubles as future 技术 reference. For `cognitive-mental-model` books, bias toward
-  a 决策/场景 shape.
+- **Per-chapter** (读完一章): under `## 分章总结`, add/refresh a `### Ch{N}. {title}` with
+  **骨架（AI）— 这章在讲什么** (a tight 3–6 bullet spine, distilled from that chapter's
+  `结构地图与核心概念`, `📌` on highlighted bullets) + an empty **我的总结（你写）** slot
+  (pre-seeded with the chapter's `💭`/`我的理解` verbatim under `> 📥` if any).
+- **Book-level** (读完整本): fill the `## 全书总结` block — **骨架（AI）— 全书脉络** (how
+  chapters connect into one arc; for `technical-reference` books also offer a reference-friendly
+  frame 问题 → 可复用模型/概念 → 适用条件与取舍 → 我会怎么用 → 存疑/不同意; for
+  `cognitive-mental-model` books a 决策/场景 frame), **待补** (chapters whose 我的总结 is
+  still empty), + an empty **我的总结（你写）** slot for the whole-book summary.
+
+Refresh rule: re-running only updates the `**骨架（AI）**` blocks; never touch a
+`**我的总结（你写）**` the reader has written.
 
 ### article.md format
 
 ```markdown
-# {Book} 读后 — 写作骨架
+# {Book} 读后总结
 
-> AI 提炼的骨架，你照着写。红线：AI 搭结构，你写正文。
+> AI 提炼每章骨架（这章在讲什么），你写每章总结；读完整本再写全书总结。
+> 红线：AI 搭骨架，你写总结。
 
-## 文章大纲（书级）
-**切入角度（选一个）**
-- ...
-**分节大纲**
-1. {小节标题} — {一句话要点}（素材：Ch2, Ch5）
-2. ...
-**待补理解**: Ch3, Ch7
-
----
-
-## 章级骨架（写作素材）
+## 分章总结
 
 ### Ch{N}. {title}
-**骨架**
-- {候选小节标题}
-**重点**
-- {概念}：{一句话为什么重要}
-**可用 seed**
-> 📥 你的划线/理解（原文）：
-> - "{highlight}" 
-> - {你的 我的理解，verbatim}
+**骨架（AI）— 这章在讲什么**
+- {主干点} 📌
+- ...
+**我的总结（你写）**
+> 📥 来自你的划线/理解（seed，你接着写）：
+> - {你的 💭/我的理解，verbatim}
+
+{你写这章总结}
 
 ---
 
-## 正文（你自己写）
+## 全书总结
+> 读完整本后写
 
-{the human writes the article here, following the skeleton above}
+**骨架（AI）— 全书脉络**
+- {跨章串起来的主线}
+- （technical-reference：问题 → 可复用模型 → 适用条件/取舍 → 我会怎么用 → 存疑）
+**待补**: Ch3, Ch7（还没写「我的总结」）
+
+**我的总结（你写）**
+
+{你写全书总结}
 ```
 
-**Does NOT**: write the article body, generate zettel/flashcards, or invent the reader's
-takeaways. Skeleton in, human prose out.
+**Does NOT**: write the reader's summaries, generate zettel/flashcards, or invent the
+reader's takeaways. Skeleton in, human prose out.
 
 ---
 
@@ -445,9 +449,9 @@ No AI-driven interview. Just:
 3. The meta.md reflection sections (`## 跨章回顾` / `## 全局连接` / `## 读后感`) stay
    for the human to fill **if they want** — AI may ask a prompting question, never
    fills them.
-4. **Offer** the publication layer as the optional next step: "要生成书级写作骨架吗？"
-   → if yes, run the book-level skeleton (see "Publication layer — 写作骨架"). Offer,
-   don't auto-run — most books stop at the understanding record.
+4. **Offer** the publication layer as the optional next step: "要生成全书总结骨架吗？"
+   → if yes, run the book-level 全书总结 skeleton (see "Publication layer — 写作骨架").
+   Offer, don't auto-run — most books stop at the understanding record.
 
 **Does NOT**: generate a book summary, extract zettel, or write synthesis. (The optional
 `article.md` skeleton is a scaffold for the human to write against, not an AI-authored one.)
@@ -520,7 +524,7 @@ Learning/Books/{BookTitle}/
 ├── chapters/         ← book_init.py skeleton (read-only)
 ├── notes/            ← on-demand working notes (sources, research)
 ├── understanding.md  ← per-chapter record: AI map + your understanding (production layer)
-├── article.md        ← publication layer: AI 写作骨架 + your 读后文章 prose (optional, per book)
+├── article.md        ← publication layer: per-chapter 骨架+我的总结 + 全书总结 (optional, per book)
 └── .fulltext_cache/  ← full-text cache (machine-managed, gitignored)
 ```
 

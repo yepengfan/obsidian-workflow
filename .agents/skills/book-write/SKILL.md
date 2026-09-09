@@ -40,9 +40,13 @@ Parse `$ARGUMENTS` for a book name and (optionally) a chapter number / "整本".
   book matches (or only one has `status: reading`/`finished`), use it. Otherwise use
   `AskQuestion` to pick (build options from the scan — never hardcode titles).
 - **Granularity**:
-  - `$ARGUMENTS` names a chapter (e.g. "DDD 第 2 章") → **chapter-level** skeleton for that chapter.
-  - `$ARGUMENTS` says "整本" / "全书" / the book is `status: finished` → **book-level** skeleton.
-  - Ambiguous → ask: 章级（这章）还是 书级（跨章汇总）？
+  - `$ARGUMENTS` names a chapter (e.g. "DDD 第 2 章") → chapter skeleton for **that** chapter.
+  - `$ARGUMENTS` names no chapter (e.g. just "DDD") → **all read chapters**: add/refresh a
+    per-chapter 骨架 for every chapter that has a `## Ch{N}.` block in understanding.md but
+    no 骨架 in article.md yet (batch — this is the "每章都有骨架" default).
+  - `$ARGUMENTS` says "全书总结" / "整本" / the book is `status: finished` → **book-level**
+    全书总结 skeleton (still safe to run alongside the per-chapter ones).
+  - Ambiguous → ask: 补某一章 / 补所有已读章 / 写全书总结？
 
 ## Step 2 — Load the source (understanding.md, not full text)
 
@@ -64,40 +68,47 @@ book — this reuses the work already on disk and keeps the red line:
 ## Step 3 — Generate the skeleton (AI, into article.md)
 
 Write to `{BookTitle}/article.md` (create it if missing, with the header block — see the
-format in `Learning/Books/CLAUDE.md`). Never overwrite the reader's own prose in
-article.md; append/update only the AI skeleton blocks.
+format in `Learning/Books/CLAUDE.md`). The file has two writing surfaces: a **per-chapter
+summary** for every chapter (each = an AI 骨架 + the reader's 我的总结) and a single
+**全书总结** at the end. Never overwrite the reader's own prose; write/refresh only the AI
+`**骨架（AI）**` blocks and add empty `**我的总结（你写）**` slots.
 
-### Chapter-level skeleton
-Append a `### Ch{N}. {title}` section under `## 章级骨架（写作素材）` containing:
-- **骨架** — 3–6 candidate section headings you could build a post-section around, drawn
-  from the chapter's mind-map branches (writing-oriented, not a mind map).
-- **重点** — the chapter's must-include points (concept + one-line why-it-matters).
-- **可用 seed** — the reader's highlights (`📌`) and 我的理解 for this chapter, verbatim,
-  under `> 📥` — the raw material the reader writes the section from. Empty if none.
+### Chapter-level (读完一章 → 每章一个骨架 + 你写这章总结)
+Under `## 分章总结`, add/refresh a `### Ch{N}. {title}` section containing:
+- **骨架（AI）— 这章在讲什么** — a tight 3–6 bullet outline of the chapter's spine
+  (main branches → key sub-points), distilled from that chapter's `结构地图与核心概念`
+  in understanding.md. Mark bullets the reader highlighted with `📌`. This is the "so what
+  is this chapter about" scaffold, not the full mind map.
+- **我的总结（你写）** — the reader's own chapter summary. Pre-seed with their `💭`
+  annotations / `我的理解` for this chapter, verbatim, under `> 📥` if any; otherwise leave
+  an empty placeholder. Never write this summary for them.
 
-### Book-level skeleton
-Generate/refresh the `## 文章大纲（书级）` block at the top of article.md:
-- **切入角度** — 1–2 candidate angles for the whole post (a question the book answers, a
-  before/after in the reader's own thinking) — offered as options, the reader picks.
-- **分节大纲** — the article's section headings in order, each with: 1-line 要点 + which
-  chapter(s)' skeleton/seed to draw from. For `technical-reference` books, bias toward a
-  **reference-friendly** shape (问题 → 可复用模型/概念 → 适用条件与取舍 → 我会怎么用 →
-  存疑/不同意). For `cognitive-mental-model` books, bias toward 决策/场景 shape.
-- **待补** — chapters with no 我的理解 yet (the reader's voice is missing there).
+Refresh rule: if a `### Ch{N}.` section already exists, update only its `**骨架（AI）**`
+block; never touch the reader's `**我的总结（你写）**` prose.
 
-Keep it tight and scannable — this is scaffolding to write against, not the article.
+### Book-level (读完整本 → 全书总结)
+Fill the `## 全书总结` block at the end of article.md:
+- **骨架（AI）— 全书脉络** — how the chapters connect into one arc (the book's spine across
+  chapters), a few bullets. For `technical-reference` books, also offer a reference-friendly
+  frame (问题 → 可复用模型/概念 → 适用条件与取舍 → 我会怎么用 → 存疑/不同意). For
+  `cognitive-mental-model` books, offer a 决策/场景 frame.
+- **待补** — chapters whose `我的总结` is still empty (the reader's voice is missing there).
+- **我的总结（你写）** — empty slot for the reader's whole-book summary. Never write it.
+
+Keep every 骨架 tight and scannable — scaffolding to write against, not the summary itself.
 
 ## Step 4 — Hand off
 
 Report what got written and point the reader at the next move:
 
 ```
-✅ {Book} 写作骨架已更新 → Learning/Books/{Book}/article.md
-   {章级 Ch{N} · N 个候选小节 / 书级大纲 · N 节}
-   待补理解: {chapters missing 我的理解, or "—"}
+✅ {Book} 骨架已更新 → Learning/Books/{Book}/article.md
+   分章骨架: Ch{N}…（新增/刷新 N 章） · 全书总结: {骨架已生成 / —}
+   待写总结: {chapters whose 我的总结 is still empty, or "—"}
 
-照骨架写正文就行。正文你自己写，我不代笔——需要我核对事实或补 source 再叫我。
+每章照骨架写「我的总结」，读完整本再写全书总结。总结你自己写，我不代笔——
+要我核对事实或补 source 再叫我。
 ```
 
-Do **not** write the article body. If the user later asks you to "verify" or "find
+Do **not** write the reader's summaries. If the user later asks you to "verify" or "find
 sources" for a claim, that's the research step in `Learning/Books/CLAUDE.md`.
