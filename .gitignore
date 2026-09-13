@@ -46,6 +46,9 @@
 /WeRead/
 /ibooks-highlights/
 /Work/
+# Live task board (Tasks/Board.md) is private, synced via S3/iCloud.
+# Templates/Task Board.md stays in git.
+/Tasks/
 /Inbox/
 /Zettelkasten/*
 !/Zettelkasten/Zettelkasten Index.md

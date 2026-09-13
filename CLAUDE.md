@@ -23,7 +23,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
   - `ai-digest/` — Hybrid Python + Claude Code RSS digest pipeline. Python fetches 92 Karpathy-curated feeds and deduplicates (`fetch.py`), then Claude Code CLI scores and summarizes bilingually (`prompts/score.md`, `prompts/summarize.md`), and Python assembles Obsidian markdown reports (`write_reports.py`). Run via `bash scripts/ai-digest/run.sh`.
   - `github-trending/` — GitHub trending repos pipeline. Python fetches trending repos via GitHub Search API (`fetch.py`), Claude Haiku categorizes and scores with bilingual one-liners (`enrich.py`, `prompts/enrich.md`), and Python assembles Obsidian markdown reports (`write_reports.py`). Run via `bash scripts/github-trending/run.sh`.
 - **Profile/** — Personal assessment and self-development. Contains `Personal Baseball Card.md` (Ray Dalio-inspired Baseball Card with PrinciplesYou assessment + self-evaluation + cross-validation), PrinciplesYou assessment PDF, and profile photo. The Baseball Card is displayed on `Home.md` via a radar chart in the Work section's Card tab.
-- **Templates/** — Note templates for all major workflows (Work Daily, Work Project, Learning Plan, Learning Week, Brownbag Session, Zettel, Inbox, Home backup, Work Dashboard/Weekly/Monthly backups).
+- **Templates/** — Note templates for all major workflows (Work Daily, Work Project, Learning Plan, Learning Week, Brownbag Session, Task Board, Zettel, Inbox, Home backup, Work Dashboard/Weekly/Monthly backups).
 - **system/** — Module registry and control center. Each vault feature is a "module" with a standardized manifest in `system/modules/`. The `system/registry.md` is a Dataview-powered dashboard showing all modules, their status, commands, dependencies, and configuration locations. **When adding a new feature, create a module file first** — see `system/README.md` for the workflow.
 - **WeRead/** — Book highlights synced from WeRead (微信读书). **DO NOT MODIFY / DO NOT MOVE** — this folder is auto-synced by plugin, folder path is fixed.
 - **Work/** — Work documentation, organized by year and project
@@ -31,11 +31,12 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
   - `2026/` — Current year daily notes (`YYYY-MM-DD.md`)
   - `Projects/` — Project pages (one per project, created from template)
   - `Brownbag Sessions/` — Brownbag session plans. Each session lives in its own subfolder (e.g., `Brownbag Sessions/Bedrock Cost Optimization/`). Each session has a unique `id` (BB-1, BB-2, ...), `created` date, and acceptance criteria checklist (`## 验收标准`). Status is auto-inferred from the checklist: all unchecked → planning, partially checked → in-progress, all checked → done. Created via `/brownbag <topic>`. Index at `Brownbag Sessions/Brownbag Sessions.md`. Shared assets (e.g., slide templates) stay at the `Brownbag Sessions/` root.
+- **Tasks/** — 全库任务象限板（要事第一）。活页 `Tasks/Board.md`（gitignore）。模板 `Templates/Task Board.md`。命令 `/task-add` `/task-board`。任务行格式 `- [ ] ⭐ 📅 YYYY-MM-DD 标题 #task/work|life|other`
 
 ## Key Files
 
 - **GETTING_STARTED.md** — Onboarding guide for new users. Start here if you're setting up this vault for the first time.
-- **Home.md** — Dashboard using Dataview queries. Avoid modifying unless asked. Uses pill/segment tab UI: Work section has `[Work | Card]` tabs (Card shows Baseball Card radar chart with holographic effect); Feeds section has `[AI Digest | GitHub Trending]` tabs.
+- **Home.md** — Dashboard using Dataview queries. Avoid modifying unless asked. Uses pill/segment tab UI: Work section has `[Work | Card]` tabs (Card shows Baseball Card radar chart with holographic effect); the **Task Board** four-quadrant matrix (reading `Tasks/Board.md`) is embedded in the Work panel and renders on load, with a `Task Board` button on the topBar to open the full board page. Feeds section has `[AI Digest | GitHub Trending]` tabs.
 - **sortspec.md** — Custom file explorer sort order (Custom File Explorer Sorting plugin). Do not delete.
 - **Work/Work Dashboard.md** — Work dashboard with task views and project summary.
 - **Templates/Work Daily.md** — Template for daily work notes.
@@ -45,6 +46,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Templates/Algorithm Pattern.md** — Template for algorithm pattern cards (used by `/algo-solve`).
 - **Templates/Algorithm Log.md** — Template for daily algorithm practice logs (used by `/algo-solve`).
 - **Templates/Brownbag Session.md** — Template for brownbag session plans (used by `/brownbag` command).
+- **Templates/Task Board.md** — Template for the vault-wide Covey/Eisenhower board (used by `/task-add` `/task-board`). Live file is `Tasks/Board.md`.
 - **Templates/Home.md** — Reference backup + design decisions log for `Home.md` (note-creation button, toolbar design).
 - **Templates/Work Dashboard.md** — Reference backup + design decisions log for `Work/Work Dashboard.md`.
 - **Templates/Work Weekly View.md** — Reference backup + design decisions log for `Work/Weekly View.md`.
@@ -63,9 +65,9 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Project tasks**: Group tasks under `### ProjectName` headings in daily notes (e.g., `### IS2`, `### IFM`). The heading name must match the filename in `Work/Projects/`. Dataview queries use `t.section.subpath` to filter tasks by project.
 - **Daily note H1**: Use `# DayName` only (e.g., `# Tuesday`). The date is already in the filename and `date:` frontmatter — repeating it in the H1 is redundant. Both `Templates/Work Daily.md` and the Home.md note-creation button follow this format.
 - **Dataview tag filtering**: Use `p.file.tags.includes("#tag")` (not `p.tags`) in dataviewjs queries for reliable tag matching.
-- **Dashboard template sync**: When editing `Work/Work Dashboard.md`, `Work/Weekly View.md`, or `Work/Monthly View.md`, update the corresponding `Templates/Work *.md` reference file and bump its `updated:` frontmatter date. Append a new dated `> [!note]` entry to the Design Decisions section when making structural changes.
+- **Dashboard template sync**: When editing `Work/Work Dashboard.md`, `Work/Weekly View.md`, `Work/Monthly View.md`, or `Tasks/Board.md`, update the corresponding `Templates/Work *.md` / `Templates/Task Board.md` reference file and bump its `updated:` frontmatter date. Append a new dated `> [!note]` entry to the Design Decisions section when making structural changes.
 - **Mermaid edge labels**: Never use `1.` `2.` `3.` in Mermaid edge labels (e.g., `-->|1. check|`) — Obsidian's renderer parses them as markdown lists and shows "Unsupported markdown: list". Use circled numbers instead: `-->|① check|` `-->|② miss|` `-->|③ write back|`.
-- **Gitignored content & search tools**: Most content folders (`Learning/Practice/*`, `Work/`, `Zettelkasten/*`, `Inbox/`, etc.) are gitignored (synced via S3/iCloud, not git — see `.gitignore`). `Glob`/`Grep` respect `.gitignore` and silently return 0 results for these paths. Any skill/command that needs to scan such folders (e.g. detecting in-progress sessions) must use a shell directory listing (`ls`/`find`) instead.
+- **Gitignored content & search tools**: Most content folders (`Learning/Practice/*`, `Work/`, `Tasks/`, `Zettelkasten/*`, `Inbox/`, etc.) are gitignored (synced via S3/iCloud, not git — see `.gitignore`). `Glob`/`Grep` respect `.gitignore` and silently return 0 results for these paths. Any skill/command that needs to scan such folders (e.g. detecting in-progress sessions) must use a shell directory listing (`ls`/`find`) instead.
 
 ## Installed Plugins
 
@@ -113,6 +115,8 @@ Naming is flat and hyphenated: `{module}-{command}` (e.g. `/work-daily`, `/algo-
 ├── book-init/                   # /book-init
 ├── book-read/                   # /book-read
 ├── brownbag/                    # /brownbag
+├── task-board/                  # /task-board
+├── task-add/                    # /task-add
 ├── sysd-solve/                  # /sysd-solve
 ├── frnt-solve/                  # /frnt-solve
 ├── grammar-practice/            # /grammar-practice
@@ -175,6 +179,16 @@ Each module declares external dependencies via the `requires` frontmatter field:
 5. Match the language of the source content (English or Chinese)
 6. **New features must have a module file** in `system/modules/` — create it before or alongside implementation
 7. **Never commit directly to `main`** — always create a feature branch, commit there, push, and open a PR
+
+## Task Board System
+
+Vault-wide Covey / Eisenhower 2×2（要事第一）。Source of truth: `Tasks/Board.md` section `## Tasks`（gitignore）. Template: `Templates/Task Board.md`. v1 does **not** ingest Work daily tasks.
+
+- **Important**: 任务行有 ⭐（人工）。无 ⭐ → not important（仅当已有 domain tag：urgent → Q3，否则 Q4）。
+- **Urgent**: 任务行有 Dataview `due` **且** due date ≤ today + 7 calendar days（rolling one week, including overdue）。No due = not urgent.
+- **Domain tags** on the **task line** (not file tags): `#task/work` `#task/life` `#task/other`，可扩展 `#task/<area>`。Missing `#task/...` → Unclassified（never dump into Q4）.
+- **Commands**: `/task-add` append one task; `/task-board` panorama / classify / rearrange.
+- Skills that touch `Tasks/` must use `ls`/`find` — the folder is gitignored, so `Glob`/`Grep` return nothing.
 
 ## Book Learning System
 

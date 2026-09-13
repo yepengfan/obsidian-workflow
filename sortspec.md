@@ -6,6 +6,7 @@ sorting-spec: |
   Zettelkasten
   Profile
   Work
+  Tasks
   Learning
   Matter
   Instapaper Notes

@@ -51,308 +51,21 @@ const { panels, topBar } = createTabGroup(dv, [
 // Action buttons always inside Work panel, separate row from segment
 const btnPad = isMobile ? "6px 10px" : "8px 18px";
 const btnFont = isMobile ? "0.8em" : "0.88em";
-const row = panels["work"].createEl("div", { attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
 
-// Navigation buttons
-const navDash = row.createEl("button", {
-  text: "Work Dashboard",
+const navTasks = topBar.createEl("button", {
+  text: "Task Board",
   attr: { style: `padding:${btnPad};border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:${btnFont};` }
 });
-navDash.addEventListener("click", () => app.workspace.openLinkText("Work/Work Dashboard", "", false));
-
-const navToday = row.createEl("button", {
-  text: dv.date("today").toFormat("yyyy-MM-dd"),
-  attr: { style: `padding:${btnPad};border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-secondary);color:var(--text-normal);cursor:pointer;font-size:${btnFont};` }
-});
-navToday.addEventListener("click", async () => {
-  const today = dv.date("today");
-  const dateStr = today.toFormat("yyyy-MM-dd");
-  const dayName = today.toFormat("cccc");
-  const year = today.toFormat("yyyy");
-  const notePath = `Work/${year}/${dateStr}.md`;
-
-  // If the note already exists, just open it
-  if (app.vault.getAbstractFileByPath(notePath)) {
-    await app.workspace.openLinkText(notePath, "", false);
+navTasks.addEventListener("click", async () => {
+  const notePath = "Tasks/Board.md";
+  if (!app.vault.getAbstractFileByPath(notePath)) {
+    new Notice("Run /task-board to create Tasks/Board.md");
     return;
   }
-
-  // Ensure year folder exists
-  const folder = `Work/${year}`;
-  if (!app.vault.getAbstractFileByPath(folder)) {
-    await app.vault.createFolder(folder);
-  }
-
-  // Read active projects from Work/Projects.md
-  const configFile = app.metadataCache.getFirstLinkpathDest("Work/Projects", "");
-  const projects = [];
-  if (configFile) {
-    const cache = app.metadataCache.getFileCache(configFile);
-    if (cache?.frontmatter?.projects) {
-      for (const p of cache.frontmatter.projects) {
-        projects.push(String(p));
-      }
-    }
-  }
-
-  // Build daily note content with priority toolbar
-  const fence = String.fromCharCode(96).repeat(3);
-  const toolbarCode = [
-    'const file = app.workspace.getActiveFile();',
-    'const config = dv.page("Work/Projects");',
-    'const projects = (config?.projects || []).map(String);',
-    'const prios = [',
-    '  { e: "\u{1F534}", l: "Urgent" }, { e: "\u{1F7E0}", l: "High" },',
-    '  { e: "\u{1F7E1}", l: "Medium" }, { e: "\u{1F7E2}", l: "Low" },',
-    '];',
-    'let sel = projects[0] || "";',
-    '',
-    'const w = dv.container.createEl("div", {',
-    '  attr: { style: "display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0;" }',
-    '});',
-    '',
-    '// Project selector',
-    'const pbs = [];',
-    'for (const p of projects) {',
-    '  const a = p === sel;',
-    '  const b = w.createEl("button", { text: p, attr: {',
-    '    style: `padding:3px 12px;border-radius:6px;font-size:0.82em;font-weight:600;cursor:pointer;border:1px solid ${a ? "var(--interactive-accent)" : "var(--background-modifier-border)"};background:${a ? "var(--interactive-accent)" : "var(--background-secondary)"};color:${a ? "var(--text-on-accent)" : "var(--text-normal)"};`',
-    '  }});',
-    '  pbs.push({ b, p });',
-    '  b.addEventListener("click", () => {',
-    '    sel = p;',
-    '    pbs.forEach(x => {',
-    '      const on = x.p === p;',
-    '      x.b.style.background = on ? "var(--interactive-accent)" : "var(--background-secondary)";',
-    '      x.b.style.color = on ? "var(--text-on-accent)" : "var(--text-normal)";',
-    '      x.b.style.borderColor = on ? "var(--interactive-accent)" : "var(--background-modifier-border)";',
-    '    });',
-    '  });',
-    '}',
-    '',
-    'w.createEl("span", { text: "\\u2502", attr: { style: "color:var(--text-faint);" } });',
-    '',
-    '// Priority buttons — click to insert task under selected project',
-    'for (const pr of prios) {',
-    '  const b = w.createEl("button", { text: pr.e + " " + pr.l, attr: {',
-    '    title: pr.l,',
-    '    style: "padding:3px 10px;border-radius:6px;border:1px solid var(--background-modifier-border);background:var(--background-secondary);cursor:pointer;font-size:0.82em;"',
-    '  }});',
-    '  b.addEventListener("click", async () => {',
-    '    if (!sel || !file) return;',
-    '    const content = await app.vault.read(file);',
-    '    const lines = content.split("\\n");',
-    '    const task = "- [ ] " + pr.e + " ";',
-    '    let target;',
-    '    let headIdx = -1;',
-    '    for (let i = 0; i < lines.length; i++) {',
-    '      if (lines[i].trim() === "### " + sel) { headIdx = i; break; }',
-    '    }',
-    '    if (headIdx >= 0) {',
-    '      let ins = headIdx + 1, repl = -1;',
-    '      for (let j = headIdx + 1; j < lines.length; j++) {',
-    '        const t = lines[j].trim();',
-    '        if (t.startsWith("### ") || t.startsWith("## ")) break;',
-    '        if (t === "- [ ]" && repl < 0) repl = j;',
-    '        ins = j;',
-    '      }',
-    '      if (repl >= 0) {',
-    '        lines[repl] = lines[repl].replace("- [ ]", task);',
-    '        target = repl;',
-    '      } else {',
-    '        lines.splice(ins + 1, 0, task);',
-    '        target = ins + 1;',
-    '      }',
-    '    } else {',
-    '      let noteIdx = lines.length;',
-    '      for (let i = 0; i < lines.length; i++) {',
-    '        if (lines[i].trim() === "## Notes") { noteIdx = i; break; }',
-    '      }',
-    '      lines.splice(noteIdx, 0, "### " + sel, "", task, "");',
-    '      target = noteIdx + 2;',
-    '    }',
-    '    await app.vault.modify(file, lines.join("\\n"));',
-    '    setTimeout(() => {',
-    '      const ed = app.workspace.activeEditor?.editor;',
-    '      if (ed) { ed.setCursor({ line: target, ch: task.length }); ed.focus(); }',
-    '    }, 150);',
-    '    new Notice("Added " + pr.e + " " + pr.l + " task to " + sel);',
-    '  });',
-    '}',
-    '',
-    'w.createEl("span", { text: "\\u2502", attr: { style: "color:var(--text-faint);" } });',
-    '',
-    '// Sort button — reorder tasks by priority within selected project',
-    'const sortBtn = w.createEl("button", { text: "\\u2195 Sort", attr: {',
-    '  title: "Sort tasks by priority",',
-    '  style: "padding:3px 10px;border-radius:6px;border:1px solid var(--background-modifier-border);background:var(--background-secondary);cursor:pointer;font-size:0.82em;"',
-    '}});',
-    'sortBtn.addEventListener("click", async () => {',
-    '  if (!sel || !file) return;',
-    '  const content = await app.vault.read(file);',
-    '  const lines = content.split("\\n");',
-    '  const rank = { "\\u{1F534}": 0, "\\u{1F7E0}": 1, "\\u{1F7E1}": 2, "\\u{1F7E2}": 3 };',
-    '  let headIdx = -1;',
-    '  for (let i = 0; i < lines.length; i++) {',
-    '    if (lines[i].trim() === "### " + sel) { headIdx = i; break; }',
-    '  }',
-    '  if (headIdx < 0) return;',
-    '  let endIdx = lines.length;',
-    '  for (let j = headIdx + 1; j < lines.length; j++) {',
-    '    const t = lines[j].trim();',
-    '    if (t.startsWith("### ") || t.startsWith("## ")) { endIdx = j; break; }',
-    '  }',
-    '',
-    '  // Recursive sort: group tasks at each indent level, sort by priority, recurse into children',
-    '  function getRank(line) {',
-    '    for (const [emoji, r] of Object.entries(rank)) {',
-    '      if (line.includes(emoji)) return r;',
-    '    }',
-    '    return 4;',
-    '  }',
-    '',
-    '  function sortTaskLines(taskLines, baseIndent) {',
-    '    const groups = [];',
-    '    const leading = [];',
-    '    const trailing = [];',
-    '    let cur = null;',
-    '    let seenTask = false;',
-    '    for (const line of taskLines) {',
-    '      const trimmed = line.trim();',
-    '      const indent = line.search(/\\S/);',
-    '      if (trimmed.startsWith("- [") && indent === baseIndent) {',
-    '        seenTask = true;',
-    '        cur = { head: line, children: [], rank: getRank(trimmed) };',
-    '        groups.push(cur);',
-    '      } else if (cur && trimmed !== "") {',
-    '        cur.children.push(line);',
-    '      } else if (!seenTask) {',
-    '        leading.push(line);',
-    '      } else {',
-    '        trailing.push(line);',
-    '      }',
-    '    }',
-    '    groups.sort((a, b) => a.rank - b.rank);',
-    '    for (const g of groups) {',
-    '      if (g.children.length > 0) {',
-    '        const childIndent = g.children[0].search(/\\S/);',
-    '        if (childIndent > baseIndent) {',
-    '          g.children = sortTaskLines(g.children, childIndent);',
-    '        }',
-    '      }',
-    '    }',
-    '    const result = [...leading];',
-    '    for (const g of groups) { result.push(g.head, ...g.children); }',
-    '    result.push(...trailing);',
-    '    return result;',
-    '  }',
-    '',
-    '  const sectionLines = lines.slice(headIdx + 1, endIdx);',
-    '  const sorted = sortTaskLines(sectionLines, 0);',
-    '  const newLines = [...lines.slice(0, headIdx + 1), ...sorted, ...lines.slice(endIdx)];',
-    '  await app.vault.modify(file, newLines.join("\\n"));',
-    '  new Notice("Sorted " + sel + " tasks by priority");',
-    '});',
-  ].join("\n");
-
-  let content = [
-    "---",
-    "date: " + dateStr,
-    "day: " + dayName,
-    "tags: work-daily",
-    "---",
-    "",
-    "# " + dayName,
-    "",
-    "## Tasks",
-    "",
-    fence + "dataviewjs",
-    toolbarCode,
-    fence,
-    "",
-  ].join("\n");
-
-  // Add a heading for each active project
-  for (const p of projects) {
-    content += `### ${p}\n\n`;
-  }
-
-  content += "## Notes\n\n";
-
-  // --- Carryover: bring incomplete tasks from previous daily note ---
-  const prevDailies = app.vault.getMarkdownFiles()
-    .filter(f => /^Work\/\d{4}\/\d{4}-\d{2}-\d{2}\.md$/.test(f.path) && f.basename < dateStr)
-    .sort((a, b) => b.basename.localeCompare(a.basename));
-  if (prevDailies.length > 0) {
-    const pf = prevDailies[0];
-    const pc = (await app.vault.read(pf)).split("\n");
-    // Locate ## headings (skip code blocks)
-    let tS = -1, cS = -1; const h2L = []; let inCB = false;
-    for (let i = 0; i < pc.length; i++) {
-      if (pc[i].trim().startsWith(fence)) { inCB = !inCB; continue; }
-      if (inCB) continue;
-      if (/^## /.test(pc[i])) {
-        h2L.push(i);
-        if (/^## Tasks/.test(pc[i]) && tS < 0) tS = i;
-        if (/Carryover/.test(pc[i]) && cS < 0) cS = i;
-      }
-    }
-    const nxtH2 = (pos) => { for (const h of h2L) if (h > pos) return h; return pc.length; };
-    // Collect task line indices from ## Tasks and ## Carryover sections
-    const ranges = [];
-    if (tS >= 0) ranges.push([tS, nxtH2(tS)]);
-    if (cS >= 0) ranges.push([cS, nxtH2(cS)]);
-    const byProj = {};
-    for (const [s, e] of ranges) {
-      let proj = null, ic = false;
-      for (let i = s + 1; i < e; i++) {
-        const t = pc[i].trim();
-        if (t.startsWith(fence)) { ic = !ic; continue; }
-        if (ic) continue;
-        if (t.startsWith("### ")) { proj = t.slice(4); continue; }
-        if (proj && /^- \[.\]/.test(t)) {
-          if (!byProj[proj]) byProj[proj] = [];
-          byProj[proj].push(i);
-        }
-      }
-    }
-    // Build task blocks (top-level + subtasks), keep only incomplete
-    const toMark = []; const carry = {}; let tot = 0, pCt = 0;
-    for (const [pr, idxs] of Object.entries(byProj)) {
-      const blocks = []; let blk = null;
-      for (const idx of idxs) {
-        if (pc[idx].search(/\S/) === 0) { blk = [idx]; blocks.push(blk); }
-        else if (blk) blk.push(idx);
-      }
-      const kept = [];
-      for (const b of blocks) {
-        if (/^- \[ \]/.test(pc[b[0]].trim())) {
-          const out = [];
-          for (const idx of b) {
-            if (/- \[ \]/.test(pc[idx]) && pc[idx].replace(/^\t*- \[ \] ?/, "").trim() !== "") { toMark.push(idx); tot++; out.push(pc[idx]); }
-          }
-          if (out.length > 0) kept.push(...out);
-        }
-      }
-      if (kept.length > 0) { carry[pr] = kept; pCt++; }
-    }
-    // Mark previous note tasks as [>] and append carryover section
-    if (toMark.length > 0) {
-      for (const idx of toMark) pc[idx] = pc[idx].replace(/- \[ \]/, "- [>]");
-      await app.vault.modify(pf, pc.join("\n"));
-      const ref = pf.path.replace(".md", "");
-      content += "## \u{1F504} Carryover\n\n";
-      content += "> Carried over from [[" + ref + "]] \u2014 " + tot + " tasks across " + pCt + " project" + (pCt !== 1 ? "s" : "") + "\n\n";
-      for (const [pr, lines] of Object.entries(carry)) {
-        content += "### " + pr + "\n";
-        content += lines.join("\n") + "\n\n";
-      }
-    }
-  }
-
-  await app.vault.create(notePath, content);
   await app.workspace.openLinkText(notePath, "", false);
 });
+
+const row = panels["work"].createEl("div", { attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px;" } });
 
 // Zettel capture button — creates a new timestamped note in Inbox/
 const btn = row.createEl("button", {
@@ -372,133 +85,227 @@ btn.addEventListener("click", async () => {
   await app.workspace.openLinkText(path, "", false);
 });
 
-// ========== WEEKLY VIEW (Work tab) ==========
-const today = dv.date("today");
-const rangeStart = today.minus({ days: 6 });
-
-const pages = dv.pages('"Work"')
-  .where(p => p.file.tags.includes("#work-daily"))
-  .where(p => {
-    const d = dv.date(p.date);
-    return d && d >= rangeStart && d <= today;
-  })
-  .sort(p => p.date, "desc");
-
-const wkView = panels["work"].createEl("div", "");
-
-// Date range label (rolling 7 days)
-const weekLabel = rangeStart.toFormat("MMM dd") + " – " + today.toFormat("MMM dd");
-wkView.createEl("div", {
-  text: weekLabel,
-  attr: { style: "font-size:0.78em;color:var(--text-muted);margin-bottom:6px;font-weight:600;" }
-});
-
-const todayStr = today.toFormat("yyyy-MM-dd");
-const hasTodayNote = pages.some(p => dv.date(p.date).toFormat("yyyy-MM-dd") === todayStr);
-
-function renderRow(rowEl, labelText, isToday, open, done, carriedIn, carriedAway, total, href) {
-  // Date label
-  const dateEl = rowEl.createEl("a", {
-    cls: "internal-link",
-    attr: { "data-href": href, style: `font-size:0.82em;font-weight:${isToday ? "700" : "400"};min-width:75px;text-decoration:none;color:${isToday ? "var(--interactive-accent)" : "var(--text-normal)"};` }
+// ========== TASK BOARD (Eisenhower matrix, vault-wide) ==========
+(() => {
+  const boardPath = "Tasks/Board.md";
+  const fence = String.fromCharCode(96).repeat(3);
+  const section = panels["work"].createEl("div", { attr: { style: "margin-bottom:16px;" } });
+  section.createEl("div", {
+    text: "🎯 任务象限板",
+    attr: { style: "font-size:0.9em;font-weight:700;margin-bottom:8px;" }
   });
-  dateEl.textContent = labelText;
 
-  // Progress bar: [done][carried-away ⬆️][carried-in ➡️][  open  ]
-  // done (solid accent) | carry-out (yellow) | carry-in (30% accent) | open (gray bg)
-  const barWrap = rowEl.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;overflow:hidden;position:relative;" } });
-  if (total > 0) {
-    const filledPct      = Math.round((done + carriedAway + carriedIn) / total * 100);
-    const donePct        = Math.round(done        / total * 100);
-    const carriedAwayPct = Math.round(carriedAway / total * 100);
-    const carriedInPct   = Math.max(0, filledPct - donePct - carriedAwayPct);
-    if (done > 0)
-      barWrap.createEl("div", { attr: { style: `position:absolute;left:0;top:0;height:100%;width:${donePct}%;background:var(--interactive-accent);` } });
-    if (carriedAway > 0)
-      barWrap.createEl("div", { attr: { style: `position:absolute;left:${donePct}%;top:0;height:100%;width:${carriedAwayPct}%;background:var(--color-yellow);opacity:0.75;` } });
-    if (carriedIn > 0)
-      barWrap.createEl("div", { attr: { style: `position:absolute;left:${donePct + carriedAwayPct}%;top:0;height:100%;width:${carriedInPct}%;background:var(--interactive-accent);opacity:0.3;` } });
-  }
+  const inpStyle = `padding:4px 8px;border:1px solid var(--background-modifier-border);border-radius:6px;background:var(--background-primary);color:var(--text-normal);font-size:${isMobile ? "0.78em" : "0.82em"};`;
+  const form = section.createEl("div", {
+    attr: { style: "display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px;" }
+  });
+  const titleInp = form.createEl("input");
+  titleInp.type = "text";
+  titleInp.placeholder = "任务标题";
+  titleInp.setAttribute("style", inpStyle + "flex:1;min-width:140px;");
 
-  // Counts — always show all metrics for consistent layout; dim zeros
-  // On mobile: drop total column, use auto width + tighter padding
-  const countStyle = isMobile
-    ? "display:inline-block;width:auto;font-size:0.65em;padding:1px 3px;border-radius:4px;white-space:nowrap;text-align:center;box-sizing:border-box;"
-    : "display:inline-block;width:4.8em;font-size:0.75em;padding:1px 4px;border-radius:4px;white-space:nowrap;text-align:center;box-sizing:border-box;";
-  const dim = "color:var(--text-faint);background:var(--background-primary);opacity:0.35;";
-  if (total === 0) {
-    rowEl.createEl("span", { text: "no tasks", attr: { style: countStyle + "color:var(--text-faint);" } });
-  } else {
-    rowEl.createEl("span", { text: `${open} open`,      attr: { style: countStyle + (open       > 0 ? "color:var(--text-muted);background:var(--background-primary);"        : dim) } });
-    rowEl.createEl("span", { text: `${carriedAway} ⬆️`, attr: { style: countStyle + (carriedAway > 0 ? "color:var(--color-yellow);background:var(--background-primary);"    : dim) } });
-    rowEl.createEl("span", { text: `${carriedIn} ➡️`,   attr: { style: countStyle + (carriedIn  > 0 ? "color:var(--text-faint);background:var(--background-primary);"        : dim) } });
-    rowEl.createEl("span", { text: `${done} done`,      attr: { style: countStyle + (done        > 0 ? "color:var(--interactive-accent);background:var(--background-primary);" : dim) } });
-    if (!isMobile) {
-      rowEl.createEl("span", { text: `${total} total`,    attr: { style: countStyle + "color:var(--text-faint);background:var(--background-primary);" } });
+  const areas = ["work", "life", "other"];
+  let area = "work";
+  const areaSeg = form.createEl("div", {
+    attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);" }
+  });
+  const areaBtns = {};
+  function paintArea() {
+    for (const a of areas) {
+      areaBtns[a].style.cssText = "padding:3px 10px;border-radius:7px;border:none;cursor:pointer;font-size:0.78em;font-weight:600;" +
+        (area === a ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);" : "background:transparent;color:var(--text-muted);");
     }
   }
-}
-
-// Always show a Today row at the top — ghost row if note doesn't exist yet
-const rowGap = isMobile ? "6px" : "10px";
-if (!hasTodayNote) {
-  const ghostRow = wkView.createEl("div", {
-    attr: { style: `display:flex;align-items:center;gap:${rowGap};padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px dashed var(--interactive-accent);opacity:0.6;cursor:pointer;` }
-  });
-  ghostRow.createEl("span", {
-    text: "Today",
-    attr: { style: "font-size:0.82em;font-weight:700;min-width:75px;color:var(--interactive-accent);" }
-  });
-  ghostRow.createEl("div", { attr: { style: "flex:1;height:6px;background:var(--background-modifier-border);border-radius:3px;" } });
-  ghostRow.createEl("span", { text: "create →", attr: { style: "font-size:0.72em;color:var(--interactive-accent);white-space:nowrap;" } });
-  // Click → trigger the navToday button (date button in the Work toolbar above) which has the full creation logic
-  ghostRow.addEventListener("click", () => {
-    const btn = Array.from(document.querySelectorAll("button"))
-      .find(b => b.textContent.trim() === todayStr);
-    if (btn) btn.click();
-  });
-}
-
-for (const page of pages) {
-  const d = dv.date(page.date);
-  const dateStr = d.toFormat("MM-dd ccc");
-  const isToday = d.toFormat("yyyy-MM-dd") === todayStr;
-  // Count only tasks between ## Tasks and ## Notes (or EOF if ## Notes absent).
-  // Tasks live under ### <ProjectName> sub-headings, so section.subpath won't work — line range is used instead.
-  const tfile = app.vault.getAbstractFileByPath(page.file.path);
-  const fCache = tfile ? app.metadataCache.getFileCache(tfile) : null;
-  const fHeadings = fCache?.headings || [];
-  let tasksLine = -1, notesLine = Infinity, carryoverLine = -1, carryoverEndLine = Infinity;
-  for (const h of fHeadings) {
-    if (h.level === 2 && h.heading === "Tasks" && tasksLine === -1) tasksLine = h.position.start.line;
-    if (h.level === 2 && h.heading === "Notes" && notesLine === Infinity) notesLine = h.position.start.line;
-    if (h.level === 2 && h.heading.includes("Carryover") && carryoverLine === -1) carryoverLine = h.position.start.line;
-    else if (carryoverLine !== -1 && h.level === 2 && carryoverEndLine === Infinity) carryoverEndLine = h.position.start.line;
+  for (const a of areas) {
+    areaBtns[a] = areaSeg.createEl("button", { text: a[0].toUpperCase() + a.slice(1) });
+    areaBtns[a].addEventListener("click", () => { area = a; paintArea(); });
   }
-  // Cap tasksSection at carryoverLine when ## Notes is absent — prevents Carryover tasks
-  // from being double-counted as both inTasksSection and inCarryoverSection.
-  const tasksSectionEnd = Math.min(notesLine, carryoverLine === -1 ? Infinity : carryoverLine);
-  const inTasksSection = tasksLine !== -1
-    ? t => t.line > tasksLine && t.line < tasksSectionEnd
-    : () => false;
-  const inCarryoverSection = carryoverLine !== -1
-    ? t => t.line > carryoverLine && t.line < carryoverEndLine
-    : () => false;
-  const open        = page.file.tasks.where(t => t.status === " "  && inTasksSection(t)).length;
-  const done        = page.file.tasks.where(t => t.completed        && (inTasksSection(t) || inCarryoverSection(t))).length;
-  const carriedAway = page.file.tasks.where(t => t.status === ">"  && (inTasksSection(t) || inCarryoverSection(t))).length;
-  const carriedIn   = page.file.tasks.where(t => t.status === " "  && inCarryoverSection(t)).length;
-  const total = open + done + carriedAway + carriedIn;
+  paintArea();
 
-  const row = wkView.createEl("div", {
-    attr: { style: `display:flex;align-items:center;gap:${rowGap};padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--background-secondary);border:1px solid ${isToday ? "var(--interactive-accent)" : "var(--background-modifier-border)"};` }
+  let important = false;
+  const starBtn = form.createEl("button", { text: "⭐" });
+  function paintStar() {
+    starBtn.style.cssText = "padding:3px 10px;border-radius:6px;cursor:pointer;font-size:0.82em;border:1px solid " +
+      (important ? "var(--interactive-accent)" : "var(--background-modifier-border)") +
+      ";background:" + (important ? "var(--interactive-accent)" : "var(--background-secondary)") +
+      ";color:" + (important ? "var(--text-on-accent)" : "var(--text-muted)") + ";";
+    starBtn.title = important ? "重要" : "不重要";
+  }
+  starBtn.addEventListener("click", () => { important = !important; paintStar(); });
+  paintStar();
+
+  const dueInp = form.createEl("input");
+  dueInp.type = "date";
+  dueInp.title = "due（7 天内 = 紧急；空 = 不紧急）";
+  dueInp.setAttribute("style", inpStyle);
+
+  const addBtn = form.createEl("button", { text: "+ Task" });
+  addBtn.style.cssText = `padding:${isMobile ? "4px 10px" : "4px 14px"};border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:${isMobile ? "0.78em" : "0.82em"};background:var(--interactive-accent);color:var(--text-on-accent);white-space:nowrap;`;
+
+  function headingIndex(lines, heading) {
+    let inFence = false;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].trim().startsWith(fence)) { inFence = !inFence; continue; }
+      if (!inFence && lines[i].trim() === heading) return i;
+    }
+    return -1;
+  }
+
+  async function ensureBoard() {
+    if (!app.vault.getAbstractFileByPath("Tasks")) await app.vault.createFolder("Tasks");
+    let f = app.vault.getAbstractFileByPath(boardPath);
+    if (f) return f;
+    const stub = [
+      "---", "tags: [task-board]", "---", "", "# Task Board", "",
+      "## Tasks", "", "## Done", ""
+    ].join("\n");
+    return await app.vault.create(boardPath, stub);
+  }
+
+  addBtn.addEventListener("click", async () => {
+    const title = (titleInp.value || "").trim().replace(/\s+/g, " ");
+    if (!title) { new Notice("先写任务标题"); return; }
+    const due = (dueInp.value || "").trim();
+    if (due && !/^\d{4}-\d{2}-\d{2}$/.test(due)) { new Notice("due 必须是 YYYY-MM-DD"); return; }
+    const bits = ["- [ ]"];
+    if (important) bits.push("⭐");
+    if (due) bits.push("📅 " + due);
+    bits.push(title);
+    bits.push("#task/" + area);
+    const line = bits.join(" ");
+    const f = await ensureBoard();
+    const raw = await app.vault.read(f);
+    const lines = raw.split("\n");
+    let at = headingIndex(lines, "## Tasks");
+    if (at < 0) { lines.push("", "## Tasks", ""); at = lines.length - 2; }
+    let ins = at + 1;
+    while (ins < lines.length && lines[ins].trim() === "") ins++;
+    lines.splice(ins, 0, line);
+    if (headingIndex(lines, "## Done") < 0) lines.push("", "## Done", "");
+    await app.vault.modify(f, lines.join("\n"));
+    titleInp.value = "";
+    dueInp.value = "";
+    const today = dv.date("today");
+    const urgent = due && dv.date(due) <= today.plus({ days: 7 }).endOf("day");
+    const q = important ? (urgent ? "Q1" : "Q2") : (urgent ? "Q3" : "Q4");
+    new Notice("已加入 " + q + " · " + area);
   });
-  renderRow(row, isToday ? "Today" : dateStr, isToday, open, done, carriedIn, carriedAway, total, page.file.path);
-}
+  titleInp.addEventListener("keydown", (e) => { if (e.key === "Enter") addBtn.click(); });
 
-if (pages.length === 0) {
-  wkView.createEl("p", { text: "No other work notes in the last 7 days.", attr: { style: "color:var(--text-muted);font-size:0.85em;margin-top:4px;" } });
-}
+  const bfile = app.vault.getAbstractFileByPath(boardPath);
+  const bpage = dv.page(boardPath);
+  if (!bfile || !bpage) {
+    section.createEl("div", { text: "还没有任务。上面填一条就会创建 Tasks/Board.md。", attr: { style: "color:var(--text-muted);font-size:0.82em;" } });
+    return;
+  }
+  const bCache = app.metadataCache.getFileCache(bfile);
+  const bHeadings = bCache?.headings || [];
+  let tasksLine = -1, doneLine = Infinity;
+  for (const h of bHeadings) {
+    if (h.level === 2 && h.heading === "Tasks" && tasksLine === -1) tasksLine = h.position.start.line;
+    if (h.level === 2 && h.heading === "Done") doneLine = h.position.start.line;
+  }
+  const today = dv.date("today");
+  const inOpen = t => tasksLine !== -1 && t.line > tasksLine && t.line < doneLine && t.status === " ";
+  function domainOf(t) {
+    const tags = (t.tags || []).map(x => String(x).replace(/^#/, ""));
+    const hit = tags.find(x => x.startsWith("task/"));
+    return hit ? hit.replace(/^task\//, "") : null;
+  }
+  function isImportant(t) { return (t.text || "").includes("⭐"); }
+  function isUrgent(t) {
+    if (!t.due) return false;
+    const due = dv.date(t.due);
+    if (!due) return false;
+    return due <= today.plus({ days: 7 }).endOf("day");
+  }
+  const open = bpage.file.tasks.where(inOpen);
+  const classified = open.where(t => domainOf(t) != null);
+  const unclassified = open.where(t => domainOf(t) == null);
+  const q1 = classified.where(t => isImportant(t) && isUrgent(t));
+  const q2 = classified.where(t => isImportant(t) && !isUrgent(t));
+  const q3 = classified.where(t => !isImportant(t) && isUrgent(t));
+  const q4 = classified.where(t => !isImportant(t) && !isUrgent(t));
+
+  const root = section.createEl("div", { attr: { style: "font-size:0.82em;" } });
+  const pillWrap = root.createEl("div", { attr: { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;" } });
+  const seg = pillWrap.createEl("div", { attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);" } });
+  const pills = [ { id: "all", label: "All" }, { id: "work", label: "Work" }, { id: "life", label: "Life" }, { id: "other", label: "Other" } ];
+  const btns = {};
+  let active = "all";
+  const cellBase = "background:var(--background-secondary);border:1px solid var(--background-modifier-border);border-radius:8px;padding:10px;min-height:72px;";
+  const badgeStyle = "font-size:0.72em;padding:1px 7px;border-radius:10px;background:var(--background-primary);border:1px solid var(--background-modifier-border);color:var(--text-muted);white-space:nowrap;";
+  function asArray(list) { if (!list) return []; if (typeof list.array === "function") return list.array(); return Array.from(list); }
+
+  function renderTasks(hostEl, list, withDomainFilter) {
+    const arr = asArray(list);
+    const n = list.length != null ? list.length : arr.length;
+    if (n === 0) { hostEl.createEl("div", { text: "（空）", attr: { style: "color:var(--text-faint);" } }); return; }
+    const start = dv.container.childElementCount;
+    dv.taskList(list, false);
+    const nodes = Array.from(dv.container.children).slice(start);
+    for (const node of nodes) hostEl.appendChild(node);
+    const items = hostEl.querySelectorAll("li");
+    items.forEach((li, i) => {
+      const t = arr[i];
+      if (!t) return;
+      const d = domainOf(t);
+      if (withDomainFilter) li.setAttribute("data-domain", d || "");
+      const meta = [];
+      if (t.due) { const dd = dv.date(t.due); if (dd) meta.push(dd.toFormat("yyyy-MM-dd")); }
+      if (d) meta.push(d);
+      if (meta.length) li.createEl("span", { text: meta.join(" · "), attr: { style: "margin-left:8px;font-size:0.72em;color:var(--text-muted);" } });
+      // Click a task (not its checkbox) → open the Task Board to edit it
+      li.style.cursor = "pointer";
+      li.addEventListener("click", (e) => {
+        if (e.target && e.target.tagName === "INPUT") return; // let checkbox toggle
+        e.preventDefault();
+        app.workspace.openLinkText(boardPath, "", false);
+      });
+    });
+  }
+  function paintPills() {
+    for (const p of pills) {
+      btns[p.id].style.cssText = "padding:4px 14px;border-radius:7px;border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.15s;" +
+        (active === p.id ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);" : "background:transparent;color:var(--text-muted);box-shadow:none;");
+    }
+  }
+  function applyFilter(id) {
+    active = id;
+    paintPills();
+    const items = grid.querySelectorAll("[data-domain]");
+    for (const el of items) { const d = el.getAttribute("data-domain"); el.style.display = (id === "all" || d === id) ? "" : "none"; }
+  }
+  for (const p of pills) { btns[p.id] = seg.createEl("button", { text: p.label }); btns[p.id].addEventListener("click", () => applyFilter(p.id)); }
+  paintPills();
+  const grid = root.createEl("div", { attr: { style: "display:grid;grid-template-columns:1fr 1fr;gap:10px;" } });
+  const quads = [
+    { list: q1, title: "Q1 重要 · 紧急（立刻做）", border: "#c4553a" },
+    { list: q2, title: "Q2 重要 · 不紧急（安排做）", border: "var(--interactive-accent)" },
+    { list: q3, title: "Q3 不重要 · 紧急（压缩）", border: "var(--text-muted)" },
+    { list: q4, title: "Q4 不重要 · 不紧急（减少）", border: "var(--text-faint)" }
+  ];
+  for (const q of quads) {
+    const n = q.list.length != null ? q.list.length : asArray(q.list).length;
+    const cell = grid.createEl("div", { attr: { style: cellBase + `border-left:3px solid ${q.border};` } });
+    const head = cell.createEl("div", { attr: { style: "display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;" } });
+    head.createEl("div", { text: q.title, attr: { style: "font-weight:600;color:var(--text-normal);" } });
+    head.createEl("span", { text: String(n), attr: { style: badgeStyle } });
+    renderTasks(cell.createEl("div", ""), q.list, true);
+  }
+  const unN = unclassified.length != null ? unclassified.length : asArray(unclassified).length;
+  const unCell = root.createEl("div", { attr: { style: cellBase + "margin-top:10px;" } });
+  const unHead = unCell.createEl("div", { attr: { style: "display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;" } });
+  unHead.createEl("div", { text: "Unclassified", attr: { style: "font-weight:600;color:var(--text-normal);" } });
+  unHead.createEl("span", { text: String(unN), attr: { style: badgeStyle } });
+  renderTasks(unCell.createEl("div", ""), unclassified, false);
+  const n1 = q1.length != null ? q1.length : asArray(q1).length;
+  const n2 = q2.length != null ? q2.length : asArray(q2).length;
+  const n3 = q3.length != null ? q3.length : asArray(q3).length;
+  const n4 = q4.length != null ? q4.length : asArray(q4).length;
+  root.createEl("div", { text: `Q1 ${n1} · Q2 ${n2} · Q3 ${n3} · Q4 ${n4} · Unclassified ${unN}`, attr: { style: "margin-top:10px;color:var(--text-muted);font-size:0.82em;" } });
+  if (n2 === 0 && n1 >= 1) root.createEl("div", { text: "Q1 偏多而 Q2 为空 — 效能在第二象限", attr: { style: "margin-top:4px;color:var(--text-faint);font-size:0.82em;" } });
+})();
 
 // ========== CARD TAB ==========
 const bcPage = dv.page("Profile/Personal Baseball Card");
