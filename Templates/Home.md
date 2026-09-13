@@ -1,12 +1,19 @@
 ---
 tags: template
 for: Home
-updated: 2026-08-16
+updated: 2026-09-13
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-09-13 — 📖 读书 card shows reading channel (WeRead vs Apple Books)
+> - **Why**: A book's `meta.md` recorded where the file/highlights came from, but the card gave no at-a-glance answer to "这本书我在哪个 App 读的". `reading_channel` was also semantically muddled — older values mixed file format with app (`EPUB + WeRead`, `EPUB + iBooks`).
+> - **Semantics fixed**: `reading_channel` now means *the reading surface only* — canonical values `weread` / `apple-books` / `both`. File origin stays in `epub_path`/`pdf_path`; highlight sync stays in `weread_source`/`ibooks_source`. Documented in `Learning/Books/CLAUDE.md`, `.agents/skills/book-init/SKILL.md`, and the module manifest.
+> - **Card change**: Added `bookChannel(meta)` helper (mirror of `findWeReadProgress`) — reads `reading_channel`, normalizes legacy mixed values via regex (`/weread/`, `/apple|ibooks/`), and falls back to inferring from `weread_source`/`ibooks_source` when the field is absent. A pill (`WeRead` / `Apple Books` / `WeRead + Apple Books`) renders in row1 next to the archetype pill. `channelLabel` maps the canonical value to the display string.
+> - **Brand colors**: The pill is colored to match each app's icon via `channelColor` — WeRead blue (`#2f80ed`), Apple Books orange (`#f59e0b`), each as `{ fg, bg (tint), bd (border) }`. `both` blends toward WeRead blue. Unknown channel falls back to muted `--text-muted`/`--background-modifier-border`.
+> - **Unchanged**: live WeRead progress read (`findWeReadProgress`) — Apple Books has no progress field, so those books show the pill but no `%`. Cover resolution, chapter dots, buttons untouched.
 
 > [!note] 2026-08-16 — 📖 读书 card progress: 费曼 → 落盘 (reading system rebuilt around capture)
 > - **Why**: The book-learning system was rebuilt around low-friction capture (see `Learning/Books/CLAUDE.md`). The deep Feynman/guardrail flow and the `articles/` write-review downstream are retired. Each chapter now produces one `understanding.md` record: an AI-generated 思维导图+核心概念 map plus the reader's own understanding, backed by a standard full-text cache (`.fulltext_cache/`, `extract_fulltext.py`). Capture layer is now dual: WeRead + Apple Books/iBooks.

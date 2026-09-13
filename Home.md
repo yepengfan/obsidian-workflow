@@ -1455,6 +1455,34 @@ dv.el("div", "📖 读书", {
       return meta?.weread_progress ? String(meta.weread_progress) : null;
     }
 
+    // Which app the book is read in. Prefer the explicit `reading_channel` field
+    // (canonical: weread | apple-books | both). Older books used file-format-mixed
+    // values (e.g. "EPUB + WeRead") — normalize those. If still unknown, infer from
+    // the capture sources (weread_source only → weread, ibooks only → apple-books,
+    // both → both). Returns null when nothing can be determined.
+    function bookChannel(meta) {
+      const raw = String(meta?.reading_channel || "").toLowerCase().trim();
+      if (raw === "both") return "both";   // canonical value — not matched by the token regexes below
+      const hasWr = /weread/.test(raw);
+      const hasAb = /apple|ibooks/.test(raw);
+      if (hasWr && hasAb) return "both";
+      if (hasWr) return "weread";
+      if (hasAb) return "apple-books";
+      const wrSrc = !!meta?.weread_source, abSrc = !!meta?.ibooks_source;
+      if (wrSrc && abSrc) return "both";
+      if (wrSrc) return "weread";
+      if (abSrc) return "apple-books";
+      return null;
+    }
+    const channelLabel = { weread: "WeRead", "apple-books": "Apple Books", both: "WeRead + Apple Books" };
+    // Brand colors matching each app's icon — WeRead blue, Apple Books orange.
+    // { fg: text, bg: tinted fill, bd: border }. `both` blends toward WeRead blue.
+    const channelColor = {
+      weread:        { fg: "#2f80ed", bg: "rgba(47,128,237,0.12)",  bd: "rgba(47,128,237,0.45)" },
+      "apple-books": { fg: "#f59e0b", bg: "rgba(245,158,11,0.14)",  bd: "rgba(245,158,11,0.5)" },
+      both:          { fg: "#2f80ed", bg: "rgba(47,128,237,0.12)",  bd: "rgba(47,128,237,0.45)" },
+    };
+
     for (const m of metas) {
       const folder = m.file.folder;              // Learning/Books/<Title>
       const bookName = folder.split("/").pop();
@@ -1533,6 +1561,16 @@ dv.el("div", "📖 读书", {
           attr: { style: "font-size:0.62em;padding:1px 7px;margin-top:1px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
         });
       }
+      // Reading-channel pill (which app it's read in) — muted, so it reads as metadata
+      const channel = bookChannel(m);
+      if (channel) {
+        const cc = channelColor[channel] || { fg: "var(--text-muted)", bg: "transparent", bd: "var(--background-modifier-border)" };
+        row1.createEl("span", {
+          text: channelLabel[channel],
+          title: "阅读渠道（你在哪个 App 读）",
+          attr: { style: `font-size:0.62em;padding:1px 7px;margin-top:1px;border-radius:20px;border:1px solid ${cc.bd};background:${cc.bg};color:${cc.fg};white-space:nowrap;flex-shrink:0;` }
+        });
+      }
 
       // Full title (edition, subtitle, etc.) — only shown when it adds info beyond the folder name.
       if (m.title && m.title !== bookName) {
@@ -1547,7 +1585,10 @@ dv.el("div", "📖 读书", {
       if (m.author) bits.push(m.author);
       if (total > 0) bits.push(`图${mapCh}/理解${doneCh}`);
       if (total > 0) bits.push(doneCh === total ? "✓ 完成" : `Ch${currentNum}/${total}`);
-      const wr = findWeReadProgress(m);
+      // WeRead % only makes sense when the book is actually read in WeRead. A book
+      // read in Apple Books may still carry a weread_source pointer (highlight sync
+      // only), so gate on the reading channel to avoid a stale/contradictory %.
+      const wr = (channel === "weread" || channel === "both") ? findWeReadProgress(m) : null;
       if (wr) bits.push(`WeRead ${wr}`);
       if (bits.length) {
         body.createEl("div", {
