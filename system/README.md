@@ -138,6 +138,7 @@ system/
     ├── profile/module.md
     ├── brownbag/module.md
     ├── dashboard/module.md
+    ├── task-board/module.md
     └── vault-ops/module.md
 
 .agents/skills/             # 命令定义（唯一实体目录，Cursor + Codex CLI 原生读取）
@@ -148,6 +149,7 @@ system/
 ├── learning-init/, learning-log/, learning-review/
 ├── feeds-ai-digest/, feeds-github-trending/, feeds-engineering-blogs/, feeds-all/
 ├── brownbag/
+├── task-board/, task-add/
 ├── vault-ops-organize/, vault-ops-tag-audit/, vault-ops-summarize/,
 │   vault-ops-backup/, vault-ops-research/
 └── module-toggle/           # 全局命令（不分模块）

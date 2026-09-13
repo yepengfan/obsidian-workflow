@@ -5,7 +5,7 @@ type: utility
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-06-12
+updated: 2026-09-14
 depends_on: []
 requires:
   plugins: [dataview, homepage]
@@ -21,7 +21,7 @@ tags: [system/module]
 # Dashboard 仪表盘
 
 ## Overview
-Vault 的 UI 层。Home.md 是主入口，通过 Dataviewjs 实现标签页导航、按钮交互、雷达图可视化。Work Dashboard / Weekly View / Monthly View 是工作子仪表盘。
+Vault 的 UI 层。Home.md 是主入口，通过 Dataviewjs 实现标签页导航、按钮交互、雷达图可视化。Work 默认 tab 内嵌 Task Board 四象限；Work Dashboard / Weekly View / Monthly View 仍作为独立工作子页存在，不再挂在 Home 上。
 
 被依赖: [[system/modules/work/module|work]] · [[system/modules/feeds-ai-digest/module|feeds-ai-digest]] · [[system/modules/feeds-github-trending/module|feeds-github-trending]] · [[system/modules/profile/module|profile]]
 
@@ -30,7 +30,7 @@ Vault 的 UI 层。Home.md 是主入口，通过 Dataviewjs 实现标签页导�
 ```
 Home.md                          # 主仪表盘（Homepage 插件落地页）
 ├── [Work | Profile]             # 主标签组
-│   ├── Work → 工作入口 + 日记按钮 + 任务工具栏
+│   ├── Work → 四象限 Task Board（读 Tasks/Board.md）+ Zettel 捕捉
 │   └── Profile → Baseball Card 雷达图（全息效果）
 └── [AI Digest | GitHub Trending] # Feed 标签组
     ├── AI Digest → 最新摘要预览

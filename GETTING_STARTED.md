@@ -73,6 +73,7 @@ pip install aiohttp
 │   ├── README.md        ← 📖 模块系统文档
 │   └── modules/         ← 📦 每个模块的清单
 ├── Work/                ← 工作日记和项目
+├── Tasks/               ← 全库 Covey/Eisenhower 任务板（活页 gitignore，模板在 git）
 ├── Zettelkasten/        ← 永久笔记
 ├── Learning/            ← 学习计划
 ├── Inbox/               ← 快速捕捉
@@ -81,12 +82,14 @@ pip install aiohttp
 └── .claude/skills/      ← slash 命令定义（Agent Skills）
 ```
 
+`Tasks/` 是全库 Covey/Eisenhower 任务板：活页 `Tasks/Board.md` gitignore（S3/iCloud），模板 `Templates/Task Board.md` 留在 git。
+
 > [!tip] 入口
 > 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 📖 [[system/README|Module Docs]]
 
 ## 第二步：选择你需要的模块
 
-这个 vault 有 9 个模块，你不需要全部开启。根据你的需求选择：
+这个 vault 有多个模块，你不需要全部开启。根据你的需求选择：
 
 ### 🟢 建议新手先开启
 
@@ -94,6 +97,7 @@ pip install aiohttp
 |------|--------|------|
 | [[system/modules/dashboard/module\|dashboard]] | Home.md 仪表盘 | （无命令，纯 UI） |
 | [[system/modules/work/module\|work]] | 每日工作记录 | `/work-daily`, `/work-project` |
+| [[system/modules/task-board/module\|task-board]] | 全库四象限任务板 | `/task-add`, `/task-board` |
 | [[system/modules/zettelkasten/module\|zettelkasten]] | 永久知识库 | `/zettelkasten-zettel`, `/zettelkasten-inbox-review` |
 
 ### 🟡 按需开启
@@ -142,6 +146,7 @@ pip install aiohttp
 | `Work/Projects/` | 删除项目页面（保留空文件夹） |
 | `Zettelkasten/` | 删除所有 zettel 或保留你感兴趣的 |
 | `Inbox/` | 清空 |
+| `Tasks/Board.md` | 清空 `## Tasks`（保留文件和四象限 Dataview） |
 | `Learning/AISA/`, `Learning/SYSD/` | 删除（用 `/learning-init` 创建你自己的） |
 | `Feeds/AI-Daily/`, `Feeds/GitHub-Trending/` | 删除旧报告（新的会自动生成） |
 | `Profile/` | 替换为你自己的 Baseball Card |

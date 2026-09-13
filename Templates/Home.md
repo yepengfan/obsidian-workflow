@@ -1,12 +1,39 @@
 ---
 tags: template
 for: Home
-updated: 2026-09-13
+updated: 2026-09-14
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-09-14 — Home task cards open the board to edit (editing moved off Home)
+> - **Why**: Editing on Home crowded the matrix. Home is now capture + overview; editing lives on the Task Board page.
+> - **Home change**: `renderTasks` gives each task li `cursor:pointer` and a click handler that opens `Tasks/Board.md` (checkbox clicks still toggle completion — guarded by `e.target.tagName === "INPUT"`). The inline `attachEdit` drawer was removed from Home.
+> - **Board side**: the `✎` inline edit/delete drawer now lives in `Tasks/Board.md` / `Templates/Task Board.md` (see that template's Design Decisions). Home's add-task composer is unchanged.
+
+> [!note] 2026-09-14 — Add-task composer on Home Task Board
+> - **Why**: Home should be the capture surface, not just a view. A task written here is stored on `Tasks/Board.md` `## Tasks`; the matrix derives the quadrant (⭐ × 📅 due ≤ today+7 × `#task/<area>`), so it lands in Q1–Q4 without a second "move to quadrant" step.
+> - **UI**: Title input + Work/Life/Other pills (default work) + ⭐ toggle (off = not important) + optional `type=date` due + `+ Task`. Enter submits. Empty title / bad due → Notice, no write. Missing board file: `+ Task` creates `Tasks/` + a stub `Board.md` then appends.
+> - **Write**: `- [ ] [⭐ ][📅 YYYY-MM-DD ]<title> #task/<area>` inserted after `## Tasks`, skipping fenced code blocks when locating headings (Board.md's dataviewjs sits above `## Tasks`). Vault modify retriggers Dataview so the new card appears in the matching cell.
+
+> [!note] 2026-09-14 — Home Work tab: drop navToday date button
+> - **Why**: Same cleanup as Work Dashboard and the 7-day work-log rows. Home's Work tab is the Task Board, not a work-daily launcher.
+> - **Removed**: `navToday` (the `yyyy-MM-dd` button) and its entire create-or-open + carryover handler. Creating a work daily note remains `/work-daily`.
+> - **Kept**: `+ Zettel` on the Work panel row; `Task Board` on the topBar.
+
+> [!note] 2026-09-14 — Home Work tab: drop 7-day work log rows
+> - **Why**: The rolling 7-day work-daily progress bars (`Sep 08 – Sep 14` / Today `N open · ⬆️ · ➡️ · done · total`) were leftover work-log chrome. The Work tab is now the Task Board, not a daily-note glance.
+> - **Removed**: the entire `WEEKLY VIEW (Work tab)` block (`wkView`, `dv.pages('"Work"')` last-7-days query, four-segment bar, ghost Today row).
+> - **Files left intact**: `Work/Weekly View.md` and `Templates/Work Weekly View.md` still exist as the dedicated weekly page; they are just no longer surfaced on Home.
+
+> [!note] 2026-09-14 — Task Board matrix embedded on Home; Work Dashboard button removed
+> - **Why**: The Covey matrix should be visible the moment Home loads, not one click away. Work Dashboard was no longer used, so its button was removed from the Work panel.
+> - **Embed**: An IIFE renders the full Eisenhower 2×2 (+ Unclassified, All/Work/Life/Other pills, counts, Q2-empty hint) into `panels["work"]`. Work is the default tab, so the matrix shows on load. It reads `Tasks/Board.md` via `dv.page("Tasks/Board")` + `app.metadataCache.getFileCache` for `## Tasks`/`## Done` heading bounds, so checking a box writes back to the board file. Missing file → muted "运行 /task-board" hint.
+> - **topBar button kept**: The `Task Board` button on the Work|Profile topBar remains as the "open the full board page" affordance (visible on both tabs).
+> - **Removed**: `navDash` (`text: "Work Dashboard"`) button and its `openLinkText("Work/Work Dashboard")` handler.
+> - **Scope isolation**: The embed is an IIFE so its locals (`today`, `q1`–`q4`, …) don't leak into the rest of the Home dataviewjs block.
 
 > [!note] 2026-09-13 — 📖 读书 card shows reading channel (WeRead vs Apple Books)
 > - **Why**: A book's `meta.md` recorded where the file/highlights came from, but the card gave no at-a-glance answer to "这本书我在哪个 App 读的". `reading_channel` was also semantically muddled — older values mixed file format with app (`EPUB + WeRead`, `EPUB + iBooks`).
