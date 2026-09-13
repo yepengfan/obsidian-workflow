@@ -35,7 +35,7 @@ tags: [system/module]
 
 ## 架构
 
-- **`{BookTitle}/meta.md`**: frontmatter 驱动 — archetype、reading_channel、progress tracker（每章 `map`/`understanding` 两字段），以及（EPUB/PDF 书）`epub_path`/`pdf_path`（按来源格式二选一）指向 `~/Library/ebooks/` 下的实体文件；`cover`（`book_init.py` 自动从 EPUB 提取内嵌封面到 `<book>/cover.{ext}`）；`weread_source` / `ibooks_source`（二选一或都有；WeRead 有按章划线+阅读进度，iBooks 是单扁平文件、章节归属不可靠、无进度字段）
+- **`{BookTitle}/meta.md`**: frontmatter 驱动 — archetype、`reading_channel`（**你实际在哪个 App 读**：`weread` / `apple-books` / `both`；不是文件来源、也不是划线同步源，Home 卡片 + Books Index 据此显示渠道）、progress tracker（每章 `map`/`understanding` 两字段），以及（EPUB/PDF 书）`epub_path`/`pdf_path`（按来源格式二选一）指向 `~/Library/ebooks/` 下的实体文件；`cover`（`book_init.py` 自动从 EPUB 提取内嵌封面到 `<book>/cover.{ext}`）；`weread_source` / `ibooks_source`（捕获层划线同步源，二选一或都有；WeRead 有按章划线+阅读进度，iBooks 是单扁平文件、章节归属不可靠、无进度字段）
 - **`{BookTitle}/understanding.md`**: **生产层产物**。按章记录，每章两块——`结构地图与核心概念（AI）` + `我的理解（你的话，原文转录）`。发表层写作骨架的输入源
 - **`{BookTitle}/article.md`**（可选，按需）: **发表层产物**。每章一个 `骨架（AI）— 这章在讲什么` + `我的总结（你写）`，末尾一个 `全书总结`。AI 只写/刷新骨架块，总结人写，见 `Learning/Books/CLAUDE.md` → "Publication layer — 写作骨架"
 - **`{BookTitle}/.fulltext_cache/`**: 全书正文文本缓存，`extract_fulltext.py` 生成。**标准输入步骤**（不再是 opt-in）——章节思维导图基于原文生成。仅 EPUB。详见 `Learning/Books/CLAUDE.md` → "Full-text cache"

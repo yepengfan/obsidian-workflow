@@ -18,7 +18,7 @@ Parse `$ARGUMENTS` for a book title (and author, if given). Confirm with the use
 - **Book title** (exact, used for the vault folder name)
 - **Author**
 - **Archetype**: `technical-reference` or `cognitive-mental-model` (ask if unclear — a light tag for granularity/reflection style, see `Learning/Books/CLAUDE.md` → "Book archetypes")
-- **Reading channel**: WeRead / iBooks / EPUB / PDF / EPUB + WeRead / EPUB + iBooks
+- **Reading channel** — *which app you actually read in*: `weread` / `apple-books` / `both`. This is **not** where the file came from (that's `epub_path`/`pdf_path`) nor where highlights sync (that's `weread_source`/`ibooks_source`) — it's the reading surface. A book can have an EPUB on disk yet be read in WeRead → channel is `weread`.
 
 If the user already gave all of these in `$ARGUMENTS`, skip re-asking and confirm briefly instead.
 
@@ -60,13 +60,22 @@ If the reading channel is pure WeRead or pure iBooks (no EPUB/PDF), skip this st
 
 ```yaml
 archetype: <technical-reference | cognitive-mental-model>
-reading_channel: <EPUB | WeRead | iBooks | EPUB + WeRead | EPUB + iBooks>
+reading_channel: <weread | apple-books | both>
 weread_source: "WeRead/{Folder}/{File}.md"   # only if a WeRead sync exists for this book
 # No output_target field — the publication layer is always in-book article.md,
 # generated on demand via /book-write (see Learning/Books/CLAUDE.md → "Publication layer").
 ```
 
-Check whether a matching `WeRead/` folder exists for this book title; if so, add `weread_source` even when the primary reading channel is EPUB (matches the pattern used by existing books).
+**Infer `reading_channel` from the capture sources, then confirm before writing** (never guess silently):
+
+| Signal | → `reading_channel` |
+|--------|---------------------|
+| `weread_source` set, no `ibooks_source` | `weread` |
+| `ibooks_source` set, no `weread_source` | `apple-books` |
+| both set | `both` — ask the user which app they mainly read in (a WeRead sync can exist even for a book read in Apple Books) |
+| neither set | **must ask** — never default to a value from the EPUB's presence |
+
+Check whether a matching `WeRead/` folder exists for this book title; if so, add `weread_source` even when the book is read in Apple Books (matches the pattern used by existing books) — but that alone does **not** make the channel `weread`; the channel is the reading surface, confirm it.
 
 `cover` is auto-filled by Step 3 when an embedded EPUB cover was extracted — don't re-supply it. For `ibooks_source`: if Step 3 auto-filled it (exact filename match), leave it; if Step 3 printed fuzzy iBooks candidate(s) instead, list them and ask the user which to use before adding `ibooks_source` to `meta.md`. If the reading channel is iBooks but no export file exists yet, leave `ibooks_source` unset — do not fabricate a path.
 

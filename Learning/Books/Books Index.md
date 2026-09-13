@@ -11,30 +11,53 @@ cssclasses: [wide-page]
 
 ```dataviewjs
 const fmt = (d) => d ? dv.date(d).toFormat("yyyy-MM-dd") : "";
+// Reading channel = the app the book is read in. Prefer `reading_channel`
+// (canonical: weread | apple-books | both), normalize legacy mixed values
+// ("EPUB + WeRead" etc.), else infer from the capture sources.
+const chan = (p) => {
+  const raw = String(p.reading_channel || "").toLowerCase();
+  const wr = /weread/.test(raw), ab = /apple|ibooks/.test(raw);
+  let key = (wr && ab) ? "both" : wr ? "weread" : ab ? "apple-books" : null;
+  if (!key) {
+    const wrS = !!p.weread_source, abS = !!p.ibooks_source;
+    key = (wrS && abS) ? "both" : wrS ? "weread" : abS ? "apple-books" : null;
+  }
+  return { weread: "WeRead", "apple-books": "Apple Books", both: "WeRead + Apple Books" }[key] || "—";
+};
 const pages = dv.pages('"Learning/Books"')
   .where(p => p.file.name === "meta" && p.status === "reading")
   .sort(p => p.started, "desc");
 const rows = pages.map(p => {
   const moc = dv.page(p.file.folder + "/MOC");
   const link = moc ? dv.fileLink(moc.file.path, false, p.title) : p.file.link;
-  return [link, p.author, p.archetype, fmt(p.started)];
+  return [link, p.author, p.archetype, chan(p), fmt(p.started)];
 });
-dv.table(["Book", "Author", "Archetype", "Started"], rows);
+dv.table(["Book", "Author", "Archetype", "Channel", "Started"], rows);
 ```
 
 ## Finished
 
 ```dataviewjs
 const fmt = (d) => d ? dv.date(d).toFormat("yyyy-MM-dd") : "";
+const chan = (p) => {
+  const raw = String(p.reading_channel || "").toLowerCase();
+  const wr = /weread/.test(raw), ab = /apple|ibooks/.test(raw);
+  let key = (wr && ab) ? "both" : wr ? "weread" : ab ? "apple-books" : null;
+  if (!key) {
+    const wrS = !!p.weread_source, abS = !!p.ibooks_source;
+    key = (wrS && abS) ? "both" : wrS ? "weread" : abS ? "apple-books" : null;
+  }
+  return { weread: "WeRead", "apple-books": "Apple Books", both: "WeRead + Apple Books" }[key] || "—";
+};
 const pages = dv.pages('"Learning/Books"')
   .where(p => p.file.name === "meta" && p.status === "finished")
   .sort(p => p.finished, "desc");
 const rows = pages.map(p => {
   const moc = dv.page(p.file.folder + "/MOC");
   const link = moc ? dv.fileLink(moc.file.path, false, p.title) : p.file.link;
-  return [link, p.author, p.archetype, fmt(p.started), fmt(p.finished)];
+  return [link, p.author, p.archetype, chan(p), fmt(p.started), fmt(p.finished)];
 });
-if (rows.length > 0) dv.table(["Book", "Author", "Archetype", "Started", "Finished"], rows);
+if (rows.length > 0) dv.table(["Book", "Author", "Archetype", "Channel", "Started", "Finished"], rows);
 else dv.paragraph("*No finished books yet.*");
 ```
 
@@ -42,14 +65,24 @@ else dv.paragraph("*No finished books yet.*");
 
 ```dataviewjs
 const fmt = (d) => d ? dv.date(d).toFormat("yyyy-MM-dd") : "";
+const chan = (p) => {
+  const raw = String(p.reading_channel || "").toLowerCase();
+  const wr = /weread/.test(raw), ab = /apple|ibooks/.test(raw);
+  let key = (wr && ab) ? "both" : wr ? "weread" : ab ? "apple-books" : null;
+  if (!key) {
+    const wrS = !!p.weread_source, abS = !!p.ibooks_source;
+    key = (wrS && abS) ? "both" : wrS ? "weread" : abS ? "apple-books" : null;
+  }
+  return { weread: "WeRead", "apple-books": "Apple Books", both: "WeRead + Apple Books" }[key] || "—";
+};
 const pages = dv.pages('"Learning/Books"')
   .where(p => p.file.name === "meta" && p.status === "paused")
   .sort(p => p.started, "desc");
 const rows = pages.map(p => {
   const moc = dv.page(p.file.folder + "/MOC");
   const link = moc ? dv.fileLink(moc.file.path, false, p.title) : p.file.link;
-  return [link, p.author, p.archetype, fmt(p.started)];
+  return [link, p.author, p.archetype, chan(p), fmt(p.started)];
 });
-if (rows.length > 0) dv.table(["Book", "Author", "Archetype", "Started"], rows);
+if (rows.length > 0) dv.table(["Book", "Author", "Archetype", "Channel", "Started"], rows);
 else dv.paragraph("*No paused books.*");
 ```

@@ -32,7 +32,10 @@ that goes stale; PR #156 demoted it to fallback-only). Instead:
 - **`$ARGUMENTS` names/fuzzy-matches exactly one reading book** → use it, skip the prompt.
 - **Only one reading book exists** → use it, skip the prompt.
 - **Otherwise** → use `AskUserQuestion` to let the user pick (build options dynamically from
-  the scan — never hardcode titles). Show `title · author · WeRead N%` (live) per option.
+  the scan — never hardcode titles). Show `title · author · {channel} · WeRead N%` (live) per
+  option, where `{channel}` is the reading app from `reading_channel` (`WeRead` / `Apple Books`
+  / `WeRead + Apple Books`; if absent, infer from `weread_source`/`ibooks_source`). Apple-Books
+  books have no live percentage — show the channel without a `%`.
 
 ## Step 2 — Pick the chapter
 

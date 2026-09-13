@@ -77,6 +77,15 @@ Derive marks from `progress` tracker: a `map`/`understanding` field absent or
 
 ## Capture layers (WeRead + Apple Books)
 
+> **`reading_channel` vs capture sources — don't conflate them.** `reading_channel`
+> in `meta.md` records **which app you actually read in** (`weread` / `apple-books` /
+> `both`) — the reading surface. It is *not* where the file came from (`epub_path` /
+> `pdf_path`) nor where highlights sync from (`weread_source` / `ibooks_source`). A book
+> can have an EPUB on disk and a WeRead sync yet be read in Apple Books. Display layers
+> (Home card, Books Index) key off `reading_channel`; if it's absent, fall back to
+> inferring from the source fields (weread_source only → `weread`, ibooks_source only →
+> `apple-books`, both → `both`).
+
 Two capture channels feed the system; a book uses one or both, declared in
 `meta.md`:
 
@@ -466,7 +475,8 @@ Run via **`/book-init`** (see `.agents/skills/book-init/SKILL.md` for the full
 step-by-step). In brief:
 
 ```
-1. Confirm: title, author, archetype, reading channel (WeRead / iBooks / EPUB / mix).
+1. Confirm: title, author, archetype, reading channel — the app you read in
+   (`weread` / `apple-books` / `both`; not the file format).
 2. If EPUB/PDF available: locate it under ~/Library/ebooks/ (fuzzy match; ask when
    multiple candidates), run book_init.py to generate the chapter skeleton +
    meta.md/MOC.md/chapters//notes/ + understanding.md placeholder.

@@ -1455,6 +1455,26 @@ dv.el("div", "📖 读书", {
       return meta?.weread_progress ? String(meta.weread_progress) : null;
     }
 
+    // Which app the book is read in. Prefer the explicit `reading_channel` field
+    // (canonical: weread | apple-books | both). Older books used file-format-mixed
+    // values (e.g. "EPUB + WeRead") — normalize those. If still unknown, infer from
+    // the capture sources (weread_source only → weread, ibooks only → apple-books,
+    // both → both). Returns null when nothing can be determined.
+    function bookChannel(meta) {
+      const raw = String(meta?.reading_channel || "").toLowerCase();
+      const hasWr = /weread/.test(raw);
+      const hasAb = /apple|ibooks/.test(raw);
+      if (hasWr && hasAb) return "both";
+      if (hasWr) return "weread";
+      if (hasAb) return "apple-books";
+      const wrSrc = !!meta?.weread_source, abSrc = !!meta?.ibooks_source;
+      if (wrSrc && abSrc) return "both";
+      if (wrSrc) return "weread";
+      if (abSrc) return "apple-books";
+      return null;
+    }
+    const channelLabel = { weread: "WeRead", "apple-books": "Apple Books", both: "WeRead + Apple Books" };
+
     for (const m of metas) {
       const folder = m.file.folder;              // Learning/Books/<Title>
       const bookName = folder.split("/").pop();
@@ -1531,6 +1551,15 @@ dv.el("div", "📖 读书", {
         row1.createEl("span", {
           text: archLabel[m.archetype],
           attr: { style: "font-size:0.62em;padding:1px 7px;margin-top:1px;border-radius:20px;border:1px solid var(--color-accent);color:var(--color-accent);white-space:nowrap;flex-shrink:0;" }
+        });
+      }
+      // Reading-channel pill (which app it's read in) — muted, so it reads as metadata
+      const channel = bookChannel(m);
+      if (channel) {
+        row1.createEl("span", {
+          text: channelLabel[channel],
+          title: "阅读渠道（你在哪个 App 读）",
+          attr: { style: "font-size:0.62em;padding:1px 7px;margin-top:1px;border-radius:20px;border:1px solid var(--background-modifier-border);color:var(--text-muted);white-space:nowrap;flex-shrink:0;" }
         });
       }
 
