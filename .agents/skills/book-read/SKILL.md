@@ -20,9 +20,12 @@ the single source of truth. Read it before entering any step.
 ## Step 1 — Pick the book
 
 Scan `Learning/Books/*/meta.md` for entries with `status: reading`. For each, read
-`title` and `author`. For the progress badge, resolve WeRead progress **live** — do
-**not** read the static `weread_progress` field directly (it is a hand-copied snapshot
-that goes stale; PR #156 demoted it to fallback-only). Instead:
+`title` and `author`. Resolve WeRead progress **live — only for books read in WeRead**
+(`reading_channel` is `weread` or `both`). Skip it for `apple-books` books: they may
+carry a `weread_source` pointer for highlight sync only, so a WeRead % there is stale
+and contradicts the `Apple Books` label (same gating Home.md applies). For a WeRead/both
+book, resolve live progress — do **not** read the static `weread_progress` field directly
+(it is a hand-copied snapshot that goes stale; PR #156 demoted it to fallback-only):
 
 1. Read `weread_source` from meta.md → open that plugin-synced WeRead note → use its
    frontmatter `progress`. This is the single source of truth (same as Home.md and Step 4).

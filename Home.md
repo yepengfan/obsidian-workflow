@@ -1461,7 +1461,8 @@ dv.el("div", "📖 读书", {
     // the capture sources (weread_source only → weread, ibooks only → apple-books,
     // both → both). Returns null when nothing can be determined.
     function bookChannel(meta) {
-      const raw = String(meta?.reading_channel || "").toLowerCase();
+      const raw = String(meta?.reading_channel || "").toLowerCase().trim();
+      if (raw === "both") return "both";   // canonical value — not matched by the token regexes below
       const hasWr = /weread/.test(raw);
       const hasAb = /apple|ibooks/.test(raw);
       if (hasWr && hasAb) return "both";
@@ -1584,7 +1585,10 @@ dv.el("div", "📖 读书", {
       if (m.author) bits.push(m.author);
       if (total > 0) bits.push(`图${mapCh}/理解${doneCh}`);
       if (total > 0) bits.push(doneCh === total ? "✓ 完成" : `Ch${currentNum}/${total}`);
-      const wr = findWeReadProgress(m);
+      // WeRead % only makes sense when the book is actually read in WeRead. A book
+      // read in Apple Books may still carry a weread_source pointer (highlight sync
+      // only), so gate on the reading channel to avoid a stale/contradictory %.
+      const wr = (channel === "weread" || channel === "both") ? findWeReadProgress(m) : null;
       if (wr) bits.push(`WeRead ${wr}`);
       if (bits.length) {
         body.createEl("div", {

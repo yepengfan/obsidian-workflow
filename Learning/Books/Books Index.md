@@ -15,9 +15,9 @@ const fmt = (d) => d ? dv.date(d).toFormat("yyyy-MM-dd") : "";
 // (canonical: weread | apple-books | both), normalize legacy mixed values
 // ("EPUB + WeRead" etc.), else infer from the capture sources.
 const chan = (p) => {
-  const raw = String(p.reading_channel || "").toLowerCase();
+  const raw = String(p.reading_channel || "").toLowerCase().trim();
   const wr = /weread/.test(raw), ab = /apple|ibooks/.test(raw);
-  let key = (wr && ab) ? "both" : wr ? "weread" : ab ? "apple-books" : null;
+  let key = (raw === "both") ? "both" : (wr && ab) ? "both" : wr ? "weread" : ab ? "apple-books" : null;
   if (!key) {
     const wrS = !!p.weread_source, abS = !!p.ibooks_source;
     key = (wrS && abS) ? "both" : wrS ? "weread" : abS ? "apple-books" : null;
@@ -40,9 +40,9 @@ dv.table(["Book", "Author", "Archetype", "Channel", "Started"], rows);
 ```dataviewjs
 const fmt = (d) => d ? dv.date(d).toFormat("yyyy-MM-dd") : "";
 const chan = (p) => {
-  const raw = String(p.reading_channel || "").toLowerCase();
+  const raw = String(p.reading_channel || "").toLowerCase().trim();
   const wr = /weread/.test(raw), ab = /apple|ibooks/.test(raw);
-  let key = (wr && ab) ? "both" : wr ? "weread" : ab ? "apple-books" : null;
+  let key = (raw === "both") ? "both" : (wr && ab) ? "both" : wr ? "weread" : ab ? "apple-books" : null;
   if (!key) {
     const wrS = !!p.weread_source, abS = !!p.ibooks_source;
     key = (wrS && abS) ? "both" : wrS ? "weread" : abS ? "apple-books" : null;
@@ -66,9 +66,9 @@ else dv.paragraph("*No finished books yet.*");
 ```dataviewjs
 const fmt = (d) => d ? dv.date(d).toFormat("yyyy-MM-dd") : "";
 const chan = (p) => {
-  const raw = String(p.reading_channel || "").toLowerCase();
+  const raw = String(p.reading_channel || "").toLowerCase().trim();
   const wr = /weread/.test(raw), ab = /apple|ibooks/.test(raw);
-  let key = (wr && ab) ? "both" : wr ? "weread" : ab ? "apple-books" : null;
+  let key = (raw === "both") ? "both" : (wr && ab) ? "both" : wr ? "weread" : ab ? "apple-books" : null;
   if (!key) {
     const wrS = !!p.weread_source, abS = !!p.ibooks_source;
     key = (wrS && abS) ? "both" : wrS ? "weread" : abS ? "apple-books" : null;
