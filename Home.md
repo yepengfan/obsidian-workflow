@@ -155,11 +155,21 @@ btn.addEventListener("click", async () => {
     if (!app.vault.getAbstractFileByPath("Tasks")) await app.vault.createFolder("Tasks");
     let f = app.vault.getAbstractFileByPath(boardPath);
     if (f) return f;
-    const stub = [
-      "---", "tags: [task-board]", "---", "", "# Task Board", "",
-      "## Tasks", "", "## Done", ""
-    ].join("\n");
-    return await app.vault.create(boardPath, stub);
+    // Build the full board (matrix + edit UI) from the template's Reference Content,
+    // so a Home-created board is identical to one made by /task-add or /task-board.
+    let body = null;
+    const tmpl = app.vault.getAbstractFileByPath("Templates/Task Board.md");
+    if (tmpl) {
+      const traw = await app.vault.read(tmpl);
+      const mi = traw.indexOf("## Reference Content");
+      if (mi >= 0) {
+        const bi = traw.indexOf("# Task Board", mi);
+        if (bi >= 0) body = traw.slice(bi).replace(/\s+$/, "") + "\n";
+      }
+    }
+    if (!body) body = ["# Task Board", "", "## Tasks", "", "## Done", ""].join("\n");
+    const content = "---\ntags: [task-board]\n---\n\n" + body;
+    return await app.vault.create(boardPath, content);
   }
 
   addBtn.addEventListener("click", async () => {
