@@ -1474,6 +1474,13 @@ dv.el("div", "📖 读书", {
       return null;
     }
     const channelLabel = { weread: "WeRead", "apple-books": "Apple Books", both: "WeRead + Apple Books" };
+    // Brand colors matching each app's icon — WeRead blue, Apple Books orange.
+    // { fg: text, bg: tinted fill, bd: border }. `both` blends toward WeRead blue.
+    const channelColor = {
+      weread:        { fg: "#2f80ed", bg: "rgba(47,128,237,0.12)",  bd: "rgba(47,128,237,0.45)" },
+      "apple-books": { fg: "#f59e0b", bg: "rgba(245,158,11,0.14)",  bd: "rgba(245,158,11,0.5)" },
+      both:          { fg: "#2f80ed", bg: "rgba(47,128,237,0.12)",  bd: "rgba(47,128,237,0.45)" },
+    };
 
     for (const m of metas) {
       const folder = m.file.folder;              // Learning/Books/<Title>
@@ -1556,10 +1563,11 @@ dv.el("div", "📖 读书", {
       // Reading-channel pill (which app it's read in) — muted, so it reads as metadata
       const channel = bookChannel(m);
       if (channel) {
+        const cc = channelColor[channel] || { fg: "var(--text-muted)", bg: "transparent", bd: "var(--background-modifier-border)" };
         row1.createEl("span", {
           text: channelLabel[channel],
           title: "阅读渠道（你在哪个 App 读）",
-          attr: { style: "font-size:0.62em;padding:1px 7px;margin-top:1px;border-radius:20px;border:1px solid var(--background-modifier-border);color:var(--text-muted);white-space:nowrap;flex-shrink:0;" }
+          attr: { style: `font-size:0.62em;padding:1px 7px;margin-top:1px;border-radius:20px;border:1px solid ${cc.bd};background:${cc.bg};color:${cc.fg};white-space:nowrap;flex-shrink:0;` }
         });
       }
 
