@@ -8,7 +8,10 @@ updated: 2026-09-14
 
 ## Design Decisions
 
-> [!note] 2026-09-14 — Home task cards open the board to edit (editing moved off Home)
+> [!note] 2026-09-14 — Task Board matrix mobile-friendly
+> - **Why**: The 2×2 matrix and composer wrap poorly on a phone; tap targets and quadrant titles were sized for desktop.
+> - **Layout only**: Reuse existing `const isMobile = app.isMobile`. Composer title `min-width:100%` on mobile so it takes a full row; area/star/due/+ Task padding bumped for tap targets. Matrix is a single column (`1fr`) with tighter gap/cell padding. Filter pills slightly smaller. Quadrant titles drop parentheticals on mobile (`Q1 重要·紧急`, …). Desktop styles and titles unchanged.
+> - **Unchanged**: add-task write-back, `ensureBoard`, click-to-open-board, urgency (today+7), and quadrant bucketing.
 > - **Why**: Editing on Home crowded the matrix. Home is now capture + overview; editing lives on the Task Board page.
 > - **Home change**: `renderTasks` gives each task li `cursor:pointer` and a click handler that opens `Tasks/Board.md` (checkbox clicks still toggle completion — guarded by `e.target.tagName === "INPUT"`). The inline `attachEdit` drawer was removed from Home.
 > - **Board side**: the `✎` inline edit/delete drawer now lives in `Tasks/Board.md` / `Templates/Task Board.md` (see that template's Design Decisions). Home's add-task composer is unchanged.

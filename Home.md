@@ -102,7 +102,7 @@ btn.addEventListener("click", async () => {
   const titleInp = form.createEl("input");
   titleInp.type = "text";
   titleInp.placeholder = "任务标题";
-  titleInp.setAttribute("style", inpStyle + "flex:1;min-width:140px;");
+  titleInp.setAttribute("style", inpStyle + `flex:1;min-width:${isMobile ? "100%" : "140px"};`);
 
   const areas = ["work", "life", "other"];
   let area = "work";
@@ -112,7 +112,7 @@ btn.addEventListener("click", async () => {
   const areaBtns = {};
   function paintArea() {
     for (const a of areas) {
-      areaBtns[a].style.cssText = "padding:3px 10px;border-radius:7px;border:none;cursor:pointer;font-size:0.78em;font-weight:600;" +
+      areaBtns[a].style.cssText = `padding:${isMobile ? "6px 10px" : "3px 10px"};border-radius:7px;border:none;cursor:pointer;font-size:0.78em;font-weight:600;` +
         (area === a ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);" : "background:transparent;color:var(--text-muted);");
     }
   }
@@ -125,7 +125,7 @@ btn.addEventListener("click", async () => {
   let important = false;
   const starBtn = form.createEl("button", { text: "⭐" });
   function paintStar() {
-    starBtn.style.cssText = "padding:3px 10px;border-radius:6px;cursor:pointer;font-size:0.82em;border:1px solid " +
+    starBtn.style.cssText = `padding:${isMobile ? "6px 10px" : "3px 10px"};border-radius:6px;cursor:pointer;font-size:0.82em;border:1px solid ` +
       (important ? "var(--interactive-accent)" : "var(--background-modifier-border)") +
       ";background:" + (important ? "var(--interactive-accent)" : "var(--background-secondary)") +
       ";color:" + (important ? "var(--text-on-accent)" : "var(--text-muted)") + ";";
@@ -137,10 +137,10 @@ btn.addEventListener("click", async () => {
   const dueInp = form.createEl("input");
   dueInp.type = "date";
   dueInp.title = "due（7 天内 = 紧急；空 = 不紧急）";
-  dueInp.setAttribute("style", inpStyle);
+  dueInp.setAttribute("style", inpStyle + (isMobile ? "padding:6px 10px;" : ""));
 
   const addBtn = form.createEl("button", { text: "+ Task" });
-  addBtn.style.cssText = `padding:${isMobile ? "4px 10px" : "4px 14px"};border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:${isMobile ? "0.78em" : "0.82em"};background:var(--interactive-accent);color:var(--text-on-accent);white-space:nowrap;`;
+  addBtn.style.cssText = `padding:${isMobile ? "6px 10px" : "4px 14px"};border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:${isMobile ? "0.78em" : "0.82em"};background:var(--interactive-accent);color:var(--text-on-accent);white-space:nowrap;`;
 
   function headingIndex(lines, heading) {
     let inFence = false;
@@ -243,7 +243,7 @@ btn.addEventListener("click", async () => {
   const pills = [ { id: "all", label: "All" }, { id: "work", label: "Work" }, { id: "life", label: "Life" }, { id: "other", label: "Other" } ];
   const btns = {};
   let active = "all";
-  const cellBase = "background:var(--background-secondary);border:1px solid var(--background-modifier-border);border-radius:8px;padding:10px;min-height:72px;";
+  const cellBase = `background:var(--background-secondary);border:1px solid var(--background-modifier-border);border-radius:8px;padding:${isMobile ? "8px" : "10px"};min-height:${isMobile ? "56px" : "72px"};`;
   const badgeStyle = "font-size:0.72em;padding:1px 7px;border-radius:10px;background:var(--background-primary);border:1px solid var(--background-modifier-border);color:var(--text-muted);white-space:nowrap;";
   function asArray(list) { if (!list) return []; if (typeof list.array === "function") return list.array(); return Array.from(list); }
 
@@ -276,7 +276,7 @@ btn.addEventListener("click", async () => {
   }
   function paintPills() {
     for (const p of pills) {
-      btns[p.id].style.cssText = "padding:4px 14px;border-radius:7px;border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.15s;" +
+      btns[p.id].style.cssText = `padding:${isMobile ? "3px 10px" : "4px 14px"};border-radius:7px;border:none;cursor:pointer;font-size:${isMobile ? "0.78em" : "0.82em"};font-weight:600;transition:all 0.15s;` +
         (active === p.id ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);" : "background:transparent;color:var(--text-muted);box-shadow:none;");
     }
   }
@@ -288,12 +288,12 @@ btn.addEventListener("click", async () => {
   }
   for (const p of pills) { btns[p.id] = seg.createEl("button", { text: p.label }); btns[p.id].addEventListener("click", () => applyFilter(p.id)); }
   paintPills();
-  const grid = root.createEl("div", { attr: { style: "display:grid;grid-template-columns:1fr 1fr;gap:10px;" } });
+  const grid = root.createEl("div", { attr: { style: `display:grid;grid-template-columns:${isMobile ? "1fr" : "1fr 1fr"};gap:${isMobile ? "8px" : "10px"};` } });
   const quads = [
-    { list: q1, title: "Q1 重要 · 紧急（立刻做）", border: "#c4553a" },
-    { list: q2, title: "Q2 重要 · 不紧急（安排做）", border: "var(--interactive-accent)" },
-    { list: q3, title: "Q3 不重要 · 紧急（压缩）", border: "var(--text-muted)" },
-    { list: q4, title: "Q4 不重要 · 不紧急（减少）", border: "var(--text-faint)" }
+    { list: q1, title: isMobile ? "Q1 重要·紧急" : "Q1 重要 · 紧急（立刻做）", border: "#c4553a" },
+    { list: q2, title: isMobile ? "Q2 重要·不紧急" : "Q2 重要 · 不紧急（安排做）", border: "var(--interactive-accent)" },
+    { list: q3, title: isMobile ? "Q3 不重要·紧急" : "Q3 不重要 · 紧急（压缩）", border: "var(--text-muted)" },
+    { list: q4, title: isMobile ? "Q4 不重要·不紧急" : "Q4 不重要 · 不紧急（减少）", border: "var(--text-faint)" }
   ];
   for (const q of quads) {
     const n = q.list.length != null ? q.list.length : asArray(q.list).length;
