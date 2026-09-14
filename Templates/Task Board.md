@@ -8,6 +8,11 @@ updated: 2026-09-14
 
 ## Design Decisions
 
+> [!note] 2026-09-14 — Mobile-friendly matrix (app.isMobile)
+> - **Single-column grid** on phone (`app.isMobile`): `grid-template-columns: 1fr`, tighter gap (8px) and cell padding (8px / min-height 56px). Desktop keeps 2×2, 10px gap, 10px / 88px cells.
+> - **Short quadrant titles** on mobile (`Q1 重要·紧急` …) so headers fit a narrow column; desktop keeps the parentheticals (立刻做 / 安排做 / 压缩 / 减少).
+> - **Larger tap targets** on mobile only: filter pills, ✎, drawer inputs, area pills, save/delete/cancel. Title input uses `min-width:100%` so it wraps onto its own row. Logic (bucketing, urgency, attachEdit write-back, stale-guard, matrix `editable=false` vs 任务列表 `editable=true`) is unchanged.
+
 > [!note] 2026-09-14 — Edit moved to a dedicated 任务列表 section (matrix read-only)
 > - **Matrix = read-only visualization**: `renderTasks(host, list, withDomainFilter, editable)` — the Q1–Q4 + Unclassified cards are now rendered with `editable=false`, so no `✎` on the matrix.
 > - **任务列表 区**: a single section below the matrix (separated by a top border) renders **all** open tasks with `editable=true`. Each entry shows a quadrant chip (`quadOf`: Q1/Q2/Q3/Q4/U) + due + domain, and carries the `✎` edit/delete drawer. This is the one place to modify a task.
@@ -54,6 +59,7 @@ if (!page) {
   }
   const inOpen = t => t.line > tasksLine && t.line < doneLine && t.status === " ";
   const boardPath = page.file.path;
+  const isMobile = app.isMobile;
 
   function domainOf(t) {
     const tags = (t.tags || []).map(x => String(x).replace(/^#/, ""));
@@ -94,7 +100,7 @@ if (!page) {
   const btns = {};
   let active = "all";
 
-  const cellBase = "background:var(--background-secondary);border:1px solid var(--background-modifier-border);border-radius:8px;padding:10px;min-height:88px;";
+  const cellBase = `background:var(--background-secondary);border:1px solid var(--background-modifier-border);border-radius:8px;padding:${isMobile ? "8px" : "10px"};min-height:${isMobile ? "56px" : "88px"};`;
   const badgeStyle = "font-size:0.72em;padding:1px 7px;border-radius:10px;background:var(--background-primary);border:1px solid var(--background-modifier-border);color:var(--text-muted);white-space:nowrap;";
 
   function asArray(list) {
@@ -105,7 +111,9 @@ if (!page) {
 
   function attachEdit(li, t) {
     const editBtn = li.createEl("button", { text: "✎" });
-    editBtn.setAttribute("style", "margin-left:6px;border:none;background:transparent;cursor:pointer;color:var(--text-faint);font-size:0.82em;");
+    editBtn.setAttribute("style", isMobile
+      ? "margin-left:6px;border:none;background:transparent;cursor:pointer;color:var(--text-faint);font-size:0.95em;padding:6px 8px;"
+      : "margin-left:6px;border:none;background:transparent;cursor:pointer;color:var(--text-faint);font-size:0.82em;");
     editBtn.title = "编辑";
     editBtn.addEventListener("click", async (e) => {
       e.preventDefault(); e.stopPropagation();
@@ -128,9 +136,9 @@ if (!page) {
         .replace(/#task\/\S+/g, "")
         .replace(/\s+/g, " ").trim();
 
-      const inpStyle2 = "padding:4px 8px;border:1px solid var(--background-modifier-border);border-radius:6px;background:var(--background-primary);color:var(--text-normal);font-size:0.82em;";
+      const inpStyle2 = (isMobile ? "padding:6px 10px;" : "padding:4px 8px;") + "border:1px solid var(--background-modifier-border);border-radius:6px;background:var(--background-primary);color:var(--text-normal);font-size:0.82em;";
       const drawer = li.createEl("div", { cls: "tb-editor", attr: { style: "display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0;padding:6px;border:1px solid var(--background-modifier-border);border-radius:8px;background:var(--background-primary);" } });
-      const tIn = drawer.createEl("input"); tIn.type = "text"; tIn.value = curTitle; tIn.setAttribute("style", inpStyle2 + "flex:1;min-width:120px;");
+      const tIn = drawer.createEl("input"); tIn.type = "text"; tIn.value = curTitle; tIn.setAttribute("style", inpStyle2 + "flex:1;min-width:" + (isMobile ? "100%" : "120px") + ";");
 
       const areaOpts = ["work", "life", "other", "none"];
       const aSeg = drawer.createEl("div", { attr: { style: "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);" } });
@@ -138,7 +146,7 @@ if (!page) {
       let areaSel = (curArea || "none");
       function paintA() {
         for (const a of areaOpts) {
-          aBtns[a].style.cssText = "padding:3px 8px;border-radius:7px;border:none;cursor:pointer;font-size:0.74em;font-weight:600;" +
+          aBtns[a].style.cssText = (isMobile ? "padding:6px 10px;" : "padding:3px 8px;") + "border-radius:7px;border:none;cursor:pointer;font-size:0.74em;font-weight:600;" +
             (areaSel === a ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);" : "background:transparent;color:var(--text-muted);");
         }
       }
@@ -161,11 +169,11 @@ if (!page) {
       const dIn = drawer.createEl("input"); dIn.type = "date"; dIn.value = curDue; dIn.title = "due（7 天内 = 紧急；空 = 不紧急）"; dIn.setAttribute("style", inpStyle2);
 
       const saveBtn = drawer.createEl("button", { text: "保存" });
-      saveBtn.style.cssText = "padding:3px 12px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.78em;background:var(--interactive-accent);color:var(--text-on-accent);";
+      saveBtn.style.cssText = (isMobile ? "padding:6px 12px;" : "padding:3px 12px;") + "border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.78em;background:var(--interactive-accent);color:var(--text-on-accent);";
       const delBtn = drawer.createEl("button", { text: "删除" });
-      delBtn.style.cssText = "padding:3px 10px;border:1px solid var(--background-modifier-border);border-radius:6px;cursor:pointer;font-size:0.78em;background:var(--background-secondary);color:var(--text-error, #c4553a);";
+      delBtn.style.cssText = (isMobile ? "padding:6px 12px;" : "padding:3px 10px;") + "border:1px solid var(--background-modifier-border);border-radius:6px;cursor:pointer;font-size:0.78em;background:var(--background-secondary);color:var(--text-error, #c4553a);";
       const cancelBtn = drawer.createEl("button", { text: "取消" });
-      cancelBtn.style.cssText = "padding:3px 10px;border:1px solid var(--background-modifier-border);border-radius:6px;cursor:pointer;font-size:0.78em;background:var(--background-secondary);color:var(--text-muted);";
+      cancelBtn.style.cssText = (isMobile ? "padding:6px 12px;" : "padding:3px 10px;") + "border:1px solid var(--background-modifier-border);border-radius:6px;cursor:pointer;font-size:0.78em;background:var(--background-secondary);color:var(--text-muted);";
 
       cancelBtn.addEventListener("click", () => drawer.remove());
 
@@ -240,7 +248,7 @@ if (!page) {
 
   function paintPills() {
     for (const p of pills) {
-      btns[p.id].style.cssText = "padding:4px 14px;border-radius:7px;border:none;cursor:pointer;font-size:0.82em;font-weight:600;transition:all 0.15s;" +
+      btns[p.id].style.cssText = `padding:${isMobile ? "3px 10px" : "4px 14px"};border-radius:7px;border:none;cursor:pointer;font-size:${isMobile ? "0.78em" : "0.82em"};font-weight:600;transition:all 0.15s;` +
         (active === p.id
           ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
           : "background:transparent;color:var(--text-muted);box-shadow:none;");
@@ -264,14 +272,14 @@ if (!page) {
   paintPills();
 
   const grid = root.createEl("div", {
-    attr: { style: "display:grid;grid-template-columns:1fr 1fr;gap:10px;" }
+    attr: { style: `display:grid;grid-template-columns:${isMobile ? "1fr" : "1fr 1fr"};gap:${isMobile ? "8px" : "10px"};` }
   });
 
   const quads = [
-    { list: q1, title: "Q1 重要 · 紧急（立刻做）", border: "#c4553a" },
-    { list: q2, title: "Q2 重要 · 不紧急（安排做）", border: "var(--interactive-accent)" },
-    { list: q3, title: "Q3 不重要 · 紧急（压缩）", border: "var(--text-muted)" },
-    { list: q4, title: "Q4 不重要 · 不紧急（减少）", border: "var(--text-faint)" }
+    { list: q1, title: isMobile ? "Q1 重要·紧急" : "Q1 重要 · 紧急（立刻做）", border: "#c4553a" },
+    { list: q2, title: isMobile ? "Q2 重要·不紧急" : "Q2 重要 · 不紧急（安排做）", border: "var(--interactive-accent)" },
+    { list: q3, title: isMobile ? "Q3 不重要·紧急" : "Q3 不重要 · 紧急（压缩）", border: "var(--text-muted)" },
+    { list: q4, title: isMobile ? "Q4 不重要·不紧急" : "Q4 不重要 · 不紧急（减少）", border: "var(--text-faint)" }
   ];
 
   for (const q of quads) {
