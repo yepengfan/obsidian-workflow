@@ -1211,51 +1211,50 @@ dv.el("div", "📖 读书", {
 
 {
   const container = dv.el("div", "");
+  const bookPages = dv.pages('"Learning/Books"').where(p => p.file.name === "meta");
+  const bookChapters = (folder) => {
+    const all = dv.pages(`"${folder}/chapters"`)
+      .where(c => c.chapter !== undefined)
+      .sort(c => c.chapter, "asc");
+    // Some EPUB tables of contents repeat all real chapters as a bare "Chapter N" tail.
+    const titled = all.where(c => !/^Chapter\s+\d+$/i.test(String(c.title || "").trim()));
+    const bare = all.where(c => /^Chapter\s+\d+$/i.test(String(c.title || "").trim()));
+    const repeatedTail = titled.length > 0 && bare.length === titled.length &&
+      Array.from(bare).every((c, i) => c.chapter > titled.length && String(c.title).trim().toLowerCase() === `chapter ${i + 1}`);
+    return repeatedTail ? titled : all;
+  };
+  // Prefer a book's pinned cover, then its WeRead cover. Local covers need a resource URL.
+  function resolveCoverUrl(coverValue) {
+    if (!coverValue) return null;
+    const str = String(coverValue);
+    if (/^https?:\/\//i.test(str)) return str;
+    const file = app.vault.getAbstractFileByPath(str);
+    return file ? app.vault.getResourcePath(file) : null;
+  }
+  function findBookCover(meta, bookName) {
+    if (meta?.cover) return resolveCoverUrl(meta.cover);
+    const wrFolder = app.vault.getAbstractFileByPath(`WeRead/${bookName}`);
+    if (!wrFolder || !wrFolder.children) return null;
+    for (const child of wrFolder.children) {
+      if (child.extension !== "md") continue;
+      const cover = app.metadataCache.getFileCache(child)?.frontmatter?.cover;
+      if (cover) return resolveCoverUrl(cover);
+    }
+    return null;
+  }
 
   // Production layer: books upgraded into Learning/Books/ (not raw WeRead capture).
-  const metas = dv.pages('"Learning/Books"')
-    .where(p => p.file.name === "meta" && p.status === "reading")
+  const metas = bookPages
+    .where(p => p.status === "reading")
     .sort(p => p.started, "desc");
 
   if (metas.length === 0) {
     container.createEl("p", {
-      text: "No books in production — 说「我要开始读 XXX」启动一本。",
+      text: "当前没有在读书籍。",
       attr: { style: "color:var(--text-muted);font-size:0.85em;" }
     });
   } else {
     const archLabel = { "technical-reference": "tech-ref", "cognitive-mental-model": "cognitive" };
-
-    // A `cover:` value is either a remote URL (WeRead-hosted covers) or a
-    // vault-relative path (book_init.py auto-extracts the EPUB's embedded
-    // cover to `<book>/cover.{ext}` for books without a WeRead sync, e.g.
-    // iBooks-only reading channels). Local paths need app.vault.getResourcePath
-    // to become a usable <img src> — remote URLs are already usable as-is.
-    function resolveCoverUrl(coverValue) {
-      if (!coverValue) return null;
-      const str = String(coverValue);
-      if (/^https?:\/\//i.test(str)) return str;
-      const file = app.vault.getAbstractFileByPath(str);
-      return file ? app.vault.getResourcePath(file) : null;
-    }
-
-    // Resolve a book's cover image. Priority:
-    //   1. explicit `cover:` on the book's own meta.md — lets a book pin a
-    //      specific edition's cover (e.g. DDIA 2nd ed) regardless of folder name,
-    //      or a book with no WeRead sync (iBooks-only) surface its EPUB cover
-    //   2. fallback: `cover:` frontmatter on any note inside WeRead/<bookName>/
-    // Returns null if neither is found — caller shows a placeholder icon.
-    function findBookCover(meta, bookName) {
-      if (meta?.cover) return resolveCoverUrl(meta.cover);
-      const wrFolder = app.vault.getAbstractFileByPath(`WeRead/${bookName}`);
-      if (!wrFolder || !wrFolder.children) return null;
-      for (const child of wrFolder.children) {
-        if (child.extension !== "md") continue;
-        const cache = app.metadataCache.getFileCache(child);
-        const cover = cache?.frontmatter?.cover;
-        if (cover) return resolveCoverUrl(cover);
-      }
-      return null;
-    }
 
     // Read WeRead progress live from the plugin-synced source file (single source
     // of truth). meta.md's static weread_progress is only a fallback for when the
@@ -1314,9 +1313,7 @@ dv.el("div", "📖 读书", {
       const chLink = (c) => understandingExists ? chAnchor(c) : c.file.path;
 
       // Chapter progress from meta.md's progress tracker (understanding = 落盘 done).
-      const chapters = dv.pages(`"${folder}/chapters"`)
-        .where(c => c.chapter !== undefined)
-        .sort(c => c.chapter, "asc");
+      const chapters = bookChapters(folder);
       const total = chapters.length;
       const prog = m.progress || {};
       const chKey = (n) => "ch" + String(n).padStart(2, "0");
@@ -1462,9 +1459,86 @@ dv.el("div", "📖 读书", {
       });
     }
 
-    container.createEl("div", { attr: { style: "margin-top:12px;font-size:0.85em;" } }).innerHTML =
-      `<a class="internal-link" data-href="Learning/Books/Books Index.md">All books →</a>`;
   }
+
+  const finished = bookPages.where(p => p.status === "finished").sort(p => p.finished, "desc");
+  container.createEl("div", {
+    text: `已读完 (${finished.length})`,
+    attr: { style: "font-size:0.78em;font-weight:700;color:var(--text-muted);margin:13px 0 6px;" }
+  });
+  if (finished.length === 0) {
+    container.createEl("p", {
+      text: "暂无已读完书籍。",
+      attr: { style: "color:var(--text-muted);font-size:0.78em;margin:0;" }
+    });
+  } else {
+    for (const m of finished) {
+      const folder = m.file.folder;
+      const title = m.title || folder.split("/").pop();
+      const chapters = bookChapters(folder);
+      const progress = m.progress || {};
+      const mapped = chapters.where(c => progress[`ch${String(c.chapter).padStart(2, "0")}`]?.map === "done").length;
+      const row = container.createEl("div", {
+        attr: { style: `display:flex;align-items:stretch;margin-bottom:8px;border:1px solid var(--background-modifier-border);border-radius:8px;overflow:hidden;background:var(--background-secondary);font-size:${isMobile ? "0.88em" : "0.82em"};` }
+      });
+      row.createEl("div", { attr: { style: "width:3px;background:var(--color-accent);flex-shrink:0;" } });
+      const coverWrap = row.createEl("div", {
+        attr: { style: `position:relative;width:${isMobile ? "44px" : "54px"};min-height:78px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--background-primary);overflow:hidden;` }
+      });
+      function showCoverPlaceholder() {
+        coverWrap.empty();
+        coverWrap.createEl("span", { text: "📖", attr: { style: "font-size:1.3em;opacity:0.35;" } });
+      }
+      const coverUrl = findBookCover(m, folder.split("/").pop());
+      if (coverUrl) {
+        const coverImg = coverWrap.createEl("img", {
+          attr: { src: coverUrl, alt: `${title} 封面`, style: "position:absolute;inset:0;width:100%;height:100%;object-fit:contain;" }
+        });
+        coverImg.addEventListener("error", showCoverPlaceholder, { once: true });
+      } else {
+        showCoverPlaceholder();
+      }
+      const body = row.createEl("div", { attr: { style: "flex:1;min-width:0;padding:8px 10px;" } });
+      const top = body.createEl("div", { attr: { style: "display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;" } });
+      const titleLink = top.createEl("a", {
+        text: title,
+        attr: { class: "internal-link", "data-href": `${folder}/MOC.md`, style: "font-weight:700;color:var(--text-normal);text-decoration:none;min-width:0;flex:1 1 160px;cursor:pointer;line-height:1.3;" }
+      });
+      titleLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        app.workspace.openLinkText(`${folder}/MOC.md`, "", false);
+      });
+      top.createEl("span", {
+        text: `${m.finished ? dv.date(m.finished).toFormat("yyyy-MM-dd") : "已读完"} · 地图 ${mapped}/${chapters.length}`,
+        attr: { style: "color:var(--text-faint);white-space:nowrap;font-size:0.86em;" }
+      });
+      const links = body.createEl("div", { attr: { style: "display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;" } });
+      for (const [label, path] of [["章节地图", `${folder}/understanding.md`], ["读书心得", `${folder}/article.md`]]) {
+        if (!app.vault.getAbstractFileByPath(path)) continue;
+        const link = links.createEl("a", {
+          text: label,
+          attr: { class: "internal-link", "data-href": path, style: "color:var(--color-accent);text-decoration:none;white-space:nowrap;cursor:pointer;" }
+        });
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          app.workspace.openLinkText(path, "", false);
+        });
+      }
+    }
+  }
+
+  const indexRow = container.createEl("div", { attr: { style: "margin-top:10px;font-size:0.82em;" } });
+  const indexLink = indexRow.createEl("a", {
+    text: "全部书籍 →",
+    attr: { class: "internal-link", "data-href": "Learning/Books/Books Index.md", style: "cursor:pointer;" }
+  });
+  indexLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    app.workspace.openLinkText("Learning/Books/Books Index.md", "", false);
+  });
 }
 
 // ========== 🏋️ 长期练习 ==========
