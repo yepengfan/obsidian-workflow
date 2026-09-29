@@ -1,12 +1,17 @@
 ---
 tags: template
 for: Home
-updated: 2026-09-14
+updated: 2026-09-29
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-09-29 - Finished books remain reachable from Home
+> - **Why**: The reading card filters `status: reading`, so a finished book disappeared. The Books Index link was also hidden when no reading books remained.
+> - **Home**: Keep the Books Index link visible and list finished books as cover cards with direct links to the book MOC, `understanding.md` chapter maps, and `article.md` reading notes. Reuse the same cover resolver as the reading cards, including local `meta.cover` and WeRead fallback. Show the real chapter count and mapped count; ignore an exact repeated tail of bare `Chapter N` EPUB table-of-contents entries.
+> - **Index**: The Finished table exposes direct map and reading-note links. The Learning DDD MOC includes the same destinations.
 
 > [!note] 2026-09-14 — Task Board matrix mobile-friendly
 > - **Why**: The 2×2 matrix and composer wrap poorly on a phone; tap targets and quadrant titles were sized for desktop.
@@ -146,4 +151,3 @@ updated: 2026-09-14
 > [!note] 2026-06-02 — Fix "本周" stats using rolling 7-day window instead of calendar week
 > - **Problem**: Algorithm tab stats line used `today.minus({ days: 7 })` (rolling 7-day window) while the bar chart used calendar week (Mon-Sun). This caused the "本周 X 题" number to disagree with the current week's bar.
 > - **Solution**: Changed `weekAgo` to compute current week's Monday (`todayD.weekday === 1 ? todayD : todayD.minus({ days: todayD.weekday - 1 })`), matching the bar chart's calendar week logic. Changed "本月" (rolling 30 days) to "上月" (previous calendar month, e.g. May 1–31). Applied to both desktop and mobile code paths.
-

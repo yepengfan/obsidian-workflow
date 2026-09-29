@@ -55,9 +55,13 @@ const pages = dv.pages('"Learning/Books"')
 const rows = pages.map(p => {
   const moc = dv.page(p.file.folder + "/MOC");
   const link = moc ? dv.fileLink(moc.file.path, false, p.title) : p.file.link;
-  return [link, p.author, p.archetype, chan(p), fmt(p.started), fmt(p.finished)];
+  const map = dv.page(p.file.folder + "/understanding");
+  const article = dv.page(p.file.folder + "/article");
+  return [link, p.author, chan(p), fmt(p.finished),
+    map ? dv.fileLink(map.file.path, false, "章节地图") : "",
+    article ? dv.fileLink(article.file.path, false, "读书心得") : ""];
 });
-if (rows.length > 0) dv.table(["Book", "Author", "Archetype", "Channel", "Started", "Finished"], rows);
+if (rows.length > 0) dv.table(["Book", "Author", "Channel", "Finished", "地图", "心得"], rows);
 else dv.paragraph("*No finished books yet.*");
 ```
 
