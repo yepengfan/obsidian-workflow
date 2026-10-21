@@ -85,11 +85,14 @@ Once the learner understands that a range sum is the difference of two prefix su
    - **Code style**: Apply Python 3 best practices and consult the Python pitfalls checklist in `Learning/Practice/Algorithm/CLAUDE.md`.
 3. If there is a bug, identify the specific line and explain the cause. **Do not rewrite the solution.**
 4. Compare the approach with an optimal solution. Prioritize concepts; provide code only when requested.
-5. After the code passes review, **do not automatically enter Phase 3**:
-   - Summarize the actual solution pattern and its recognition cues in one sentence. If the learner started by pasting code, establish this connection from their code; reading every pattern card is unnecessary.
-   - Use `AskUserQuestion` / `AskQuestion`, or ask an explicit yes/no question: **"Would you like to save this to a pattern card and daily log?"**
-   - **Yes** → Enter Phase 3.
-   - **No** → End the session without writing any vault files. Optionally explain that they can rerun `/algo-solve` for the same problem later to save notes, completing coaching and review again.
+5. After the code passes review, **classify before asking whether to save**:
+   - Summarize the actual solution pattern and its recognition cues in one sentence, grounding the explanation in the learner's code.
+   - Read the frontmatter and `## Key Insight` of every file in `Learning/Practice/Algorithm/Patterns/`, plus `## Composed Of` when present. Do not read Template/Gotchas/Problems for classification; see Efficiency Rules in `Learning/Practice/Algorithm/CLAUDE.md`.
+   - Decide whether to update an existing pattern or create a new one. State the specific card title and briefly explain the classification.
+   - Ask **one combined confirmation**, for example: "I recommend updating the existing pattern card X. Would you like to save this classification to the pattern card and daily log?" For a new card, explicitly say it will be created.
+   - **Yes** (including "go" or an equivalent confirmation in the learner's language) → Enter Phase 3 and save using the proposed classification. This confirms both classification and saving; do not ask for classification approval again.
+   - **No** → End the session without writing any vault files.
+   - If the learner requests a different classification, resolve that change before saving. Do not ask whether to save before completing the classification check.
 
 ## Phase 3 - Save notes (only after user confirmation)
 
@@ -97,7 +100,7 @@ Once the learner understands that a range sum is the difference of two prefix su
 
 ```text
 1. Determine the solve date
-2. Scan Patterns/ and classify the problem (create or update)
+2. Use the classification confirmed in Phase 2 (create or update)
 3. Write the pattern card
 4. Write the log
 5. Check for reusable atoms
@@ -108,10 +111,9 @@ Once the learner understands that a range sum is the difference of two prefix su
    - Use a different date only if the learner has **already** specified one, such as "solved yesterday" or "backfill 2026-08-19". Otherwise, use today.
    - Use this solve date in the pattern's Problems table and the log filename.
 
-2. **Determine the pattern classification**:
-   - Read the frontmatter and `## Key Insight` of every file in `Learning/Practice/Algorithm/Patterns/`, plus `## Composed Of` when present. Do not read Template/Gotchas/Problems for classification; see Efficiency Rules in `Learning/Practice/Algorithm/CLAUDE.md`.
-   - Decide whether the problem belongs to an existing pattern or requires a new one.
-   - Explain the classification to the learner and obtain confirmation before continuing.
+2. **Use the confirmed pattern classification**:
+   - Reuse the classification and card scan completed in Phase 2. Do not repeat the scan or ask for another classification confirmation.
+   - Read the selected existing card in full before updating it, or use the pattern template when creating the confirmed new card.
 
 3. **Update an existing pattern**:
    - Append the problem number to the frontmatter `problems` array.

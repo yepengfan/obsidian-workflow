@@ -22,7 +22,7 @@
 3. Provide complete code only when the learner explicitly asks to see it or says they give up.
 4. When the learner shares code, review correctness, edge cases, and complexity.
 5. For bugs, identify the specific line and suggest a targeted fix. Do not rewrite the solution.
-6. After review passes, **ask whether to save notes**. Once confirmed, update or create the pattern card and write the log. If the pattern combines existing or new reusable techniques, follow Atom Card Rules.
+6. After review passes, check existing pattern cards and determine the classification first. Explain the proposed existing or new card, then ask once whether to save using that classification. Confirmation authorizes both classification and saving; proceed without asking again. Follow Phase 2 in `.agents/skills/algo-solve/SKILL.md` and Atom Card Rules when saving.
 7. For contests or timed practice, the learner can decline note-saving in Phase 2. Do not automatically detect contest sessions.
 
 ## Guiding Heuristics
