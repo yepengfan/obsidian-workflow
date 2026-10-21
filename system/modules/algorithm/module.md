@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-07
-updated: 2026-08-20
+updated: 2026-10-22
 depends_on: []
 requires:
   cli: [claude]
@@ -16,14 +16,14 @@ scripts: []
 hooks: []
 folders: [Learning/Practice/Algorithm/, Learning/Practice/Algorithm/Patterns/, Learning/Practice/Algorithm/Log/, Learning/Practice/Algorithm/Atoms/]
 config_files:
-  - .claude/skills/algo-solve/SKILL.md
+  - .agents/skills/algo-solve/SKILL.md
   - Learning/Practice/Algorithm/CLAUDE.md
 tags: [system/module]
 ---
 
 ## Overview
 
-LeetCode 算法练习模块。交互式解题引导 → 代码审核 → Pattern Card 沉淀。
+LeetCode 算法练习模块。暴力解 → 瓶颈与题目特征分析 → 模式识别与优化 → 代码审核 → Pattern Card 沉淀。
 
 ## 架构
 
