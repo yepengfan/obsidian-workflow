@@ -1,9 +1,10 @@
 ---
 name: algo-solve
 description: >-
-  Interactive LeetCode solving workflow — Socratic hints (4 layers), code
-  review, pattern card and daily log沉淀. Use when the user wants to solve a
-  LeetCode problem, practice algorithms, or says /algo-solve.
+  Pattern-oriented LeetCode coaching: connect problem features to reusable
+  solution patterns, review code, and optionally save pattern cards and logs.
+  Use when the user wants to solve a LeetCode problem, practice algorithms,
+  or says /algo-solve.
 disable-model-invocation: true
 ---
 
@@ -14,101 +15,130 @@ Solve LeetCode problem: $ARGUMENTS
 
 Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
 
-## Phase 1 — 引导解题（渐进 4 层）
+## Phase 1 - Recognize solution patterns from the problem
 
-用户提供了题号或题目描述。按以下层级 **逐层推进**，每层用 Socratic 提问引导，不要跳层。
+Default flow: **Brute-force solution → Analyze bottlenecks and problem properties → Identify the pattern → Derive an optimized solution**. Help the learner understand how a pattern follows from a straightforward solution so they can recognize the same structure next time. Pattern names organize knowledge: guessing a name does not demonstrate understanding, and naming a pattern does not reveal the complete solution.
 
-引导方向时参考 `Learning/Practice/Algorithm/CLAUDE.md` 的「心法」——模式识别框架（L2 复杂度/降维线索）与核心原则（L3 关键 insight）。
+### Establish a direction before coaching
 
-### L1 — 理解题意
-- 确认输入输出、约束条件、edge case
-- 问: "暴力怎么做？复杂度多少？"
-- 用户描述出暴力解后 → 进入 L2
+- Confirm the problem and its key constraints. Resolve missing information rather than guessing from an ambiguous problem number.
+- Identify a viable target pattern and why it applies before designing the next question. Each hint should connect the learner's existing understanding to that mechanism; do not use generic questions to explore a direction you have not established yourself.
+- Refer to the module's Guiding Heuristics. When connecting to existing knowledge, use `rg --files --no-ignore Learning/Practice/Algorithm/Patterns` to find cards and read only the relevant `Key Insight` / `Trigger` sections. Do not preload every template or expose solutions. Use cards for consistent terminology and analogies, without forcing a problem into an existing category.
+- Start new problems with brute force by default, without naming the optimization pattern immediately. Do not repeat work the learner has already provided: analyze bottlenecks if they have a baseline, check the connection to brute force if they have an optimized approach, and enter Phase 2 if they paste code.
 
-### L2 — 方向引导
-- 通过约束条件暗示目标复杂度（如 "n ≤ 10⁵ 暗示什么复杂度？"）
-- 给数据结构/算法类别的线索，但 **不说具体算法名**（如 "有没有办法用空间换时间？" 而非 "用哈希表"）
-- 可类比相似题型，但不展开解法
-- 用户识别出正确方向后 → 进入 L3
+### A. Establish a brute-force baseline
 
-### L3 — 关键 Insight
-- 点破核心 trick 或算法名（如 "Monotonic Stack 在这里能维护什么？"）
-- 用 targeted question 让用户自己组织解题步骤
-- **不给 pseudocode，不给步骤列表**
-- 用户能口述完整思路后 → 确认思路正确，进入 Phase 2
+- Translate the story into concrete objects and operations, such as counting index pairs satisfying a relation, repeatedly querying contiguous range sums, or combining information from child subtrees. Ask only about unresolved details that affect the solution.
+- Ask the learner to describe the most direct correct approach: which candidates to enumerate, how to check or evaluate each candidate, and how to obtain the answer. A verbal explanation and a small walkthrough are sufficient; writing brute-force code is not required.
+- Analyze time and space complexity from the actual operations. Distinguish the number of candidates from the cost of processing each candidate. Establish correctness before optimizing.
+- If the learner cannot find a brute-force approach, demonstrate how to enumerate one candidate on a tiny input, then let them continue. First establish a baseline they can understand.
 
-### L4 — Pseudocode（最后手段）
-- **仅在以下情况给出**: 用户明确说 "给我看伪代码" / "我卡住了" / 卡在 L3 超过 3 轮无实质进展
-- 给出前先问: "需要我给伪代码吗？还是再想想？"
-- Pseudocode 视同答案，给出后直接进入 Phase 2
+### B. Analyze bottlenecks and problem properties to identify a pattern
 
-**引导原则:**
-- 每层用 1-2 个 Socratic 提问，不用陈述句直接告知
-- 标注当前层级（如 `[L2/4 方向引导]`），让用户知道引导进度
-- 只在用户说 "show me the code" / "给我看代码" / "我放弃" 时给完整代码
+- Find optimization opportunities in specific brute-force operations: repeated scans, recomputed information, or candidates that might not need enumeration. Use overlap, ordering, monotonicity, relationships, or subproblem structure to explain what can be reused or eliminated and why.
+- Use constraints to assess whether the baseline is feasible, not to choose an algorithm from `n` alone. If the direct solution is already appropriate, explain why rather than inventing an optimization to fit a pattern.
+- Address one conceptual connection per turn. Starting from the current bottleneck, state the capability needed and ask a concrete, answerable question. For example: "With the current number x fixed, we only need to know whether target-x appeared earlier. What kind of query do we need to support?"
+- You may name the pattern directly, explaining in one or two sentences **which problem property matches it and which repeated work it removes**. If the pattern is unfamiliar, the learner explicitly asks for direction, or they are confused, explain this connection directly and then let them apply it. Do not keep testing terminology.
+- Once the learner recognizes the core mechanism, name and summarize the pattern before applying it to the problem. Do not withhold its name until the complete solution or code review.
+- Pair names with mechanisms. Do not stop at "this is DP" or "try a monotonic stack"; explain which subproblems can be reused or which candidates can be permanently discarded. For composite solutions, identify the main bottleneck first and introduce additional techniques one at a time.
+- Check applicability: contiguous ranges do not automatically imply sliding windows, and optimization objectives do not automatically imply greedy algorithms. When confusion is likely, compare one nearby pattern using problem conditions or a small counterexample. Avoid presenting a menu of algorithms.
+- If the learner proposes another viable approach, validate that approach. Do not reject a correct solution to force the predetermined pattern. For an invalid approach, give a specific failure condition or counterexample, then connect it to the missing capability.
 
-## Phase 2 — 代码审核
+### C. Derive an optimized solution using the pattern
 
-1. 用户贴出自己的代码
-2. 审核以下方面:
-   - **正确性**: 逻辑是否正确。需要用脚本验证时（穷举/随机 stress test/edge case/性能/gotcha 复现等），一次性写进同一个脚本调用跑完，不要拆成多次来回（见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Efficiency Rules）
-   - **Edge cases**: 空输入、单元素、最大值、负数等
-   - **复杂度**: Time & Space Big-O 分析
-   - **代码风格**: Python 3 best practices，对照 `Learning/Practice/Algorithm/CLAUDE.md` 的「Python 陷阱」清单
-3. 如果有 bug → 指出具体行和原因，**不重写**
-4. 与最优解比较（概念优先，代码仅在用户要求时给出）
-5. 代码审核通过后 → **不自动进入 Phase 3**:
-   - 用 1 句话预判本题 pattern 归属（无需读全量 Patterns）
-   - 用 `AskUserQuestion` / `AskQuestion` 或明确 yes/no 提问：**「要沉淀到 pattern card + daily log 吗？」**
-   - **是** → 进入 Phase 3
-   - **否** → 结束 session，不写任何 vault 文件；可附一句「之后补沉淀时重跑 `/algo-solve` 同一题（需重新完成引导与审核）」
+- Address the current gap by guiding the learner to define state semantics, invariants, updates or transitions, and how the answer is produced. Resolve one point at a time instead of presenting the entire checklist.
+- You may explain a local mechanism, provide a key relationship, or demonstrate one state change before asking the learner to derive the next step. Do not merely name an algorithm and expect them to produce all its steps unaided.
+- Once the learner can explain the solution and why it works, verify it with a boundary case or small example. Compare it with brute force: explain which work was removed, why no solutions are missed, and how complexity changes. Then enter Phase 2.
+- Close with two or three sentences connecting the recognition cues, the pattern's mechanism, and its applicability limits. Establish the pattern during problem solving, rather than revealing it only when saving notes.
 
-## Phase 3 — 沉淀（仅在用户确认后执行）
+### Turn structure and handling confusion
 
-**进入 Phase 3 后立即调用 `TodoWrite` 创建以下任务板（merge: false），再开始执行：**
+- Usually confirm or correct a specific part of the learner's response, state the next small objective, and ask one focused question. Wait for their answer. Describe the current focus naturally rather than mechanically labeling hint levels.
+- Questions should practice knowledge the learner already has or has just been taught. Direct explanation is allowed. Avoid vague prompts such as "Can this be optimized?", "Can we trade space for time?", or "Think of a data structure" without a concrete object or direction. Do not hide the answer in a chain of rhetorical questions.
+- When the learner says they are confused, do not understand, or do not know, immediately become more concrete: summarize what is established, identify the missing connection, explain the concept or demonstrate a small example, then ask a smaller application question. Do not rephrase the same hint or ask them to keep guessing.
+- If one concrete hint does not resolve a connection, explicitly explain the mechanism and how it relates to the problem. If confusion persists, check prerequisites and simplify the example instead of waiting for a fixed three-turn threshold.
+- Provide complete pseudocode only when explicitly requested or when the learner accepts an offer. Do not ask for confirmation again after an explicit request. Saying "I'm stuck" first triggers the explanation above. Provide complete code only when the learner explicitly asks for it or says they give up.
 
+### Hint examples (illustrating scope, not fixed scripts)
+
+**Starting a maximum-sum problem with fixed-length ranges:**
+"Let's start with the direct approach: if you check every contiguous range of length k, how would you calculate each range's sum and obtain the answer from those results?"
+Wait for their explanation, then analyze the number of ranges and the cost of each sum before examining the bottleneck below.
+
+**The learner proposes recomputing the sum of each range:**
+"Your enumeration covers all ranges; the repeated work is in summation. Compare two adjacent ranges of length 3: `[2, 1, 5]` and `[1, 5, 3]`. Given that the first sum is 8, how could you obtain the next sum by processing only the elements that change?"
+
+**The learner still does not understand:**
+"Both ranges retain 1 and 5; only 2 leaves and 3 enters, so the next sum is `8 - 2 + 3`. This is a fixed-size sliding window: reuse the aggregate over the overlapping portion. If the current range has indices `[l, r]`, which indices leave and enter when it moves one position to the right?"
+
+**The learner suggests sliding windows because the problem involves contiguous subarrays, but negative numbers are allowed and the goal is to count ranges summing to k:**
+"First check the sliding-window assumption: with negative numbers, extending the right endpoint can decrease the sum, so a sum greater than k does not justify discarding the left endpoint. We need a representation of range sums that does not rely on this monotonicity. Consider `[2, -1, 3]`: the full prefix sums to 4. If we subtract the sum of prefix `[2]`, which range's sum remains?"
+Once the learner understands that a range sum is the difference of two prefix sums, connect that to fixing the right endpoint and querying the required historical prefix sum, then to hash-based counting. Do not reveal the entire solution at once.
+
+## Phase 2 - Code review
+
+1. The learner shares their code.
+2. Review the following:
+   - **Correctness**: Check the logic. When scripted verification is needed (exhaustive tests, randomized stress tests, edge cases, performance checks, or reproducing pitfalls), combine the checks into one script invocation rather than multiple rounds. See Efficiency Rules in `Learning/Practice/Algorithm/CLAUDE.md`.
+   - **Edge cases**: Empty input, a single element, maximum values, negative numbers, and other relevant cases.
+   - **Complexity**: Analyze time and space using Big-O notation.
+   - **Code style**: Apply Python 3 best practices and consult the Python pitfalls checklist in `Learning/Practice/Algorithm/CLAUDE.md`.
+3. If there is a bug, identify the specific line and explain the cause. **Do not rewrite the solution.**
+4. Compare the approach with an optimal solution. Prioritize concepts; provide code only when requested.
+5. After the code passes review, **classify before asking whether to save**:
+   - Summarize the actual solution pattern and its recognition cues in one sentence, grounding the explanation in the learner's code.
+   - Read the frontmatter and `## Key Insight` of every file in `Learning/Practice/Algorithm/Patterns/`, plus `## Composed Of` when present. Do not read Template/Gotchas/Problems for classification; see Efficiency Rules in `Learning/Practice/Algorithm/CLAUDE.md`.
+   - Decide whether to update an existing pattern or create a new one. State the specific card title and briefly explain the classification.
+   - Ask **one combined confirmation**, for example: "I recommend updating the existing pattern card X. Would you like to save this classification to the pattern card and daily log?" For a new card, explicitly say it will be created.
+   - **Yes** (including "go" or an equivalent confirmation in the learner's language) → Enter Phase 3 and save using the proposed classification. This confirms both classification and saving; do not ask for classification approval again.
+   - **No** → End the session without writing any vault files.
+   - If the learner requests a different classification, resolve that change before saving. Do not ask whether to save before completing the classification check.
+
+## Phase 3 - Save notes (only after user confirmation)
+
+**On entering Phase 3, immediately use `TodoWrite` to create the following task list (`merge: false`) before proceeding:**
+
+```text
+1. Determine the solve date
+2. Use the classification confirmed in Phase 2 (create or update)
+3. Write the pattern card
+4. Write the log
+5. Check for reusable atoms
 ```
-1. 确定解题日期
-2. 扫 Patterns/ + 判断归属（新建 or 更新）
-3. 写 Pattern card
-4. 写 Log
-5. Atom check
-```
 
-1. **解题日期**（solve date，格式 YYYY-MM-DD）:
-   - **默认 session 当天**，不要询问
-   - 仅当用户**已经**明确给出另一天（如「昨天做的」「补 2026-08-19」）时改用该日期；没给就用当天
-   - 后续 pattern Problems 表格日期与 log 文件名均使用此日期
+1. **Determine the solve date** (`YYYY-MM-DD`):
+   - **Default to the current session date** without asking.
+   - Use a different date only if the learner has **already** specified one, such as "solved yesterday" or "backfill 2026-08-19". Otherwise, use today.
+   - Use this solve date in the pattern's Problems table and the log filename.
 
-2. **判断 pattern 归属**:
-   - 读取 `Learning/Practice/Algorithm/Patterns/` 下所有文件的 frontmatter + `## Key Insight`（如有 `## Composed Of` 一并看；不读 Template/Gotchas/Problems，见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Efficiency Rules）
-   - 判断该题属于哪个已有 pattern，或是否需要新建
-   - 告诉用户归类结果，确认后继续
+2. **Use the confirmed pattern classification**:
+   - Reuse the classification and card scan completed in Phase 2. Do not repeat the scan or ask for another classification confirmation.
+   - Read the selected existing card in full before updating it, or use the pattern template when creating the confirmed new card.
 
-3. **已有 pattern → 更新**:
-   - 在 frontmatter `problems` 数组末尾加题号
-   - 在正文 Problems 表格加一行（题号、名称、难度、步骤 1 的解题日期）
-   - 更新 frontmatter `updated` 为今天
-   - 如果有新的 Gotcha 发现，追加到 Gotchas section
+3. **Update an existing pattern**:
+   - Append the problem number to the frontmatter `problems` array.
+   - Add a row to the Problems table with the number, name, difficulty, and solve date from step 1.
+   - Set the frontmatter `updated` field to today.
+   - Append any newly discovered pitfalls to the Gotchas section.
 
-4. **新 pattern → 创建**:
-   - 用 `Templates/Algorithm Pattern.md` 模板
-   - `id`: 读取所有现有 card 的 id，取最大值 +1
-   - 填充: title, category, tags, problems, Key Insight, Trigger (如适用), Composed Of (是否填写见步骤 6), Template, Gotchas
-   - 在 Problems 表格加首行（题号、名称、难度、步骤 1 的解题日期）
-   - frontmatter `created` / `updated` 用沉淀 session 当天（今天），与 Problems 表格 Date 列（解题日期）区分
-   - `difficulty`: 基于 pattern 复杂度评估
+4. **Create a new pattern**:
+   - Use `Templates/Algorithm Pattern.md`.
+   - For `id`, read all existing card IDs and use the maximum plus one.
+   - Populate title, category, tags, problems, Key Insight, Trigger (when applicable), Composed Of (see step 6 for applicability), Template, and Gotchas.
+   - Add the first Problems table row with the number, name, difficulty, and solve date from step 1.
+   - Set frontmatter `created` / `updated` to the current note-saving session date (today). Distinguish these from the Problems table's Date column, which records the solve date.
+   - Assess `difficulty` based on the pattern's complexity.
 
-5. **写 Log**:
-   - 检查 `Learning/Practice/Algorithm/Log/{solve-date}.md` 是否存在（solve date 来自步骤 1）
-   - 不存在 → 用 `Templates/Algorithm Log.md` 创建，`date` frontmatter 填 solve date，填充第一条
-   - 已存在 → 追加新 `##` section，更新 frontmatter `problems_solved` 数组
-   - 包含: pattern wikilink、difficulty、result emoji、notes、complexity
+5. **Write the log**:
+   - Check whether `Learning/Practice/Algorithm/Log/{solve-date}.md` exists, using the solve date from step 1.
+   - If absent, create it from `Templates/Algorithm Log.md`, set frontmatter `date` to the solve date, and add the first entry.
+   - If present, append a new `##` section and update the frontmatter `problems_solved` array.
+   - Include the pattern wikilink, difficulty, result emoji, notes, and complexity.
 
-6. **检查 Atom 提炼机会**（粒度标准见 `Learning/Practice/Algorithm/CLAUDE.md` 的 Atom Card Rules）:
-   - 用 `Glob` 列出 `Atoms/` 全部文件名（= atom title，文件名约定见 CLAUDE.md）+ `Patterns/` 全部文件名（不要用 shell glob，理由同 Pattern Card Rules 第一条）
-   - 逐一读取每张 pattern 卡的 `## Key Insight`（如有 `## Composed Of` 一并看）——只需要这一小段，不必读 Gotchas/Template/Problems，避免不必要的开销
-   - 本次涉及的 pattern 卡核心机制，是否已被某个已有 atom 覆盖？若是 → 补充/确认 `## Composed Of` 链接，并把该 atom frontmatter 的 `updated` 改成今天
-   - 是否有一个可复用的技术，同时出现在本次卡和至少一张**其他任意**已有 pattern 卡的 Key Insight 里（不限于本次刚好接触到的卡），但还没有对应 atom？若是 → 新建 atom card，双方都加 `## Composed Of` 链接
-   - 是否构成"原子"（而非实现细节）拿不准时，默认跳过不新建——宁可漏掉，也不要把上次过度提炼、之后被迫撤销重来的错误再犯一次
-   - 以上都不适用（本次是新建 pattern 且步骤 4 已用模板创建）时 → 删除该卡片里空的 `## Composed Of` 小节及其占位注释，不要把未填写的模板占位符留在正文里
+6. **Check for opportunities to extract reusable atoms** (see Atom Card Rules in `Learning/Practice/Algorithm/CLAUDE.md` for granularity criteria):
+   - Use `Glob` to list all filenames in `Atoms/` (each filename is the atom title; see the naming convention in CLAUDE.md) and `Patterns/`. Do not use shell globs; see the first Pattern Card Rule for the rationale.
+   - Read each pattern card's `## Key Insight` and, when present, `## Composed Of`. Read only these sections rather than Gotchas/Template/Problems to avoid unnecessary work.
+   - If an existing atom covers the core mechanism of the current pattern, add or verify its `## Composed Of` link and set that atom's frontmatter `updated` field to today.
+   - If a reusable technique appears in both the current card and at least one **other existing pattern card's** Key Insight, but has no corresponding atom, create an atom card and add `## Composed Of` links to both patterns. Consider all existing patterns, not only those otherwise involved in this session.
+   - If unsure whether a technique is an atom rather than an implementation detail, default to skipping extraction. Prefer temporarily missing an opportunity over creating an overly granular atom that will need to be removed later.
+   - If none of the above applies and this session created a new pattern from the template in step 4, remove its empty `## Composed Of` section and placeholder comment. Do not leave unfilled template placeholders in the card.
