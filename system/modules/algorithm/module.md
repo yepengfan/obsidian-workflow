@@ -23,7 +23,7 @@ tags: [system/module]
 
 ## Overview
 
-LeetCode 算法练习模块。暴力解 → 瓶颈与题目特征分析 → 模式识别与优化 → 代码审核 → Pattern Card 沉淀。
+LeetCode practice module. Brute-force baseline → bottleneck and problem-property analysis → pattern recognition and optimization → code review → pattern cards and practice logs.
 
 ## 架构
 

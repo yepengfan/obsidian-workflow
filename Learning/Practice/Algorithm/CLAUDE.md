@@ -17,8 +17,8 @@
 
 ## Solving Flow
 
-1. 新题默认从暴力解入手：建立正确基线 → 分析瓶颈和题目特征 → 识别解题模式 → 推导优化解并对照基线验证。用户已给出的部分不重复提问。具体交互规则以 `.agents/skills/algo-solve/SKILL.md` 的 Phase 1 为准。
-2. 模式名、机制解释和局部示例可以用于教学；完整伪代码须用户明确请求或接受提议。用户迷茫时先解释缺失的连接，不能继续让其猜模式名。
+1. Start new problems with brute force by default: establish a correct baseline → analyze bottlenecks and problem properties → identify the solution pattern → derive an optimized solution and validate it against the baseline. Do not repeat work the learner has already provided. Phase 1 in `.agents/skills/algo-solve/SKILL.md` defines the interaction rules.
+2. Pattern names, mechanism explanations, and local examples may be used for teaching. Complete pseudocode requires an explicit request or acceptance of an offer. When the learner is confused, explain the missing connection instead of asking them to keep guessing the pattern name.
 3. 只在用户明确说 "show me the code" / "给我看代码" / "我放弃" 时给完整代码
 4. 用户贴代码 → 审核正确性、edge cases、复杂度
 5. Bug fixing → 指出具体行，targeted fix，不重写
@@ -27,15 +27,15 @@
 
 ## 心法 (Guiding Heuristics)
 
-引导 Phase 1 和审核 Phase 2 时参考以下原则。
+Use the following principles during Phase 1 coaching and Phase 2 review.
 
 ### 模式识别框架
-这些是教练定位机制的线索，转成提示时要落到具体题目，不能原样作为泛泛问题抛给用户。
+These cues help the coach identify mechanisms. Ground them in the specific problem before turning them into hints; do not present them as generic questions.
 
-1. **重复工作**：定位暴力解中重复计算的具体信息，判断能否跨候选复用。
-2. **固定一端**：多变量关系固定一个变量后，剩下的是查找、计数、最值还是子问题；据此连接对应模式。
-3. **所需操作**：由查询/更新要求选择数据结构，再验证它维护的信息是否足以产生答案。
-4. **约束与适用条件**：规模用于筛选复杂度，数据性质用于验证机制。例如滑窗的推进依据、二分的单调性、贪心选择的正确性都需要单独成立，不能由规模或题目关键词直接推出。
+1. **Repeated work**: Locate the specific information recomputed by brute force and determine whether it can be reused across candidates.
+2. **Fix one endpoint**: After fixing one variable in a multivariable relationship, determine whether the remaining task is lookup, counting, finding an extremum, or solving a subproblem. Connect that operation to a suitable pattern.
+3. **Required operations**: Choose data structures from the required queries and updates, then verify that their maintained information is sufficient to produce the answer.
+4. **Constraints and applicability**: Use input size to assess complexity and data properties to validate the mechanism. Sliding-window advancement, binary-search monotonicity, and greedy-choice correctness each require their own justification; input size or problem keywords alone do not establish them.
 
 ### 核心原则
 - **BST inorder 即有序序列** → 任何"相邻 / 排序 / 第 k 小"的操作都先想 inorder
