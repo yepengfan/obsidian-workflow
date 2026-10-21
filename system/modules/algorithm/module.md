@@ -1,6 +1,6 @@
 ---
 module: algorithm
-label: "Algorithm 算法练习"
+label: "Algorithm Practice"
 type: knowledge
 status: active
 enabled: true
@@ -25,17 +25,17 @@ tags: [system/module]
 
 LeetCode practice module. Brute-force baseline → bottleneck and problem-property analysis → pattern recognition and optimization → code review → pattern cards and practice logs.
 
-## 架构
+## Architecture
 
-- **Patterns/**: 一个 pattern 一个文件，frontmatter 驱动 Dataview
-- **Atoms/**: 跨 pattern 复用的原子技术，一个 atom 一个文件；pattern 卡通过 `## Composed Of` 链接引用，atom 卡的 "Used By" 靠 `file.inlinks` 自动反查
-- **Log/**: 每日解题记录
-- **Legacy/**: 迁移前的原始文件（只读参考）
+- **Patterns/**: One file per pattern, with frontmatter driving Dataview queries.
+- **Atoms/**: Reusable techniques shared across patterns, one file per atom. Pattern cards reference atoms through `## Composed Of`; each atom's Used By section automatically resolves backlinks through `file.inlinks`.
+- **Log/**: Daily problem-solving logs.
+- **Legacy/**: Original files from before migration, for read-only reference.
 
-### 数据流
+### Data Flow
 
-- **输入**: `/algo-solve <LC#>` → 引导解题 → 代码审核 → 用户确认 → 沉淀 card + log
+- **Input**: `/algo-solve <LC#>` → guided problem solving → code review → user confirmation → save a pattern card and log entry.
 
 ## Quick Start
 
-1. `/algo-solve 543` — 开始解题（Claude Code / Cursor 均可）
+1. Run `/algo-solve 543` to start a problem-solving session in Claude Code or Cursor.

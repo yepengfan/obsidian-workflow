@@ -1,35 +1,36 @@
-# Algorithm Module — Claude Code Instructions
+# Algorithm Module - Claude Code Instructions
 
-> 继承 vault root CLAUDE.md 的通用约定。
+> Inherit the general conventions from the vault root CLAUDE.md.
 
 ## Directory Configuration
 
 | Path | Purpose |
 |------|---------|
-| `Learning/Practice/Algorithm/Patterns/` | Pattern card 文件（一个 pattern 一个 .md） |
-| `Learning/Practice/Algorithm/Atoms/` | Atom card 文件（跨 pattern 复用的原子技术，一个 atom 一个 .md） |
-| `Learning/Practice/Algorithm/Log/` | 每日解题记录 |
-| `Learning/Practice/Algorithm/Legacy/` | 迁移前原始文件（只读参考） |
+| `Learning/Practice/Algorithm/Patterns/` | Pattern cards, one Markdown file per pattern |
+| `Learning/Practice/Algorithm/Atoms/` | Reusable techniques shared across patterns, one Markdown file per atom |
+| `Learning/Practice/Algorithm/Log/` | Daily problem-solving logs |
+| `Learning/Practice/Algorithm/Legacy/` | Original files from before migration, for read-only reference |
 | `Learning/Practice/Algorithm/00_index.md` | Dataview dashboard |
-| `Templates/Algorithm Pattern.md` | 新 card 模板 |
-| `Templates/Algorithm Log.md` | 新 log 模板 |
-| `Templates/Algorithm Atom.md` | 新 atom 模板 |
+| `Templates/Algorithm Pattern.md` | Template for new pattern cards |
+| `Templates/Algorithm Log.md` | Template for new logs |
+| `Templates/Algorithm Atom.md` | Template for new atom cards |
 
 ## Solving Flow
 
 1. Start new problems with brute force by default: establish a correct baseline → analyze bottlenecks and problem properties → identify the solution pattern → derive an optimized solution and validate it against the baseline. Do not repeat work the learner has already provided. Phase 1 in `.agents/skills/algo-solve/SKILL.md` defines the interaction rules.
 2. Pattern names, mechanism explanations, and local examples may be used for teaching. Complete pseudocode requires an explicit request or acceptance of an offer. When the learner is confused, explain the missing connection instead of asking them to keep guessing the pattern name.
-3. 只在用户明确说 "show me the code" / "给我看代码" / "我放弃" 时给完整代码
-4. 用户贴代码 → 审核正确性、edge cases、复杂度
-5. Bug fixing → 指出具体行，targeted fix，不重写
-6. 通过后 → **询问用户是否沉淀** → 用户确认后 → 沉淀 pattern card + 写 log（若发现这个 pattern 由已有/新的可复用原子技术组合而成，见 Atom Card Rules）
-7. 周赛/限时练习：Phase 2 选「否」跳过沉淀即可（不再自动识别周赛）
+3. Provide complete code only when the learner explicitly asks to see it or says they give up.
+4. When the learner shares code, review correctness, edge cases, and complexity.
+5. For bugs, identify the specific line and suggest a targeted fix. Do not rewrite the solution.
+6. After review passes, **ask whether to save notes**. Once confirmed, update or create the pattern card and write the log. If the pattern combines existing or new reusable techniques, follow Atom Card Rules.
+7. For contests or timed practice, the learner can decline note-saving in Phase 2. Do not automatically detect contest sessions.
 
-## 心法 (Guiding Heuristics)
+## Guiding Heuristics
 
 Use the following principles during Phase 1 coaching and Phase 2 review.
 
-### 模式识别框架
+### Pattern Recognition Framework
+
 These cues help the coach identify mechanisms. Ground them in the specific problem before turning them into hints; do not present them as generic questions.
 
 1. **Repeated work**: Locate the specific information recomputed by brute force and determine whether it can be reused across candidates.
@@ -37,82 +38,84 @@ These cues help the coach identify mechanisms. Ground them in the specific probl
 3. **Required operations**: Choose data structures from the required queries and updates, then verify that their maintained information is sufficient to produce the answer.
 4. **Constraints and applicability**: Use input size to assess complexity and data properties to validate the mechanism. Sliding-window advancement, binary-search monotonicity, and greedy-choice correctness each require their own justification; input size or problem keywords alone do not establish them.
 
-### 核心原则
-- **BST inorder 即有序序列** → 任何"相邻 / 排序 / 第 k 小"的操作都先想 inorder
-- **遍历选择**: inorder (BST 排序), preorder (自顶向下传播), postorder (自底向上聚合)
-- **递归 DFS 返回值语义**: 参数携带 per-call 状态；共享答案用闭包 `nonlocal`,仅当 "经过当前节点的答案" ≠ "传给父节点的值" 时才需要
-- **循环复杂度** ≠ 循环次数 — 看循环内部操作
-- **`bisect_left/right` 返回 `[0, len(arr)]`** — Python `arr[-1]` 静默返回最后元素,容易 off-by-one
-- **网格模拟优先简化几何**: 旋转 + 重力 → 先在原网格做重力,再旋转
+### Core Principles
 
-### Python 陷阱（Phase 2 代码审核时对照检查）
-- `[[0]*n]*m` 共享 row 引用
-- class vars 在测试间泄漏 (用 `nonlocal` 或 instance vars)
-- `arr[-1]` 静默负索引
-- is 和双等号的区别 — 用于结构相等，不要用 is 比较值
-- `.sort()` 返回 `None`
-- 单帧 `return` 不会停止整个递归
+- **BST inorder traversal produces sorted order**: Consider inorder traversal for operations involving adjacent values, sorting, or the kth smallest value.
+- **Traversal choice**: Inorder for BST ordering, preorder for top-down propagation, and postorder for bottom-up aggregation.
+- **Recursive DFS return semantics**: Parameters carry per-call state. Use a closure with `nonlocal` for a shared answer when the answer through the current node differs from the value returned to its parent.
+- **Loop complexity is not just the iteration count**: Include the operations inside the loop.
+- **`bisect_left/right` returns an index in `[0, len(arr)]`**: Python's `arr[-1]` silently accesses the last element, which can hide off-by-one errors.
+- **Simplify geometry in grid simulations**: For rotation plus gravity, apply gravity in the corresponding direction on the original grid, then rotate.
 
-## Efficiency Rules（验证与检索效率）
+### Python Pitfalls (check during Phase 2 review)
 
-工具调用往返次数才是主要时间成本（脚本执行本身通常 <1s），Phase 2 验证、Phase 3 检索时遵守以下几点，减少不必要的往返。
+- `[[0]*n]*m` shares references to the same row.
+- Class variables can leak state between tests; use `nonlocal` or instance variables as appropriate.
+- `arr[-1]` silently performs negative indexing.
+- Distinguish `is` from `==`: use equality comparison for values or structural equality, not identity comparison.
+- `.sort()` returns `None`.
+- Returning from one recursive frame does not stop the entire recursion.
 
-- **验证脚本一次性合并**: 穷举测试、随机 stress test、edge case、性能计时、gotcha 复现（如顺序颠倒对比）能写进同一个脚本的，一次调用跑完，不要拆成多次来回。只有当某次结果出乎意料、需要针对性追加验证时才发起新调用。
-- **纯重构不重新全量验证**: 改动只是变量名/代码结构调整、逻辑未变时（如把 `b`/`l` 改成语义化命名），不需要重新跑一遍完整穷举或大规模 stress test —— 几百组随机 spot-check 确认新旧实现等价即可，不必重复证明已证明过的正确性。
-- **Pattern/Atom 检索只读必要片段**: 判断分类归属只读 frontmatter + `## Key Insight`（有 `## Composed Of` 一并看），不读 `## Template` / `## Gotchas` / `## Problems` —— 这些字段判断"是不是同一个技术"用不到。确定要更新/引用某张具体卡时，才展开读它的全文（此时本就要编辑它）。
-- **禁止裸 `cd`**: Bash 工具的 cwd 会跨调用持久化，一次 `cd` 之后，后续所有相对路径（包括 Read 工具的相对路径）都会跟着漂移，导致看似无关的下一次调用意外失败。需要在某目录下执行命令时用绝对路径，或用 `(cd dir && cmd)` 子 shell 包裹，让目录切换不逃出这一次调用。
+## Efficiency Rules
+
+Tool round trips are the main source of overhead; script execution itself is usually under one second. During Phase 2 verification and Phase 3 retrieval, reduce unnecessary round trips as follows.
+
+- **Combine verification scripts**: Run exhaustive tests, randomized stress tests, edge cases, performance measurements, and reproductions of pitfalls (such as comparing different update orders) in one invocation when they fit in the same script. Make another call only when an unexpected result requires targeted follow-up.
+- **Do not repeat full validation for a pure refactor**: If only names or code structure change and the logic is unchanged, such as replacing `b`/`l` with meaningful names, a few hundred random spot checks for equivalence are sufficient. Do not repeat exhaustive or large-scale stress testing of correctness already established.
+- **Read only necessary pattern/atom sections**: For classification, read frontmatter and `## Key Insight`, plus `## Composed Of` when present. Do not read `## Template`, `## Gotchas`, or `## Problems` merely to determine whether two cards describe the same technique. Read a specific card in full once it is selected for an update or reference.
+- **Avoid bare `cd`**: In shell tools that preserve the working directory across calls, changing it can redirect subsequent relative paths, including those used by file-reading tools. Use absolute paths or a subshell such as `(cd dir && cmd)` to keep the directory change local to that invocation.
 
 ## Pattern Card Rules
 
-- **归类前必须先查已有 pattern**: 用 `Glob("Learning/Practice/Algorithm/Patterns/*.md")` 列出所有文件名（不要用 shell glob，中文/括号文件名会静默失败）。扫描文件名判断是否有匹配的 pattern，有疑问时只读 frontmatter + `## Key Insight`（有 `## Composed Of` 一并看）确认（不读 Template/Gotchas/Problems，见 Efficiency Rules）。**绝不跳过此步直接新建。**
-- **已有 pattern**: 加题号到 frontmatter `problems[]` + 正文 Problems 表格加一行（Date 列用解题日期，默认 session 当天）+ 更新 `updated` 日期
-- **新 pattern**: 创建新文件（用 `Templates/Algorithm Pattern.md`），id 取当前最大值 +1，填充所有字段；Problems 表格首行 Date 列同样用解题日期
-- `difficulty` 指 pattern 理解难度，非单题难度
-- 文件名 = pattern title（去掉文件系统非法字符 `/ \ : * ? " < > |`）
-- `tags` 格式: `[leetcode/pattern, leetcode/{category-slug}]`
-- 沉淀时判断这个 pattern 是否由更基础的原子技术组合而成 → 见 Atom Card Rules，补充 `## Composed Of` 小节
+- **Check existing patterns before classifying**: Use `Glob("Learning/Practice/Algorithm/Patterns/*.md")` to list filenames. Avoid shell globs because filenames containing Chinese characters or parentheses can fail silently. Scan names for a matching pattern; when uncertain, read frontmatter, `## Key Insight`, and `## Composed Of` when present. Do not read Template/Gotchas/Problems for this decision; see Efficiency Rules. **Never skip this check and create a new card immediately.**
+- **Existing pattern**: Add the problem number to frontmatter `problems[]`, add a Problems table row with the solve date (defaulting to the current session date), and update `updated`.
+- **New pattern**: Create a file from `Templates/Algorithm Pattern.md`, assign the highest existing ID plus one, and populate all fields. Use the solve date in the first Problems table row as well.
+- `difficulty` describes how difficult the pattern is to understand, not the difficulty of an individual problem.
+- Use the pattern title as the filename, removing filesystem-invalid characters: `/ \ : * ? " < > |`.
+- Use tags in the form `[leetcode/pattern, leetcode/{category-slug}]`.
+- When saving notes, determine whether the pattern combines more fundamental reusable techniques. Follow Atom Card Rules and add `## Composed Of` when appropriate.
 
 ## Atom Card Rules
 
-**为什么要拆 atom**：pattern 数量会随刷题深度和难度组合式增长（题目 = 多种基础技术的排列组合），但底层的基础算法/结构技术数量少、增长慢。把这些技术拆成独立的 atom card，可以让它们被跨 pattern、跨 category 复用和索引，而不是被同样的解释在多张卡里重复撰写。
+**Why extract atoms**: The number of patterns can grow combinatorially as problems combine basic techniques, while the underlying algorithmic and structural techniques are fewer and grow more slowly. Separate atom cards allow these techniques to be reused and indexed across patterns and categories instead of repeating the same explanation in many cards.
 
-**原子的粒度标准**（这是最容易出错的地方，务必对照判断）：
+**Granularity criteria** (check carefully; this is a common source of mistakes):
 
-- ✅ **是原子**：可独立教学、能在完全不同的题目/category 里被认出来的算法或结构技术。例如"postorder 自底向上聚合"、"自顶向下约束传递"、"单调栈/队列维护"、"三指针迭代反转"、"虚拟哨兵节点"、"回溯的修改与还原"、"二分查前驱后继"、"Union-Find"、"Floyd 快慢指针"。判断标准：把它单独拿出来，写成一段不含具体题目的说明，一个有经验的刷题者能看懂"这是在说哪个技术"。
-- ❌ **不是原子，只是实现细节**：写代码时需要注意的具体写法、约定、易错点，本身不构成一个独立可传授的"技术"。例如"DP 空间优化时循环正序还是倒序""哨兵值用 0 还是 ±inf""tuple swap 同步更新两个变量""Python 递归深度限制"。这些应该留在 pattern 卡自己的 Gotchas 里，即使多张卡出现相似表述，也不要提炼成 atom——上一次的错误示范就是把这类细节当成了原子，后来发现方向不对整体撤销重来。
+- **An atom** is an algorithmic or structural technique that can be taught independently and recognized across unrelated problems or categories. Examples include postorder bottom-up aggregation, top-down constraint propagation, monotonic stack/queue maintenance, three-pointer iterative reversal, dummy sentinel nodes, modifying and restoring state in backtracking, binary search for predecessors/successors, Union-Find, and Floyd's slow/fast pointers. An experienced learner should recognize the technique from a standalone explanation that does not mention a specific problem.
+- **An implementation detail is not an atom**: Particular coding choices, conventions, and pitfalls do not necessarily constitute independently teachable techniques. Examples include forward versus backward iteration for space-optimized DP, choosing 0 versus positive/negative infinity as a sentinel, simultaneously updating two variables with tuple assignment, and Python recursion-depth limits. Keep these in the pattern's Gotchas section even if similar wording appears in several cards. A previous extraction mistakenly treated such details as atoms and had to be undone.
 
-**判断口诀**：如果一个技术拆出来后，你还需要靠"具体是哪道题"才能讲清楚它是什么，那它不是原子，是 pattern 内部细节。如果不需要任何具体题目就能完整讲清楚，那才是原子。
+**Rule of thumb**: If explaining the extracted technique still requires naming the specific problem, it is a detail within a pattern. If the technique can be fully explained without a particular problem, it may qualify as an atom.
 
-**何时提炼、如何判断**（按顺序执行）：
+**When and how to extract** (in this order):
 
-- **提炼时机**：不预先设计分类体系。做 Phase 3 沉淀时，如果发现当前 pattern 的核心机制和已有 atom 重合，或者明显是几个可独立命名的技术拼出来的，就提炼/复用 atom
-- **每次沉淀都做全量比对**（不要因为怕麻烦只看本次接触到的卡）：先扫 `Atoms/` 全部标题，确认没有可直接复用的已有原子；再扫 `Patterns/` 全部卡片的 Key Insight，判断这次的技术是否已在别的卡里出现过但还没有对应 atom。Atoms/ 数量少增长慢，Pattern 卡的 Key Insight 也就一两段，全量扫一遍对 agent 而言开销很低，没有理由省略
-- **粒度不确定时默认跳过**：全量比对后如果仍拿不准"这是不是一个真正独立可教的技术"，默认不新建——错误新建、之后要撤销重来的成本，远高于暂时漏掉一次提炼机会
+- **Timing**: Do not design a taxonomy in advance. During Phase 3, extract or reuse atoms when the current pattern's core mechanism overlaps an existing atom or clearly combines independently nameable techniques.
+- **Compare across the full collection each time notes are saved**: Do not limit the comparison to cards already involved in the session. First scan all titles in `Atoms/` for directly reusable atoms, then scan every pattern's Key Insight to find techniques that recur elsewhere without a corresponding atom. Atoms are intended to remain a small, slowly growing collection; read the relevant insight sections rather than skipping the comparison.
+- **Skip extraction when granularity is uncertain**: After the full comparison, if it is still unclear whether the technique is independently teachable, do not create an atom. An incorrect extraction that must later be undone costs more than temporarily missing an opportunity.
 
-**新建/引用 atom 的具体做法**：
+**Creating and referencing atoms**:
 
-- **新建 atom**：用 `Templates/Algorithm Atom.md`，`title` 描述该技术本身（不含具体题目），不设 `category`（原子应可跨 category 复用，不被单一分类束缚）
-- **`tags` 格式**：`[leetcode/atom]` 或 `[leetcode/atom, leetcode/{相关领域}]`——多数原子可以额外带一个领域标签帮助浏览（如 `leetcode/tree`、`leetcode/array`），但这不是强制分类；一个原子若确实横跨多个领域（如同时用于 DP 和 BST 的二分查找），只保留 `leetcode/atom` 即可。这和"不设 category"的原则不冲突：`category` 是必填的单一分类字段，这里的第二个 tag 只是可选的浏览辅助
-- **文件名 = atom title**：去掉文件系统非法字符 `/ \ : * ? " < > |`，且需与 frontmatter `title` 完全一致——两者不一致会导致 `Glob` 列出的标题和 pattern 卡里的 wikilink 对不上，静默产生断链或漏判
-- **`type: atom` frontmatter 字段**：与 vault 里其他卡片（module.md、essay 等）使用 `type` 字段的命名习惯保持一致；本模块目前的 Dataview 查询仍以 `tags` 中的 `#leetcode/atom` 为准做过滤，`type` 暂不参与查询，为未来可能的扩展保留
-- **反向引用免维护**：atom 文件的 "Used By" 用 `dv.current().file.inlinks` 自动渲染，不手动维护列表——只要 pattern 卡片里有 `[[atom title]]` wikilink，就会自动出现在该 atom 的 Used By 里，且不会漂移过期
-- **`updated` 字段需手动维护**：与 Pattern Card Rules 一致——若本次沉淀让某张已有 atom 新增了一个引用来源（新的 pattern 卡链接到它），顺带把该 atom frontmatter 的 `updated` 改成今天。这个字段不像 Used By 列表会自动算，长期不更新会让"最久未更新"这类排序失去意义
-- **Pattern 卡片这样引用**：在 `## Key Insight` 之后新增 `## Composed Of` 小节，列出这张卡用到的原子 + 一句话说明"这个原子在本 pattern 里具体怎么用"（不是裸链接，要点出这次组合的特殊性）
-- **不是每张卡都需要 Composed Of**：如果一张 pattern 卡本身已经是最小粒度（找不到比它更基础的可复用技术），就不写这个小节，或者只写"本卡已是原子，无进一步拆分"
-- **`## Template` 小节可选**：仅当原子有清晰、可直接复用的代码骨架时才填写；偏概念/设计类的原子可以留空或删除这一节
+- **Create an atom** from `Templates/Algorithm Atom.md`. Its `title` describes the technique itself without naming a particular problem. Do not set `category`; atoms should be reusable across categories.
+- **Tags**: Use `[leetcode/atom]` or `[leetcode/atom, leetcode/{related-domain}]`. An optional domain tag such as `leetcode/tree` or `leetcode/array` can help browsing without imposing a required classification. For a technique spanning several domains, such as binary search used in both DP and BST problems, `leetcode/atom` alone is sufficient. This is compatible with omitting `category`: that field would impose a single classification, whereas a domain tag is only a browsing aid.
+- **Filename equals atom title**: Remove filesystem-invalid characters `/ \ : * ? " < > |` and ensure the filename stem exactly matches frontmatter `title`. A mismatch can prevent filenames returned by `Glob` from matching pattern wikilinks, silently causing broken links or missed matches.
+- **Frontmatter `type: atom`**: This follows the vault's use of `type` in module manifests, essays, and other notes. Current Dataview queries filter by the `#leetcode/atom` tag; `type` is reserved for possible future use and does not currently drive these queries.
+- **Backlinks require no manual maintenance**: The atom's Used By section renders `dv.current().file.inlinks`. A pattern linking to `[[atom title]]` appears automatically; do not maintain a separate list that could become stale.
+- **Maintain `updated` manually**: As with pattern cards, when another pattern adds a reference to an existing atom, set that atom's frontmatter `updated` to today. Unlike Used By, this date is not computed automatically; stale dates undermine sorting by least recently updated.
+- **Reference atoms from patterns**: Add `## Composed Of` after `## Key Insight`. List each atom and explain in one sentence how it is used in this pattern. Include the specific role in the combination, not just a bare link.
+- **Composed Of is optional**: If a pattern is already at the smallest useful granularity and has no more fundamental reusable techniques, omit the section or state that the card is already atomic and needs no further decomposition.
+- **`## Template` is optional**: Include it only when the atom has a clear, directly reusable code skeleton. Conceptual or design-oriented atoms may leave it empty or remove the section.
 
 ## Log Rules
 
-- 每道题一个 `##` section
-- 包含 pattern wikilink `[[pattern name]]`、difficulty、result emoji、notes、complexity
-- frontmatter `problems_solved` 数组与正文 sections 保持一致
-- 文件名: `YYYY-MM-DD.md`，日期为**解题日期**（solve date）
-- 解题日期默认 session 当天，**不要询问**。仅当用户已经明确给出另一天时改用该日期；没给就用当天
-- 如果该日 log 已存在，追加新 section（不覆盖）
+- Use one `##` section per problem.
+- Include a pattern wikilink `[[pattern name]]`, difficulty, result emoji, notes, and complexity.
+- Keep frontmatter `problems_solved` consistent with the body sections.
+- Use `YYYY-MM-DD.md` as the filename, based on the **solve date**.
+- Default the solve date to the current session date **without asking**. Use another date only if the learner has already specified one.
+- If the daily log already exists, append a section without overwriting it.
 
 ## Category Values
 
-合法 category 值（与 Dataview 分组键一致）:
+Valid category values, matching the Dataview grouping keys:
 
 - Array
 - Linked List
@@ -127,16 +130,16 @@ These cues help the coach identify mechanisms. Ground them in the specific probl
 - Enumeration
 - Bit Manipulation
 
-新 category 可按需添加，但优先归入已有类别。
+Add new categories when needed, but prefer existing categories.
 
 ## Language
 
-- 技术讨论默认英文，用户用中文则中文回复
-- 代码始终 Python 3，clean and readable
-- 中英混排时遵循 vault 现有风格
+- Use English for technical discussion by default; reply in Chinese when the learner uses Chinese.
+- Always use clean, readable Python 3 code.
+- Follow the vault's existing style when mixing English and Chinese in notes.
 
 ## Do NOT
 
-- 不要主动给完整代码（除非用户明确要求）
-- 不要重写用户代码（targeted fix only）
-- 不要删除或修改 Legacy/ 文件
+- Do not proactively provide complete code unless explicitly requested.
+- Do not rewrite the learner's code; make targeted fixes only.
+- Do not delete or modify files in `Legacy/`.
