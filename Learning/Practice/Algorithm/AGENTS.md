@@ -17,10 +17,11 @@
 
 ## Coaching and Learning Evidence
 
-`.agents/skills/algo-solve/SKILL.md` is authoritative for the solving flow, adaptive hints, code review, recap, and saving authorization. The core training goal is recognizing patterns and matching them to corresponding solution tools. Decomposition and bottleneck analysis support these two skills. This file owns storage conventions and supporting technical guidance.
+`.agents/skills/algo-solve/SKILL.md` is authoritative for the solving flow, adaptive hints, code review, error diagnosis, and saving authorization. The core training goal is recognizing patterns and matching them to corresponding solution tools. Decomposition and bottleneck analysis support these two skills. This file owns storage conventions and supporting technical guidance.
 
 - Pattern cards store general recognition cues, mechanisms, tool-selection reasoning, and applicability limits. Atom cards explain independently reusable tools or techniques.
-- Logs store session evidence: independent recognition, the missing connection, effective hints or teaching, and the next connection to attempt independently. Do not infer mastery from a correct solution, a card's existence, or prior exposure.
+- Correct pattern recognition and tool matching need only brief confirmation before implementation. Teach through actual mistakes or sticking points; do not require explanations of correct choices.
+- Logs separate recognition outcomes, recognition/tool-selection errors, and implementation errors. Record effective feedback and follow-up only for observed gaps. A concise correct identification counts as correct recognition without a verbal justification.
 - During coaching, read relevant history only. Do not bulk-migrate old notes to new templates; add useful sections to a card when the current session contributes relevant knowledge.
 
 ## Guiding Heuristics
@@ -108,7 +109,7 @@ Tool round trips are the main source of overhead; script execution itself is usu
 
 - Use one `##` section per problem.
 - Include a pattern wikilink `[[pattern name]]`, difficulty, result emoji, notes, and complexity. Result describes the solution outcome, not mastery.
-- Use the learning-evidence fields in `Templates/Algorithm Log.md`: independent recognition, missing connection, effective support, and next independent attempt. Record specific observed reasoning rather than generic "understood" or fixed ability ratings. If only code was reviewed, independent recognition may be "not observed"; do not invent a coaching history.
+- Use the fields in `Templates/Algorithm Log.md`: recognition outcome, recognition/tool-selection error, implementation error, effective support, and optional follow-up for an observed gap. Do not mark correct recognition as uncertain merely because no explanation was requested or given. If only code was reviewed, recognition may be "not observed"; do not invent a coaching history or quiz the learner to fill the log.
 - Keep each field concise. Use "none observed" or "not observed" as appropriate, and remove template guidance comments from finished notes. Existing entries need no migration.
 - Keep frontmatter `problems_solved` consistent with the body sections.
 - Use `YYYY-MM-DD.md` as the filename, based on the **solve date**.

@@ -23,13 +23,13 @@ tags: [system/module]
 
 ## Overview
 
-LeetCode coaching focused on recognizing patterns and matching them to corresponding solution tools. Decomposition and bottleneck analysis support these two core skills. Brute-force baseline → bottleneck and property analysis → recognize structure → match tools → derive and review an optimized solution. Teach unfamiliar mechanisms directly; preserve recognition practice for familiar tools.
+LeetCode coaching focused on recognizing patterns and matching them to corresponding solution tools. Decomposition and bottleneck analysis support these two core skills. Brute-force baseline → bottleneck and property analysis → recognize structure → match tools → derive and review an optimized solution. Confirm correct pattern/tool matches and proceed to implementation without requiring justification. Diagnose incorrect matches and teach unfamiliar mechanisms; treat implementation bugs separately.
 
 ## Architecture
 
 - **Patterns/**: One file per pattern, with recognition cues, mechanisms, applicability limits, and frontmatter driving Dataview queries.
 - **Atoms/**: Reusable techniques shared across patterns, one file per atom. Pattern cards reference atoms through `## Composed Of`; each atom's Used By section automatically resolves backlinks through `file.inlinks`.
-- **Log/**: Daily solution outcomes and learning evidence: independent recognition, missing connections, effective support, and the next independent attempt.
+- **Log/**: Daily solution outcomes and learning evidence: recognition outcomes, selection errors, separate implementation errors, and effective feedback.
 - **Legacy/**: Original files from before migration, for read-only reference.
 
 ### Data Flow
