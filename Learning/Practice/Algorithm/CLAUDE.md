@@ -15,19 +15,17 @@
 | `Templates/Algorithm Log.md` | Template for new logs |
 | `Templates/Algorithm Atom.md` | Template for new atom cards |
 
-## Solving Flow
+## Coaching and Learning Evidence
 
-1. Start new problems with brute force by default: establish a correct baseline → analyze bottlenecks and problem properties → identify the solution pattern → derive an optimized solution and validate it against the baseline. Do not repeat work the learner has already provided. Phase 1 in `.agents/skills/algo-solve/SKILL.md` defines the interaction rules.
-2. Pattern names, mechanism explanations, and local examples may be used for teaching. Complete pseudocode requires an explicit request or acceptance of an offer. When the learner is confused, explain the missing connection instead of asking them to keep guessing the pattern name.
-3. Provide complete code only when the learner explicitly asks to see it or says they give up.
-4. When the learner shares code, review correctness, edge cases, and complexity.
-5. For bugs, identify the specific line and suggest a targeted fix. Do not rewrite the solution.
-6. After review passes, check existing pattern cards and determine the classification first. Explain the proposed existing or new card, then ask once whether to save using that classification. Confirmation authorizes both classification and saving; proceed without asking again. Follow Phase 2 in `.agents/skills/algo-solve/SKILL.md` and Atom Card Rules when saving.
-7. For contests or timed practice, the learner can decline note-saving in Phase 2. Do not automatically detect contest sessions.
+`.agents/skills/algo-solve/SKILL.md` is authoritative for the solving flow, adaptive hints, code review, recap, and saving authorization. The training goal is independent problem decomposition, pattern recognition, and tool selection. This file owns storage conventions and supporting technical guidance.
+
+- Pattern cards store general recognition cues, mechanisms, tool-selection reasoning, and applicability limits. Atom cards explain independently reusable tools or techniques.
+- Logs store session evidence: independent recognition, the missing connection, effective hints or teaching, and the next connection to attempt independently. Do not infer mastery from a correct solution, a card's existence, or prior exposure.
+- During coaching, read relevant history only. Do not bulk-migrate old notes to new templates; add useful sections to a card when the current session contributes relevant knowledge.
 
 ## Guiding Heuristics
 
-Use the following principles during Phase 1 coaching and Phase 2 review.
+Use the following principles during coaching and code review.
 
 ### Pattern Recognition Framework
 
@@ -47,7 +45,7 @@ These cues help the coach identify mechanisms. Ground them in the specific probl
 - **`bisect_left/right` returns an index in `[0, len(arr)]`**: Python's `arr[-1]` silently accesses the last element, which can hide off-by-one errors.
 - **Simplify geometry in grid simulations**: For rotation plus gravity, apply gravity in the corresponding direction on the original grid, then rotate.
 
-### Python Pitfalls (check during Phase 2 review)
+### Python Pitfalls (check during code review)
 
 - `[[0]*n]*m` shares references to the same row.
 - Class variables can leak state between tests; use `nonlocal` or instance variables as appropriate.
@@ -58,7 +56,7 @@ These cues help the coach identify mechanisms. Ground them in the specific probl
 
 ## Efficiency Rules
 
-Tool round trips are the main source of overhead; script execution itself is usually under one second. During Phase 2 verification and Phase 3 retrieval, reduce unnecessary round trips as follows.
+Tool round trips are the main source of overhead; script execution itself is usually under one second. During code verification and note retrieval, reduce unnecessary round trips as follows.
 
 - **Combine verification scripts**: Run exhaustive tests, randomized stress tests, edge cases, performance measurements, and reproductions of pitfalls (such as comparing different update orders) in one invocation when they fit in the same script. Make another call only when an unexpected result requires targeted follow-up.
 - **Do not repeat full validation for a pure refactor**: If only names or code structure change and the logic is unchanged, such as replacing `b`/`l` with meaningful names, a few hundred random spot checks for equivalence are sufficient. Do not repeat exhaustive or large-scale stress testing of correctness already established.
@@ -67,9 +65,10 @@ Tool round trips are the main source of overhead; script execution itself is usu
 
 ## Pattern Card Rules
 
-- **Check existing patterns before classifying**: Use `Glob("Learning/Practice/Algorithm/Patterns/*.md")` to list filenames. Avoid shell globs because filenames containing Chinese characters or parentheses can fail silently. Scan names for a matching pattern; when uncertain, read frontmatter, `## Key Insight`, and `## Composed Of` when present. Do not read Template/Gotchas/Problems for this decision; see Efficiency Rules. **Never skip this check and create a new card immediately.**
-- **Existing pattern**: Add the problem number to frontmatter `problems[]`, add a Problems table row with the solve date (defaulting to the current session date), and update `updated`.
-- **New pattern**: Create a file from `Templates/Algorithm Pattern.md`, assign the highest existing ID plus one, and populate all fields. Use the solve date in the first Problems table row as well.
+- **Check existing patterns before classifying**: Use `rg --files --no-ignore Learning/Practice/Algorithm/Patterns` to list filenames, including gitignored notes. Quote individual file paths when reading them. Scan names for a matching pattern; when uncertain, read frontmatter, `## Key Insight`, and `## Composed Of` when present. Do not read Template/Gotchas/Problems for this decision; see Efficiency Rules. **Never skip this check and create a new card immediately.**
+- **Existing pattern**: Preserve existing content and add only new recognition cues, tool-selection reasoning, applicability limits, or pitfalls from this session. Do not duplicate an existing problem record when updating the same session. Add the problem number to frontmatter `problems[]`, add a Problems table row with the solve date (defaulting to the current session date), and update `updated`.
+- **New pattern**: Create a file from `Templates/Algorithm Pattern.md`, assign the highest existing ID plus one, and populate all fields. Set `created` / `updated` to the saving session date and assess `difficulty` from the pattern's complexity. Use the solve date in the first Problems table row as well.
+- **Card content**: `Key Insight` explains the reusable mechanism and the work it avoids; `Trigger` connects structural cues to required operations and a suitable tool; `Applicability` explains preconditions and useful failure boundaries. These describe general knowledge, not the learner's performance. Keep existing cards readable without requiring all new sections.
 - `difficulty` describes how difficult the pattern is to understand, not the difficulty of an individual problem.
 - Use the pattern title as the filename, removing filesystem-invalid characters: `/ \ : * ? " < > |`.
 - Use tags in the form `[leetcode/pattern, leetcode/{category-slug}]`.
@@ -88,15 +87,16 @@ Tool round trips are the main source of overhead; script execution itself is usu
 
 **When and how to extract** (in this order):
 
-- **Timing**: Do not design a taxonomy in advance. During Phase 3, extract or reuse atoms when the current pattern's core mechanism overlaps an existing atom or clearly combines independently nameable techniques.
-- **Compare across the full collection each time notes are saved**: Do not limit the comparison to cards already involved in the session. First scan all titles in `Atoms/` for directly reusable atoms, then scan every pattern's Key Insight to find techniques that recur elsewhere without a corresponding atom. Atoms are intended to remain a small, slowly growing collection; read the relevant insight sections rather than skipping the comparison.
+- **Timing**: Do not design a taxonomy in advance. After saving is authorized, extract or reuse atoms when the current pattern's core mechanism overlaps an existing atom or clearly combines independently nameable techniques.
+- **Compare across the full collection each time notes are saved**: Do not limit the comparison to cards already involved in the session. Use `rg --files --no-ignore` to discover gitignored notes. First scan all titles in `Atoms/` for directly reusable atoms, then scan every pattern's Key Insight to find techniques that recur elsewhere without a corresponding atom. Atoms are intended to remain a small, slowly growing collection; read the relevant insight sections rather than skipping the comparison.
+- **Extract only demonstrated reuse**: Create a new atom when the current pattern and at least one other existing pattern share the independently teachable technique. Link both patterns to it. If an existing atom already covers the mechanism, reuse it instead. Remove an empty `Composed Of` section from a newly created card when no atom applies.
 - **Skip extraction when granularity is uncertain**: After the full comparison, if it is still unclear whether the technique is independently teachable, do not create an atom. An incorrect extraction that must later be undone costs more than temporarily missing an opportunity.
 
 **Creating and referencing atoms**:
 
 - **Create an atom** from `Templates/Algorithm Atom.md`. Its `title` describes the technique itself without naming a particular problem. Do not set `category`; atoms should be reusable across categories.
 - **Tags**: Use `[leetcode/atom]` or `[leetcode/atom, leetcode/{related-domain}]`. An optional domain tag such as `leetcode/tree` or `leetcode/array` can help browsing without imposing a required classification. For a technique spanning several domains, such as binary search used in both DP and BST problems, `leetcode/atom` alone is sufficient. This is compatible with omitting `category`: that field would impose a single classification, whereas a domain tag is only a browsing aid.
-- **Filename equals atom title**: Remove filesystem-invalid characters `/ \ : * ? " < > |` and ensure the filename stem exactly matches frontmatter `title`. A mismatch can prevent filenames returned by `Glob` from matching pattern wikilinks, silently causing broken links or missed matches.
+- **Filename equals atom title**: Remove filesystem-invalid characters `/ \ : * ? " < > |` and ensure the filename stem exactly matches frontmatter `title`. A mismatch can prevent filenames returned by `rg --files --no-ignore` from matching pattern wikilinks, silently causing broken links or missed matches.
 - **Frontmatter `type: atom`**: This follows the vault's use of `type` in module manifests, essays, and other notes. Current Dataview queries filter by the `#leetcode/atom` tag; `type` is reserved for possible future use and does not currently drive these queries.
 - **Backlinks require no manual maintenance**: The atom's Used By section renders `dv.current().file.inlinks`. A pattern linking to `[[atom title]]` appears automatically; do not maintain a separate list that could become stale.
 - **Maintain `updated` manually**: As with pattern cards, when another pattern adds a reference to an existing atom, set that atom's frontmatter `updated` to today. Unlike Used By, this date is not computed automatically; stale dates undermine sorting by least recently updated.
@@ -107,7 +107,9 @@ Tool round trips are the main source of overhead; script execution itself is usu
 ## Log Rules
 
 - Use one `##` section per problem.
-- Include a pattern wikilink `[[pattern name]]`, difficulty, result emoji, notes, and complexity.
+- Include a pattern wikilink `[[pattern name]]`, difficulty, result emoji, notes, and complexity. Result describes the solution outcome, not mastery.
+- Use the learning-evidence fields in `Templates/Algorithm Log.md`: independent recognition, missing connection, effective support, and next independent attempt. Record specific observed reasoning rather than generic "understood" or fixed ability ratings. If only code was reviewed, independent recognition may be "not observed"; do not invent a coaching history.
+- Keep each field concise. Use "none observed" or "not observed" as appropriate, and remove template guidance comments from finished notes. Existing entries need no migration.
 - Keep frontmatter `problems_solved` consistent with the body sections.
 - Use `YYYY-MM-DD.md` as the filename, based on the **solve date**.
 - Default the solve date to the current session date **without asking**. Use another date only if the learner has already specified one.

@@ -1,144 +1,103 @@
 ---
 name: algo-solve
 description: >-
-  Pattern-oriented LeetCode coaching: connect problem features to reusable
-  solution patterns, review code, and optionally save pattern cards and logs.
-  Use when the user wants to solve a LeetCode problem, practice algorithms,
-  or says /algo-solve.
+  Algorithm coaching focused on decomposing problems, recognizing reusable
+  structures, and matching them to known tools. Guide LeetCode practice,
+  review code, and optionally save pattern cards and learning evidence.
 disable-model-invocation: true
 ---
 
 <!-- module: algorithm -->
 > [!GUARD] Read `system/modules/algorithm/module.md`. If `enabled: false` → reply "⛔ Module **algorithm** is disabled. Enable it via `/module-toggle algorithm`." and STOP. Do NOT proceed.
 
-Solve LeetCode problem: $ARGUMENTS
+Practice problem: $ARGUMENTS
 
-Read `Learning/Practice/Algorithm/CLAUDE.md` for module instructions.
+Read `Learning/Practice/Algorithm/CLAUDE.md` for storage conventions, guiding heuristics, Python pitfalls, and verification rules. This skill owns the coaching workflow; the module file owns note maintenance.
 
-## Phase 1 - Recognize solution patterns from the problem
+## Training objective
 
-Default flow: **Brute-force solution → Analyze bottlenecks and problem properties → Identify the pattern → Derive an optimized solution**. Help the learner understand how a pattern follows from a straightforward solution so they can recognize the same structure next time. Pattern names organize knowledge: guessing a name does not demonstrate understanding, and naming a pattern does not reveal the complete solution.
+Help the learner independently **decompose a problem → recognize familiar structures → select and apply tools → explain the recognition cues → try that connection again in later problems**.
 
-### Establish a direction before coaching
+The default solving path is **brute force → bottleneck and property analysis → pattern recognition → tool selection → optimized solution**. Recognizing a pattern means identifying a reusable relationship or operation and its applicability conditions, not merely recalling an algorithm name. Tool selection explains how an algorithm or data structure supplies the required capability.
 
-- Confirm the problem and its key constraints. Resolve missing information rather than guessing from an ambiguous problem number.
-- Identify a viable target pattern and why it applies before designing the next question. Each hint should connect the learner's existing understanding to that mechanism; do not use generic questions to explore a direction you have not established yourself.
-- Refer to the module's Guiding Heuristics. When connecting to existing knowledge, use `rg --files --no-ignore Learning/Practice/Algorithm/Patterns` to find cards and read only the relevant `Key Insight` / `Trigger` sections. Do not preload every template or expose solutions. Use cards for consistent terminology and analogies, without forcing a problem into an existing category.
-- Start new problems with brute force by default, without naming the optimization pattern immediately. Do not repeat work the learner has already provided: analyze bottlenecks if they have a baseline, check the connection to brute force if they have an optimized approach, and enter Phase 2 if they paste code.
+For example: recomputing adjacent range sums → the ranges overlap → maintain the sum by removing and adding the changed elements → fixed-size sliding window. Keep this reasoning connection visible throughout the session.
 
-### A. Establish a brute-force baseline
+## Adapt to the learner's knowledge
 
-- Translate the story into concrete objects and operations, such as counting index pairs satisfying a relation, repeatedly querying contiguous range sums, or combining information from child subtrees. Ask only about unresolved details that affect the solution.
-- Ask the learner to describe the most direct correct approach: which candidates to enumerate, how to check or evaluate each candidate, and how to obtain the answer. A verbal explanation and a small walkthrough are sufficient; writing brute-force code is not required.
-- Analyze time and space complexity from the actual operations. Distinguish the number of candidates from the cost of processing each candidate. Establish correctness before optimizing.
-- If the learner cannot find a brute-force approach, demonstrate how to enumerate one candidate on a tiny input, then let them continue. First establish a baseline they can understand.
+- Establish a viable solution direction privately before designing hints. Confirm the problem and relevant constraints; resolve ambiguous problem identifiers rather than guessing.
+- Infer familiarity from the learner's explanation and relevant previous practice, not from whether this exact problem has been solved before. A new problem may combine familiar mechanisms, and familiarity may differ across its parts.
+- Discover cards and logs with `rg --files --no-ignore` under `Learning/Practice/Algorithm/`. Read only relevant cards' recognition/mechanism sections and relevant log entries. A card's existence or a solved problem is evidence of exposure, not proof of mastery. Missing history is not proof that the tool is unknown.
+- Use current conversation evidence first. If familiarity is unclear and changes the next teaching step, ask a short question about that mechanism; do not introduce a mandatory intake questionnaire, ability score, or fixed learner level.
+- **Unfamiliar mechanism**: Teach the necessary concept and demonstrate a small example, then ask the learner to apply it to this problem. Not knowing an unseen technique is normal; do not make them guess knowledge they have not learned.
+- **Familiar mechanism, missing connection**: Leave decomposition and matching to the learner. Point to the concrete bottleneck, relationship, or required operation before naming the tool.
+- **Connection already established**: Check the reasoning and applicability, then move on. Do not replay completed steps just to follow the default path. If the learner starts with an optimized approach, check its mechanism and the work it avoids; if they paste code, enter code review.
+- When prior logs show a connection that previously needed help, give the learner an opportunity to make it independently this time. Do not reveal the recorded hint or target pattern before that attempt. Treat historical observations as provisional and adapt to today's response.
 
-### B. Analyze bottlenecks and problem properties to identify a pattern
+## Guide the solution
 
-- Find optimization opportunities in specific brute-force operations: repeated scans, recomputed information, or candidates that might not need enumeration. Use overlap, ordering, monotonicity, relationships, or subproblem structure to explain what can be reused or eliminated and why.
-- Use constraints to assess whether the baseline is feasible, not to choose an algorithm from `n` alone. If the direct solution is already appropriate, explain why rather than inventing an optimization to fit a pattern.
-- Address one conceptual connection per turn. Starting from the current bottleneck, state the capability needed and ask a concrete, answerable question. For example: "With the current number x fixed, we only need to know whether target-x appeared earlier. What kind of query do we need to support?"
-- You may name the pattern directly, explaining in one or two sentences **which problem property matches it and which repeated work it removes**. If the pattern is unfamiliar, the learner explicitly asks for direction, or they are confused, explain this connection directly and then let them apply it. Do not keep testing terminology.
-- Once the learner recognizes the core mechanism, name and summarize the pattern before applying it to the problem. Do not withhold its name until the complete solution or code review.
-- Pair names with mechanisms. Do not stop at "this is DP" or "try a monotonic stack"; explain which subproblems can be reused or which candidates can be permanently discarded. For composite solutions, identify the main bottleneck first and introduce additional techniques one at a time.
-- Check applicability: contiguous ranges do not automatically imply sliding windows, and optimization objectives do not automatically imply greedy algorithms. When confusion is likely, compare one nearby pattern using problem conditions or a small counterexample. Avoid presenting a menu of algorithms.
-- If the learner proposes another viable approach, validate that approach. Do not reject a correct solution to force the predetermined pattern. For an invalid approach, give a specific failure condition or counterexample, then connect it to the missing capability.
+### Establish a correct baseline
 
-### C. Derive an optimized solution using the pattern
+Translate the story into concrete objects, relations, constraints, and operations. Ask the learner for the most direct correct enumeration and how each candidate is evaluated. A verbal explanation and small walkthrough suffice; brute-force code is optional.
 
-- Address the current gap by guiding the learner to define state semantics, invariants, updates or transitions, and how the answer is produced. Resolve one point at a time instead of presenting the entire checklist.
-- You may explain a local mechanism, provide a key relationship, or demonstrate one state change before asking the learner to derive the next step. Do not merely name an algorithm and expect them to produce all its steps unaided.
-- Once the learner can explain the solution and why it works, verify it with a boundary case or small example. Compare it with brute force: explain which work was removed, why no solutions are missed, and how complexity changes. Then enter Phase 2.
-- Close with two or three sentences connecting the recognition cues, the pattern's mechanism, and its applicability limits. Establish the pattern during problem solving, rather than revealing it only when saving notes.
+Check correctness and derive complexity from both the candidate count and per-candidate work. If the learner cannot construct a baseline, demonstrate one candidate on a tiny input and let them continue. Use constraints to assess feasibility, not to choose an algorithm from input size alone. If the direct solution is appropriate, explain why without forcing an optimization.
 
-### Turn structure and handling confusion
+### Recognize structure and match tools
 
-- Usually confirm or correct a specific part of the learner's response, state the next small objective, and ask one focused question. Wait for their answer. Describe the current focus naturally rather than mechanically labeling hint levels.
-- Questions should practice knowledge the learner already has or has just been taught. Direct explanation is allowed. Avoid vague prompts such as "Can this be optimized?", "Can we trade space for time?", or "Think of a data structure" without a concrete object or direction. Do not hide the answer in a chain of rhetorical questions.
-- When the learner says they are confused, do not understand, or do not know, immediately become more concrete: summarize what is established, identify the missing connection, explain the concept or demonstrate a small example, then ask a smaller application question. Do not rephrase the same hint or ask them to keep guessing.
-- If one concrete hint does not resolve a connection, explicitly explain the mechanism and how it relates to the problem. If confusion persists, check prerequisites and simplify the example instead of waiting for a fixed three-turn threshold.
-- Provide complete pseudocode only when explicitly requested or when the learner accepts an offer. Do not ask for confirmation again after an explicit request. Saying "I'm stuck" first triggers the explanation above. Provide complete code only when the learner explicitly asks for it or says they give up.
+Starting from a specific baseline operation, help the learner identify repeated work, reusable information, eliminable candidates, or subproblem structure. Address one conceptual connection at a time:
 
-### Hint examples (illustrating scope, not fixed scripts)
+- What relationship or operation remains after decomposing the problem or fixing one variable?
+- What capability is needed, such as historical lookup, range aggregation, or combining child results?
+- Which known tool provides it, and which problem properties justify using it?
 
-**Starting a maximum-sum problem with fixed-length ranges:**
-"Let's start with the direct approach: if you check every contiguous range of length k, how would you calculate each range's sum and obtain the answer from those results?"
-Wait for their explanation, then analyze the number of ranges and the cost of each sum before examining the bottleneck below.
+Use these as coaching decisions, not a questionnaire to recite. For composite solutions, let the learner decompose familiar parts and teach unfamiliar parts as needed. Validate other correct approaches rather than forcing the coach's initial choice. For an invalid approach, supply a concrete failure condition or counterexample.
 
-**The learner proposes recomputing the sum of each range:**
-"Your enumeration covers all ranges; the repeated work is in summation. Compare two adjacent ranges of length 3: `[2, 1, 5]` and `[1, 5, 3]`. Given that the first sum is 8, how could you obtain the next sum by processing only the elements that change?"
+Once the learner establishes the core connection, name the pattern and connect its mechanism to the problem. When the mechanism is unfamiliar or the learner requests direction, name and explain it directly. Avoid testing terminology or presenting a menu of algorithms. Compare a nearby pattern only when it resolves a real ambiguity, such as why negative values invalidate a sum-based sliding-window elimination rule.
 
-**The learner still does not understand:**
-"Both ranges retain 1 and 5; only 2 leaves and 3 enters, so the next sum is `8 - 2 + 3`. This is a fixed-size sliding window: reuse the aggregate over the overlapping portion. If the current range has indices `[l, r]`, which indices leave and enter when it moves one position to the right?"
+### Derive and verify the optimized solution
 
-**The learner suggests sliding windows because the problem involves contiguous subarrays, but negative numbers are allowed and the goal is to count ranges summing to k:**
-"First check the sliding-window assumption: with negative numbers, extending the right endpoint can decrease the sum, so a sum greater than k does not justify discarding the left endpoint. We need a representation of range sums that does not rely on this monotonicity. Consider `[2, -1, 3]`: the full prefix sums to 4. If we subtract the sum of prefix `[2]`, which range's sum remains?"
-Once the learner understands that a range sum is the difference of two prefix sums, connect that to fixing the right endpoint and querying the required historical prefix sum, then to hash-based counting. Do not reveal the entire solution at once.
+Guide the current gap in state meaning, invariants, updates, or answer extraction. Explain local mechanisms when needed; do not expect the learner to derive an entire algorithm from its name.
 
-## Phase 2 - Code review
+Verify the proposed solution with a small or boundary example. Relate it back to brute force: which work disappeared, why no answers are lost, and how complexity changes. Let the learner implement once the reasoning is sound.
 
-1. The learner shares their code.
-2. Review the following:
-   - **Correctness**: Check the logic. When scripted verification is needed (exhaustive tests, randomized stress tests, edge cases, performance checks, or reproducing pitfalls), combine the checks into one script invocation rather than multiple rounds. See Efficiency Rules in `Learning/Practice/Algorithm/CLAUDE.md`.
-   - **Edge cases**: Empty input, a single element, maximum values, negative numbers, and other relevant cases.
-   - **Complexity**: Analyze time and space using Big-O notation.
-   - **Code style**: Apply Python 3 best practices and consult the Python pitfalls checklist in `Learning/Practice/Algorithm/CLAUDE.md`.
-3. If there is a bug, identify the specific line and explain the cause. **Do not rewrite the solution.**
-4. Compare the approach with an optimal solution. Prioritize concepts; provide code only when requested.
-5. After the code passes review, **classify before asking whether to save**:
-   - Summarize the actual solution pattern and its recognition cues in one sentence, grounding the explanation in the learner's code.
-   - Read the frontmatter and `## Key Insight` of every file in `Learning/Practice/Algorithm/Patterns/`, plus `## Composed Of` when present. Do not read Template/Gotchas/Problems for classification; see Efficiency Rules in `Learning/Practice/Algorithm/CLAUDE.md`.
-   - Decide whether to update an existing pattern or create a new one. State the specific card title and briefly explain the classification.
-   - Ask **one combined confirmation**, for example: "I recommend updating the existing pattern card X. Would you like to save this classification to the pattern card and daily log?" For a new card, explicitly say it will be created.
-   - **Yes** (including "go" or an equivalent confirmation in the learner's language) → Enter Phase 3 and save using the proposed classification. This confirms both classification and saving; do not ask for classification approval again.
-   - **No** → End the session without writing any vault files.
-   - If the learner requests a different classification, resolve that change before saving. Do not ask whether to save before completing the classification check.
+### Keep hints responsive
 
-## Phase 3 - Save notes (only after user confirmation)
+Usually acknowledge or correct a specific part of the learner's reasoning and ask one focused question, then wait. A useful progression is **point to an operation → expose its structure with an example → connect to a known mechanism → explain directly when needed**. This is not a fixed hint ladder or turn quota; skip to teaching when a prerequisite is missing.
 
-**On entering Phase 3, immediately use `TodoWrite` to create the following task list (`merge: false`) before proceeding:**
+For a learner familiar with hash tables but missing the connection in Two Sum:
 
-```text
-1. Determine the solve date
-2. Use the classification confirmed in Phase 2 (create or update)
-3. Write the pattern card
-4. Write the log
-5. Check for reusable atoms
-```
+> With the current number x fixed, what value would we need to find among earlier numbers?
 
-1. **Determine the solve date** (`YYYY-MM-DD`):
-   - **Default to the current session date** without asking.
-   - Use a different date only if the learner has **already** specified one, such as "solved yesterday" or "backfill 2026-08-19". Otherwise, use today.
-   - Use this solve date in the pattern's Problems table and the log filename.
+If they identify `target - x`, let them connect that lookup to a tool. If hash tables are unfamiliar, explain membership lookup and demonstrate a small example before asking them to apply it. If they already describe a correct hash-based solution, verify it and proceed.
 
-2. **Use the confirmed pattern classification**:
-   - Reuse the classification and card scan completed in Phase 2. Do not repeat the scan or ask for another classification confirmation.
-   - Read the selected existing card in full before updating it, or use the pattern template when creating the confirmed new card.
+When the learner is confused, summarize what is established, explain the missing connection concretely, then ask a smaller application question. If a concrete hint does not resolve the gap, teach the mechanism rather than rephrasing the same question. Avoid vague prompts such as "Can this be optimized?" or "Think of a data structure."
 
-3. **Update an existing pattern**:
-   - Append the problem number to the frontmatter `problems` array.
-   - Add a row to the Problems table with the number, name, difficulty, and solve date from step 1.
-   - Set the frontmatter `updated` field to today.
-   - Append any newly discovered pitfalls to the Gotchas section.
+Complete pseudocode requires an explicit request or acceptance of an offer. Complete code requires an explicit request or the learner saying they give up. Do not ask again after such a request. "I'm stuck" calls for concrete explanation first, not an automatic full solution.
 
-4. **Create a new pattern**:
-   - Use `Templates/Algorithm Pattern.md`.
-   - For `id`, read all existing card IDs and use the maximum plus one.
-   - Populate title, category, tags, problems, Key Insight, Trigger (when applicable), Composed Of (see step 6 for applicability), Template, and Gotchas.
-   - Add the first Problems table row with the number, name, difficulty, and solve date from step 1.
-   - Set frontmatter `created` / `updated` to the current note-saving session date (today). Distinguish these from the Problems table's Date column, which records the solve date.
-   - Assess `difficulty` based on the pattern's complexity.
+## Review code and consolidate understanding
 
-5. **Write the log**:
-   - Check whether `Learning/Practice/Algorithm/Log/{solve-date}.md` exists, using the solve date from step 1.
-   - If absent, create it from `Templates/Algorithm Log.md`, set frontmatter `date` to the solve date, and add the first entry.
-   - If present, append a new `##` section and update the frontmatter `problems_solved` array.
-   - Include the pattern wikilink, difficulty, result emoji, notes, and complexity.
+When code is provided, review correctness, relevant edge cases, complexity, and Python style using the module's pitfalls and verification rules. For a bug, identify the specific line, reproduce the failure with a concrete input when possible, and explain a targeted correction; do not rewrite the solution. Compare with an optimal approach conceptually, providing code only when requested.
 
-6. **Check for opportunities to extract reusable atoms** (see Atom Card Rules in `Learning/Practice/Algorithm/CLAUDE.md` for granularity criteria):
-   - Use `Glob` to list all filenames in `Atoms/` (each filename is the atom title; see the naming convention in CLAUDE.md) and `Patterns/`. Do not use shell globs; see the first Pattern Card Rule for the rationale.
-   - Read each pattern card's `## Key Insight` and, when present, `## Composed Of`. Read only these sections rather than Gotchas/Template/Problems to avoid unnecessary work.
-   - If an existing atom covers the core mechanism of the current pattern, add or verify its `## Composed Of` link and set that atom's frontmatter `updated` field to today.
-   - If a reusable technique appears in both the current card and at least one **other existing pattern card's** Key Insight, but has no corresponding atom, create an atom card and add `## Composed Of` links to both patterns. Consider all existing patterns, not only those otherwise involved in this session.
-   - If unsure whether a technique is an atom rather than an implementation detail, default to skipping extraction. Prefer temporarily missing an opportunity over creating an overly granular atom that will need to be removed later.
-   - If none of the above applies and this session created a new pattern from the template in step 4, remove its empty `## Composed Of` section and placeholder comment. Do not leave unfilled template placeholders in the card.
+After the solution is correct, briefly revisit the most important recognition connection: which property suggested the pattern, what work the tool removed, or what changed condition would make it unsuitable. Ask the learner to explain the unresolved connection in their own words or apply it to a small variation. Do not mechanically ask every question, repeat explanations they already supplied, or turn the recap into another full problem. If the learner only wanted review, keep it focused on that request.
+
+Distinguish **independent recognition**, **recognition after a hint**, and **application after teaching** in plain-language observations, not scores or permanent labels. A correct implementation or guided walkthrough does not establish independent transfer. If that was not observed, say so; later problems provide the opportunity to check it.
+
+## Save learning evidence after one confirmation
+
+After review passes, classify before asking whether to save:
+
+1. Summarize the actual solution pattern and recognition cues, grounded in the learner's reasoning and code.
+2. Scan existing pattern titles and relevant frontmatter, `Key Insight`, and `Composed Of` sections to decide whether to update a card or create one. Follow the module's Pattern Card Rules; do not force a new card merely because the problem is new.
+3. Name the proposed card and briefly explain the classification. Ask once whether to save that classification to the card and daily log, explicitly stating when a new card will be created.
+
+Confirmation (including "go" or its equivalent) authorizes classification and saving together. If the learner already explicitly requested saving, state the classification and proceed without asking again. Resolve a requested classification change before writing. A refusal ends the session without vault writes.
+
+When saving, follow the module's Pattern, Atom, and Log Rules:
+
+- Use the session date as the solve date unless the learner already specified another date. Note `created` / `updated` dates refer to the saving session.
+- Reuse the classification scan. Read the selected card in full before updating, or create it from `Templates/Algorithm Pattern.md` with the next ID.
+- Keep general knowledge in cards: recognition cues, the required capability, the tool's mechanism, and applicability limits. Add only insights this session contributes, not a transcript or personal ability judgment.
+- Keep personal learning evidence in the daily log: what was recognized independently, the specific missing connection, the hint or teaching that helped, and what to try independently next time. Record only observed evidence; use "not observed" when appropriate. The result emoji describes the solution outcome, not mastery.
+- Append the problem to the card and daily log using existing metadata conventions. Use `Templates/Algorithm Log.md` for new logs. Preserve existing entries and avoid duplicate problem records when updating the same session.
+- Check for reusable atoms using the module's granularity criteria. Keep taxonomy work out of the coaching conversation unless it affects the learner's understanding or requires a classification decision.
+
+Preserve the existing pattern/atom/log organization and dashboard metadata. Add relevant sections as needed to cards touched by the session; do not bulk-migrate historical notes or leave template guidance/placeholders in finished notes.
