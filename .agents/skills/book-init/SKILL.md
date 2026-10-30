@@ -10,14 +10,14 @@ disable-model-invocation: true
 
 New book onboarding: $ARGUMENTS
 
-Read `Learning/Books/CLAUDE.md` for the full reading workflow this book will enter (capture layers, the capture loop, folder boundaries). This command only handles **onboarding a new book** (the "New book onboarding" section there is the source of truth for that scope) — it does not touch the per-chapter capture cycle that follows, which is a separate, ongoing workflow described later in that same file.
+Read `Learning/Books/AGENTS.md` for the full reading workflow this book will enter (capture layers, the capture loop, folder boundaries). This command only handles **onboarding a new book** (the "New book onboarding" section there is the source of truth for that scope) — it does not touch the per-chapter capture cycle that follows, which is a separate, ongoing workflow described later in that same file.
 
 ## Step 1 — Confirm book identity
 
 Parse `$ARGUMENTS` for a book title (and author, if given). Confirm with the user:
 - **Book title** (exact, used for the vault folder name)
 - **Author**
-- **Archetype**: `technical-reference` or `cognitive-mental-model` (ask if unclear — a light tag for granularity/reflection style, see `Learning/Books/CLAUDE.md` → "Book archetypes")
+- **Archetype**: `technical-reference` or `cognitive-mental-model` (ask if unclear — a light tag for granularity/reflection style, see `Learning/Books/AGENTS.md` → "Book archetypes")
 - **Reading channel** — *which app you actually read in*: `weread` / `apple-books` / `both`. This is **not** where the file came from (that's `epub_path`/`pdf_path`) nor where highlights sync (that's `weread_source`/`ibooks_source`) — it's the reading surface. A book can have an EPUB on disk yet be read in WeRead → channel is `weread`.
 
 If the user already gave all of these in `$ARGUMENTS`, skip re-asking and confirm briefly instead.
@@ -52,7 +52,7 @@ For `.epub` sources it also auto-fills, when found — **do not ask the user to 
 
 If `--title` produced a folder name the user doesn't like (bad EPUB metadata), rerun with `--title "Correct Title"` — do not manually rename files.
 
-If the reading channel is pure WeRead or pure iBooks (no EPUB/PDF), skip this step and create the folder structure manually: `{BookTitle}/` with `meta.md`, `MOC.md`, `understanding.md`, `chapters/`, and `notes/` — see `Learning/Books/CLAUDE.md` → "Per-book folder structure" (no `epub_path`/`pdf_path` field in that case).
+If the reading channel is pure WeRead or pure iBooks (no EPUB/PDF), skip this step and create the folder structure manually: `{BookTitle}/` with `meta.md`, `MOC.md`, `understanding.md`, `chapters/`, and `notes/` — see `Learning/Books/AGENTS.md` → "Per-book folder structure" (no `epub_path`/`pdf_path` field in that case).
 
 ## Step 4 — Fill in fields book_init.py doesn't know
 
@@ -63,7 +63,7 @@ archetype: <technical-reference | cognitive-mental-model>
 reading_channel: <weread | apple-books | both>   # the app confirmed in Step 1 — that answer wins
 weread_source: "WeRead/{Folder}/{File}.md"   # only if a WeRead sync exists for this book
 # No output_target field — the publication layer is always in-book article.md,
-# generated on demand via /book-write (see Learning/Books/CLAUDE.md → "Publication layer").
+# generated on demand via /book-write (see Learning/Books/AGENTS.md → "Publication layer").
 ```
 
 Write the `reading_channel` **the user confirmed in Step 1** — that answer is authoritative. Do **not** override it from the capture sources: a `WeRead/` sync can exist for a book actually read in Apple Books, so `weread_source` being present never by itself makes the channel `weread`.

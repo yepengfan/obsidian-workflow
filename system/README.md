@@ -94,7 +94,7 @@ updated: 2026-03-29
 |------|------|------|----------|
 | 命令守卫 | 每个命令文件顶部 `[!GUARD]` | 中（AI 执行） | 所有 slash commands |
 | 脚本守卫 | Python/Bash 硬编码检查 | 强（代码执行） | hooks、管线 run.sh |
-| CLAUDE.md 规则 | 全局声明 | 弱（兜底） | 所有 Claude 交互 |
+| AGENTS.md 规则 | 全局声明 | 弱（兜底） | Claude Code / Codex / Cursor |
 
 ### 禁用模块时的注意事项
 - **检查依赖**：`/module-toggle` 会自动检查并警告依赖关系
@@ -114,7 +114,7 @@ updated: 2026-03-29
 2. **创建命令** — 放在 `.agents/skills/<module>-<command>/SKILL.md`，顶部加模块守卫
 3. **实现功能** — 创建模板、脚本等
 4. **注册** — module 文件的 frontmatter 就是注册信息，registry 自动识别
-5. **更新 CLAUDE.md** — 如果影响 vault 结构，同步更新说明
+5. **更新 AGENTS.md** — 如果影响 vault 结构，同步更新说明
 
 ## 修改现有功能的流程
 

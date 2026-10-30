@@ -12,7 +12,7 @@ skeleton), and writes one text file per chapter to {BookTitle}/.fulltext_cache/,
 using the exact same filename stems as {BookTitle}/chapters/ so the two stay
 easy to cross-reference.
 
-This is Layer 1 of a two-layer system (see Learning/Books/CLAUDE.md →
+This is Layer 1 of a two-layer system (see Learning/Books/AGENTS.md →
 "Full-text cache"):
   Layer 1 (this script's output)   — persistent, on-disk, per-book text cache.
   Layer 2 (AI's session search index) — ephemeral, rebuilt from Layer 1 each

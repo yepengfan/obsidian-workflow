@@ -17,7 +17,7 @@ hooks: []
 folders: [Learning/Practice/Algorithm/, Learning/Practice/Algorithm/Patterns/, Learning/Practice/Algorithm/Log/, Learning/Practice/Algorithm/Atoms/]
 config_files:
   - .agents/skills/algo-solve/SKILL.md
-  - Learning/Practice/Algorithm/CLAUDE.md
+  - Learning/Practice/Algorithm/AGENTS.md
 tags: [system/module]
 ---
 

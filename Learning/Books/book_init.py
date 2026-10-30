@@ -592,7 +592,7 @@ def main():
         understanding_file.write_text(
             f"# {title} — Understanding\n\n"
             "> 每章一条记录：AI 生成的结构地图 + 核心概念，加上你自己的话的理解。\n"
-            "> 机制见 `Learning/Books/CLAUDE.md` → \"The capture loop\"。\n",
+            "> 机制见 `Learning/Books/AGENTS.md` → \"The capture loop\"。\n",
             encoding="utf-8",
         )
 

@@ -10,7 +10,7 @@ disable-model-invocation: true
 
 Solve Frontend challenge: $ARGUMENTS
 
-Read `Learning/Practice/Frontend/CLAUDE.md` for module instructions.
+Read `Learning/Practice/Frontend/AGENTS.md` for module instructions.
 
 ## Phase 0 — 初始化 Challenge
 
@@ -47,7 +47,7 @@ Read `Learning/Practice/Frontend/CLAUDE.md` for module instructions.
 
 用户提供了题目。按以下层级 **逐层推进**，每层用 Socratic 提问引导，不要跳层。
 
-引导方向时参考 `Learning/Practice/Frontend/CLAUDE.md` 的「心法」——React 思维模型（UI=f(state)、单向数据流、组合优于继承、副作用隔离）。
+引导方向时参考 `Learning/Practice/Frontend/AGENTS.md` 的「心法」——React 思维模型（UI=f(state)、单向数据流、组合优于继承、副作用隔离）。
 
 ### L1 — 需求分析 & 组件拆分
 - 确认功能需求、交互细节、edge cases

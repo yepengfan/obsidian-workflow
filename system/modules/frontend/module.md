@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-06-23
-updated: 2026-08-08
+updated: 2026-10-31
 depends_on: []
 requires:
   cli: [claude, node, npm]
@@ -17,7 +17,7 @@ hooks: []
 folders: [Learning/Practice/Frontend/, Learning/Practice/Frontend/Patterns/, Learning/Practice/Frontend/Log/, Learning/Practice/Frontend/sandbox/]
 config_files:
   - .claude/skills/frnt-solve/SKILL.md
-  - Learning/Practice/Frontend/CLAUDE.md
+  - Learning/Practice/Frontend/AGENTS.md
 tags: [system/module]
 ---
 
