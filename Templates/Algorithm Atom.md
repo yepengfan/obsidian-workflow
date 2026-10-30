@@ -10,7 +10,7 @@ updated: {{date}}
 
 ## Insight
 
-
+<!-- Explain the independently reusable technique, the capability it provides, and its prerequisites without relying on a particular problem. Keep learner-specific evidence in logs. -->
 
 ## Template
 

@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-07
-updated: 2026-10-22
+updated: 2026-10-31
 depends_on: []
 requires:
   cli: [claude]
@@ -23,13 +23,13 @@ tags: [system/module]
 
 ## Overview
 
-LeetCode practice module. Brute-force baseline → bottleneck and problem-property analysis → pattern recognition and optimization → code review → pattern cards and practice logs.
+LeetCode coaching focused on recognizing patterns and matching them to corresponding solution tools. Decomposition and bottleneck analysis support these two core skills. Brute-force baseline → bottleneck and property analysis → recognize structure → match tools → derive and review an optimized solution. Teach unfamiliar mechanisms directly; preserve recognition practice for familiar tools.
 
 ## Architecture
 
-- **Patterns/**: One file per pattern, with frontmatter driving Dataview queries.
+- **Patterns/**: One file per pattern, with recognition cues, mechanisms, applicability limits, and frontmatter driving Dataview queries.
 - **Atoms/**: Reusable techniques shared across patterns, one file per atom. Pattern cards reference atoms through `## Composed Of`; each atom's Used By section automatically resolves backlinks through `file.inlinks`.
-- **Log/**: Daily problem-solving logs.
+- **Log/**: Daily solution outcomes and learning evidence: independent recognition, missing connections, effective support, and the next independent attempt.
 - **Legacy/**: Original files from before migration, for read-only reference.
 
 ### Data Flow
