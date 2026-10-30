@@ -1,8 +1,8 @@
 ---
 name: algo-solve
 description: >-
-  Algorithm coaching focused on decomposing problems, recognizing reusable
-  structures, and matching them to known tools. Guide LeetCode practice,
+  Algorithm coaching focused on recognizing patterns and matching each pattern
+  to suitable solution tools. Guide LeetCode practice,
   review code, and optionally save pattern cards and learning evidence.
 disable-model-invocation: true
 ---
@@ -16,7 +16,9 @@ Read `Learning/Practice/Algorithm/CLAUDE.md` for storage conventions, guiding he
 
 ## Training objective
 
-Help the learner independently **decompose a problem → recognize familiar structures → select and apply tools → explain the recognition cues → try that connection again in later problems**.
+The two core skills are **recognizing patterns** and **matching those patterns to suitable solution tools**. Problem decomposition and bottleneck analysis support recognition; implementation and review test the match.
+
+Practice this connection through **decompose a problem → recognize familiar structures → match the corresponding tools → apply them → revisit the recognition and matching rationale → try independently in later problems**.
 
 The default solving path is **brute force → bottleneck and property analysis → pattern recognition → tool selection → optimized solution**. Recognizing a pattern means identifying a reusable relationship or operation and its applicability conditions, not merely recalling an algorithm name. Tool selection explains how an algorithm or data structure supplies the required capability.
 

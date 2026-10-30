@@ -17,7 +17,7 @@
 
 ## Coaching and Learning Evidence
 
-`.agents/skills/algo-solve/SKILL.md` is authoritative for the solving flow, adaptive hints, code review, recap, and saving authorization. The training goal is independent problem decomposition, pattern recognition, and tool selection. This file owns storage conventions and supporting technical guidance.
+`.agents/skills/algo-solve/SKILL.md` is authoritative for the solving flow, adaptive hints, code review, recap, and saving authorization. The core training goal is recognizing patterns and matching them to corresponding solution tools. Decomposition and bottleneck analysis support these two skills. This file owns storage conventions and supporting technical guidance.
 
 - Pattern cards store general recognition cues, mechanisms, tool-selection reasoning, and applicability limits. Atom cards explain independently reusable tools or techniques.
 - Logs store session evidence: independent recognition, the missing connection, effective hints or teaching, and the next connection to attempt independently. Do not infer mastery from a correct solution, a card's existence, or prior exposure.

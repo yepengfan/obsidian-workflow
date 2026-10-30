@@ -23,7 +23,7 @@ tags: [system/module]
 
 ## Overview
 
-LeetCode coaching focused on independent decomposition, pattern recognition, and tool selection. Brute-force baseline → bottleneck and property analysis → recognize structure → match tools → derive and review an optimized solution. Teach unfamiliar mechanisms directly; preserve recognition practice for familiar tools.
+LeetCode coaching focused on recognizing patterns and matching them to corresponding solution tools. Decomposition and bottleneck analysis support these two core skills. Brute-force baseline → bottleneck and property analysis → recognize structure → match tools → derive and review an optimized solution. Teach unfamiliar mechanisms directly; preserve recognition practice for familiar tools.
 
 ## Architecture
 
