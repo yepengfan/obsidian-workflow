@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-07-15
-updated: 2026-09-07
+updated: 2026-10-31
 depends_on: []
 requires:
   cli: [claude]
@@ -21,7 +21,7 @@ config_files:
   - .claude/skills/book-init/SKILL.md
   - .claude/skills/book-read/SKILL.md
   - .claude/skills/book-write/SKILL.md
-  - Learning/Books/CLAUDE.md
+  - Learning/Books/AGENTS.md
   - Learning/Books/book_init.py
   - Learning/Books/extract_fulltext.py
   - Learning/Books/test_extract_fulltext.py
@@ -31,14 +31,14 @@ tags: [system/module]
 
 ## Overview
 
-深度读书笔记系统，以**高效落盘**为核心。三层：捕获层（WeRead + Apple Books/iBooks 自动同步划线）+ 生产层（每章一条 `understanding.md` 记录：AI 生成思维导图+核心概念 → 人补自己的理解 → AI 一遍核对）+ 发表层（`article.md`：每章一个 AI 骨架「这章在讲什么」+ 人写该章总结；读完整本再写全书总结。AI 搭骨架，人写总结）。每本书一个独立文件夹。详细工作流见 `Learning/Books/CLAUDE.md`（本文件不重复，只做治理层描述）。
+深度读书笔记系统，以**高效落盘**为核心。三层：捕获层（WeRead + Apple Books/iBooks 自动同步划线）+ 生产层（每章一条 `understanding.md` 记录：AI 生成思维导图+核心概念 → 人补自己的理解 → AI 一遍核对）+ 发表层（`article.md`：每章一个 AI 骨架「这章在讲什么」+ 人写该章总结；读完整本再写全书总结。AI 搭骨架，人写总结）。每本书一个独立文件夹。详细工作流见 `Learning/Books/AGENTS.md`（本文件不重复，只做治理层描述）。
 
 ## 架构
 
 - **`{BookTitle}/meta.md`**: frontmatter 驱动 — archetype、`reading_channel`（**你实际在哪个 App 读**：`weread` / `apple-books` / `both`；不是文件来源、也不是划线同步源，Home 卡片 + Books Index 据此显示渠道）、progress tracker（每章 `map`/`understanding` 两字段），以及（EPUB/PDF 书）`epub_path`/`pdf_path`（按来源格式二选一）指向 `~/Library/ebooks/` 下的实体文件；`cover`（`book_init.py` 自动从 EPUB 提取内嵌封面到 `<book>/cover.{ext}`）；`weread_source` / `ibooks_source`（捕获层划线同步源，二选一或都有；WeRead 有按章划线+阅读进度，iBooks 是单扁平文件、章节归属不可靠、无进度字段）
 - **`{BookTitle}/understanding.md`**: **生产层产物**。按章记录，每章两块——`结构地图与核心概念（AI）` + `我的理解（你的话，原文转录）`。发表层写作骨架的输入源
-- **`{BookTitle}/article.md`**（可选，按需）: **发表层产物**。每章一个 `骨架（AI）— 这章在讲什么` + `我的总结（你写）`，末尾一个 `全书总结`。AI 只写/刷新骨架块，总结人写，见 `Learning/Books/CLAUDE.md` → "Publication layer — 写作骨架"
-- **`{BookTitle}/.fulltext_cache/`**: 全书正文文本缓存，`extract_fulltext.py` 生成。**标准输入步骤**（不再是 opt-in）——章节思维导图基于原文生成。仅 EPUB。详见 `Learning/Books/CLAUDE.md` → "Full-text cache"
+- **`{BookTitle}/article.md`**（可选，按需）: **发表层产物**。每章一个 `骨架（AI）— 这章在讲什么` + `我的总结（你写）`，末尾一个 `全书总结`。AI 只写/刷新骨架块，总结人写，见 `Learning/Books/AGENTS.md` → "Publication layer — 写作骨架"
+- **`{BookTitle}/.fulltext_cache/`**: 全书正文文本缓存，`extract_fulltext.py` 生成。**标准输入步骤**（不再是 opt-in）——章节思维导图基于原文生成。仅 EPUB。详见 `Learning/Books/AGENTS.md` → "Full-text cache"
 - **`{BookTitle}/MOC.md`**: 纯索引，链接到 meta + chapters + notes + understanding
 - **`{BookTitle}/chapters/`**: `book_init.py` 生成的章节骨架，只读参考
 - **`{BookTitle}/notes/`**: 按需的 sources/research 记录
@@ -52,8 +52,8 @@ tags: [system/module]
 ### 数据流
 
 - **新书 onboarding**: `/book-init <书名>` → 确认 archetype/channel → 在 `~/Library/ebooks/` 模糊匹配 epub/pdf → 跑 `book_init.py` 生成骨架（自动写入 `epub_path`/`pdf_path`）→ 人工补 archetype → 建全文缓存 `extract_fulltext.py`
-- **读书循环（落盘）**: 捕获（WeRead/iBooks 划线）→ AI 生成本章思维导图+核心概念（基于全文缓存）→ 人补自己的理解 → AI 一遍核对 → 两块并存落盘 `understanding.md`，见 `Learning/Books/CLAUDE.md` "The capture loop"
-- **写读后（发表层）**: `/book-write <书名 [章 / 全书总结]>` → 从 `understanding.md` 提炼每章骨架到 `article.md`（默认补所有已读章），人写每章「我的总结」；读完整本再生成全书脉络骨架并写全书总结。读完整本时 `/book-read` 结束流程也会**可选**提示生成全书总结骨架。见 `Learning/Books/CLAUDE.md` → "Publication layer — 写作骨架"
+- **读书循环（落盘）**: 捕获（WeRead/iBooks 划线）→ AI 生成本章思维导图+核心概念（基于全文缓存）→ 人补自己的理解 → AI 一遍核对 → 两块并存落盘 `understanding.md`，见 `Learning/Books/AGENTS.md` "The capture loop"
+- **写读后（发表层）**: `/book-write <书名 [章 / 全书总结]>` → 从 `understanding.md` 提炼每章骨架到 `article.md`（默认补所有已读章），人写每章「我的总结」；读完整本再生成全书脉络骨架并写全书总结。读完整本时 `/book-read` 结束流程也会**可选**提示生成全书总结骨架。见 `Learning/Books/AGENTS.md` → "Publication layer — 写作骨架"
 - **补全遗留书**: `/book-init` 的 Retrofit 流程 → 扫描缺 `epub_path`/`pdf_path` 的 `meta.md` → 模糊匹配补全（多候选时必须询问，不猜）
 
 ## 已知遗留问题

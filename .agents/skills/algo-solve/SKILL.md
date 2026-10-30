@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 Practice problem: $ARGUMENTS
 
-Read `Learning/Practice/Algorithm/CLAUDE.md` for storage conventions, guiding heuristics, Python pitfalls, and verification rules. This skill owns the coaching workflow; the module file owns note maintenance.
+Read `Learning/Practice/Algorithm/AGENTS.md` for storage conventions, guiding heuristics, Python pitfalls, and verification rules. This skill owns the coaching workflow; the module file owns note maintenance.
 
 ## Training objective
 

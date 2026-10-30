@@ -10,11 +10,11 @@ disable-model-invocation: true
 
 Solve System Design problem: $ARGUMENTS
 
-Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
+Read `Learning/Practice/System-Design/AGENTS.md` for module instructions.
 
 ## Phase 0 — 初始化 Solution 文件夹
 
-> [!WARNING] `Solutions/` 内容被 `.gitignore` 排除（除 `CLAUDE.md`/`00_index.md`）。扫描 WIP session 时**必须用 shell `ls` 枚举文件夹 + `Read` 检查 `progress.md` frontmatter**，禁止用 `Glob`/`Grep` — 它们遵循 `.gitignore`，会静默返回 0 结果，导致误判"没有进行中的练习"。
+> [!WARNING] `Solutions/` 内容被 `.gitignore` 排除（除 `AGENTS.md`/`00_index.md`）。扫描 WIP session 时**必须用 shell `ls` 枚举文件夹 + `Read` 检查 `progress.md` frontmatter**，禁止用 `Glob`/`Grep` — 它们遵循 `.gitignore`，会静默返回 0 结果，导致误判"没有进行中的练习"。
 
 ### 无参数自动恢复
 
@@ -109,7 +109,7 @@ Read `Learning/Practice/System-Design/CLAUDE.md` for module instructions.
 - 逐步深入: Core Entities → API → Data Flow → High-Level Design → Deep Dives
 - 如果用户卡住超过 2 轮，给更直接的 hint（但仍非完整方案）
 - 只在用户说 "show me the design" / "给我看方案" / "我放弃" 时给完整设计
-- 组织提问方向时参考 `Learning/Practice/System-Design/CLAUDE.md` 的「核心原则」（从需求推导架构、Trade-off 思维、数字感、渐进式设计）
+- 组织提问方向时参考 `Learning/Practice/System-Design/AGENTS.md` 的「核心原则」（从需求推导架构、Trade-off 思维、数字感、渐进式设计）
 
 **Delivery Framework（Hello Interview 6 步）:**
 1. Requirements（功能 + 非功能需求 + Back-of-Envelope 估算）

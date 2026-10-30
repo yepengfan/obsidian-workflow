@@ -16,7 +16,7 @@ Produce a writing skeleton: $ARGUMENTS
 This command is the **publication layer** of the reading system (the third layer, after
 capture and production). Its job is to distill a **writing skeleton** — the article's
 骨架 + 重点 — that the human then writes the actual 读后文章 from, by hand. Read
-`Learning/Books/CLAUDE.md` → "Publication layer — 写作骨架 (article.md)" first; that file
+`Learning/Books/AGENTS.md` → "Publication layer — 写作骨架 (article.md)" first; that file
 is the single source of truth for the rules and format. Do **not** duplicate them here.
 
 ## The red line still holds
@@ -68,7 +68,7 @@ book — this reuses the work already on disk and keeps the red line:
 ## Step 3 — Generate the skeleton (AI, into article.md)
 
 Write to `{BookTitle}/article.md` (create it if missing, with the header block — see the
-format in `Learning/Books/CLAUDE.md`). The file has two writing surfaces: a **per-chapter
+format in `Learning/Books/AGENTS.md`). The file has two writing surfaces: a **per-chapter
 summary** for every chapter (each = an AI 骨架 + the reader's 我的总结) and a single
 **全书总结** at the end. Never overwrite the reader's own prose; write/refresh only the AI
 `**骨架（AI）**` blocks and add empty `**我的总结（你写）**` slots.
@@ -111,4 +111,4 @@ Report what got written and point the reader at the next move:
 ```
 
 Do **not** write the reader's summaries. If the user later asks you to "verify" or "find
-sources" for a claim, that's the research step in `Learning/Books/CLAUDE.md`.
+sources" for a claim, that's the research step in `Learning/Books/AGENTS.md`.

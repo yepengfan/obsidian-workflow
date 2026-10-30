@@ -23,7 +23,7 @@ The combination produces a two-layer system: a **capture layer** (Inbox) where n
 
 Learning/Books/
   book_init.py    # EPUB/PDF parser → Obsidian note generator (writes epub_path/pdf_path)
-  CLAUDE.md       # Book learning system instructions
+  AGENTS.md       # Book learning system instructions
   Books Index.md  # Dataview-powered book directory + WeRead Library card view
   .bookrc.example # Config template for local paths
 
@@ -67,10 +67,17 @@ scripts/
     write_reports.py  # Obsidian markdown report assembler
     run.sh        # Idempotent orchestrator with 14-day archive rotation
 Templates/        # Inbox, Zettel, Work Daily, Work Project, Learning Plan, Learning Week, Algorithm Pattern, Algorithm Log, SD Pattern, SD Log, Brownbag Session
-CLAUDE.md         # Vault-level Claude Code instructions
+AGENTS.md         # Shared vault instructions for Claude Code, Codex, and Cursor
 Home.md           # Dashboard — tabbed sections (Work/Card, AI Digest/GitHub Trending)
 sortspec.md       # Custom file explorer sort order (Custom File Explorer Sorting plugin)
 ```
+
+### Shared agent instructions
+
+`AGENTS.md` is the source of truth for project and module instructions. The adjacent
+`CLAUDE.md` files contain only `@AGENTS.md` imports for Claude Code compatibility.
+Edit the `AGENTS.md` files, not the compatibility entries. Skills explicitly read
+module instructions when needed, including when invoked from the vault root.
 
 ## Architecture
 
@@ -130,7 +137,7 @@ graph TD
     style scaffold fill:none,stroke:#ddd,stroke-dasharray:5
 ```
 
-A structured reading workflow: **onboard (`/book-init`) → naked read → Feynman sparring → human writes → AI review → permanent knowledge**. Books stall at read-only until material accumulates — not every chapter produces a written article. See `Learning/Books/CLAUDE.md` for the full per-unit workflow, archetypes, and guardrails.
+A structured reading workflow: **onboard (`/book-init`) → naked read → Feynman sparring → human writes → AI review → permanent knowledge**. Books stall at read-only until material accumulates — not every chapter produces a written article. See `Learning/Books/AGENTS.md` for the full per-unit workflow, archetypes, and guardrails.
 
 ## Knowledge Flow (Zettelkasten)
 

@@ -14,7 +14,7 @@ Resume a reading session: $ARGUMENTS
 
 This command is a **router**, not the workflow itself. Its only job is to pick the right
 **book + chapter + step**, load context, then hand off to the real reading workflow in
-`Learning/Books/CLAUDE.md`. Do **not** duplicate the capture-loop rules here — that file is
+`Learning/Books/AGENTS.md`. Do **not** duplicate the capture-loop rules here — that file is
 the single source of truth. Read it before entering any step.
 
 ## Step 1 — Pick the book
@@ -44,7 +44,7 @@ book, resolve live progress — do **not** read the static `weread_progress` fie
 
 Read the chosen book's `MOC.md` (chapter list) and `meta.md`'s `progress:` tracker.
 
-**First, run progress-driven pre-fill** (see `Learning/Books/CLAUDE.md` →
+**First, run progress-driven pre-fill** (see `Learning/Books/AGENTS.md` →
 "Progress-driven pre-fill (batch)"): check the full-text cache per that file's
 "Session-start check" — **build if missing** (no confirmation needed); **if stale**
 (source hash changed), ask before rebuilding and skip pre-fill until confirmed.
@@ -55,7 +55,7 @@ without a map yet, generate + append its map to `understanding.md` and set
 
 **Report a progress table in conversation** (not `AskUserQuestion` — chapters often exceed 4),
 then let the user say a chapter number. Use the exact table format from
-`Learning/Books/CLAUDE.md` → "Cross-session progress display" (single source of truth — follow
+`Learning/Books/AGENTS.md` → "Cross-session progress display" (single source of truth — follow
 it rather than re-inventing a layout here).
 
 Derive each chapter's marks from meta.md's `progress:` tracker: the `map` and `understanding`
@@ -74,23 +74,23 @@ contains TOC noise so the user isn't misled.
 Use `AskUserQuestion` to choose which part of the reading loop to enter:
 
 - **落盘理解** — the capture loop: AI generates the chapter's 思维导图 + 核心概念, you add your
-  understanding in your own words, AI verifies and stores both (`Learning/Books/CLAUDE.md` →
+  understanding in your own words, AI verifies and stores both (`Learning/Books/AGENTS.md` →
   "The capture loop"). The most common step.
 - **查 source / 验证** — on-demand research (that file → "Find sources / verify")
 - **写读后骨架** — the publication layer: AI distills a per-chapter 骨架（这章在讲什么）
   into `article.md` for this chapter, then you write that chapter's 我的总结
-  (`Learning/Books/CLAUDE.md` → "Publication layer — 写作骨架"; same as `/book-write`)
+  (`Learning/Books/AGENTS.md` → "Publication layer — 写作骨架"; same as `/book-write`)
 - **只是继续读** — no AI step; just surface context and progress, then stop
 
 ## Step 4 — Load context and enter
 
-Load context per `Learning/Books/CLAUDE.md` → "Context loading" (that section is the single
+Load context per `Learning/Books/AGENTS.md` → "Context loading" (that section is the single
 source of truth for the sequence — do not restate it here). For the full-text cache, follow
 that file's "Session-start check": build if missing; ask before rebuilding if stale.
 
 Then enter the step chosen in Step 3, following that file's rules exactly. For 落盘理解:
 - If Step 2's pre-fill already set `progress.chNN.map = done` for this chapter, **skip map
   generation** — show the existing map from `understanding.md` and go straight to prompting
-  for the user's own understanding (per `Learning/Books/CLAUDE.md` → "The capture loop").
+  for the user's own understanding (per `Learning/Books/AGENTS.md` → "The capture loop").
 - Otherwise, generate the 思维导图 + 核心概念 first (from the full-text cache + capture-layer
   highlights), show it, then prompt for the user's understanding.
