@@ -17,8 +17,6 @@ COMMAND_TO_SKILL = {
     ".claude/commands/feeds/engineering-blogs.md": ".claude/skills/feeds-engineering-blogs/SKILL.md",
     ".claude/commands/feeds/github-trending.md": ".claude/skills/feeds-github-trending/SKILL.md",
     ".claude/commands/frnt/solve.md": ".claude/skills/frnt-solve/SKILL.md",
-    ".claude/commands/grammar/practice.md": ".claude/skills/grammar-practice/SKILL.md",
-    ".claude/commands/grammar/review.md": ".claude/skills/grammar-review/SKILL.md",
     ".claude/commands/learning/learning-init.md": ".claude/skills/learning-init/SKILL.md",
     ".claude/commands/learning/learning-log.md": ".claude/skills/learning-log/SKILL.md",
     ".claude/commands/learning/learning-review.md": ".claude/skills/learning-review/SKILL.md",

@@ -43,14 +43,6 @@ DESCRIPTIONS: dict[str, str] = {
         "Frontend challenge workflow — sandbox setup, guided implementation, code review, "
         "pattern card logging. Use for GreatFrontEnd-style challenges or /frnt/solve."
     ),
-    "grammar-practice": (
-        "Advanced English grammar structure practice with Socratic rewriting. "
-        "Use for /grammar/practice or grammar drills."
-    ),
-    "grammar-review": (
-        "Review grammar structure cards by recency and show practice stats. "
-        "Use for /grammar/review."
-    ),
     "learning-init": (
         "Initialize a new learning plan under Learning/Plans/<CODE>/. "
         "Use for /learning/learning-init."
