@@ -12,7 +12,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `topics` (list of keywords for filtering).
 - **Learning/** — Organized into four categories:
   - `Plans/` — Phased learning projects with endpoints. Each plan lives in a subfolder named by its code (e.g. `Learning/Plans/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier — used as shorthand in all commands (`/learning-log AISA`). Current plans: AISA, STYLE. Managed via `/learning-init`, `/learning-log`, `/learning-review`.
-  - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/CLAUDE.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/CLAUDE.md`), `Grammar/` (advanced English grammar — see `Learning/Practice/Grammar/CLAUDE.md`). Managed via `/algo-solve`, `/sysd-solve`, `/grammar-practice`, `/grammar-review`.
+  - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/CLAUDE.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/CLAUDE.md`). Managed via `/algo-solve`, `/sysd-solve`.
   - `Books/` — Book reading workflow (see `Learning/Books/CLAUDE.md`).
   - `Resources/` — Loose learning materials and skill builder resources (e.g., system-design-sketchnote).
 - **Note/** — Persistent quick-reference notes (credentials, demo setups, etc.). Unlike Inbox (which is processed weekly), these stay as-is for easy access.
@@ -119,8 +119,6 @@ Naming is flat and hyphenated: `{module}-{command}` (e.g. `/work-daily`, `/algo-
 ├── task-add/                    # /task-add
 ├── sysd-solve/                  # /sysd-solve
 ├── frnt-solve/                  # /frnt-solve
-├── grammar-practice/            # /grammar-practice
-├── grammar-review/              # /grammar-review
 ├── vault-ops-organize/          # /vault-ops-organize
 ├── vault-ops-tag-audit/         # /vault-ops-tag-audit
 ├── vault-ops-summarize/         # /vault-ops-summarize
@@ -280,53 +278,6 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
     Phase 3: 沉淀 pattern + log
 ```
 
-
-## Grammar System
-
-高级英语语法表达力练习系统。目标不是纠错，而是扩展句法工具箱。详细规则见 `Learning/Practice/Grammar/CLAUDE.md`。
-
-### Directory Structure
-
-| Path | Purpose |
-|------|---------|
-| `Learning/Practice/Grammar/Structures/` | Structure card（一个语法结构一个 .md，含 before→after 重写对） |
-| `Learning/Practice/Grammar/Log/` | 每日练习记录（`YYYY-MM-DD.md`） |
-| `Learning/Practice/Grammar/files/` | 参考书 PDF + 学习计划 MOC |
-| `Learning/Practice/Grammar/00_index.md` | Dataview dashboard |
-
-### Commands
-
-**`/grammar-practice [structure]`** — 练习全流程：
-
-1. **选结构** — 指定或从最久未练的结构推荐
-2. **重写练习** — 用自己的真实句子，Socratic 引导多版本重写
-3. **沉淀** — 更新已有 Structure card 或新建 + 写当日 Log
-
-```
-/grammar-practice cleft sentences
-/grammar-practice participle clauses
-/grammar-practice
-```
-
-**`/grammar-review`** — 复习排序 + 统计：
-
-1. 扫描所有 Structure card，按 `updated` 排序（最久未练优先）
-2. 输出 review 表 + 统计（总结构数、本周/月练习次数）
-3. 可 drill-down 快速练习 + 场景 prompt 造句
-
-### Daily Workflow
-
-```
-练习 → /grammar-practice cleft sentences
-         ↓
-    Phase 1: 选结构 + 回顾功能
-    Phase 2: 用自己的句子重写（Socratic 引导）
-    Phase 3: 沉淀 structure card + log
-         ↓
-复习 → /grammar-review
-         ↓
-    挑最久未练的 structure 再练 → 循环
-```
 
 ## Frontend System
 
