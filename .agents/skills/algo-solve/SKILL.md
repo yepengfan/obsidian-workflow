@@ -82,7 +82,13 @@ Complete pseudocode requires an explicit request or acceptance of an offer. Comp
 
 When code is provided, review correctness, relevant edge cases, complexity, and Python style using the module's pitfalls and verification rules. For a bug, identify the specific line, reproduce the failure with a concrete input when possible, and explain a targeted correction; do not rewrite the solution. Compare with an optimal approach conceptually, providing code only when requested.
 
-After the solution is correct, report the review result and complexity, then proceed to the optional saving step. Do not add a default recap quiz, ask the learner to explain why a correct tool works, or require a variation to prove transfer. Explain further when the learner requests it or a demonstrated error remains unresolved.
+After the solution is correct, report the review result and complexity. When it achieves optimal time and space complexity, explicitly assess whether an equally efficient, clearer implementation exists before proceeding to optional saving:
+
+- Look for redundant state or pointer variables, unnecessary operations, duplicated branches, and simpler control flow or invariants. Prefer readability and fewer concepts to track over fewer lines or clever syntax; preserve correctness and complexity.
+- If a meaningful simplification exists, explain the concrete change and why it works, including any tradeoff. Treat it as optional refinement of an already correct solution, not a defect. If the code is already concise and clear, say so rather than inventing a rewrite.
+- Explain the simplification directly without turning it into another guessing exercise. Provide replacement code only when requested; the existing rules for complete code and pseudocode still apply. Do not require the learner to rewrite or resubmit before saving.
+
+Do not add a default recap quiz, ask the learner to explain why a correct tool works, or require a variation to prove transfer. Beyond the review and simplification assessment, explain further when the learner requests it or a demonstrated error remains unresolved.
 
 Record whether recognition was correct independently, corrected after feedback, or reached through hints/teaching. Keep implementation errors separate. Absence of a verbal explanation is not evidence of a recognition gap; do not withhold credit for a correct identification because the learner did not justify it. If recognition was not observed (for example, only code was supplied), record that without demanding a retrospective explanation.
 
