@@ -247,15 +247,110 @@ btn.addEventListener("click", async () => {
   const badgeStyle = "font-size:0.72em;padding:1px 7px;border-radius:10px;background:var(--background-primary);border:1px solid var(--background-modifier-border);color:var(--text-muted);white-space:nowrap;";
   function asArray(list) { if (!list) return []; if (typeof list.array === "function") return list.array(); return Array.from(list); }
 
+  // Keep drag state local: text dragged from other notes must never modify the board.
+  let dragged = null;
+  let moving = false;
+  const dropCells = [];
+  function clearDropHints() {
+    for (const cell of dropCells) {
+      cell.style.outline = "";
+      cell.style.background = "var(--background-secondary)";
+    }
+  }
+  function taskInSection(lines, line) {
+    let sectionName = "", codeFence = null;
+    for (let i = 0; i <= line; i++) {
+      const value = lines[i] || "";
+      const f = value.match(/^\s{0,3}(`{3,}|~{3,})(.*)$/);
+      if (f) {
+        if (!codeFence) codeFence = { char: f[1][0], length: f[1].length };
+        else if (f[1][0] === codeFence.char && f[1].length >= codeFence.length && !f[2].trim()) codeFence = null;
+        continue;
+      }
+      if (codeFence) continue;
+      const heading = value.match(/^#{1,2} (.+?)\s*#*\s*$/);
+      if (heading) sectionName = heading[1];
+      if (i === line) return sectionName === "Tasks" && /^\s*[-*+] \[ \] /.test(value);
+    }
+    return false;
+  }
+  function moveLine(raw, q) {
+    const match = raw.replace(/\r$/, "").match(/^(\s*[-*+] \[ \] )(.+)$/);
+    if (!match || !/#task\/[^\s#]+/.test(match[2])) throw new Error("请先在 Task Board 给任务选择领域，再移动象限。");
+    // Support Tasks emoji dates and Dataview inline due fields, without touching links or other dates.
+    const duePattern = /📅\s*\d{4}-\d{2}-\d{2}|\[due::\s*\d{4}-\d{2}-\d{2}\s*\]|\(due::\s*\d{4}-\d{2}-\d{2}\s*\)/gi;
+    let body = match[2];
+    const dues = body.match(duePattern) || [];
+    if (dues.length > 1 || (/📅|\bdue\s*::/i.test(body.replace(duePattern, "")))) {
+      throw new Error("截止日期格式不明确，请先在 Task Board 整理日期。");
+    }
+    const urgent = q === "Q1" || q === "Q3";
+    const important = q === "Q1" || q === "Q2";
+    const due = dues.length ? dv.date(dues[0].match(/\d{4}-\d{2}-\d{2}/)[0]) : null;
+    if (dues.length && (!due || due.isValid === false)) throw new Error("截止日期无效，请先在 Task Board 修改。");
+    const cutoff = dv.date("today").plus({ days: 7 }).endOf("day");
+    const wasUrgent = due && due <= cutoff;
+    if (urgent && !wasUrgent) {
+      const token = "📅 " + dv.date("today").plus({ days: 7 }).toFormat("yyyy-MM-dd");
+      body = dues.length ? body.replace(duePattern, token) : body + " " + token;
+    } else if (!urgent && wasUrgent) body = body.replace(duePattern, "");
+    body = body.replace(/⭐\uFE0F?\s*/gu, "").trim();
+    return match[1] + (important ? "⭐ " : "") + body + (raw.endsWith("\r") ? "\r" : "");
+  }
+  async function moveTask(t, q) {
+    if (moving) return;
+    moving = true;
+    try {
+      let before, after;
+      await app.vault.process(bfile, content => {
+        const lines = content.split("\n");
+        const raw = lines[t.line];
+        const text = raw?.replace(/\r$/, "").match(/^\s*[-*+] \[ \] (.*)$/)?.[1];
+        if (!taskInSection(lines, t.line) || text?.trim() !== t.text.trim()) {
+          throw new Error("任务已变化，请等首页刷新后再试。");
+        }
+        before = raw;
+        after = moveLine(raw, q);
+        lines[t.line] = after;
+        return lines.join("\n");
+      });
+      if (before === after) return;
+      app.workspace.trigger("dataview:refresh-views");
+      const message = document.createDocumentFragment();
+      message.createSpan({ text: "已移到 " + q + "。" + ((q === "Q1" || q === "Q3") ? "紧急截止日期已保留或设为 7 天后。" : "紧急截止日期已清除，较远日期保留。") + " " });
+      const undo = message.createEl("button", { text: "撤销" });
+      const notice = new Notice(message, 10000);
+      undo.addEventListener("click", async () => {
+        undo.disabled = true;
+        try {
+          await app.vault.process(bfile, content => {
+            const lines = content.split("\n");
+            if (!taskInSection(lines, t.line) || lines[t.line] !== after) throw new Error("任务已再次变化，无法撤销；请在 Task Board 修改。");
+            lines[t.line] = before;
+            return lines.join("\n");
+          });
+          notice.hide();
+          app.workspace.trigger("dataview:refresh-views");
+        } catch (error) { new Notice(error.message || "撤销失败。"); }
+      });
+    } catch (error) { new Notice(error.message || "移动失败，请重试。"); }
+    finally { moving = false; }
+  }
+  root.createEl("div", {
+    text: "拖动 ⋮⋮ 到目标象限，或点 ⋮⋮ 选择。紧急：保留紧急日期或设为 7 天后；不紧急：清除紧急日期。",
+    attr: { style: "color:var(--text-muted);font-size:0.85em;margin-bottom:8px;" }
+  });
+
   function renderTasks(hostEl, list, withDomainFilter) {
     const arr = asArray(list);
     const n = list.length != null ? list.length : arr.length;
     if (n === 0) { hostEl.createEl("div", { text: "（空）", attr: { style: "color:var(--text-faint);" } }); return; }
     const start = dv.container.childElementCount;
-    dv.taskList(list, false);
+    // Render each task once; nested tasks can belong to a different quadrant.
+    dv.taskList(arr.map(t => ({ ...t, parent: null, children: [] })), false);
     const nodes = Array.from(dv.container.children).slice(start);
     for (const node of nodes) hostEl.appendChild(node);
-    const items = hostEl.querySelectorAll("li");
+    const items = hostEl.querySelectorAll("li.dataview.task-list-item");
     items.forEach((li, i) => {
       const t = arr[i];
       if (!t) return;
@@ -265,6 +360,32 @@ btn.addEventListener("click", async () => {
       if (t.due) { const dd = dv.date(t.due); if (dd) meta.push(dd.toFormat("yyyy-MM-dd")); }
       if (d) meta.push(d);
       if (meta.length) li.createEl("span", { text: meta.join(" · "), attr: { style: "margin-left:8px;font-size:0.72em;color:var(--text-muted);" } });
+      if (d) {
+        const handle = li.createEl("button", { text: "⋮⋮", attr: {
+          "aria-label": "移动任务到象限", title: "拖动到象限，或点击选择象限",
+          style: "cursor:grab;border:none;background:transparent;color:var(--text-muted);padding:2px 6px;margin-left:4px;"
+        } });
+        handle.draggable = true;
+        handle.addEventListener("dragstart", e => {
+          e.stopPropagation();
+          if (moving || !e.dataTransfer) { e.preventDefault(); return; }
+          dragged = t;
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", "Task Board: " + t.line);
+          li.style.opacity = "0.45";
+        });
+        handle.addEventListener("dragend", () => { dragged = null; li.style.opacity = ""; clearDropHints(); });
+        handle.addEventListener("click", e => {
+          e.preventDefault(); e.stopPropagation();
+          const { Menu } = require("obsidian");
+          const menu = new Menu();
+          for (const [q, label] of [["Q1", "重要 · 紧急"], ["Q2", "重要 · 不紧急"], ["Q3", "不重要 · 紧急"], ["Q4", "不重要 · 不紧急"]]) {
+            menu.addItem(item => item.setTitle(q + " " + label).onClick(() => moveTask(t, q)));
+          }
+          const rect = handle.getBoundingClientRect();
+          menu.showAtPosition({ x: rect.left, y: rect.bottom });
+        });
+      }
       // Click a task (not its checkbox) → open the Task Board to edit it
       li.style.cursor = "pointer";
       li.addEventListener("click", (e) => {
@@ -290,14 +411,33 @@ btn.addEventListener("click", async () => {
   paintPills();
   const grid = root.createEl("div", { attr: { style: `display:grid;grid-template-columns:${isMobile ? "1fr" : "1fr 1fr"};gap:${isMobile ? "8px" : "10px"};` } });
   const quads = [
-    { list: q1, title: isMobile ? "Q1 重要·紧急" : "Q1 重要 · 紧急（立刻做）", border: "#c4553a" },
-    { list: q2, title: isMobile ? "Q2 重要·不紧急" : "Q2 重要 · 不紧急（安排做）", border: "var(--interactive-accent)" },
-    { list: q3, title: isMobile ? "Q3 不重要·紧急" : "Q3 不重要 · 紧急（压缩）", border: "var(--text-muted)" },
-    { list: q4, title: isMobile ? "Q4 不重要·不紧急" : "Q4 不重要 · 不紧急（减少）", border: "var(--text-faint)" }
+    { id: "Q1", list: q1, title: isMobile ? "Q1 重要·紧急" : "Q1 重要 · 紧急（立刻做）", border: "#c4553a" },
+    { id: "Q2", list: q2, title: isMobile ? "Q2 重要·不紧急" : "Q2 重要 · 不紧急（安排做）", border: "var(--interactive-accent)" },
+    { id: "Q3", list: q3, title: isMobile ? "Q3 不重要·紧急" : "Q3 不重要 · 紧急（压缩）", border: "var(--text-muted)" },
+    { id: "Q4", list: q4, title: isMobile ? "Q4 不重要·不紧急" : "Q4 不重要 · 不紧急（减少）", border: "var(--text-faint)" }
   ];
   for (const q of quads) {
     const n = q.list.length != null ? q.list.length : asArray(q.list).length;
     const cell = grid.createEl("div", { attr: { style: cellBase + `border-left:3px solid ${q.border};` } });
+    cell.setAttribute("data-quadrant", q.id);
+    dropCells.push(cell);
+    cell.addEventListener("dragover", e => {
+      if (!dragged || moving) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      clearDropHints();
+      cell.style.outline = "2px solid var(--interactive-accent)";
+      cell.style.background = "var(--background-primary)";
+    });
+    cell.addEventListener("dragleave", e => { if (!cell.contains(e.relatedTarget)) clearDropHints(); });
+    cell.addEventListener("drop", e => {
+      if (!dragged) return;
+      e.preventDefault(); e.stopPropagation();
+      const t = dragged;
+      dragged = null;
+      clearDropHints();
+      void moveTask(t, q.id);
+    });
     const head = cell.createEl("div", { attr: { style: "display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;" } });
     head.createEl("div", { text: q.title, attr: { style: "font-weight:600;color:var(--text-normal);" } });
     head.createEl("span", { text: String(n), attr: { style: badgeStyle } });

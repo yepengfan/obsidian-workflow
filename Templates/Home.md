@@ -1,12 +1,19 @@
 ---
 tags: template
 for: Home
-updated: 2026-09-29
+updated: 2026-11-08
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-11-08 - Move Home tasks between quadrants
+> - Drag a task's ⋮⋮ handle onto Q1-Q4, or click the handle to choose a quadrant with the native menu (also available on mobile).
+> - The destination controls ⭐ and urgency. Urgent destinations preserve an existing urgent due date or set it to today + 7 days. Nonurgent destinations remove urgent due dates and preserve dates beyond the rolling window. Domain tags, links, other dates, and task indentation are preserved.
+> - Writes use `vault.process` and validate the current task text and Tasks section before changing it. A 10-second notice offers undo, which also refuses to overwrite a changed task.
+> - Each task renders once, independently of children, so nested tasks can occupy different quadrants. Unclassified tasks must receive a domain on Task Board before moving.
+> - Implementation: [[Home]] Task Board block. Regression checks: `node --test scripts/test_home_task_drag.cjs`.
 
 > [!note] 2026-09-29 - Finished books remain reachable from Home
 > - **Why**: The reading card filters `status: reading`, so a finished book disappeared. The Books Index link was also hidden when no reading books remained.

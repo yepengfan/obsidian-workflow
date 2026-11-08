@@ -5,14 +5,14 @@ type: utility
 status: active
 enabled: true
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-11-08
 depends_on: []
 requires:
   cli: [claude]
   plugins: [dataview]
 commands: [task-board, task-add]
 templates: [Templates/Task Board.md]
-scripts: []
+scripts: [scripts/test_home_task_drag.cjs]
 hooks: []
 folders: [Tasks/]
 config_files:
@@ -57,7 +57,8 @@ Templates/Task Board.md      # git 内模板
 1. **打开看板** → Home 的 Work tab（默认）直接显示四象限；或顶栏 Task Board 打开 `Tasks/Board.md`
 2. **加一条任务** → Home 标题栏填标题，选 Work/Life/Other，可选 ⭐ 和 due，点 `+ Task`（或 `/task-add`）
 3. **改现有任务** → Home 点任务 → 打开 Task Board → 在下方「任务列表」区点条目后的 `✎` 改标题/领域/⭐/due 或删除，自动重新分桶（上方矩阵只做可视化）
-4. **分类重排** → `/task-board` — 补未分类、改 ⭐/📅
+4. **首页移动** → 拖动任务旁的 ⋮⋮ 到 Q1-Q4，或点 ⋮⋮ 选择象限。自动更新 ⭐；移入紧急象限时保留紧急日期，否则设为 7 天后；移入不紧急象限时清除紧急日期，保留较远日期。提示中可撤销。未分类任务先在 Task Board 选择领域。
+5. **分类重排** → `/task-board` — 补未分类、改 ⭐/📅
 
 **日常节奏**: `/task-add` 捕获 → `/task-board` 把要事放到 Q1/Q2
 
