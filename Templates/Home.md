@@ -8,6 +8,10 @@ updated: 2026-11-08
 
 ## Design Decisions
 
+> [!note] 2026-11-08 - Dedicated drag handle column
+> - Reserve 44px at the right of each classified task for a 36px drag handle column with a subtle left divider. The handle spans the task height and stays centered as long titles wrap.
+> - The entire right column supports dragging and the existing quadrant menu; task text and metadata stay in the content area.
+
 > [!note] 2026-11-08 - Move Home tasks between quadrants
 > - Drag a task's ⋮⋮ handle onto Q1-Q4, or click the handle to choose a quadrant with the native menu (also available on mobile).
 > - The destination controls ⭐ and urgency. Urgent destinations preserve an existing urgent due date or set it to today + 7 days. Nonurgent destinations remove urgent due dates and preserve dates beyond the rolling window. Domain tags, links, other dates, and task indentation are preserved.

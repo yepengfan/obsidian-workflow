@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const home = readFileSync(join(__dirname, '..', 'Home.md'), 'utf8');
 const logic = home.slice(home.indexOf('  let dragged = null;'), home.indexOf('  root.createEl("div", {\n    text: "拖动'));
 assert.ok(logic.includes('async function moveTask'));
-const handleCode = home.slice(home.indexOf('      if (d) {\n        const handle'), home.indexOf('      // Click a task'));
+const handleCode = home.slice(home.lastIndexOf('      if (d) {', home.indexOf('        const handle = li.createEl')), home.indexOf('      // Click a task'));
 const dropCode = home.slice(home.indexOf('    cell.setAttribute("data-quadrant"'), home.indexOf('    const head = cell.createEl', home.indexOf('    cell.setAttribute("data-quadrant"')));
 
 // A fixed calendar isolates tests from the wall clock and the host timezone.

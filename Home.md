@@ -361,9 +361,13 @@ btn.addEventListener("click", async () => {
       if (d) meta.push(d);
       if (meta.length) li.createEl("span", { text: meta.join(" · "), attr: { style: "margin-left:8px;font-size:0.72em;color:var(--text-muted);" } });
       if (d) {
+        // Reserve a right-hand column across every wrapped line of the task.
+        li.style.position = "relative";
+        li.style.paddingRight = "44px";
+        li.style.minHeight = "36px";
         const handle = li.createEl("button", { text: "⋮⋮", attr: {
           "aria-label": "移动任务到象限", title: "拖动到象限，或点击选择象限",
-          style: "cursor:grab;border:none;background:transparent;color:var(--text-muted);padding:2px 6px;margin-left:4px;"
+          style: "position:absolute;top:0;right:0;bottom:0;width:36px;height:auto;min-height:36px;display:flex;align-items:center;justify-content:center;cursor:grab;border:none;border-left:1px solid var(--background-modifier-border);border-radius:0 6px 6px 0;background:transparent;color:var(--text-muted);padding:0;margin:0;box-shadow:none;"
         } });
         handle.draggable = true;
         handle.addEventListener("dragstart", e => {
