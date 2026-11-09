@@ -2,6 +2,7 @@
 sorting-spec: |
   target-folder: .
   Inbox
+  Journal
   Essays
   Zettelkasten
   Profile
@@ -25,6 +26,7 @@ sorting-spec: |
   README
   sortspec
   GETTING_STARTED
+  AGENTS
   Home
 ---
 
