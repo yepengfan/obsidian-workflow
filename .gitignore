@@ -50,6 +50,9 @@
 # Templates/Task Board.md stays in git.
 /Tasks/
 /Inbox/
+# Journal data is private; shared Guide and workflow tooling stay tracked.
+/Journal/Daily/
+/Journal/Review.md
 /Zettelkasten/*
 !/Zettelkasten/Zettelkasten Index.md
 /Profile/

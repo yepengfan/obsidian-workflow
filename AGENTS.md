@@ -21,6 +21,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
   - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/AGENTS.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/AGENTS.md`). Managed via `/algo-solve`, `/sysd-solve`.
   - `Books/` — Book reading workflow (see `Learning/Books/AGENTS.md`).
   - `Resources/` — Loose learning materials and skill builder resources (e.g., system-design-sketchnote).
+- **Journal/** - Daily work/life reflection. Shared workflow: `Journal/Guide.md`; private data: `Daily/YYYY-MM-DD.md` and rolling `Review.md`. Home Journal overview and its single add button initialize today and enter Chatting with AI. `/journal-review` follows the same fixed daily flow. View/runtime: `scripts/journal/view.js`.
 - **Note/** — Persistent quick-reference notes (credentials, demo setups, etc.). Unlike Inbox (which is processed weekly), these stay as-is for easy access.
 - **Matter/** — Article notes from Matter app. **DO NOT MODIFY / DO NOT MOVE** — synced by Matter plugin, folder path is fixed.
 - **Instapaper Notes/** — Saved article highlights from Instapaper. **DO NOT MODIFY / DO NOT MOVE** — synced by Instapaper plugin, folder path is fixed.

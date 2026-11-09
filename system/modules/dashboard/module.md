@@ -5,7 +5,7 @@ type: utility
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-09-14
+updated: 2026-11-09
 depends_on: []
 requires:
   plugins: [dataview, homepage]
@@ -62,3 +62,6 @@ Work/Monthly View.md             # 月视图
 
 ---
 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]
+
+## Journal
+首页 Work/Profile 之后展示 Journal 总览和唯一的新增按钮。运行时实现：`scripts/journal/view.js`；固定日常流程和配置见 [[system/modules/journal/module|Journal]]。
