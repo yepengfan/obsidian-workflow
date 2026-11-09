@@ -26,6 +26,7 @@ sorting-spec: |
   README
   sortspec
   GETTING_STARTED
+  AGENTS
   Home
 ---
 
