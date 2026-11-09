@@ -101,11 +101,13 @@ If their implementation later increments a counter without advancing the pointer
 
 ## Save learning evidence after one confirmation
 
+When a learner-provided solution passes review, include the saving question in the same response after the review and any applicable clarity assessment. This applies to a correct first submission and to corrected or refined resubmissions; do not end with only a correctness verdict. If an earlier saving question is still unanswered and the learner submits another correct version, briefly repeat the pending question. A code resubmission is not saving consent. Skip the question only when the learner has already authorized saving, declined it for this problem, or the session has already been saved.
+
 After review passes, classify before asking whether to save:
 
 1. Summarize the actual solution pattern and recognition cues, grounded in the learner's proposed approach and code.
 2. Scan existing pattern titles and relevant frontmatter, `Key Insight`, and `Composed Of` sections to decide whether to update a card or create one. Follow the module's Pattern Card Rules; do not force a new card merely because the problem is new.
-3. Name the proposed card and briefly explain the classification. Ask once whether to save that classification to the card and daily log, explicitly stating when a new card will be created.
+3. Name the proposed card and briefly explain the classification. Ask whether to save that classification to the card and daily log, explicitly stating when a new card will be created. Reuse an already proposed classification when repeating an unanswered question after a resubmission.
 
 Confirmation (including "go" or its equivalent) authorizes classification and saving together. If the learner already explicitly requested saving, state the classification and proceed without asking again. Resolve a requested classification change before writing. A refusal ends the session without vault writes.
 
