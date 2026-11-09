@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const { enabled, localDay, validDay, dayPath, parseDaily, snapshot, initialize, launch, renderJournal } = require('./view.js');
+const { enabled, localDay, validDay, dayPath, entryPath, parseDaily, snapshot, initialize, launch, renderJournal } = require('./view.js');
 const dailyTemplate = fs.readFileSync('Templates/Journal Daily.md', 'utf8');
 const reviewTemplate = fs.readFileSync('Templates/Journal Review.md', 'utf8');
 
@@ -86,28 +86,34 @@ test('overview counts recorded days across total, month and seven-day windows, i
   assert.equal(result.recent.at(-1).recorded,true); assert.equal(result.recent.at(-2).recorded,false);
   assert.equal(result.totalCount,1); assert.equal(result.weekCount,1);
 });
-test('initialization is concurrent-safe and preserves existing user content', async () => {
-  const f = fixture();
-  await Promise.all([initialize(f.app,'2026-11-09'), initialize(f.app,'2026-11-09')]);
-  const path = dayPath('2026-11-09');
-  assert.match(f.files.get(path).text, /date: "2026-11-09"/);
-  assert.match(f.files.get(path).text, /# Monday/);
-  f.put(path, '用户已经手写的内容');
-  await initialize(f.app,'2026-11-09');
-  assert.equal(f.files.get(path).text,'用户已经手写的内容');
+test('new entries have separate timestamp paths and preserve legacy notes and Review', async () => {
+  const f = fixture(), now = new Date(2026,10,9,18,27);
+  const legacy = dayPath('2026-11-09');
+  f.put(legacy, '用户已经手写的内容');
+  f.put('Journal/Review.md', '已有回顾');
+  const paths = await Promise.all([initialize(f.app,now), initialize(f.app,now)]);
+  assert.equal(new Set(paths).size, 2);
+  assert.equal(paths[0],entryPath(now));
+  for (const path of paths) {
+    assert.match(path,/2026-11-09-\d{13}\.md$/);
+    assert.match(f.files.get(path).text, /date: "2026-11-09"/);
+    assert.match(f.files.get(path).text, /# Monday/);
+  }
+  assert.equal(f.files.get(legacy).text,'用户已经手写的内容');
+  assert.equal(f.files.get('Journal/Review.md').text,'已有回顾');
 });
-test('button flow initializes before AI, sends once and resumes same-day conversation', async () => {
-  const f = fixture();
-  const open = f.plugin.openChat;
-  f.plugin.openChat = async () => { assert.ok(f.files.has(dayPath('2026-11-09'))); return open(); };
-  const options = { now: new Date(2026,10,9,20),storage:f.storage };
-  const first = await launch(f.app,options);
+test('each new launch starts a separate entry and chat on the same day', async () => {
+  const f = fixture(), now = new Date(2026,10,9,20);
+  const first = await launch(f.app,{now});
   assert.equal(first.resumed,false);
+  assert.ok(f.files.has(first.path));
   assert.match(f.view.prompt,/Journal\/Guide.md/);
-  assert.match(f.view.prompt,/目标 Journal\/Daily\/2026-11-09.md/);
-  assert.equal((await launch(f.app,options)).resumed,true);
-  assert.deepEqual(f.count(),{sends:1,creates:1});
-  assert.equal((await launch(f.app,{...options,now:new Date(2026,10,10)})).resumed,false);
+  assert.ok(f.view.prompt.includes(`目标 ${first.path}`));
+  const firstPrompt = f.view.prompt;
+  const second = await launch(f.app,{now});
+  assert.notEqual(second.path,first.path);
+  assert.notEqual(firstPrompt,f.view.prompt);
+  assert.ok(f.view.prompt.includes(`目标 ${second.path}`));
   assert.deepEqual(f.count(),{sends:2,creates:2});
 });
 test('concurrent launches do not start duplicate chats', async () => {
@@ -127,14 +133,6 @@ test('disabled module has no writes; missing auth or APIs retains templates and 
   const noApi = fixture(); delete noApi.plugin.openChat;
   const missing = await launch(noApi.app,{storage:noApi.storage});
   assert.match(missing.error,/入口已变化/); assert.ok(missing.prompt);
-});
-test('deleted conversation starts fresh and unavailable storage still permits continuation', async () => {
-  const f = fixture(); const storage = {getItem(){throw Error('unavailable');},setItem(){throw Error('unavailable');}};
-  const opts = {now:new Date(2026,10,9),storage};
-  await launch(f.app,opts); assert.equal((await launch(f.app,opts)).resumed,true);
-  f.plugin.conversations=[];
-  assert.equal((await launch(f.app,opts)).resumed,false);
-  assert.equal(f.count().sends,2);
 });
 test('view refreshes after data writes and unregisters listeners on unload', async t => {
   const f = fixture(); let root;
@@ -163,14 +161,6 @@ test('Dataview custom-view entry runs in its async dv/input environment', async 
   assert.ok(root.all().some(el=>el.attributes['aria-current']==='date'));
 });
 
-test('cleared same-day chat starts the journal prompt again', async () => {
-  const f = fixture(); const opts = { now: new Date(2026,10,9),storage:f.storage };
-  await launch(f.app,opts);
-  f.plugin.activeConversation.chatHistory=[];
-  assert.equal((await launch(f.app,opts)).resumed,false);
-  assert.equal(f.count().sends,2);
-});
-
 function lifecycle() {
   const listeners = new Map();
   return {
@@ -196,7 +186,7 @@ test('compact view exposes date entry, check-ins and folded followups without re
   f.put('Journal/Review.md','## 当前理解\nPRIVATE REVIEW CONTENT');
   const elements = await mount(t,f,{now:()=>new Date(2026,10,9)});
   const buttons = elements().filter(el=>el.tag==='button');
-  assert.equal(buttons.length,7);
+  assert.equal(buttons.filter(el=>el.cls==='journal-day').length,7);
   assert.deepEqual(buttons.find(el=>el.attributes['aria-current']==='date').children.map(el=>el.textContent),['今天','11/09']);
   assert.equal(buttons.filter(el=>el.disabled).length,5);
   assert.ok(elements().some(el=>el.textContent==='2026-11-09 周一'));
@@ -208,7 +198,7 @@ test('compact view exposes date entry, check-ins and folded followups without re
   assert.equal(f.count().sends,0);
   await buttons.find(el=>el.attributes['aria-current']==='date').listeners.click();
   assert.equal(f.count().sends,1);
-  assert.match(f.view.prompt,/目标 Journal\/Daily\/2026-11-09.md/);
+  assert.match(f.view.prompt,/目标 Journal\/Daily\/2026-11-09-\d{13}\.md/);
 });
 test('foreground return refreshes local year/day and listener cleanup prevents further updates', async t => {
   const f = fixture(), page = lifecycle(), win = lifecycle();
@@ -232,7 +222,7 @@ test('stale today button resolves the current date at click time after midnight'
   const today = elements().find(el=>el.attributes['aria-current']==='date');
   clock = new Date(2027,0,1,0,1);
   await today.listeners.click();
-  assert.match(f.view.prompt,/目标 Journal\/Daily\/2027-01-01.md/);
+  assert.match(f.view.prompt,/目标 Journal\/Daily\/2027-01-01-\d{13}\.md/);
   assert.equal(f.files.has('Journal/Daily/2026-12-31.md'),false);
   assert.ok(elements().some(el=>el.cls==='journal-today-date' && el.textContent==='01/01'));
 });
@@ -243,4 +233,33 @@ test('midnight timer rolls visible dates without a file or focus event', async t
   clock = new Date(2027,0,1,0,0,1);
   t.mock.timers.tick(2000); await settle();
   assert.ok(elements().some(el=>el.cls==='journal-today-date' && el.textContent==='01/01'));
+});
+
+test('multiple entries and legacy notes count once per day, preserving all pending sources', () => {
+  const notes = ['2026-11-09.md','2026-11-09-1794196800000.md','2026-11-09-1794196800001.md'].map(name => ({path:`Journal/Daily/${name}`,text:'## 原始记录\n记录\n## 想再回看的事\n- [ ] 等结果'}));
+  notes.push({path:'Journal/Daily/2026-11-08-1794110400000.md',text:'## 原始记录\n昨天'});
+  const result = snapshot(notes, new Date(2026,10,9));
+  assert.equal(result.daily.length,4);
+  assert.equal(result.totalCount,2); assert.equal(result.monthCount,2); assert.equal(result.weekCount,2);
+  assert.equal(new Set(result.pending.map(item=>item.path)).size,3);
+  assert.equal(parseDaily('Journal/Daily/2026-02-30-1794196800000.md',''),null);
+});
+test('past date offers every saved entry and today can browse records while creating new ones', async t => {
+  const f = fixture();
+  const paths = ['Journal/Daily/2026-11-08-1794110400000.md','Journal/Daily/2026-11-08-1794110400001.md','Journal/Daily/2026-11-09-1794196800000.md'];
+  paths.forEach(path=>f.put(path,'## 原始记录\nPRIVATE CONTENT'));
+  const elements = await mount(t,f,{now:()=>new Date(2026,10,9)});
+  await elements().find(el=>el.textContent==='11/08').listeners.click();
+  for (const path of paths.slice(0,2)) {
+    const a = elements().find(el=>el.tag==='a' && el.textContent===path.slice('Journal/Daily/'.length,-3));
+    assert.ok(a);
+    await a.listeners.click({preventDefault(){}});
+    assert.equal(f.app.opened,path);
+  }
+  assert.equal(f.count().sends,0);
+  // Refresh after creating an entry still exposes today's saved records.
+  await elements().find(el=>el.attributes['aria-current']==='date').listeners.click();
+  await elements().find(el=>el.textContent==='查看今天的 1 篇记录').listeners.click();
+  assert.ok(elements().some(el=>el.tag==='a' && el.textContent===paths[2].slice('Journal/Daily/'.length,-3)));
+  assert.equal(elements().some(el=>el.textContent.includes('PRIVATE')),false);
 });
