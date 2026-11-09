@@ -2,6 +2,7 @@
 sorting-spec: |
   target-folder: .
   Inbox
+  Journal
   Essays
   Zettelkasten
   Profile
