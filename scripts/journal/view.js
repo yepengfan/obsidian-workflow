@@ -22,6 +22,9 @@ function dayPath(day) {
   if (!validDay(day)) throw new Error("Journal 日期无效");
   return `${DAILY_ROOT}${day}.md`;
 }
+function entryPath(now = new Date(), timestamp = now.getTime()) {
+  return `${DAILY_ROOT}${localDay(now)}-${timestamp}.md`;
+}
 function sections(text) {
   const result = {};
   let current = "", fence = null;
@@ -49,8 +52,9 @@ function displayText(text) {
   return text.replace(/\[\[([^|\]]+)(?:\|([^\]]+))?\]\]/g, (_, target, alias) => alias ?? target.split("/").pop()).replace(/[*`]/g, "");
 }
 function parseDaily(path, text) {
-  const day = path.startsWith(DAILY_ROOT) ? path.slice(DAILY_ROOT.length).replace(/\.md$/, "") : "";
-  if (!validDay(day) || path !== dayPath(day)) return null;
+  const match = /^Journal\/Daily\/(\d{4}-\d{2}-\d{2})(?:-\d{13})?\.md$/.exec(path);
+  if (!match || !validDay(match[1])) return null;
+  const day = match[1];
   const parts = sections(text);
   const pending = (parts["想再回看的事"] ?? []).flatMap(line => {
     const match = /^\s*[-*+] \[ \] (.+)/.exec(line);
@@ -60,14 +64,15 @@ function parseDaily(path, text) {
 }
 function snapshot(notes, now = new Date()) {
   const today = localDay(now);
-  const daily = notes.map(note => parseDaily(note.path, note.text)).filter(Boolean).sort((a, b) => b.day.localeCompare(a.day));
+  const daily = notes.map(note => parseDaily(note.path, note.text)).filter(Boolean).sort((a, b) => b.path.localeCompare(a.path));
   const recent = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6 + i, 12);
     const day = localDay(date);
     return { day, recorded: daily.some(note => note.day === day && note.recorded) };
   });
-  return { daily, recent, totalCount: daily.filter(note => note.recorded).length,
-    monthCount: daily.filter(note => note.recorded && note.day.startsWith(today.slice(0, 7))).length,
+  const recordedDays = new Set(daily.filter(note => note.recorded).map(note => note.day));
+  return { daily, recent, totalCount: recordedDays.size,
+    monthCount: [...recordedDays].filter(day => day.startsWith(today.slice(0, 7))).length,
     weekCount: recent.filter(day => day.recorded).length, pending: daily.flatMap(note => note.pending) };
 }
 async function read(app, path) {
@@ -93,26 +98,31 @@ async function createIfMissing(app, path, content) {
     return raced;
   }
 }
-async function initialize(app, day) {
-  const path = dayPath(day);
+async function initialize(app, now = new Date()) {
+  const day = localDay(now);
   const dailyTemplate = await read(app, "Templates/Journal Daily.md");
   const reviewTemplate = await read(app, "Templates/Journal Review.md");
-  const date = new Date(`${day}T12:00:00`);
-  const name = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][date.getDay()];
-  await createIfMissing(app, path, dailyTemplate.replaceAll("{{date}}", day).replaceAll("{{day}}", name));
+  const name = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
+  const content = dailyTemplate.replaceAll("{{date}}", day).replaceAll("{{day}}", name);
   await createIfMissing(app, REVIEW_PATH, reviewTemplate);
-  return path;
+  await ensureFolder(app, DAILY_ROOT.slice(0, -1));
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const path = entryPath(now, now.getTime() + attempt);
+    try { await app.vault.create(path, content); return path; }
+    catch (error) { if (!app.vault.getAbstractFileByPath(path)) throw error; }
+  }
+  throw new Error("无法生成独立的 Journal 文件，请重试");
 }
 function promptFor(day, path, session) {
-  return `开始每天固定的 Journal 流程。日期 ${day}，目标 ${path}，session 标识 ${session}。当天模板已准备，存在内容则继续，禁止覆盖初始化。先读取 ${MODULE_PATH}，仅 enabled: true 时继续；再读取 Journal/Guide.md 并遵循其中七步：回看之前、记录今天、AAR 反思、收尾保存并核对。没有 weekly 模式。只读取 Guide 允许的资料，只修改涉及的 Journal 数据笔记，不修改 Home、Guide、模板或插件设置。用户说“今天到这”等结束信号后，保存原话与 AAR，更新滚动 Review 和待回看原项；全部核对成功后更新 last_reflected。现在读取资料并简短开场。`;
+  return `开始每天固定的 Journal 流程。日期 ${day}，目标 ${path}，session 标识 ${session}。本篇模板已准备。本篇使用这个目标文件，不合并到同日其他记录；无关话题按 Guide 另建文件；继续本次对话及保存重试沿用此路径和 session，禁止覆盖初始化。先读取 ${MODULE_PATH}，仅 enabled: true 时继续；再读取 Journal/Guide.md 并遵循其中七步：回看之前、记录今天、AAR 反思、收尾保存并核对。没有 weekly 模式。只读取 Guide 允许的资料，只修改涉及的 Journal 数据笔记，不修改 Home、Guide、模板或插件设置。用户说“今天到这”等结束信号后，保存原话与 AAR，更新滚动 Review 和待回看原项；全部核对成功后更新 last_reflected。现在读取资料并简短开场。`;
 }
 const stateSymbol = Symbol.for("workspace.journal.launches");
 const launchStates = globalThis[stateSymbol] ??= new WeakMap();
 function stateFor(app) {
-  if (!launchStates.has(app)) launchStates.set(app, { launching: false, chats: new Map() });
+  if (!launchStates.has(app)) launchStates.set(app, { launching: false });
   return launchStates.get(app);
 }
-async function launch(app, { now = new Date(), storage = globalThis.localStorage } = {}) {
+async function launch(app, { now = new Date() } = {}) {
   const state = stateFor(app);
   if (state.launching) return { busy: true };
   state.launching = true;
@@ -120,31 +130,19 @@ async function launch(app, { now = new Date(), storage = globalThis.localStorage
   try {
     if (!enabled(await read(app, MODULE_PATH))) throw new Error("Journal 模块已停用，请通过 /module-toggle journal 启用");
     const day = localDay(now);
-    path = await initialize(app, day);
+    path = await initialize(app, now);
     const plugin = app.plugins.getPlugin("chatting-with-ai");
-    const key = `workspace-journal:${app.vault.getName()}:${day}`;
-    let remembered = state.chats.get(day);
-    try { remembered ??= storage?.getItem(key); } catch { /* Session memory still works without storage. */ }
-    const session = `${day}-${globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
+    const session = path.slice(DAILY_ROOT.length, -3);
     prompt = promptFor(day, path, session);
     if (typeof plugin?.openChat !== "function") throw new Error("Chatting with AI 未启用或入口已变化，请打开插件并复制下方指令");
     const view = await plugin.openChat();
-    if (!view) throw new Error("请先在 Chatting with AI 中完成登录，再重试；今天的模板已保留");
-    if (remembered && plugin.listConversations?.().some(chat => chat.id === remembered) && typeof view.openConversation === "function") {
-      await view.openConversation(remembered);
-      if (plugin.activeConversationId === remembered && (plugin.activeConversation?.chatHistory?.length ?? 0) > 0) {
-        view.focus?.();
-        return { path, resumed: true };
-      }
-    }
+    if (!view) throw new Error("请先在 Chatting with AI 中完成登录，再重试；本篇模板已保留");
     if (typeof view.newChat !== "function" || typeof view.sendMessage !== "function") throw new Error("插件聊天接口已变化，请复制下方指令到聊天");
     const before = plugin.activeConversationId;
     const hadHistory = (plugin.activeConversation?.chatHistory?.length ?? 0) > 0;
     view.newChat();
     if ((hadHistory || view.running) && plugin.activeConversationId === before) throw new Error("插件正在处理其他操作，暂不能开启 Journal；稍后重试");
     view.sendMessage(prompt);
-    state.chats.set(day, plugin.activeConversationId);
-    try { storage?.setItem(key, plugin.activeConversationId); } catch { /* Local storage is optional. */ }
     return { path, resumed: false };
   } catch (error) {
     return { error: error.message ?? String(error), path, prompt };
@@ -175,7 +173,7 @@ async function renderJournal(dv, app, { now = () => new Date(), page = globalThi
     const result = await launch(app, { now: now() });
     if (disposed) return;
     button.disabled = false;
-    status.textContent = result.error ?? (result.busy ? "正在打开 Journal…" : result.resumed ? "已继续今天的 AI 对话。" : "当天模板已准备，已请求 AI 开始记录。");
+    status.textContent = result.error ?? (result.busy ? "正在打开 Journal…" : "本篇模板已准备，已请求 AI 开始新记录。");
     if (result.error && result.path) link(fallback, result.path, "打开今天的记录");
     if (result.error && result.prompt) {
       fallback.createEl("p", { text: "可复制这段启动指令到 Chatting with AI：" });
@@ -201,10 +199,18 @@ async function renderJournal(dv, app, { now = () => new Date(), page = globalThi
       if (disposed || current !== version) return;
       body.empty();
       const days = body.createEl("div", { cls: "journal-days" });
+      const entries = body.createEl("div", { cls: "journal-entries" });
+      function showEntries(day) {
+        entries.empty();
+        const notes = data.daily.filter(note => note.day === day && note.recorded);
+        entries.createEl("p", { text: `${day} · ${notes.length} 篇记录` });
+        const list = entries.createEl("ul");
+        notes.forEach(note => link(list.createEl("li"), note.path, note.path.slice(DAILY_ROOT.length, -3)));
+      }
       data.recent.forEach(day => {
         const isToday = day.day === today;
         const label = day.day.slice(5).replace("-", "/");
-        const action = isToday ? "今天，开始或继续记录" : day.recorded ? "已记录，打开原笔记" : "未记录";
+        const action = isToday ? "今天，新建一篇记录" : day.recorded ? "已记录，打开原笔记" : "未记录";
         const attr = { "data-recorded": String(day.recorded), "aria-label": `${day.day} ${action}`, title: `${day.day} ${action}` };
         if (isToday) attr["aria-current"] = "date";
         const button = days.createEl("button", { text: isToday ? "" : label, cls: "journal-day", attr });
@@ -218,12 +224,19 @@ async function renderJournal(dv, app, { now = () => new Date(), page = globalThi
           if (isToday) { await start(button); return; }
           try {
             if (!enabled(await read(app, MODULE_PATH))) throw new Error("Journal 模块已停用");
-            const path = dayPath(day.day);
-            if (!app.vault.getAbstractFileByPath(path)) throw new Error("记录尚未同步或已被移除");
+            const notes = data.daily.filter(note => note.day === day.day && note.recorded);
+            if (notes.length > 1) { showEntries(day.day); return; }
+            const path = notes[0]?.path;
+            if (!path || !app.vault.getAbstractFileByPath(path)) throw new Error("记录尚未同步或已被移除");
             await app.workspace.openLinkText(path, "", false);
           } catch (error) { status.textContent = error.message; }
         });
       });
+      const todayNotes = data.daily.filter(note => note.day === today && note.recorded);
+      if (todayNotes.length) {
+        const browse = entries.createEl("button", { text: `查看今天的 ${todayNotes.length} 篇记录` });
+        browse.addEventListener("click", () => showEntries(today));
+      }
       const pending = body.createEl("details");
       pending.open = followupsOpen;
       pending.addEventListener("toggle", () => { followupsOpen = pending.open; });
@@ -274,7 +287,7 @@ async function renderJournal(dv, app, { now = () => new Date(), page = globalThi
 }
 
 if (typeof dv === "undefined") {
-  module.exports = { scalar, enabled, localDay, validDay, dayPath, sections, meaningful, parseDaily, snapshot, initialize, promptFor, launch, renderJournal };
+  module.exports = { scalar, enabled, localDay, validDay, dayPath, entryPath, sections, meaningful, parseDaily, snapshot, initialize, promptFor, launch, renderJournal };
 } else {
   return renderJournal(dv, input.app);
 }

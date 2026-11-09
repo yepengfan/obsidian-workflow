@@ -8,6 +8,10 @@ updated: 2026-11-09
 
 ## Design Decisions
 
+> [!note] 2026-11-09 - Separate Journal entries
+> - Each click on today starts a new conversation and a separate `YYYY-MM-DD-timestamp.md` note, using a Unix millisecond timestamp. Continue an entry through its existing conversation.
+> - Recorded dates with multiple notes offer a file chooser; today also exposes its saved notes. Statistics count distinct recorded days and followups retain each source path. Legacy date-only notes remain readable.
+
 > [!note] 2026-11-09 - Journal above Task Board
 > - Render the standalone Journal view before the Work/Profile section so it appears above the task matrix on Home. Keep the divider between Journal and Work/Profile.
 
