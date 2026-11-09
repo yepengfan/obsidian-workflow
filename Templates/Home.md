@@ -10,6 +10,7 @@ updated: 2026-11-09
 
 > [!note] 2026-11-09 - Compact Journal date buttons
 > - Replace the add button and statistics/detail panels with seven local-date buttons. Today's highlighted date initializes/reuses today's journal and enters AI; recorded past dates open their notes, while empty past dates are disabled.
+> - Today uses an independent label, a larger bold date, a 2px accent border and a static tinted outer ring. All date buttons have the same minimum height. Today's highlight is independent of the saved-content check-in dot.
 > - Hide record titles, note/review summaries and history links. Keep pending followups in a closed disclosure, plus three plain counts: total, current month and last seven days. Empty templates do not count.
 > - Refresh on file changes, local midnight, foreground visibility and window focus. Resolve today's date again at click time, so sleeping through midnight cannot initialize yesterday's file. Existing chat targets retain their original date.
 > - Keep `Journal/Guide.md`, module documentation and `scripts/journal/view.test.cjs` aligned with this presentation.

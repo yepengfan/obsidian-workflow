@@ -197,7 +197,7 @@ test('compact view exposes date entry, check-ins and folded followups without re
   const elements = await mount(t,f,{now:()=>new Date(2026,10,9)});
   const buttons = elements().filter(el=>el.tag==='button');
   assert.equal(buttons.length,7);
-  assert.equal(buttons.find(el=>el.attributes['aria-current']==='date').textContent,'今天 · 11/09');
+  assert.deepEqual(buttons.find(el=>el.attributes['aria-current']==='date').children.map(el=>el.textContent),['今天','11/09']);
   assert.equal(buttons.filter(el=>el.disabled).length,5);
   assert.ok(elements().some(el=>el.textContent==='2026-11-09 周一'));
   assert.ok(elements().some(el=>el.tag==='details' && !el.open));
@@ -214,15 +214,15 @@ test('foreground return refreshes local year/day and listener cleanup prevents f
   const f = fixture(), page = lifecycle(), win = lifecycle();
   let clock = new Date(2026,11,31,23,59);
   const elements = await mount(t,f,{now:()=>clock,page,window:win});
-  assert.ok(elements().some(el=>el.textContent==='今天 · 12/31'));
+  assert.ok(elements().some(el=>el.cls==='journal-today-date' && el.textContent==='12/31'));
   clock = new Date(2027,0,1,0,1);
   page.hidden = true; page.fire('visibilitychange'); await settle();
-  assert.ok(elements().some(el=>el.textContent==='今天 · 12/31'));
+  assert.ok(elements().some(el=>el.cls==='journal-today-date' && el.textContent==='12/31'));
   page.hidden = false; page.fire('visibilitychange'); await settle();
-  assert.ok(elements().some(el=>el.textContent==='今天 · 01/01'));
+  assert.ok(elements().some(el=>el.cls==='journal-today-date' && el.textContent==='01/01'));
   assert.ok(elements().some(el=>el.textContent==='2027-01-01 周五'));
   clock = new Date(2027,0,2); win.fire('focus'); await settle();
-  assert.ok(elements().some(el=>el.textContent==='今天 · 01/02'));
+  assert.ok(elements().some(el=>el.cls==='journal-today-date' && el.textContent==='01/02'));
   f.callbacks.forEach(fn=>fn());
   assert.equal(page.size(),0); assert.equal(win.size(),0);
 });
@@ -234,7 +234,7 @@ test('stale today button resolves the current date at click time after midnight'
   await today.listeners.click();
   assert.match(f.view.prompt,/目标 Journal\/Daily\/2027-01-01.md/);
   assert.equal(f.files.has('Journal/Daily/2026-12-31.md'),false);
-  assert.ok(elements().some(el=>el.textContent==='今天 · 01/01'));
+  assert.ok(elements().some(el=>el.cls==='journal-today-date' && el.textContent==='01/01'));
 });
 test('midnight timer rolls visible dates without a file or focus event', async t => {
   t.mock.timers.enable({apis:['setTimeout']});
@@ -242,5 +242,5 @@ test('midnight timer rolls visible dates without a file or focus event', async t
   const elements = await mount(t,f,{now:()=>clock});
   clock = new Date(2027,0,1,0,0,1);
   t.mock.timers.tick(2000); await settle();
-  assert.ok(elements().some(el=>el.textContent==='今天 · 01/01'));
+  assert.ok(elements().some(el=>el.cls==='journal-today-date' && el.textContent==='01/01'));
 });
