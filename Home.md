@@ -7,6 +7,12 @@ banner_y: 0
 ---
 
 ```dataviewjs
+await dv.view("scripts/journal", { app });
+```
+
+---
+
+```dataviewjs
 const isMobile = app.isMobile;
 
 // Tab factory: creates pill/segment tab group, returns { panels, topBar }
@@ -665,12 +671,6 @@ if (bcPage) {
   card.style.animation = "bc-float 4s ease-in-out infinite";
 }
 
-```
-
----
-
-```dataviewjs
-await dv.view("scripts/journal", { app });
 ```
 
 ---
