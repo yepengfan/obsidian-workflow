@@ -64,4 +64,4 @@ Work/Monthly View.md             # 月视图
 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]
 
 ## Journal
-首页 Work/Profile 之后展示 Journal 总览和唯一的新增按钮。运行时实现：`scripts/journal/view.js`；固定日常流程和配置见 [[system/modules/journal/module|Journal]]。
+首页 Work/Profile 之后展示精简的 Journal 打卡视图。今天的日期按钮即新增/继续入口，近 7 天日期展示打卡状态；待回看默认折叠，底部只展示记录天数。运行时实现：`scripts/journal/view.js`；固定日常流程和配置见 [[system/modules/journal/module|Journal]]。

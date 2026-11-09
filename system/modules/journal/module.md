@@ -24,16 +24,17 @@ tags: [system/module]
 每天使用相同的 AAR 流程回看、记录、反思并保存。工作和生活均可，无独立 weekly 模式。完整指引的唯一正文是 [[Journal/Guide]]。
 
 ## 架构
-- 首页 `dv.view("scripts/journal", { app })` 显示总览和单个新增按钮。
+- 首页 `dv.view("scripts/journal", { app })` 显示近 7 天日期按钮、折叠待回看，以及累计/本月/近 7 天记录天数。首页不展开记录或回顾内容。今天按钮采用独立标签、加粗日期和静态淡色外圈高亮；打卡圆点仍仅代表已保存内容。
 - `Templates/Journal Daily.md` 初始化 `Journal/Daily/YYYY-MM-DD.md`；`Templates/Journal Review.md` 初始化 `Journal/Review.md`。已有文件永不覆盖初始化。
 - AI 根据 Guide 写 daily、滚动回顾及原事件的待回看 checklist。Home 监听数据文件变动，自动重算视图；AI 不改首页代码。
 - `Journal/Daily/` 和 `Journal/Review.md` 由现有 vault 同步服务同步，gitignore 保护；不随 PR 发布私人记录。
 
 ## Quick Start
 1. 在手机或电脑启用并登录 Chatting with AI（ChatGPT account 或已有 API 配置均可）。
-2. 首页 Journal 总览点击 `+ 新增 Journal`，准备当天模板后直接进入 AI；同设备同日优先继续已有会话。
+2. 首页 Journal 点击今天的日期按钮（如 `今天 · 11/09`），准备当天模板后直接进入 AI；同设备同日优先继续已有会话。已记录的过去日期打开原笔记，空白过去日期不提供手动打卡。
 3. 跟着固定流程聊天，说“今天到这”后 AI 保存并更新回顾/待回看事项，核对后报告结果。
 4. 电脑也可 `/journal-review`，遵循同一 Guide。笔记可直接手写，空模板不计入记录天数。
+5. 日期以设备本地时区为准，午夜、回前台及窗口聚焦时刷新；点击今天按钮时再次读取当前日期，避免页面休眠跨午夜后写错文件。
 
 ## 配置位置
 | 内容 | 位置 |
