@@ -8,6 +8,12 @@ updated: 2026-11-09
 
 ## Design Decisions
 
+> [!note] 2026-11-09 - Compact Journal date buttons
+> - Replace the add button and statistics/detail panels with seven local-date buttons. Today's highlighted date initializes/reuses today's journal and enters AI; recorded past dates open their notes, while empty past dates are disabled.
+> - Hide record titles, note/review summaries and history links. Keep pending followups in a closed disclosure, plus three plain counts: total, current month and last seven days. Empty templates do not count.
+> - Refresh on file changes, local midnight, foreground visibility and window focus. Resolve today's date again at click time, so sleeping through midnight cannot initialize yesterday's file. Existing chat targets retain their original date.
+> - Keep `Journal/Guide.md`, module documentation and `scripts/journal/view.test.cjs` aligned with this presentation.
+
 > [!note] 2026-11-09 - Journal overview and single add button
 > - Home renders `scripts/journal/view.js` after Work/Profile and before Feeds. The overview shows seven local days, this month's recorded days, pending followups, last reflection, recent/history notes and rolling Review summary.
 > - `+ 新增 Journal` initializes/reuses today's daily and Review from templates, then starts/resumes Chatting with AI. Both mobile and desktop follow `Journal/Guide.md`; `/journal-review` is the desktop skill entry. No weekly mode.
