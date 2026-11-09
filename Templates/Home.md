@@ -8,6 +8,9 @@ updated: 2026-11-09
 
 ## Design Decisions
 
+> [!note] 2026-11-09 - Journal above Task Board
+> - Render the standalone Journal view before the Work/Profile section so it appears above the task matrix on Home. Keep the divider between Journal and Work/Profile.
+
 > [!note] 2026-11-09 - Compact Journal date buttons
 > - Replace the add button and statistics/detail panels with seven local-date buttons. Today's highlighted date initializes/reuses today's journal and enters AI; recorded past dates open their notes, while empty past dates are disabled.
 > - Today uses an independent label, a larger bold date, a 2px accent border and a static tinted outer ring. All date buttons have the same minimum height. Today's highlight is independent of the saved-content check-in dot.
