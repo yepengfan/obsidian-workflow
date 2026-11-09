@@ -1,12 +1,18 @@
 ---
 tags: template
 for: Home
-updated: 2026-11-08
+updated: 2026-11-09
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-11-09 - Journal overview and single add button
+> - Home renders `scripts/journal/view.js` after Work/Profile and before Feeds. The overview shows seven local days, this month's recorded days, pending followups, last reflection, recent/history notes and rolling Review summary.
+> - `+ 新增 Journal` initializes/reuses today's daily and Review from templates, then starts/resumes Chatting with AI. Both mobile and desktop follow `Journal/Guide.md`; `/journal-review` is the desktop skill entry. No weekly mode.
+> - Updates listen to Journal file changes with component-scoped cleanup and a local midnight rollover. Empty scaffolding does not count as a recorded day. Data stays private through `.gitignore`.
+> - Plugin integration uses guarded internal APIs from 0.12.0; failures preserve initialized files and show a copyable startup prompt. Tests: `node --test scripts/journal/view.test.cjs`.
 
 > [!note] 2026-11-08 - Dedicated drag handle column
 > - Reserve 44px at the right of each classified task for a 36px drag handle column with a subtle left divider. The handle spans the task height and stays centered as long titles wrap.

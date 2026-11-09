@@ -669,6 +669,12 @@ if (bcPage) {
 
 ---
 
+```dataviewjs
+await dv.view("scripts/journal", { app });
+```
+
+---
+
 ## Feeds
 
 ```dataviewjs
