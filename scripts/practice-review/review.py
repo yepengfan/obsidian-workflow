@@ -161,7 +161,7 @@ def show(item_id):
 
 def due(today):
     day = today.isoformat()
-    queue = {"date": day, "overdue": [], "today": [], "unstarted": []}
+    queue = {"date": day, "overdue": [], "today": [], "unstarted": [], "upcoming": []}
     for path in ITEMS.glob("*.md"):
         metadata, _ = read_note(path)
         if metadata.get("status") == "archived":
@@ -173,7 +173,9 @@ def due(today):
         elif next_review <= day:
             key = "today" if next_review == day else "overdue"
             queue[key].append(summary)
-    for key in ("overdue", "today", "unstarted"):
+        else:
+            queue["upcoming"].append(summary)
+    for key in ("overdue", "today", "unstarted", "upcoming"):
         queue[key].sort(key=lambda item: (item["next_review"] or "", item["id"]))
     return queue
 
@@ -277,7 +279,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--date", metavar="YYYY-MM-DD", help="Use this local date")
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("due", help="List overdue, due today and unstarted items")
+    commands.add_parser("due", help="List due, upcoming and unstarted review items")
     commands.add_parser("show", help="Show an item without its history").add_argument("id")
     add_parser = commands.add_parser("add", help="Add a practice item")
     add_parser.add_argument("--item-file", type=Path, required=True)

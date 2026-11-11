@@ -8,6 +8,12 @@ The module has three parts:
 
 Use `algorithm`, `system-design`, or `behavioral` for the domain. Practice can run on its own or use this queue. Existing `/algo-solve` and `/sysd-solve` keep their usual guided practice and saving rules.
 
+## Interactive entry
+
+`/practice` selects mode, domain, and topic in that order. Ask one unresolved selection at a time using the client's choices when available. Honor selections already supplied in the request or current conversation.
+
+Practice mode starts or resumes the selected domain's practice and captures a reflection at the end. Review mode selects from that domain's overdue and today queues, then runs independent review. When the domain has no due items, `due` supplies an `upcoming` list for showing its nearest scheduled date. The learner can switch domains or enter practice.
+
 ## Entries and records
 
 - `Items/<id>.md` is the private source of truth for a review object. Keep its `id` stable across attempts. The note stores its prompt, post-attempt focus, and the history of attempts and reflections. When the original submission already has a vault note, link to it instead of copying it.
@@ -40,5 +46,7 @@ python3 scripts/practice-review/review.py record lc-1071 --attempt-file /path/to
 ```
 
 `add` reads `id`, `domain`, `title`, and `prompt`. Optional fields are `source` and `review_focus`. `show` returns the prompt, source and scheduling metadata. Read the note itself after the attempt when comparing past evidence.
+
+`due` returns `overdue`, `today`, `unstarted`, and `upcoming` metadata lists. Filter them by domain for the interactive menu.
 
 `record` reads `attempt_id`, `outcome`, and `reflection`. Optional fields are `submission` and `observations`. Outcomes are `independent`, `assisted`, and `incomplete`. Use the same `attempt_id` when retrying the same save. Keep the actual completion date on delayed saves using `--date YYYY-MM-DD` before the subcommand.

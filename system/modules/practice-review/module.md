@@ -11,7 +11,7 @@ requires:
   python: ">=3.10"
   pip: [PyYAML]
   plugins: [dataview]
-commands: [add, today]
+commands: [practice, practice-review-add, practice-review-today]
 templates: []
 scripts: [scripts/practice-review/review.py]
 hooks: []
@@ -23,6 +23,7 @@ config_files:
   - Learning/Practice/Review/Content/
   - .agents/skills/practice-review-add/SKILL.md
   - .agents/skills/practice-review-today/SKILL.md
+  - .agents/skills/practice/SKILL.md
 interval_days: [1, 3, 7, 14, 30]
 retry_days: 1
 tags: [system/module]
@@ -40,9 +41,11 @@ tags: [system/module]
 
 ## Quick Start
 
-1. `/practice-review-add algorithm 1071` 加入一道题。`system-design` 和 `behavioral` 也可以作为领域参数。
-2. `/practice-review-today` 查看今日到期、逾期和待首次练习的条目。
-3. `/practice-review-today lc-1071` 打开条目并开始练习。提交作答和本人心得后记录这一轮。
+1. `/practice` 选择练习或 Review，再选择算法、系统设计或行为面试。
+2. 练习模式输入新题或选择已有待练习内容。Review 模式从该模块的到期项目中选题。
+3. 完成本轮作答和本人心得后记录结果，更新下一次日期。
+
+直接加入题目可用 `/practice-review-add algorithm 1071`。直接查看复习队列可用 `/practice-review-today`。
 
 ## 配置位置
 

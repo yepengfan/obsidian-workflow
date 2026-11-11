@@ -4,7 +4,7 @@ tags: [practice-review/index]
 
 # 练习回顾与间隔复习
 
-用 `/practice-review-add algorithm 1071` 加入一道算法题。用 `/practice-review-today` 查看队列，或用 `/practice-review-today lc-1071` 开始指定练习。[[Learning/Practice/Review/AGENTS|复习模块规则]]
+用 `/practice` 选择练习或 Review，再选择模块和题目。[[Learning/Practice/Review/AGENTS|复习模块规则]]
 
 ```dataviewjs
 const config = dv.page("system/modules/practice-review/module.md");

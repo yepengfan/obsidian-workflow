@@ -288,7 +288,7 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
 
 ## Practice Review
 
-`Learning/Practice/Review/` combines a shared review queue with domain practice flows and separate content definitions. Run `/practice-review-add <domain> <topic>` to register an item and `/practice-review-today [id]` to list or start reviews. See `Learning/Practice/Review/AGENTS.md` for the scheduling and handoff rules. Personal review items in `Items/` sync with the vault outside git.
+`Learning/Practice/Review/` combines a shared review queue with domain practice flows and separate content definitions. `/practice` selects practice or Review, then domain and topic. Direct entries are `/practice-review-add <domain> <topic>` and `/practice-review-today [id]`. See `Learning/Practice/Review/AGENTS.md` for the scheduling and handoff rules. Personal review items in `Items/` sync with the vault outside git.
 
 ## Frontend System
 
