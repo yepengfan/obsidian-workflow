@@ -46,7 +46,7 @@ tags: [system/module]
 - 通用脚本统计今日到期和逾期条目，维护复习日期、轮次与心得。
 - `practice_flows` 直接引用现有的 `algo-solve` 和 `sysd-solve` 技能。行为面试使用 `Flows/behavioral.md`。`Content/` 定义各领域练什么、作答后回顾哪些问题。
 - `Items/` 保存具体题目、复习状态和历次记录，随 vault 同步。`00_index.md` 展示练习队列。
-- `Home.md` 的独立 Practice 区块展示高层统计，链接到完整复习看板。
+- `Home.md` 顶部的独立 Practice 区块展示高层统计，链接到完整复习看板。
 
 ## Quick Start
 
