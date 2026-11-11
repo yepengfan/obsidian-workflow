@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-07
-updated: 2026-11-10
+updated: 2026-11-11
 depends_on: []
 requires:
   cli: [claude]
@@ -38,4 +38,4 @@ LeetCode coaching focused on recognizing patterns and matching them to correspon
 
 ## Quick Start
 
-1. Run `/algo-solve 543` to start a problem-solving session in Claude Code or Cursor.
+1. Run `/algo-solve 543` to start a problem-solving session in Claude Code or Cursor. With `/algo-solve` alone, enter the problem number or title when prompted.

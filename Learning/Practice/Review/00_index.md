@@ -4,7 +4,7 @@ tags: [practice-review/index]
 
 # 练习回顾与间隔复习
 
-用 `/practice` 选择练习或 Review，再选择模块和题目。[[Learning/Practice/Review/AGENTS|复习模块规则]]
+用 `/practice` 选择练习或 Review，再选择模块。练习直接进入原有流程输入题目；Review 从到期队列选题。[[Learning/Practice/Review/AGENTS|复习模块规则]]
 
 ```dataviewjs
 const config = dv.page("system/modules/practice-review/module.md");

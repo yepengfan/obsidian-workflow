@@ -12,6 +12,8 @@ disable-model-invocation: true
 
 Practice problem: $ARGUMENTS
 
+If neither a problem number or title nor a request to continue a known problem was explicitly supplied for this invocation, ask the learner to enter a problem number or title and wait. Resume an earlier problem only when the learner explicitly asks to continue it.
+
 Read `Learning/Practice/Algorithm/AGENTS.md` for storage conventions, guiding heuristics, Python pitfalls, and verification rules. This skill owns the coaching workflow; the module file owns note maintenance.
 
 ## Training objective
