@@ -5,7 +5,7 @@ type: utility
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-11-09
+updated: 2026-11-11
 depends_on: []
 requires:
   plugins: [dataview, homepage]
@@ -21,7 +21,7 @@ tags: [system/module]
 # Dashboard 仪表盘
 
 ## Overview
-Vault 的 UI 层。Home.md 是主入口，通过 Dataviewjs 实现标签页导航、按钮交互、雷达图可视化。Work 默认 tab 内嵌 Task Board 四象限；Work Dashboard / Weekly View / Monthly View 仍作为独立工作子页存在，不再挂在 Home 上。
+Vault 的 UI 层。Home.md 是主入口，通过 Dataviewjs 实现标签页导航、按钮交互、雷达图可视化。Practice 独立区块展示待首次练习、今日到期、逾期和累计练习轮次，并链接到复习看板。Work 默认 tab 内嵌 Task Board 四象限；Work Dashboard / Weekly View / Monthly View 仍作为独立工作子页存在，不再挂在 Home 上。
 
 被依赖: [[system/modules/work/module|work]] · [[system/modules/feeds-ai-digest/module|feeds-ai-digest]] · [[system/modules/feeds-github-trending/module|feeds-github-trending]] · [[system/modules/profile/module|profile]]
 
