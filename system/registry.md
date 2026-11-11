@@ -1,7 +1,7 @@
 ---
 tags: [system]
 created: 2026-03-29
-updated: 2026-03-29
+updated: 2026-11-11
 ---
 
 # 🎛️ Module Registry
@@ -140,11 +140,11 @@ for (const m of modules) {
   const cmds = Array.isArray(m.commands) ? m.commands : [];
   const prefix = skillPrefix[m.module] || m.module;
   for (const cmd of cmds) {
-    // module-toggle is root-level (no prefix); some commands already carry the
+    // module-toggle and practice are root-level; some commands already carry the
     // module prefix themselves (e.g. learning/learning-init, brownbag/brownbag) —
     // avoid double-prefixing those.
     let skillName;
-    if (cmd === "module-toggle" || cmd === prefix || cmd.startsWith(prefix + "-")) {
+    if (cmd === "module-toggle" || cmd === "practice" || cmd === prefix || cmd.startsWith(prefix + "-")) {
       skillName = cmd;
     } else {
       skillName = prefix + "-" + cmd;

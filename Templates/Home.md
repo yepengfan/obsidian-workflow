@@ -1,12 +1,17 @@
 ---
 tags: template
 for: Home
-updated: 2026-11-09
+updated: 2026-11-11
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-11-11 - Practice review overview
+> - Add a standalone Practice section before Learning with four counts and a link to the full review board.
+> - Unstarted, today and overdue counts use active review items. Cumulative rounds include recorded history from active and archived items.
+> - Use four columns on desktop and two on mobile. Open `Learning/Practice/Review/00_index.md` through the workspace link handler.
 
 > [!note] 2026-11-09 - Separate Journal entries
 > - Each click on today starts a new conversation and a separate `YYYY-MM-DD-timestamp.md` note, using a Unix millisecond timestamp. Continue an entry through its existing conversation.
