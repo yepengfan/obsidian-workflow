@@ -51,7 +51,7 @@ tags: [system/module]
 ## Quick Start
 
 1. `/practice` 选择练习或 Review，再选择算法、系统设计或行为面试。
-2. 练习模式输入新题或选择已有待练习内容。Review 模式从该模块的到期项目中选题。
+2. 练习模式直接进入对应的原有流程；算法由 `algo-solve` 接收题号或题名。Review 模式从该模块的到期项目中选题。
 3. 完成本轮作答和本人心得后记录结果，更新下一次日期。
 
 直接加入题目可用 `/practice-review-add algorithm 1071`。直接查看复习队列可用 `/practice-review-today`。

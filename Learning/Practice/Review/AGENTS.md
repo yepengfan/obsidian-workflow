@@ -10,9 +10,9 @@ Use `algorithm`, `system-design`, or `behavioral` for the domain. The selected w
 
 ## Interactive entry
 
-`/practice` selects mode, domain, and topic in that order. Ask one unresolved selection at a time using the client's choices when available. Honor selections already supplied in the request or current conversation.
+`/practice` selects mode and domain. Ask one unresolved selection at a time using the client's choices when available. Honor selections already supplied in the request or current conversation.
 
-Practice mode starts or resumes the selected domain's practice and captures a reflection at the end. Review mode selects from that domain's overdue and today queues, then runs independent review. When the domain has no due items, `due` supplies an `upcoming` list for showing its nearest scheduled date. The learner can switch domains or enter practice.
+Practice mode immediately enters the selected domain's existing workflow, which owns topic input and session restoration. Pass through an explicitly supplied topic or continuation request; do not add a shared topic menu or infer a topic from earlier conversation. For algorithm practice without a topic, `algo-solve` asks for a problem number or title. Capture a reflection at the end. Review mode selects from that domain's overdue and today queues, then runs independent review. When the domain has no due items, `due` supplies an `upcoming` list for showing its nearest scheduled date. The learner can switch domains or enter practice.
 
 Read the selected `practice_flows` source and execute any module guard it declares before a domain action. Practice uses the source's full workflow. Review uses a neutral independent attempt followed by that source's existing assessment section. `review_time_limits` supplies the adjustable review time limits. When practice has already produced an assessment, the shared closing procedure reuses that result.
 
