@@ -6,6 +6,96 @@ banner_x: 0.5
 banner_y: 0
 ---
 
+## Practice
+
+```dataviewjs
+const config = dv.page("system/modules/practice-review/module.md");
+const container = dv.el("div", "");
+
+if (!config || config.enabled !== true) {
+  container.createEl("p", {
+    text: config ? "练习复习模块已暂停。" : "暂时无法读取练习统计配置。",
+    attr: { style: "font-size:0.85em;color:var(--text-muted);" }
+  });
+} else {
+  const today = dv.date("today").toISODate();
+  const counts = { unstarted: 0, today: 0, overdue: 0, rounds: 0 };
+  let invalidDates = 0;
+
+  for (const item of dv.pages('"Learning/Practice/Review/Items"')) {
+    if (item.status !== "active" && item.status !== "archived") continue;
+    if (Number.isInteger(item.review_count) && item.review_count >= 0) {
+      counts.rounds += item.review_count;
+    }
+    if (item.status !== "active") continue;
+    if (item.next_review == null) {
+      counts.unstarted++;
+      continue;
+    }
+
+    let nextReview;
+    try {
+      const rawDate = item.next_review;
+      const date = typeof rawDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rawDate)
+        ? dv.date(rawDate)
+        : rawDate;
+      if (date?.isValid && typeof date.toISODate === "function") {
+        nextReview = date.toISODate();
+      }
+    } catch {}
+    if (!nextReview) {
+      invalidDates++;
+    } else if (nextReview === today) {
+      counts.today++;
+    } else if (nextReview < today) {
+      counts.overdue++;
+    }
+  }
+
+  const stats = container.createEl("div", {
+    attr: { style: `display:grid;grid-template-columns:repeat(${app.isMobile ? 2 : 4},minmax(0,1fr));gap:8px;` }
+  });
+  const metrics = [
+    [counts.unstarted, "待首次练习"],
+    [counts.today, "今日到期"],
+    [counts.overdue, "逾期"],
+    [counts.rounds, "累计练习轮次"]
+  ];
+  for (const [value, label] of metrics) {
+    const card = stats.createEl("div", {
+      attr: { style: "min-width:0;padding:10px 12px;background:var(--background-secondary);border-radius:8px;" }
+    });
+    card.createEl("div", {
+      text: String(value),
+      attr: { style: "font-size:1.4em;font-weight:700;line-height:1.3;color:var(--text-normal);" }
+    });
+    card.createEl("div", {
+      text: label,
+      attr: { style: "font-size:0.75em;color:var(--text-muted);overflow-wrap:anywhere;" }
+    });
+  }
+  if (invalidDates) {
+    container.createEl("p", {
+      text: `${invalidDates} 项复习日期需要修正。`,
+      attr: { style: "font-size:0.8em;color:var(--text-muted);margin:8px 0;" }
+    });
+  }
+}
+
+const boardPath = "Learning/Practice/Review/00_index.md";
+const link = container.createEl("a", {
+  text: "完整复习看板 →",
+  attr: { class: "internal-link", "data-href": boardPath, style: "display:inline-block;margin-top:8px;font-size:0.85em;cursor:pointer;" }
+});
+link.addEventListener("click", event => {
+  event.preventDefault();
+  event.stopPropagation();
+  app.workspace.openLinkText(boardPath, "", false);
+});
+```
+
+---
+
 ```dataviewjs
 await dv.view("scripts/journal", { app });
 ```
@@ -1158,96 +1248,6 @@ const { panels: fPanels } = createTabGroup(dv, [
     '<a class="internal-link" data-href="Feeds/Engineering-Blogs/Dashboard">All reports →</a>';
 }
 
-```
-
----
-
-## Practice
-
-```dataviewjs
-const config = dv.page("system/modules/practice-review/module.md");
-const container = dv.el("div", "");
-
-if (!config || config.enabled !== true) {
-  container.createEl("p", {
-    text: config ? "练习复习模块已暂停。" : "暂时无法读取练习统计配置。",
-    attr: { style: "font-size:0.85em;color:var(--text-muted);" }
-  });
-} else {
-  const today = dv.date("today").toISODate();
-  const counts = { unstarted: 0, today: 0, overdue: 0, rounds: 0 };
-  let invalidDates = 0;
-
-  for (const item of dv.pages('"Learning/Practice/Review/Items"')) {
-    if (item.status !== "active" && item.status !== "archived") continue;
-    if (Number.isInteger(item.review_count) && item.review_count >= 0) {
-      counts.rounds += item.review_count;
-    }
-    if (item.status !== "active") continue;
-    if (item.next_review == null) {
-      counts.unstarted++;
-      continue;
-    }
-
-    let nextReview;
-    try {
-      const rawDate = item.next_review;
-      const date = typeof rawDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rawDate)
-        ? dv.date(rawDate)
-        : rawDate;
-      if (date?.isValid && typeof date.toISODate === "function") {
-        nextReview = date.toISODate();
-      }
-    } catch {}
-    if (!nextReview) {
-      invalidDates++;
-    } else if (nextReview === today) {
-      counts.today++;
-    } else if (nextReview < today) {
-      counts.overdue++;
-    }
-  }
-
-  const stats = container.createEl("div", {
-    attr: { style: `display:grid;grid-template-columns:repeat(${app.isMobile ? 2 : 4},minmax(0,1fr));gap:8px;` }
-  });
-  const metrics = [
-    [counts.unstarted, "待首次练习"],
-    [counts.today, "今日到期"],
-    [counts.overdue, "逾期"],
-    [counts.rounds, "累计练习轮次"]
-  ];
-  for (const [value, label] of metrics) {
-    const card = stats.createEl("div", {
-      attr: { style: "min-width:0;padding:10px 12px;background:var(--background-secondary);border-radius:8px;" }
-    });
-    card.createEl("div", {
-      text: String(value),
-      attr: { style: "font-size:1.4em;font-weight:700;line-height:1.3;color:var(--text-normal);" }
-    });
-    card.createEl("div", {
-      text: label,
-      attr: { style: "font-size:0.75em;color:var(--text-muted);overflow-wrap:anywhere;" }
-    });
-  }
-  if (invalidDates) {
-    container.createEl("p", {
-      text: `${invalidDates} 项复习日期需要修正。`,
-      attr: { style: "font-size:0.8em;color:var(--text-muted);margin:8px 0;" }
-    });
-  }
-}
-
-const boardPath = "Learning/Practice/Review/00_index.md";
-const link = container.createEl("a", {
-  text: "完整复习看板 →",
-  attr: { class: "internal-link", "data-href": boardPath, style: "display:inline-block;margin-top:8px;font-size:0.85em;cursor:pointer;" }
-});
-link.addEventListener("click", event => {
-  event.preventDefault();
-  event.stopPropagation();
-  app.workspace.openLinkText(boardPath, "", false);
-});
 ```
 
 ---

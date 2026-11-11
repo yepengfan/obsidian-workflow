@@ -8,6 +8,9 @@ updated: 2026-11-11
 
 ## Design Decisions
 
+> [!note] 2026-11-11 - Practice at the top
+> - Place the Practice statistics section first, immediately after frontmatter and before Journal.
+
 > [!note] 2026-11-11 - Practice review overview
 > - Add a standalone Practice section before Learning with four counts and a link to the full review board.
 > - Unstarted, today and overdue counts use active review items. Cumulative rounds include recorded history from active and archived items.

@@ -21,7 +21,7 @@ tags: [system/module]
 # Dashboard 仪表盘
 
 ## Overview
-Vault 的 UI 层。Home.md 是主入口，通过 Dataviewjs 实现标签页导航、按钮交互、雷达图可视化。Practice 独立区块展示待首次练习、今日到期、逾期和累计练习轮次，并链接到复习看板。Work 默认 tab 内嵌 Task Board 四象限；Work Dashboard / Weekly View / Monthly View 仍作为独立工作子页存在，不再挂在 Home 上。
+Vault 的 UI 层。Home.md 是主入口，通过 Dataviewjs 实现标签页导航、按钮交互、雷达图可视化。顶部 Practice 区块展示待首次练习、今日到期、逾期和累计练习轮次，并链接到复习看板。Work 默认 tab 内嵌 Task Board 四象限；Work Dashboard / Weekly View / Monthly View 仍作为独立工作子页存在，不再挂在 Home 上。
 
 被依赖: [[system/modules/work/module|work]] · [[system/modules/feeds-ai-digest/module|feeds-ai-digest]] · [[system/modules/feeds-github-trending/module|feeds-github-trending]] · [[system/modules/profile/module|profile]]
 
@@ -29,6 +29,7 @@ Vault 的 UI 层。Home.md 是主入口，通过 Dataviewjs 实现标签页导�
 
 ```
 Home.md                          # 主仪表盘（Homepage 插件落地页）
+├── Practice                    # 练习与复习高层统计
 ├── Journal                     # 日常记录与回顾
 ├── [Work | Profile]             # 主标签组
 │   ├── Work → 四象限 Task Board（读 Tasks/Board.md）+ Zettel 捕捉
