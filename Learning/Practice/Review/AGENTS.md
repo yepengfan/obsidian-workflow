@@ -3,16 +3,18 @@
 The module has three parts:
 
 - Shared review and scheduling. `scripts/practice-review/review.py` lists due items, saves ended attempts and the learner's own reflection, and updates review metadata. `00_index.md` shows the queue in Obsidian.
-- `Flows/<domain>.md` defines how the learner attempts and how the coach evaluates an item.
+- `practice_flows` in the module configuration selects each domain's authoritative workflow. Algorithm and system design use their existing skills for guidance, assessment and domain-specific saving. The behavioral workflow currently lives in `Flows/behavioral.md`.
 - `Content/<domain>.md` defines what belongs in a review item, including its neutral prompt, the material to recall, and questions to revisit after an attempt.
 
-Use `algorithm`, `system-design`, or `behavioral` for the domain. Practice can run on its own or use this queue. Existing `/algo-solve` and `/sysd-solve` keep their usual guided practice and saving rules.
+Use `algorithm`, `system-design`, or `behavioral` for the domain. The selected workflow owns practice and assessment. This module connects its results to personal reflection and scheduling.
 
 ## Interactive entry
 
 `/practice` selects mode, domain, and topic in that order. Ask one unresolved selection at a time using the client's choices when available. Honor selections already supplied in the request or current conversation.
 
 Practice mode starts or resumes the selected domain's practice and captures a reflection at the end. Review mode selects from that domain's overdue and today queues, then runs independent review. When the domain has no due items, `due` supplies an `upcoming` list for showing its nearest scheduled date. The learner can switch domains or enter practice.
+
+Read the selected `practice_flows` source and execute any module guard it declares before a domain action. Practice uses the source's full workflow. Review uses a neutral independent attempt followed by that source's existing assessment section. `review_time_limits` supplies the adjustable review time limits. When practice has already produced an assessment, the shared closing procedure reuses that result.
 
 ## Entries and records
 

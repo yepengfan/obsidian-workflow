@@ -24,6 +24,14 @@ config_files:
   - .agents/skills/practice-review-add/SKILL.md
   - .agents/skills/practice-review-today/SKILL.md
   - .agents/skills/practice/SKILL.md
+practice_flows:
+  algorithm: .agents/skills/algo-solve/SKILL.md
+  system-design: .agents/skills/sysd-solve/SKILL.md
+  behavioral: Learning/Practice/Review/Flows/behavioral.md
+review_time_limits:
+  algorithm: 30
+  system-design: 45
+  behavioral: 3
 interval_days: [1, 3, 7, 14, 30]
 retry_days: 1
 tags: [system/module]
@@ -36,7 +44,7 @@ tags: [system/module]
 ## 架构
 
 - 通用脚本统计今日到期和逾期条目，维护复习日期、轮次与心得。
-- `Flows/` 定义各领域怎样作答和评价。`Content/` 定义各领域练什么、作答后回顾哪些问题。
+- `practice_flows` 直接引用现有的 `algo-solve` 和 `sysd-solve` 技能。行为面试使用 `Flows/behavioral.md`。`Content/` 定义各领域练什么、作答后回顾哪些问题。
 - `Items/` 保存具体题目、复习状态和历次记录，随 vault 同步。`00_index.md` 展示练习队列。
 
 ## Quick Start
@@ -49,4 +57,4 @@ tags: [system/module]
 
 ## 配置位置
 
-`interval_days` 和 `retry_days` 在本文件设置。练习和回顾的交接规则见 [[Learning/Practice/Review/AGENTS|复习模块规则]]。
+本文件设置 `practice_flows`、`review_time_limits`、`interval_days` 和 `retry_days`。练习和回顾的交接规则见 [[Learning/Practice/Review/AGENTS|复习模块规则]]。

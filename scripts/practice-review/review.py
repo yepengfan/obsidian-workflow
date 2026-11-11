@@ -84,7 +84,10 @@ def load_config():
     retry = config.get("retry_days")
     if type(retry) is not int or retry < 1:
         raise ValueError("retry_days must be a positive integer")
-    return intervals, retry
+    flows = config.get("practice_flows")
+    if not isinstance(flows, dict) or not flows:
+        raise ValueError("practice_flows must map domains to their existing workflow files")
+    return intervals, retry, flows
 
 
 def read_payload(path):
@@ -180,16 +183,20 @@ def due(today):
     return queue
 
 
-def add(payload):
+def add(payload, flows):
     item_id = item_slug(payload.get("id"), "id")
     domain = item_slug(payload.get("domain"), "domain")
     title = read_text_field(payload, "title", required=True).strip()
     prompt = read_text_field(payload, "prompt", required=True)
     source = read_text_field(payload, "source")
     focus = read_text_field(payload, "review_focus")
-    for directory in ("Flows", "Content"):
-        if not (REVIEW / directory / f"{domain}.md").is_file():
-            raise ValueError(f"Missing {directory}/{domain}.md")
+    flow = flows.get(domain)
+    if not isinstance(flow, str) or not flow.strip():
+        raise ValueError(f"No practice flow configured for {domain}")
+    if not (ROOT / flow).is_file():
+        raise ValueError(f"Missing configured practice flow: {flow}")
+    if not (REVIEW / "Content" / f"{domain}.md").is_file():
+        raise ValueError(f"Missing Content/{domain}.md")
 
     path = ITEMS / f"{item_id}.md"
     with item_lock(item_id):
@@ -290,13 +297,13 @@ def main():
 
     try:
         day = read_date(args.date) if args.date is not None else date.today()
-        intervals, retry_days = load_config()
+        intervals, retry_days, flows = load_config()
         if args.command == "due":
             result = due(day)
         elif args.command == "show":
             result = show(item_slug(args.id, "id"))
         elif args.command == "add":
-            result = add(read_payload(args.item_file))
+            result = add(read_payload(args.item_file), flows)
         else:
             result = record(
                 item_slug(args.id, "id"), read_payload(args.attempt_file),
