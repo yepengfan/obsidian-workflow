@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-11-11
-updated: 2026-11-11
+updated: 2026-11-13
 depends_on: []
 requires:
   python: ">=3.10"
@@ -50,9 +50,9 @@ tags: [system/module]
 
 ## Quick Start
 
-1. `/practice` 选择练习或 Review，再选择算法、系统设计或行为面试。
-2. 练习模式直接进入对应的原有流程；算法由 `algo-solve` 接收题号或题名。Review 模式从该模块的到期项目中选题。
-3. 完成本轮作答和本人心得后记录结果，更新下一次日期。
+1. `/practice` 先选择算法、系统设计或行为面试。
+2. 按日期从早到晚自动开始该模块的逾期和今日到期题目；每题完成作答、评价和本人心得保存后，更新下一次日期并进入下一题。
+3. 到期复习全部完成后，自动进入对应的原有流程练新题；没有到期题时直接进入。算法由 `algo-solve` 接收新题号或题名。
 
 直接加入题目可用 `/practice-review-add algorithm 1071`。直接查看复习队列可用 `/practice-review-today`。
 

@@ -10,11 +10,15 @@ Use `algorithm`, `system-design`, or `behavioral` for the domain. The selected w
 
 ## Interactive entry
 
-`/practice` selects mode and domain. Ask one unresolved selection at a time using the client's choices when available. Honor selections already supplied in the request or current conversation.
+`/practice` selects a domain, completes its due reviews, then starts a new problem. Use the client's choices when available and honor a domain already supplied in the request or current conversation. The entry has no practice/Review mode menu.
 
-Practice mode immediately enters the selected domain's existing workflow, which owns topic input and session restoration. Pass through an explicitly supplied topic or continuation request; do not add a shared topic menu or infer a topic from earlier conversation. For algorithm practice without a topic, `algo-solve` asks for a problem number or title. Capture a reflection at the end. Review mode selects from that domain's overdue and today queues, then runs independent review. When the domain has no due items, `due` supplies an `upcoming` list for showing its nearest scheduled date. The learner can switch domains or enter practice.
+Filter `due` to the selected domain's `overdue` and `today` items, ordered by next review date and stable ID. Show the review order and start the first item directly. Each review uses an independent attempt followed by assessment, the learner's reflection and confirmed saving. After each saved round, refresh the queue and automatically start the next due item. Assisted or incomplete ended rounds follow the retry schedule; pending reflection or a paused attempt stays on the current item. `upcoming` and `unstarted` items are outside this due-review sequence.
+
+Once no due items remain, including when the queue was empty initially, automatically enter the selected domain's workflow for a new problem. Keep any explicitly supplied new topic pending until this handoff. Without a topic, ask for a new problem or interview question through that workflow's topic-input step; do not reuse the last reviewed topic or automatically restore an unrelated WIP session. Honor an explicit request to continue, pause, stop or change direction. The domain workflow owns initialization, guidance, assessment and domain-specific saving. Capture a reflection at the end.
 
 Read the selected `practice_flows` source and execute any module guard it declares before a domain action. Practice uses the source's full workflow. Review uses a neutral independent attempt followed by that source's existing assessment section. `review_time_limits` supplies the adjustable review time limits. When practice has already produced an assessment, the shared closing procedure reuses that result.
+
+Direct `/practice-review-today [id]` retains its queue listing or selected-item behavior; the automatic review sequence and transition to a new problem belong to `/practice`.
 
 ## Entries and records
 
