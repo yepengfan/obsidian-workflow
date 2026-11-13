@@ -1,11 +1,11 @@
 ---
 module: system-design
-label: "System Design 系统设计练习"
+label: "System Design Practice"
 type: knowledge
 status: active
 enabled: true
 created: 2026-05-12
-updated: 2026-10-31
+updated: 2026-11-13
 depends_on: []
 requires:
   cli: [claude, node]
@@ -23,24 +23,24 @@ tags: [system/module]
 
 ## Overview
 
-System Design 练习模块。交互式设计引导 → 方案审核 → Pattern Card 沉淀。类似 Algorithm 模块的永续练习系统。
+Ongoing system design practice: interactive guidance → design review → pattern cards and logs. Coach messages, learner explanations and reflections, and new note content use English, including direct `/sysd-solve` sessions. Shared language and clarification rules live in `Learning/Practice/Review/AGENTS.md`.
 
-## 架构
+## Architecture
 
-- **Patterns/**: 一个 pattern 一个文件，frontmatter 驱动 Dataview
-- **Log/**: 每次练习记录
-- **Courses/**: 课程笔记（Hello Interview 等）
-- **Solutions/**: 每题一个 session，状态生命周期为 `planned → wip → done`
+- **Patterns/**: One file per pattern, with frontmatter driving Dataview.
+- **Log/**: Practice session records.
+- **Courses/**: Course notes, such as Hello Interview.
+- **Solutions/**: One folder per session, following `planned → wip → done`.
 
-### 数据流
+### Data Flow
 
-- **输入**: `/sysd-solve <题目>` → 引导设计（6 步框架） → 方案审核 → 沉淀 card + log
+- **Input**: `/sysd-solve <topic>` → six-step guided design → design review → save cards and log.
 
-### 与其他模块关系
+### Related Modules
 
-- **Algorithm**: LeetCode 刷题，训练编码能力
-- **Frontend**: React/Next.js 前端练习
+- **Algorithm**: LeetCode practice for coding skills.
+- **Frontend**: React and Next.js practice.
 
 ## Quick Start
 
-1. `/sysd-solve Design YouTube` — 开始练题
+1. Run `/sysd-solve Design YouTube` to begin practice.

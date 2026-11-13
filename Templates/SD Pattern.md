@@ -19,13 +19,13 @@ updated: {{date}}
 
 ## When to Use
 
-> 什么需求/约束出现时应该想到这个模式？
+> Which requirements or constraints suggest this pattern?
 
 
 
 ## Design Framework
 
-> 使用这个模式时的设计步骤/结构
+> Design steps and structure for applying this pattern
 
 1.
 2.
@@ -33,17 +33,17 @@ updated: {{date}}
 
 ## Architecture Diagram
 
-> 参考架构图（Mermaid）
+> Reference architecture diagram (Mermaid)
 
 ```mermaid
 graph LR
 ```
 
-> 如有 Excalidraw 精细版: `![[Learning/Practice/System-Design/Attachments/{{title}}.excalidraw]]`
+> If a detailed Excalidraw version exists: `![[Learning/Practice/System-Design/Attachments/{{title}}.excalidraw]]`
 
 ## Trade-offs
 
-| 优势 | 劣势 |
+| Advantages | Disadvantages |
 |------|------|
 | | |
 

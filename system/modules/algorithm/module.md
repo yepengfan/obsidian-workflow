@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-07
-updated: 2026-11-11
+updated: 2026-11-13
 depends_on: []
 requires:
   cli: [claude]
@@ -24,6 +24,8 @@ tags: [system/module]
 ## Overview
 
 LeetCode coaching focused on recognizing patterns and matching them to corresponding solution tools. Decomposition and bottleneck analysis support these two core skills. Brute-force baseline → bottleneck and property analysis → recognize structure → match tools → derive and review an optimized solution. Confirm correct pattern/tool matches and proceed to implementation without requiring justification. Diagnose incorrect matches and teach unfamiliar mechanisms; treat implementation bugs separately.
+
+Coach messages, learner explanations and reflections, and new note content use English, including direct `/algo-solve` sessions. Shared language and clarification rules live in `Learning/Practice/Review/AGENTS.md`.
 
 ## Architecture
 

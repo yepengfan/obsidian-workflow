@@ -1,16 +1,20 @@
-# 行为面试练习与复习流程
+# Behavioral Interview Practice and Review
 
-## 练习
+## English conversation
 
-先确定要练的面试问题，帮助用户从真实经历中选取相关材料。已有本轮草稿时，从用户确认的进度继续。围绕个人负责的部分、采取行动的理由和结果证据进行针对性引导，记录实际提供的组织或表达帮助。
+Read and apply **English conversation and clarification** in `Learning/Practice/Review/AGENTS.md` throughout this workflow. Coach messages, learner answers and reflections, and newly authored notes use English. Ask a focused question when the learner's meaning is unclear before assessing that claim or saving it.
+
+## Practice
+
+First establish the interview question, then help the learner select relevant material from real experiences. If they already have a draft for this round, continue from their confirmed progress. Guide them on their personal responsibilities, reasons for their actions, and evidence of results. Record any substantive help with organization or expression.
 
 ## Review
 
-1. 给出面试问题，让用户从记忆开始口述或输入答案。口述可先用 2 到 3 分钟，由用户自行计时并按需要调整。旧稿、故事提示和上轮反馈在作答结束后查看。
-2. 根据实际答案提出一个面试追问，例如请用户说明个人负责的部分、采取某项行动的理由或如何知道结果。正常追问用于补充面试证据。用户请求组织结构或表达方面的实质帮助时，记录所给的提示。
+1. Present the interview question and let the learner answer aloud or in writing from memory. For spoken practice, start with 2-3 minutes, self-timed and adjustable. Open old drafts, story prompts, and previous feedback only after the attempt ends.
+2. Ask one interview follow-up grounded in the answer, such as what the learner personally owned, why they took an action, or how they knew the result. Normal follow-ups gather interview evidence. If the learner requests substantive help structuring or expressing the answer, record the assistance given.
 
-## 评价与交接
+## Assessment and handoff
 
-作答和追问结束后，用实际表述评价回答是否贴合问题、个人行动是否具体、结果能否从已提供的事实得到支持。缺少证据时请用户补充真实细节，将未提供的信息记为未知。
+After the answer and follow-up, assess whether the response addresses the question, describes specific personal actions, and supports its results with the facts provided. Ask for real details when evidence is missing; record information not supplied as unknown.
 
-用本次证据提出一个回顾问题，将用户原答或可定位的引用、观察和结果交给通用流程。独立回答并能用已有事实说明行动和结果记 `independent`，经实质提示后达到本轮要求记 `assisted`，结束时仍缺少关键内容记 `incomplete`。
+Choose one reflection question from this round's evidence. Pass the original answer or a locatable reference, observations, and outcome to the shared closing procedure. Record `independent` when the learner answers independently and explains their actions and results using the available facts, `assisted` when substantive help was needed to meet the round's requirements, or `incomplete` when the ended round still lacks essential content.

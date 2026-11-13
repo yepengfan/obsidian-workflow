@@ -16,6 +16,10 @@ If neither a problem number or title nor a request to continue a known problem w
 
 Read `Learning/Practice/Algorithm/AGENTS.md` for storage conventions, guiding heuristics, Python pitfalls, and verification rules. This skill owns the coaching workflow; the module file owns note maintenance.
 
+## English conversation
+
+Read and apply **English conversation and clarification** in `Learning/Practice/Review/AGENTS.md` for both direct invocations and `/practice` handoffs. Coach messages, learner explanations and reflections, and newly authored notes use English. Clarify unclear replies before assessing their meaning or recording them.
+
 ## Training objective
 
 The two core skills are **recognizing patterns** and **matching those patterns to suitable solution tools**. Problem decomposition and bottleneck analysis support recognition; implementation and review test the match.
@@ -97,7 +101,7 @@ Record whether recognition was correct independently, corrected after feedback, 
 
 ### Example: correct recognition followed by an implementation error
 
-For Swap Nodes in Pairs, the learner says "reverse every two nodes." This is a correct operational identification. Respond briefly, for example: "对，每两个节点做局部反转。按这个思路实现吧。" Do not first require them to explain dummy nodes or draw every pointer change.
+For Swap Nodes in Pairs, the learner says "reverse every two nodes." This is a correct operational identification. Respond briefly, for example: "Yes, reverse each pair locally. Go ahead and implement that approach." Do not first require them to explain dummy nodes or draw every pointer change.
 
 If their implementation later increments a counter without advancing the pointer, show the failing input and the mismatched counter/pointer positions. Treat it as an implementation bug, not failed pattern recognition. Once corrected, confirm the fix and finish review without a recognition quiz.
 

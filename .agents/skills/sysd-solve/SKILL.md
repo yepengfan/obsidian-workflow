@@ -1,7 +1,7 @@
 ---
 name: sysd-solve
 description: >-
-  System design practice workflow — Delivery Framework guidance, review, pattern card logging. Use for /sysd-solve or system design interviews.
+  System design practice workflow - Delivery Framework guidance, review, pattern card logging. Use for /sysd-solve or system design interviews.
 disable-model-invocation: true
 ---
 
@@ -12,164 +12,168 @@ Solve System Design problem: $ARGUMENTS
 
 Read `Learning/Practice/System-Design/AGENTS.md` for module instructions.
 
-## Phase 0 — 初始化 Solution 文件夹
+## English conversation
 
-> [!WARNING] `Solutions/` 内容被 `.gitignore` 排除（除 `AGENTS.md`/`00_index.md`）。扫描 WIP session 时**必须用 shell `ls` 枚举文件夹 + `Read` 检查 `progress.md` frontmatter**，禁止用 `Glob`/`Grep` — 它们遵循 `.gitignore`，会静默返回 0 结果，导致误判"没有进行中的练习"。
+Read and apply **English conversation and clarification** in `Learning/Practice/Review/AGENTS.md` for both direct invocations and `/practice` handoffs. Coach messages, learner explanations and reflections, and newly authored notes and diagram labels use English. Clarify unclear replies before assessing their meaning or recording them.
 
-### 无参数自动恢复
+## Phase 0 - Initialize the Solution folder
 
-如果 `$ARGUMENTS` 为空（用户只输入了 `/sysd-solve`）：
+> [!WARNING] `Solutions/` content is excluded by `.gitignore`, except for `AGENTS.md` and `00_index.md`. To find WIP sessions, use shell `ls` to enumerate folders and read each `progress.md` frontmatter. Do not use `Glob` or `Grep`: they respect `.gitignore` and can silently return no results, causing a false conclusion that no session is in progress.
 
-1. 用 shell `ls Learning/Practice/System-Design/Solutions/` 枚举所有子文件夹，逐个 `Read` 其 `progress.md`，检查 frontmatter 是否含 `system-design/wip` tag（见上方 WARNING，不要用 Glob/Grep）
-2. **找到 1 个** → 自动恢复该 session（按下方"恢复 Session"逻辑同时检查 progress.md 与 Excalidraw，跳到上次中断的 Step 继续）
-3. **找到多个** → 列出所有 WIP session（显示题目名 + 开始日期 + 当前进度），问用户要继续哪个
-4. **找到 0 个** → 回复: "没有进行中的练习。请指定题目，如 `/sysd-solve Design YouTube`"
+### Automatic resumption with no arguments
 
-找到要恢复的 session 后，按下方"恢复 Session（读取完整状态）"的逻辑继续。
+When `$ARGUMENTS` is empty for a direct `/sysd-solve` invocation:
 
----
+1. Run shell `ls Learning/Practice/System-Design/Solutions/` to enumerate subfolders. Read each `progress.md` and check for the `system-design/wip` tag. Follow the warning above rather than using Glob/Grep.
+2. **One WIP session** → restore it using **Resume a session** below, checking both progress.md and Excalidraw, and continue from the interrupted step.
+3. **Multiple WIP sessions** → list the topic, start date, and current progress of each, then ask which one to continue.
+4. **No WIP sessions** → reply: "No practice session is in progress. Please specify a problem, for example `/sysd-solve Design YouTube`."
 
-### 有参数时
+When `/practice` hands off to a new problem without a topic, ask for a new problem and wait instead of automatically restoring an unrelated WIP session. An independent review starts from its neutral prompt and uses Phase 2 after submission; do not restore old designs before that attempt.
 
-1. 从 `$ARGUMENTS` 提取题目简称（如 "Design YouTube" → "YouTube", "Bitly" → "Bitly"）
-2. 用 shell `ls Learning/Practice/System-Design/Solutions/` 枚举所有 `<题目>-*` 文件夹（不要用 Glob/Grep，见上方 WARNING）:
-   - **找到带 `system-design/wip` tag 的 progress.md** → 按下方"恢复 Session"逻辑同时检查 progress.md 与 Excalidraw，恢复到上次中断的位置继续（跳到对应 Step）
-   - **找到带 `system-design/planned` tag 的 progress.md** → 将 tag 改为 `system-design/wip`，按下方"恢复 Session"逻辑同时检查 progress.md 与 Excalidraw，从记录的"下次继续"开始（全空时从 Step 1 开始）
-   - **找到该题目的文件夹但都无 wip/planned tag** → 告诉用户这题已练习过 N 次，问是否重新练习
-   - **不存在** → 创建 Solution 文件夹 + 文件（见下方）
+### With arguments
 
-3. **创建 Solution 文件夹**:
-   - 文件夹命名: `<题目>-<今天日期>`（如 `Dropbox-2026-06-24`）
-   - 创建目录: `Learning/Practice/System-Design/Solutions/<题目>-<今天日期>/`
-   - 创建 Excalidraw 文件: 运行 `node scripts/sd-excalidraw-template.js "<题目>"` 并将输出写入 `<题目>.excalidraw.md`
-   - 创建 progress.md:
+1. Extract the short topic name from `$ARGUMENTS`, such as "Design YouTube" → "YouTube" or "Bitly" → "Bitly".
+2. Use shell `ls Learning/Practice/System-Design/Solutions/` to enumerate matching `<topic>-*` folders. Do not use Glob/Grep.
+   - **A progress.md has `system-design/wip`** → use **Resume a session** to check progress.md and Excalidraw, then continue from the interrupted step.
+   - **A progress.md has `system-design/planned`** → replace that tag with `system-design/wip`, check both files using **Resume a session**, and continue from the recorded next step. Start at Step 1 if the session is empty.
+   - **Matching folders exist, but none have wip/planned tags** → tell the learner how many times they have practiced the topic and ask whether to start another attempt.
+   - **No matching folder exists** → create a Solution folder and files as described below.
+
+3. **Create a Solution folder**:
+   - Name it `<topic>-<today>`, such as `Dropbox-2026-06-24`.
+   - Create `Learning/Practice/System-Design/Solutions/<topic>-<today>/`.
+   - Run `node scripts/sd-excalidraw-template.js "<topic>"` and save the output to `<topic>.excalidraw.md` in that folder.
+   - Create progress.md with this frontmatter:
      ```yaml
-     topic: <完整题目描述>
-     started: <今天日期>
+     topic: <full problem description>
+     started: <today>
      source: Hello Interview
-     excalidraw: "[[Learning/Practice/System-Design/Solutions/<题目>-<今天日期>/<题目>.excalidraw]]"
+     excalidraw: "[[Learning/Practice/System-Design/Solutions/<topic>-<today>/<topic>.excalidraw]]"
      tags: [system-design/wip]
      ```
-     包含空的 Progress 表（6 步全 ⬜）、空的 Pending Questions、空的 Key Learnings、空的下次继续
+     Include an empty Progress table with all six steps marked ⬜, empty Pending Questions and Key Learnings sections, and an empty Next Session section.
 
-4. 告诉用户: "已创建 Solution 文件夹，打开 Excalidraw 开始画图" + 给出 wikilink
+4. Tell the learner: "The Solution folder is ready. Open Excalidraw to start drawing." Include its wikilink.
 
-### 预创建路线题
+### Pre-created roadmap problems
 
-学习计划可以提前创建尚未开始的 Solution 骨架。此类 `progress.md` 使用
-`tags: [system-design/planned]`，六步保持全 ⬜：
+A learning plan may create Solution skeletons before practice begins. Their progress.md uses `tags: [system-design/planned]`, with all six steps marked ⬜.
 
-- `planned` 不属于进行中 session，无参数 `/sysd-solve` 不应列出或自动恢复它。
-- 用户指定该题时，按上方"有参数时"规则先切换为 `system-design/wip`，再开始引导。
-- Dashboard 中 `planned` 显示为未开始，但可通过已存在的 progress 文件进入题目。
+- A planned problem is not a WIP session. A direct `/sysd-solve` without arguments must not list or automatically resume it.
+- When the learner specifies that problem, first switch its tag to `system-design/wip` as described above, then begin guidance.
+- The dashboard shows planned problems as unstarted, with links to their existing progress files.
 
-### 恢复 Session（读取完整状态）
+### Resume a session
 
-> [!WARNING] 恢复任何 session 时（无参数自动恢复 / 有参数命中 wip / 有参数命中 planned）**禁止只读 progress.md**。用户可能已经直接在 Excalidraw 画布上写了 FR/NFR/BoE/Core Entities/API 等草稿，但还没同步回 progress.md——只读 progress.md 会重复提问用户已经想清楚的内容。
+> [!WARNING] For every resumed session, including automatic WIP resumption and explicitly selected wip/planned sessions, read both progress.md and Excalidraw. The learner may have drafted FR/NFR, estimates, entities, or APIs on the canvas without updating progress.md. Reading only progress.md can repeat questions they have already answered.
 
-1. `Read` 该 session 的 `progress.md`，获取 Progress 表、Pending Questions、Key Learnings、下次继续
-2. 用 shell `ls` 该 session 文件夹，找到其中的 `*.excalidraw.md` 文件（文件名用的是创建时的题目简称，可能与 progress.md `topic` 字段（完整题目描述）或本次 `$ARGUMENTS` 不完全一致——不要假设文件名，以 `ls` 结果为准），`Read` 它，查看 `## Text Elements` 到 `%%` 之间的文字内容（这是未压缩的画布文字，不需要解压 `Drawing` 部分的 compressed-json）
-3. **对比两者**（先排除下方 NOTE 中的模板占位符，只对比占位符之外的实际内容）：
-   - Excalidraw 里有 progress.md 未记录或不一致的内容 → 先更新 progress.md，再继续引导：
-     - 对应 Step 的 Notes、Key Learnings 补齐 Excalidraw 里的草稿
-     - 根据补齐后的实际完成度，同步更新 Progress 表对应 Step 的状态标记（⬜/🔄/✅）
-     - 同步更新"下次继续"字段为同步后的最新下一步行动，避免下一步基于过期指针恢复引导
-   - 两者一致（或 Excalidraw 里只有模板占位符、没有用户填写的内容）→ 直接按 progress.md 的"下次继续"恢复引导
-4. 从"下次继续"记录的位置接着引导，**不要重复提问 Excalidraw 里已经写清楚的内容**——只针对缺失或空白的部分继续引导。若"下次继续"为空（新建的 planned/wip session，尚未触发过自动 checkpoint，Excalidraw 也只有模板占位符）→ 从 Step 1 开始引导
+1. Read the session's progress.md for the Progress table, Pending Questions, Key Learnings, and next-step section. Preserve legacy section names in existing files.
+2. Use shell `ls` on the session folder to find its `*.excalidraw.md` file. The filename uses the original short topic name and may differ from progress.md's full `topic` or the current `$ARGUMENTS`; use the actual listing. Read the text between `## Text Elements` and `%%`. This is uncompressed canvas text; there is no need to decompress the Drawing section's compressed-json.
+3. **Compare both sources**, ignoring the template placeholders listed below:
+   - If Excalidraw contains drafts missing from or inconsistent with progress.md, first synchronize progress.md:
+     - Add the drafts to the relevant step's Notes and Key Learnings.
+     - Update that step's Progress marker (⬜/🔄/✅) to reflect actual completion.
+     - Update the next-step section to the current next action so resumption does not use a stale pointer.
+   - If both agree, or Excalidraw contains only template placeholders, resume from progress.md's next step.
+4. Continue from the recorded next step without asking again about content already clear on the canvas. Focus on missing or empty parts. If the next-step section is empty and the canvas contains only placeholders, begin at Step 1.
 
-> [!NOTE] 模板占位符不算用户内容。`node scripts/sd-excalidraw-template.js` 预填的以下文本元素是固定模板骨架，**不代表用户已完成对应 Step**，对比时应忽略：
-> - 标题行本身（如 `Design: <题目>`、`1. Requirements`、`Functional Requirements`、`Non-Functional Requirements`、`Below the line (out of scope)`、`Back-of-Envelope`、`2. Core Entities`、`3. API / Interface`、`4. Data Flow`、`Write Flow:`、`Read Flow:`、`5. High-Level Design`、`6. Deep Dives`）
-> - 空的编号占位符（如 `1.\n2.\n3.\n4.\n5.` 或 `1.\n2.`，编号后没有实际文字）
-> - 空的 Back-of-Envelope 提示行（`- read/write ratio:`、`- QPS:`、`- storage:`，冒号后没有填值）
-> 只有当这些占位符被用户追加/替换成实际文字后，才算作已完成的草稿内容。
+> [!NOTE] Template placeholders are not learner content. `node scripts/sd-excalidraw-template.js` pre-fills the following fixed skeleton, which does not establish that a step is complete:
+> - Headings such as `Design: <topic>`, `1. Requirements`, `Functional Requirements`, `Non-Functional Requirements`, `Below the line (out of scope)`, `Back-of-Envelope`, `2. Core Entities`, `3. API / Interface`, `4. Data Flow`, `Write Flow:`, `Read Flow:`, `5. High-Level Design`, and `6. Deep Dives`.
+> - Empty numbered placeholders, such as a list of numbers 1 through 5 or 1 through 2 with no actual text.
+> - Empty estimate prompts: `- read/write ratio:`, `- QPS:`, and `- storage:` with no value after the colon.
+> Count these as draft content only after the learner adds or replaces them with actual text.
 
-## 自动 Checkpoint（贯穿 Phase 1-2 全程）
+## Automatic checkpoints during Phases 1 and 2
 
-在引导过程中，当以下**任一条件满足**时，自动更新 `progress.md`（Read → 修改 → Write 覆盖）：
+During guidance, read and update progress.md when any of these conditions applies:
 
-1. **Step 状态变化** — 某个 Step 从 ⬜ 变为 🔄（进行中）或 ✅（完成）→ 更新 Progress 表对应行 + Notes 列
-2. **关键设计决策** — 用户做出重要选择或学到关键概念（如 "302 vs 301"、"需要 cache 因为 100K QPS"）→ 追加到 Key Learnings
-3. **新 pending 问题** — 讨论中发现需要后续解决的问题 → 追加到 Pending Questions
-4. **每次更新时** — 同步更新"下次继续"section 为当前最新的下一步行动
+1. **A step changes status**: ⬜ becomes 🔄 (in progress) or ✅ (complete). Update its Progress row and Notes.
+2. **A key design decision occurs**: the learner makes an important choice or learns a key concept, such as "302 vs 301" or "a cache is needed for 100K QPS". Append it to Key Learnings.
+3. **A pending question emerges**: append an issue requiring later resolution to Pending Questions.
+4. **At every checkpoint**: update the next-step section to the current next action.
 
-**不要更新的场景:** 普通 Q&A 轮次（用户问 "QPS 是什么"，解释完不需要写）。只在**状态实际变化**时写。
+Write only when state actually changes. An ordinary question such as "What is QPS?" does not require a checkpoint after the explanation.
 
-**更新频率:** 大约每 3-5 轮对话一次。不用每轮都写。
+Checkpoint roughly every 3-5 exchanges rather than on every reply.
 
-## Phase 1 — 引导设计
+## Phase 1 - Guide the design
 
-1. 用户提供了题目名称或描述
-2. 确认题目范围，明确关键约束
-3. 按 6 步框架引导，**不直接给完整设计**
-4. 用 targeted questions 引导用户思考每一步
+1. Receive the problem name or description.
+2. Confirm scope and key constraints.
+3. Guide the learner through the six-step framework without directly giving a complete design.
+4. Use targeted questions to support their thinking at each step.
 
-**引导原则:**
-- 从 Requirements 开始: "这个系统最核心的 3 个功能是什么？非功能需求呢？"
-- 引导估算（在 Step 1 中完成）: "DAU 大概多少？读写比例？存储量级？"
-- 逐步深入: Core Entities → API → Data Flow → High-Level Design → Deep Dives
-- 如果用户卡住超过 2 轮，给更直接的 hint（但仍非完整方案）
-- 只在用户说 "show me the design" / "给我看方案" / "我放弃" 时给完整设计
-- 组织提问方向时参考 `Learning/Practice/System-Design/AGENTS.md` 的「核心原则」（从需求推导架构、Trade-off 思维、数字感、渐进式设计）
+**Guidance principles**:
 
-**Delivery Framework（Hello Interview 6 步）:**
-1. Requirements（功能 + 非功能需求 + Back-of-Envelope 估算）
-2. Core Entities（核心实体和关系，聚焦业务概念）
-3. API or Interface（核心接口，关注输入输出）
-4. Data Flow（数据从用户请求到存储/返回的完整路径）
-5. High-Level Design（核心组件 + 连接关系，**生成 Mermaid 架构图**）
-6. Deep Dives（选 2-3 个组件深入，解决非功能需求）
+- Start with Requirements: "What are the three core functions of this system? What are its non-functional requirements?"
+- Guide estimates during Step 1: "What is the expected DAU? Read/write ratio? Storage scale?"
+- Progress through Core Entities → API → Data Flow → High-Level Design → Deep Dives.
+- If the learner remains stuck for more than two exchanges, offer a more direct hint, still short of a complete design.
+- Give a complete design only when explicitly requested, for example "show me the design" or "I give up".
+- Use the module's **Core principles** in `Learning/Practice/System-Design/AGENTS.md`: derive architecture from requirements, make tradeoffs explicit, estimate scale, and design incrementally.
 
-**Step 5 画图指引:**
-- 用 Mermaid `graph LR` 画架构图
-- 用 `subgraph` 分组（Client / Server / Data Layer 等）
-- 标注数据流协议（HTTP, gRPC, Pub/Sub 等）
-- 与用户一起迭代，确认后沉淀到 Pattern card
+**Hello Interview Delivery Framework**:
 
-## Phase 2 — 方案审核
+1. Requirements: functional requirements, non-functional requirements, and back-of-envelope estimates.
+2. Core Entities: entities and relationships, focused on business concepts.
+3. API or Interface: core interfaces and their inputs and outputs.
+4. Data Flow: the complete path from a request to storage or a response.
+5. High-Level Design: core components and their connections; generate a Mermaid architecture diagram.
+6. Deep Dives: examine 2-3 components to address non-functional requirements.
 
-1. 用户给出自己的设计方案（文字描述或图）
-2. 审核以下方面:
-   - **需求覆盖**: 功能需求是否都满足
-   - **可扩展性**: 能否 scale 到目标量级
-   - **Trade-offs**: 每个关键决策的利弊是否说清
-   - **一致性/可用性**: CAP 考量是否合理
-   - **单点故障**: 是否有 SPOF
-   - **成本**: 方案是否过度设计
-3. 与最优设计比较，指出差距和改进方向
-4. 方案通过后进入 Phase 3
+**Step 5 diagram guidance**:
 
-## Phase 3 — 沉淀
+- Use Mermaid `graph LR` for the architecture.
+- Group components with `subgraph`, such as Client, Server, and Data Layer.
+- Label data flows with protocols such as HTTP, gRPC, and Pub/Sub.
+- Iterate with the learner and save the confirmed diagram to the Pattern card.
 
-1. **判断 pattern 归属**:
-   - 读取 `Learning/Practice/System-Design/Patterns/` 下所有文件的 frontmatter
-   - 判断该题涉及哪些已有 pattern（一道题可能涉及多个 pattern）
-   - 或是否需要新建 pattern
-   - 告诉用户归类结果，确认后继续
+## Phase 2 - Review the design
 
-2. **已有 pattern → 更新**:
-   - 在 frontmatter `problems` 数组末尾加题名
-   - 在正文 Problems 表格加一行（题名、难度、今天日期）
-   - 更新 frontmatter `updated` 为今天
-   - 如果有新的 Common Mistake 发现，追加到 Common Mistakes section
+1. Receive the learner's design as text or a diagram.
+2. Review:
+   - **Requirements coverage**: are all functional requirements met?
+   - **Scalability**: can it support the target scale?
+   - **Tradeoffs**: are the benefits and drawbacks of key decisions explicit?
+   - **Consistency and availability**: are the CAP considerations appropriate?
+   - **Single points of failure**: are any present?
+   - **Cost**: is the design overengineered?
+3. Compare it with an appropriate reference design and identify gaps and improvements.
+4. Once the design passes review, enter Phase 3.
 
-3. **新 pattern → 创建**:
-   - 用 `Templates/SD Pattern.md` 模板
-   - `id`: 读取所有现有 card 的 id，取最大值 +1
-   - 填充: title, category, tags, problems, Key Insight, When to Use, Design Framework, Trade-offs, Common Mistakes
-   - `difficulty`: 基于 pattern 复杂度评估
+## Phase 3 - Save learning evidence
 
-4. **写 Log**:
-   - 检查 `Learning/Practice/System-Design/Log/YYYY-MM-DD.md` 是否存在
-   - 不存在 → 用 `Templates/SD Log.md` 创建，填充第一条
-   - 已存在 → 追加新 `##` section，更新 frontmatter `problems_solved` 数组
-   - 包含: pattern wikilink、difficulty、result emoji、notes、requirements 小结、key decisions
+1. **Classify the patterns**:
+   - Read the frontmatter of existing files under `Learning/Practice/System-Design/Patterns/`.
+   - Identify relevant existing patterns; one problem may involve several.
+   - Determine whether a new pattern is needed.
+   - Present the classification and continue after the learner confirms it.
 
-5. **引用 Design Patterns / Key Technologies 建筑块文档**（若该题对应学习计划路线的主练项）:
-   - 检查 `Learning/Plans/<CODE>/00_map.md`（如存在）中该题对应的 Design Pattern / Key Technology 条目
-   - 在 Log 对应 section 里加上到 `Design Patterns/<pattern>.md`、`Key Technologies/<tech>.md` 的 wikilink 引用
-   - 这些文档的正文由用户自行维护，**不在此步骤编写或补充内容**；文档应在开始这道题之前就已备好
-   - 若发现对应文档不存在或明显是空壳，告知用户一声即可，不要自动补写
+2. **Update existing patterns**:
+   - Append the problem name to frontmatter `problems`.
+   - Add a Problems table row with the name, difficulty, and today's date.
+   - Set frontmatter `updated` to today.
+   - Append any newly observed common mistake to Common Mistakes.
 
-6. **标记完成**:
-   - 将 Solution `progress.md` 的状态 tag 从 `system-design/wip` 替换为 `system-design/done`
-   - 保留 progress、Excalidraw、Pattern Card、Log 和 Design Pattern/Key Technology 文档作为完整练习记录
+3. **Create new patterns**:
+   - Use `Templates/SD Pattern.md`.
+   - Set `id` to the highest existing card ID plus one.
+   - Fill title, category, tags, problems, Key Insight, When to Use, Design Framework, Trade-offs, and Common Mistakes.
+   - Assess `difficulty` from the pattern's complexity.
+
+4. **Write the Log**:
+   - Check for `Learning/Practice/System-Design/Log/YYYY-MM-DD.md`.
+   - If absent, create it from `Templates/SD Log.md` and fill the first entry.
+   - Otherwise append a new `##` section and update frontmatter `problems_solved`.
+   - Include the pattern wikilink, difficulty, result emoji, notes, requirements summary, and key decisions.
+
+5. **Reference Design Patterns and Key Technologies building blocks**, when the problem is a main practice item in a learning roadmap:
+   - Check its Design Pattern / Key Technology entries in `Learning/Plans/<CODE>/00_map.md`, if present.
+   - Add wikilinks to the relevant `Design Patterns/<pattern>.md` and `Key Technologies/<tech>.md` documents in the Log entry.
+   - The learner maintains those documents. Do not write or expand their content here; they should be prepared before the problem begins.
+   - If a referenced document is missing or an empty shell, tell the learner without automatically filling it in.
+
+6. **Mark complete**:
+   - Replace `system-design/wip` with `system-design/done` in the Solution progress.md.
+   - Retain progress.md, Excalidraw, Pattern cards, Logs, and Design Pattern / Key Technology documents as the complete practice record.

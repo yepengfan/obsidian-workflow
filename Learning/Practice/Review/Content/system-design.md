@@ -1,19 +1,19 @@
-# 系统设计复习内容
+# System Design Review Content
 
-## 建立条目
+## Create an item
 
-- 以一道能在一轮内重新推导的设计题为单位。使用 `sysd-<slug>`，例如 `sysd-url-shortener`。同一题目的历次方案沿用原 ID。
-- `prompt` 放题目、给定场景和约定的需求或规模约束。保持架构选择开放。
-- `review_focus` 可记录要检查的需求、容量假设、关键决策、取舍或原来卡住的数据路径。作答结束后再打开旧设计和回顾重点。`source` 可指向题目原文或相关记录。
+- Use one design problem that can be reconstructed in a single round. Use `sysd-<slug>`, such as `sysd-url-shortener`. Reuse its original ID across designs for the same problem.
+- Put the problem, given scenario, and agreed requirements or scale constraints in `prompt`. Leave architecture choices open.
+- Use `review_focus` for requirements, capacity assumptions, key decisions, tradeoffs, or a previously difficult data path. Open previous designs and review focus only after the attempt ends. The `source` may point to the original prompt or related records.
 
-## 作答后回顾
+## Reflect after the attempt
 
-根据本轮方案选择一个问题，让用户写下其判断依据。
+Choose one question from this round's design and ask the learner to describe their judgment in English.
 
-- 哪项需求或规模假设推动了关键决策？它对设计有什么具体影响？
-- 哪条请求路径先遇到瓶颈？你当时忽略了哪项成本、故障或一致性要求？
-- 下轮最需要验证哪个假设？用什么数字、场景或图来验证？
+- Which requirement or scale assumption drove a key decision? How did it affect the design?
+- Which request path hit a bottleneck first? What cost, failure mode, or consistency requirement did you overlook?
+- Which assumption most needs validation next round? What numbers, scenario, or diagram would test it?
 
-## 示例
+## Example
 
-`sysd-url-shortener` 的 `prompt` 要求设计创建短链接并按短链接重定向的服务。`review_focus` 可核对短码冲突、重定向读路径和关键容量假设。保存历次设计方案的引用，供作答后对照。
+The `sysd-url-shortener` prompt asks for a service that creates short links and redirects requests using them. Its `review_focus` can check short-code collisions, the redirect read path, and key capacity assumptions. Preserve references to each design for comparison after the attempt.

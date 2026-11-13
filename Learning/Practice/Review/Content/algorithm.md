@@ -1,26 +1,26 @@
-# 算法复习内容
+# Algorithm Review Content
 
-## 建立条目
+## Create an item
 
-- 以一道可独立重写的算法题为单位。LeetCode 题使用 `lc-<题号>`，例如 `lc-1071`。其他来源用能区分题目的稳定小写连字符 ID。后续同一题沿用原 ID。
-- `prompt` 放已核对的题意、输入输出、必要约束和公开样例。用中性表述保留独立识别空间。
-- `source` 保存题目原文链接。LeetCode 题使用核对过的题目直达 URL，例如 `https://leetcode.com/problems/greatest-common-divisor-of-strings/`。
-- `review_focus` 可记录本题要核对的识别线索、工具选择、边界条件或已有证据支持的卡点。它和历史解法供作答后回顾。
+- Use one algorithm problem that can be independently reimplemented as the review unit. For LeetCode use `lc-<number>`, such as `lc-1071`. For other sources use a distinct, stable lowercase hyphenated ID. Reuse the original ID for later attempts at the same problem.
+- Put the verified problem statement, inputs and outputs, necessary constraints, and public examples in `prompt`. Keep the wording neutral so the learner can identify the approach independently.
+- Store the original problem URL in `source`. For LeetCode use a verified direct problem link, such as `https://leetcode.com/problems/greatest-common-divisor-of-strings/`.
+- Use `review_focus` for recognition cues, tool selection, boundaries, or sticking points supported by previous evidence. Open it and past solutions after the attempt.
 
-## 开始复习
+## Start a review
 
-- 每题开题时，在标题旁显示可点击的 LeetCode 题目链接，例如 `[LC 1071 - 字符串的最大公因子](https://leetcode.com/problems/greatest-common-divisor-of-strings/)`。此要求同时适用于 `/practice` 自动开始的复习和 `/practice-review-today` 单题复习。
-- 优先使用 `show <id>` 返回的 `source`。旧条目缺少题目链接时，根据已确认的题号或题名查找并核对官方题目 URL 后展示，不猜测 slug，也不打开题解或历史作答。
-- 告知用户在 LeetCode 上独立完成，再将代码和实际用时贴回对话。保留中性题意和约定时限，不要求用户直接在聊天中写题。
+- Display a clickable LeetCode link alongside the title, such as `[LC 1071 - Greatest Common Divisor of Strings](https://leetcode.com/problems/greatest-common-divisor-of-strings/)`. This applies to both automatically started `/practice` reviews and selected `/practice-review-today` items.
+- Prefer the `source` returned by `show <id>`. If an older item lacks a link, find and verify the official URL from its confirmed number or title before displaying it. Do not guess the slug or open solutions and previous submissions.
+- Ask the learner to solve independently on LeetCode, then paste their code and actual time into the conversation. Keep the neutral prompt and agreed time limit; do not require them to write the solution directly in chat.
 
-## 作答后回顾
+## Reflect after the attempt
 
-根据实际代码和过程选择一个问题，让用户写出自己的观察。
+Choose one question from the actual code and process, and ask the learner for their own observation in English.
 
-- 最早卡在读题、识别结构、选工具还是实现？当时观察到了哪条约束？
-- 哪条样例或边界最早暴露了错误？下次写完后会做哪项检查？
-- 哪个线索帮助你找到可行解法？下一次遇到类似问题时怎样识别它？
+- Where did you first get stuck: understanding the prompt, recognizing the structure, choosing a tool, or implementing it? Which constraint did you notice then?
+- Which example or boundary first exposed an error? What check will you make after coding next time?
+- Which cue helped you find a viable approach? How will you recognize it in a similar problem?
 
-## 示例
+## Example
 
-`lc-1071` 的 `prompt` 描述两个字符串和最大公因子字符串的要求。`review_focus` 可核对长度关系、字符重复以及没有共同因子字符串时的行为。同一条目关联每轮独立代码和回顾。
+The `lc-1071` prompt describes two strings and the longest string that divides both. Its `review_focus` can check length relationships, character repetition, and the case where no common divisor string exists. The same item links each round's independent code and reflection.
