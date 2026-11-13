@@ -54,7 +54,7 @@ tags: [system/module]
 2. 按日期从早到晚自动开始该模块的逾期和今日到期题目；每题完成作答、评价和本人心得保存后，更新下一次日期并进入下一题。
 3. 到期复习全部完成后，自动进入对应的原有流程练新题；没有到期题时直接进入。算法由 `algo-solve` 接收新题号或题名。
 
-直接加入题目可用 `/practice-review-add algorithm 1071`。直接查看复习队列可用 `/practice-review-today`。
+直接加入题目可用 `/practice-review-add algorithm 1071`。直接查看复习队列可用 `/practice-review-today`。算法复习开题时附上 LeetCode 题目直达链接，在站点独立完成后将代码和实际用时贴回对话。
 
 ## 配置位置
 
