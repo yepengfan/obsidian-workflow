@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-08-08
+updated: 2026-11-13
 depends_on: [zettelkasten]
 requires:
   cli: [claude]
@@ -56,8 +56,9 @@ Learning/
 ### 活跃计划
 | 代码 | 名称 | 阶段 | 状态 |
 |------|------|------|------|
-| AISA | AI Solutions Architect | Phase 2 | 进行中 |
 | SYSD | System Design (实战: Docker POC + 项目) | - | 待启动 |
+| DARC | [[Learning/Plans/DARC/00_plan|Data Architecture & Solution Design]] | 1 | 七阶段实操计划已批准，待开始 |
+| BEHV | [[Learning/Plans/BEHV/00_plan|Behavioral Interview]] | 1 | 英文文字课程已归档，学习与 Story Bank 待开始 |
 
 ## Quick Start
 

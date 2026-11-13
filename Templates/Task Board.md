@@ -1,7 +1,7 @@
 ---
 tags: template
 for: Tasks/Board
-updated: 2026-09-14
+updated: 2026-11-10
 ---
 
 %% Reference template for Tasks/Board.md. Not used to create new notes — edit the live file directly. Update this file whenever the view structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%

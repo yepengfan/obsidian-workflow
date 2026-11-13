@@ -3,6 +3,7 @@ sorting-spec: |
   target-folder: .
   Inbox
   Journal
+  Library
   Essays
   Zettelkasten
   Profile
