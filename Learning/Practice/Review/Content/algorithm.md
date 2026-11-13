@@ -4,7 +4,14 @@
 
 - 以一道可独立重写的算法题为单位。LeetCode 题使用 `lc-<题号>`，例如 `lc-1071`。其他来源用能区分题目的稳定小写连字符 ID。后续同一题沿用原 ID。
 - `prompt` 放已核对的题意、输入输出、必要约束和公开样例。用中性表述保留独立识别空间。
-- `review_focus` 可记录本题要核对的识别线索、工具选择、边界条件或已有证据支持的卡点。它和历史解法供作答后回顾。`source` 可指向题目原文。
+- `source` 保存题目原文链接。LeetCode 题使用核对过的题目直达 URL，例如 `https://leetcode.com/problems/greatest-common-divisor-of-strings/`。
+- `review_focus` 可记录本题要核对的识别线索、工具选择、边界条件或已有证据支持的卡点。它和历史解法供作答后回顾。
+
+## 开始复习
+
+- 每题开题时，在标题旁显示可点击的 LeetCode 题目链接，例如 `[LC 1071 - 字符串的最大公因子](https://leetcode.com/problems/greatest-common-divisor-of-strings/)`。此要求同时适用于 `/practice` 自动开始的复习和 `/practice-review-today` 单题复习。
+- 优先使用 `show <id>` 返回的 `source`。旧条目缺少题目链接时，根据已确认的题号或题名查找并核对官方题目 URL 后展示，不猜测 slug，也不打开题解或历史作答。
+- 告知用户在 LeetCode 上独立完成，再将代码和实际用时贴回对话。保留中性题意和约定时限，不要求用户直接在聊天中写题。
 
 ## 作答后回顾
 

@@ -15,8 +15,8 @@ Read `Learning/Practice/Review/AGENTS.md`. Use `python3 scripts/practice-review/
 
 - With no item in `$ARGUMENTS`, run `due`. Show the counts and titles for today, overdue, and waiting for their first recorded round. Include the stable IDs so the learner can choose one.
 - With a selected item, run `show <id>`. Check that it is active. Resolve `practice_flows[domain]` from the module configuration, read the mapped source and execute any module guard it declares. Read `Content/<domain>.md` for the review content.
-- Present the neutral prompt and a time limit from `review_time_limits[domain]`, adjustable before starting. Let the learner make an independent attempt in the format appropriate to the selected workflow and report their actual time. Start a stable unique `attempt_id` and keep it through retries and follow-ups.
-- Use only the neutral prompt before independent practice. Open earlier code, diagrams, answers, notes and the item's `review_focus` after the attempt ends. If the learner asks for help during practice, provide targeted help and retain that assistance in the evaluation.
+- Present the neutral prompt and a time limit from `review_time_limits[domain]`, adjustable before starting. When `source` is a problem URL, display it as a clickable Markdown link alongside the title; follow `Content/<domain>.md` for domain-specific link and submission requirements. Let the learner make an independent attempt in the format appropriate to the selected workflow and report their actual time. Start a stable unique `attempt_id` and keep it through retries and follow-ups.
+- Use only the neutral prompt and problem link before independent practice. Open earlier code, diagrams, answers, notes and the item's `review_focus` after the attempt ends. If the learner asks for help during practice, provide targeted help and retain that assistance in the evaluation.
 - After submission, use the mapped workflow's existing assessment section. For system design, enter `sysd-solve` Phase 2 after the independent submission. Its Phase 0 restoration belongs to resumed practice and must not expose an old design before a cold review.
 
 ## Review and save
