@@ -8,6 +8,13 @@ The module has three parts:
 
 Use `algorithm`, `system-design`, or `behavioral` for the domain. The selected workflow owns practice and assessment. This module connects its results to personal reflection and scheduling.
 
+## English conversation and clarification
+
+- Conduct practice and review conversations entirely in English, including module choices, problem prompts, hints, feedback, and reflection questions. Present non-English source material in English while preserving exact identifiers, links, and code. These rules remain active through domain-workflow handoffs and take precedence over their default language choices.
+- Ask the learner to use English for explanations, interview answers, and reflections. When they reply in another language, ask them to restate their meaning in English before using that explanation or saving the reflection. Keep their own English wording in new records; preserve historical records as written.
+- When a reply is unclear, identify the ambiguous phrase and ask a focused question about what they mean. For example, if "calculate directly in the array" could mean building a result list or modifying the input, ask which they intend. Wait for clarification before assessing that claim or recording that reflection; do not infer their intent or silently replace it with a polished interpretation.
+- Accept concise, clear English without requiring extra justification or a grammar exercise. Keep clarification neutral during independent attempts. Language clarification alone is not substantive solution help; record any actual problem-solving assistance separately in the assessment.
+
 ## Interactive entry
 
 `/practice` selects a domain, completes its due reviews, then starts a new problem. Use the client's choices when available and honor a domain already supplied in the request or current conversation. The entry has no practice/Review mode menu.

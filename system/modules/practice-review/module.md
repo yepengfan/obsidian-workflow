@@ -39,7 +39,7 @@ tags: [system/module]
 
 ## Overview
 
-用同一个到期清单管理算法、系统设计和行为面试练习。每轮结束后保存本人心得，按实际表现安排下次复习。
+Manage algorithm, system design, and behavioral interview practice through one due queue. Conversations and learner responses use English throughout reviews and new practice. Clarify unclear replies before assessing their meaning or saving reflections. Each ended round saves the learner's own reflection and schedules the next review from actual performance. See `Learning/Practice/Review/AGENTS.md` for the shared conversation rules.
 
 ## 架构
 

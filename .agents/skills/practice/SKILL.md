@@ -11,9 +11,13 @@ disable-model-invocation: true
 
 Read `Learning/Practice/Review/AGENTS.md`. Resolve `$ARGUMENTS` and the user's explicit choices in the current exchange. Keep the selected module, review progress and any explicitly supplied new topic through subsequent replies.
 
+## English conversation
+
+Apply the shared **English conversation and clarification** rules in `Learning/Practice/Review/AGENTS.md` throughout module selection, reviews, and new practice. Keep these rules active when handing off to a mapped workflow, overriding its default language choice.
+
 ## Select module
 
-Use the client's available single-choice input, or numbered choices when that input is unavailable. A bare `/practice` offers `算法` (`algorithm`), `系统设计` (`system-design`) and `行为面试` (`behavioral`). Use a module already supplied in the request or current exchange; otherwise wait for the selection. Do not ask the learner to choose practice or Review.
+Use the client's available single-choice input, or numbered choices when that input is unavailable. A bare `/practice` offers `Algorithm` (`algorithm`), `System Design` (`system-design`) and `Behavioral Interview` (`behavioral`). Use a module already supplied in the request or current exchange; otherwise wait for the selection. Do not ask the learner to choose practice or Review.
 
 Resolve the module's authoritative workflow from `practice_flows` in the module configuration. Read that source and execute any module guard it declares before starting a domain action. If it is disabled, explain how to enable it and return to the module choice. Read `Learning/Practice/Review/Content/<domain>.md` for the selected module's review content.
 
