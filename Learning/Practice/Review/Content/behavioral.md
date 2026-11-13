@@ -1,19 +1,19 @@
-# 行为面试复习内容
+# Behavioral Interview Review Content
 
-## 建立条目
+## Create an item
 
-- 以一个可再次回答的面试问题为单位，可关联用户选定的一段经历。使用 `behavior-<slug>`，例如 `behavior-conflict`。同一问题和练习目标沿用原 ID。
-- `prompt` 放面试问题和必要的场景约束。用户在作答时自行选择或回忆真实经历。
-- `review_focus` 可记录要检查的个人行动、行动理由、结果证据和曾卡住的追问。经历材料、完整旧答和追问提示在重练结束后查看。`source` 可引用已有故事笔记。
+- Use one interview question that can be answered again, optionally linked to an experience selected by the learner. Use `behavior-<slug>`, such as `behavior-conflict`. Reuse the original ID for the same question and practice objective.
+- Put the interview question and necessary scenario constraints in `prompt`. The learner chooses or recalls a real experience while answering.
+- Use `review_focus` for personal actions, reasons, evidence of results, or previously difficult follow-ups. Open experience notes, complete previous answers, and follow-up hints only after the independent attempt ends. The `source` may reference an existing story note.
 
-## 作答后回顾
+## Reflect after the attempt
 
-根据本轮回答选择一个问题，让用户写下实际改进方向。
+Choose one question from this round's answer and ask the learner to state a concrete improvement in English.
 
-- 哪句回答没说清自己负责的部分？可以补哪项真实行动？
-- 哪个追问需要更多事实才能答清？现在有哪些可核实的结果？
-- 哪段背景占时太多？下轮准备把时间留给哪个行动、取舍或结果？
+- Which sentence left your own responsibility unclear? What real action could you add?
+- Which follow-up needed more facts for a clear answer? What results can you substantiate now?
+- Which background details took too much time? Which action, tradeoff, or result will you prioritize next round?
 
-## 示例
+## Example
 
-`behavior-conflict` 的 `prompt` 可以是“讲一次你处理工作分歧的经历。” `review_focus` 可核对用户如何理解对方的顾虑、采取了哪些个人行动，以及后来发生了什么。用户选择实际经历和可陈述的证据。
+The `behavior-conflict` prompt might be "Tell me about a time you handled a disagreement at work." Its `review_focus` can check how the learner understood the other person's concerns, what they personally did, and what happened afterward. The learner chooses a real experience and facts they can support.

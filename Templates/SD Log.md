@@ -20,7 +20,7 @@ tags: [system-design/log]
 
 ### Architecture
 
-> 本次练习的架构图
+> Architecture diagram from this attempt
 
 ```mermaid
 graph LR

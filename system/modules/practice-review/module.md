@@ -1,6 +1,6 @@
 ---
 module: practice-review
-label: "练习回顾与间隔复习"
+label: "Practice and Spaced Review"
 type: knowledge
 status: active
 enabled: true
@@ -39,23 +39,23 @@ tags: [system/module]
 
 ## Overview
 
-Manage algorithm, system design, and behavioral interview practice through one due queue. Conversations and learner responses use English throughout reviews and new practice. Clarify unclear replies before assessing their meaning or saving reflections. Each ended round saves the learner's own reflection and schedules the next review from actual performance. See `Learning/Practice/Review/AGENTS.md` for the shared conversation rules.
+Manage algorithm, system design, and behavioral interview practice through one due queue. Conversations and learner responses use English throughout reviews and new practice, including direct entries into the domain workflows. Clarify unclear replies before assessing their meaning or saving reflections. Each ended round saves the learner's own reflection and schedules the next review from actual performance. See `Learning/Practice/Review/AGENTS.md` for the shared conversation rules.
 
-## 架构
+## Architecture
 
-- 通用脚本统计今日到期和逾期条目，维护复习日期、轮次与心得。
-- `practice_flows` 直接引用现有的 `algo-solve` 和 `sysd-solve` 技能。行为面试使用 `Flows/behavioral.md`。`Content/` 定义各领域练什么、作答后回顾哪些问题。
-- `Items/` 保存具体题目、复习状态和历次记录，随 vault 同步。`00_index.md` 展示练习队列。
-- `Home.md` 顶部的独立 Practice 区块展示高层统计，链接到完整复习看板。
+- The shared CLI lists overdue and due items and maintains review dates, rounds, and reflections.
+- `practice_flows` maps to `algo-solve`, `sysd-solve`, and `Flows/behavioral.md`. `Content/` defines each domain's review unit and post-attempt focus.
+- `Items/` stores problem prompts, review state, and attempt history through vault sync. `00_index.md` displays the queue.
+- The separate Practice section at the top of `Home.md` shows high-level counts and links to the full review dashboard.
 
 ## Quick Start
 
-1. `/practice` 先选择算法、系统设计或行为面试。
-2. 按日期从早到晚自动开始该模块的逾期和今日到期题目；每题完成作答、评价和本人心得保存后，更新下一次日期并进入下一题。
-3. 到期复习全部完成后，自动进入对应的原有流程练新题；没有到期题时直接进入。算法由 `algo-solve` 接收新题号或题名。
+1. Run `/practice` and choose Algorithm, System Design, or Behavioral Interview.
+2. Complete that domain's overdue and due items in date order. After each submission, assessment, and reflection is saved, update its next date and start the next item.
+3. After all due reviews are complete, enter the domain's normal workflow for a new problem. If none are due, start there immediately. Algorithm practice uses `algo-solve` to request a new problem number or title.
 
-直接加入题目可用 `/practice-review-add algorithm 1071`。直接查看复习队列可用 `/practice-review-today`。算法复习开题时附上 LeetCode 题目直达链接，在站点独立完成后将代码和实际用时贴回对话。
+Register a problem directly with `/practice-review-add algorithm 1071`. View the queue with `/practice-review-today`. Algorithm review prompts include direct LeetCode links; solve independently on the site and return with code and actual time.
 
-## 配置位置
+## Configuration
 
-本文件设置 `practice_flows`、`review_time_limits`、`interval_days` 和 `retry_days`。练习和回顾的交接规则见 [[Learning/Practice/Review/AGENTS|复习模块规则]]。
+This file owns `practice_flows`, `review_time_limits`, `interval_days`, and `retry_days`. See [[Learning/Practice/Review/AGENTS|Practice review rules]] for practice and review handoffs.

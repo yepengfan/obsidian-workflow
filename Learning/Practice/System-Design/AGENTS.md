@@ -1,53 +1,57 @@
-# System Design Module — Agent Instructions
+# System Design Module - Agent Instructions
 
-> 继承 vault root AGENTS.md 的通用约定。
+> Inherit the general conventions from the vault root AGENTS.md.
+
+## Language
+
+Use English for coaching, learner explanations and reflections, and newly authored notes and diagram labels. Apply **English conversation and clarification** in `Learning/Practice/Review/AGENTS.md`, including direct `/sysd-solve` sessions. Preserve existing filenames, links, metadata identifiers, and historical user content when updating notes.
 
 ## Directory Configuration
 
 | Path | Purpose |
 |------|---------|
-| `Learning/Practice/System-Design/Solutions/<题目>/` | Solution folder（每题一个，含 progress.md + Excalidraw） |
-| `Learning/Practice/System-Design/Patterns/` | Pattern card 文件（一个 pattern 一个 .md） |
-| `Learning/Practice/System-Design/Core Concepts/` | 核心概念 reference（Caching, Sharding, CAP Theorem, etc.） |
-| `Learning/Practice/System-Design/Key Technologies/` | 技术 building block 文章（Redis, Kafka, etc.） |
-| `Learning/Practice/System-Design/Design Patterns/` | 设计模式 building block 文章（Scaling Reads, Real-time Updates, etc.） |
-| `Learning/Practice/System-Design/Insights/` | 练习中沉淀的具体知识点和经验总结 |
-| `Learning/Practice/System-Design/Log/` | 每次练习记录 |
-| `Learning/Practice/System-Design/Courses/` | 课程笔记（Hello Interview 等） |
-| `Learning/Practice/System-Design/Attachments/` | 共享媒体（非题目专属的架构图、截图等） |
+| `Learning/Practice/System-Design/Solutions/<topic>/` | One Solution folder per session, containing progress.md and Excalidraw |
+| `Learning/Practice/System-Design/Patterns/` | One Markdown file per pattern card |
+| `Learning/Practice/System-Design/Core Concepts/` | Core concept references, such as Caching, Sharding, and CAP Theorem |
+| `Learning/Practice/System-Design/Key Technologies/` | Technology building-block articles, such as Redis and Kafka |
+| `Learning/Practice/System-Design/Design Patterns/` | Design building-block articles, such as Scaling Reads and Real-time Updates |
+| `Learning/Practice/System-Design/Insights/` | Specific knowledge and lessons captured during practice |
+| `Learning/Practice/System-Design/Log/` | Practice session logs |
+| `Learning/Practice/System-Design/Courses/` | Course notes, such as Hello Interview |
+| `Learning/Practice/System-Design/Attachments/` | Shared media, including diagrams and screenshots not specific to one problem |
 | `Learning/Practice/System-Design/00_index.md` | Dataview dashboard |
-| `Templates/SD Pattern.md` | 新 pattern card 模板 |
-| `Templates/SD Log.md` | 新 log 模板 |
+| `Templates/SD Pattern.md` | Template for new pattern cards |
+| `Templates/SD Log.md` | Template for new logs |
 
 ## Solving Flow
 
-1. 用户给题目（如 "Design YouTube"）→ 引导需求分析，**不直接给架构**
-2. 按 Delivery Framework 6 步引导：Requirements → Core Entities → API → Data Flow → High-Level Design → Deep Dives
-3. Step 5 时生成 Mermaid 架构图，与用户一起迭代
-4. 用户说 "show me the design" / "给我看方案" / "我放弃" 时才给完整设计
-5. 用户给出设计 → 审核合理性、trade-off 分析、改进建议
-6. 通过后 → 沉淀 pattern card（含架构图）+ 写 log
+1. Receive a problem, such as "Design YouTube", and guide requirements analysis without directly giving the architecture.
+2. Follow the six-step Delivery Framework: Requirements → Core Entities → API → Data Flow → High-Level Design → Deep Dives.
+3. Generate a Mermaid architecture diagram at Step 5 and iterate with the learner.
+4. Give the complete design only when explicitly requested, for example "show me the design" or "I give up".
+5. Review the learner's design for soundness, tradeoffs, and possible improvements.
+6. After review passes, save pattern cards with architecture diagrams and write the Log according to the skill's confirmation rules.
 
 ## Pattern Card Rules
 
-- **已有 pattern**: 加题名到 frontmatter `problems[]` + 正文 Problems 表格加一行 + 更新 `updated` 日期
-- **新 pattern**: 创建新文件（用 `Templates/SD Pattern.md`），id 取当前最大值 +1，填充所有字段
-- `difficulty` 指 pattern 理解难度，非单题难度
-- 文件名 = pattern title（去掉文件系统非法字符 `/ \ : * ? " < > |`）
-- `tags` 格式: `[system-design/pattern, system-design/{category-slug}]`
+- **Existing pattern**: add the problem name to frontmatter `problems[]`, append a Problems table row, and update `updated`.
+- **New pattern**: create a file from `Templates/SD Pattern.md`, assign the highest existing ID plus one, and fill all fields.
+- `difficulty` describes the pattern's complexity, not a particular problem's difficulty.
+- Use the pattern title as the filename, removing filesystem-invalid characters: `/ \ : * ? " < > |`.
+- Use tags in the form `[system-design/pattern, system-design/{category-slug}]`.
 
 ## Log Rules
 
-- 每道题一个 `##` section
-- 包含 pattern wikilink `[[pattern name]]`、difficulty、result emoji、notes、时间
-- 包含 Requirements 小节（functional + non-functional）和 Key Decisions 小节
-- frontmatter `problems_solved` 数组与正文 sections 保持一致
-- 文件名: `YYYY-MM-DD.md`
-- 如果当天 log 已存在，追加新 section（不覆盖）
+- Use one `##` section per problem.
+- Include the pattern wikilink `[[pattern name]]`, difficulty, result emoji, notes, and time.
+- Include Requirements (functional and non-functional) and Key Decisions subsections.
+- Keep frontmatter `problems_solved` consistent with the body sections.
+- Name the file `YYYY-MM-DD.md`.
+- Append to an existing daily Log rather than overwriting it.
 
 ## Category Values
 
-合法 category 值（与 Dataview 分组键一致）:
+Use these category values to match the Dataview grouping keys:
 
 - Storage & Database
 - Caching
@@ -62,42 +66,43 @@
 - Observability
 - Microservices
 
-## Solving 引导框架（Hello Interview Delivery Framework）
+## Hello Interview Delivery Framework
 
-基于 Hello Interview 的 6 步 Delivery Framework。核心理念：前半段（1→5）满足功能需求，整个流程（1→6）满足非功能需求。
+The first five steps establish functional requirements coverage; the full six-step process addresses non-functional requirements.
 
-1. **Requirements** — 功能需求 + 非功能需求（QPS、延迟、可用性、一致性）+ Back-of-Envelope 估算
-2. **Core Entities** — 识别核心实体和它们之间的关系（不是完整 schema，聚焦业务概念）
-3. **API or Interface** — 核心接口定义（REST/gRPC/WebSocket，关注输入输出）
-4. **Data Flow** — 数据如何在系统中流动（从用户请求到最终存储/返回的完整路径）
-5. **High-Level Design** — 画出核心组件和连接关系（生成 Mermaid 架构图）
-6. **Deep Dives** — 选 2-3 个组件深入，解决非功能需求（scaling、consistency、availability）
+1. **Requirements**: functional requirements, non-functional requirements (QPS, latency, availability, and consistency), and back-of-envelope estimates.
+2. **Core Entities**: core entities and their relationships, focused on business concepts rather than full schemas.
+3. **API or Interface**: core interfaces (REST, gRPC, or WebSocket), focused on inputs and outputs.
+4. **Data Flow**: the complete path from a user request to final storage or a response.
+5. **High-Level Design**: core components and their connections, shown in a Mermaid architecture diagram.
+6. **Deep Dives**: examine 2-3 components to address scaling, consistency, and availability.
 
-每一步先让用户思考，卡住时给 hint，不直接给答案。
+Let the learner think at each step. Offer hints when they are stuck rather than directly supplying answers.
 
-> 详细框架笔记见 `[[Frameworks/Delivery Framework]]`
+> See `[[Frameworks/Delivery Framework]]` for detailed framework notes.
 
-## 心法 (Guiding Heuristics)
+## Guiding Heuristics
 
-引导 Phase 1 时参考以下原则。
+Use these principles during Phase 1 guidance.
 
-### 核心原则
-- **从需求推导架构** — 不要背方案，要能推导出来
-- **Trade-off 思维** — 每个决策都有代价，说清楚
-- **数字感** — QPS、延迟、存储量级要能估算
-- **渐进式设计** — 先简单方案，再说 scale 怎么加
+### Core principles
+
+- **Derive architecture from requirements**: help the learner reason toward a design rather than memorize it.
+- **Make tradeoffs explicit**: every decision has costs; describe them clearly.
+- **Estimate scale**: reason about QPS, latency, and storage orders of magnitude.
+- **Design incrementally**: start simple, then explain how to scale.
 
 ## Solution Folder Convention
 
-每道系统设计题有自己的文件夹，所有 artifacts 集中管理：
+Each system design session has a folder containing all its artifacts:
 
-```
+```text
 Learning/Practice/System-Design/
 ├── Solutions/
 │   ├── Bitly-2026-06-14/
-│   │   ├── progress.md          # 进度文件（tags: [system-design/wip]）
-│   │   └── Bitly.excalidraw.md  # Excalidraw 画板
-│   ├── Bitly-2026-08-15/        # 同题第二次练习
+│   │   ├── progress.md          # Progress file; tags: [system-design/wip]
+│   │   └── Bitly.excalidraw.md  # Excalidraw canvas
+│   ├── Bitly-2026-08-15/        # A second session on the same topic
 │   │   ├── progress.md
 │   │   └── Bitly.excalidraw.md
 │   ├── YouTube-2026-07-01/
@@ -105,55 +110,59 @@ Learning/Practice/System-Design/
 │   │   └── YouTube.excalidraw.md
 ```
 
-### 文件夹
-- 路径: `Learning/Practice/System-Design/Solutions/<题目简称>-<started日期>/`（如 `Dropbox-2026-06-24`）
-- 同一道题可多次练习，每次用不同日期区分
-- **不要**在 vault 根目录 `Excalidraw/` 或 `Attachments/` 创建
-- 练习完成（Phase 3 沉淀结束）后文件夹保留不动，作为学习记录
+### Folders
+
+- Use `Learning/Practice/System-Design/Solutions/<short-topic>-<started-date>/`, such as `Dropbox-2026-06-24`.
+- Distinguish repeated sessions on the same topic by date.
+- Do not create session artifacts in the vault-root `Excalidraw/` or `Attachments/` folders.
+- Keep the folder after Phase 3 as a learning record.
 
 ### progress.md
-- frontmatter 必须有 `topic`, `started`，以及下方生命周期中的一个状态 tag
-- 包含: Progress 表（Delivery Framework 每步状态）、Pending Questions、Key Learnings、下次继续步骤
-- Home.md SD tab 自动检测 `system-design/wip` 和 `system-design/planned`：WIP 显示 "Continue →"，Planned 显示在待练队列
-- Phase 3 完成后将状态 tag 替换为 `system-design/done`（文件保留）
 
-#### 状态生命周期
+- Frontmatter must include `topic`, `started`, and one lifecycle status tag below.
+- Include a Progress table for each Delivery Framework step, Pending Questions, Key Learnings, and the next step for resuming. New files use a Next Session section; preserve the legacy heading in existing files.
+- The Home.md SD tab detects `system-design/wip` and `system-design/planned`: WIP entries show "Continue →", and planned entries appear in the upcoming practice queue.
+- After Phase 3, replace the status tag with `system-design/done` and retain the files.
+
+#### Status lifecycle
 
 ```text
 system-design/planned → system-design/wip → system-design/done
 ```
 
-- `planned`：学习计划已预建 Solution 骨架，但尚未开始；六步保持全 ⬜。
-- `wip`：当前正在练习。普通 `/sysd-solve <题目>` 新建 session 时直接使用此状态。
-- `done`：设计、审核和 Phase 3 沉淀均已完成。
-- 无参数 `/sysd-solve` 只自动恢复真正的 WIP，不列出 Planned。
-- 指定一个 Planned 题目时，先将其状态替换为 WIP，再从 `progress.md` 记录的下一步开始。
+- `planned`: a learning plan has pre-created a Solution skeleton, but practice has not started; all six steps remain ⬜.
+- `wip`: practice is in progress. New sessions created by `/sysd-solve <topic>` start here.
+- `done`: design, review, and Phase 3 saving are complete.
+- A direct `/sysd-solve` without arguments automatically resumes only actual WIP sessions and does not list planned ones. A `/practice` handoff to a new problem asks for a topic instead of restoring unrelated WIP.
+- When a planned topic is selected, replace its status with WIP and continue from progress.md's recorded next step.
 
 ### Excalidraw
-- 命名: `<题目简称>.excalidraw.md`（如 `Bitly.excalidraw.md`）
-- `/sysd-solve` 启动时自动创建，预填 Delivery Framework 6 步标题
-- progress.md 通过 `![[...]]` 嵌入引用
-- 使用未压缩 JSON 格式（`json` 代码块），Excalidraw 插件打开后自动压缩
 
-### Excalidraw 模板生成
+- Name the canvas `<short-topic>.excalidraw.md`, such as `Bitly.excalidraw.md`.
+- Create it when `/sysd-solve` starts a new session, pre-filled with all six Delivery Framework headings.
+- Embed it from progress.md using `![[...]]`.
+- Use uncompressed JSON in a `json` code block. The Excalidraw plugin compresses it when opened.
 
-使用脚本生成：`node scripts/sd-excalidraw-template.js "<题目>"`
-- 预填 Delivery Framework 6 步标题 + FR/NFR/Back-of-Envelope/Write Flow/Read Flow 子标题
-- 输出未压缩 JSON 格式，Excalidraw 插件打开后自动压缩
-- 修改模板布局请编辑 `scripts/sd-excalidraw-template.js`
+### Generate the Excalidraw template
+
+Run `node scripts/sd-excalidraw-template.js "<topic>"`.
+
+- The script pre-fills all six Delivery Framework headings and the FR/NFR, Back-of-Envelope, Write Flow, and Read Flow subheadings.
+- It outputs uncompressed JSON, which the Excalidraw plugin compresses when opened.
+- Edit `scripts/sd-excalidraw-template.js` to change the template layout.
 
 ## Diagram Conventions
 
-- **Mermaid** 为主要画图工具，直接内嵌 Markdown，Obsidian 原生渲染
-- 架构图用 `graph LR`（左到右流向）
-- 用 `subgraph` 分组（Client / Server / Data Layer 等）
-- 数据流标注协议/方向（HTTP, gRPC, Pub/Sub, CDC 等）
-- 需要精细手绘版时用 Excalidraw，文件存 `Learning/Practice/System-Design/Attachments/`
-- Pattern card 里的 Architecture Diagram section 存参考架构（Mermaid）
-- Log 里的 Architecture section 存当次练习的架构快照（Mermaid）
+- Use Mermaid as the primary diagram tool, embedded directly in Markdown for native Obsidian rendering.
+- Use `graph LR` for architecture diagrams flowing left to right.
+- Group components with `subgraph`, such as Client, Server, and Data Layer.
+- Label data flows with protocols and directions, such as HTTP, gRPC, Pub/Sub, or CDC.
+- For detailed hand-drawn diagrams, use Excalidraw and save shared files in `Learning/Practice/System-Design/Attachments/`.
+- Store reference architectures in each Pattern card's Architecture Diagram section as Mermaid.
+- Store the session's architecture snapshot in the Log's Architecture section as Mermaid.
 
-## 与其他计划的关系
+## Related Plans and Modules
 
-- **[[../../Plans/AISA/00_plan|AISA]]**: AI Solutions Architect，云架构方向
-- **Algorithm**: LeetCode 刷题系统，训练编码能力
-- **Frontend**: React/Next.js 前端练习
+- **[[../../Plans/AISA/00_plan|AISA]]**: AI Solutions Architect, focused on cloud architecture.
+- **Algorithm**: LeetCode practice for coding skills.
+- **Frontend**: React and Next.js practice.

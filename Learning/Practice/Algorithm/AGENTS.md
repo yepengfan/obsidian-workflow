@@ -137,9 +137,9 @@ Add new categories when needed, but prefer existing categories.
 
 ## Language
 
-- Use English for technical discussion by default; reply in Chinese when the learner uses Chinese.
+- Use English for coaching, learner explanations and reflections, and newly authored notes. Apply **English conversation and clarification** in `Learning/Practice/Review/AGENTS.md`, including direct `/algo-solve` sessions.
 - Always use clean, readable Python 3 code.
-- Follow the vault's existing style when mixing English and Chinese in notes.
+- Preserve existing filenames, links, metadata identifiers, and historical user content when updating notes.
 
 ## Do NOT
 
