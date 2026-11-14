@@ -5,18 +5,17 @@ type: work
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-08-08
+updated: 2026-11-14
 depends_on: [work]
 requires:
   cli: [claude]
   plugins: [dataview]
-commands: [brownbag]
+commands: []
 templates: [Templates/Brownbag Session.md]
 scripts: []
 hooks: []
 folders: [Work/Brownbag Sessions/]
-config_files:
-  - .claude/skills/brownbag/SKILL.md
+config_files: []
 tags: [system/module]
 ---
 
@@ -37,7 +36,7 @@ Work/Brownbag Sessions/
 ```
 
 ### 数据流
-- **创建**: `/brownbag <topic>` → 自动分配下一个 BB-N ID → 创建子文件夹 + 笔记
+- **创建**: 使用 `Templates/Brownbag Session.md` 手动创建子文件夹和笔记，分配下一个 BB-N ID。原 `/brownbag` skill 已移除。
 - **状态追踪**: 自动从 `## 验收标准` 清单推断
   - 全未勾选 → `planning`
   - 部分勾选 → `in-progress`
@@ -46,16 +45,16 @@ Work/Brownbag Sessions/
 
 ## Quick Start
 
-1. **创建分享会** → `/brownbag <topic>` — 自动创建子文件夹、分配 BB-N ID、生成笔记
+1. **创建分享会** → 使用模板创建子文件夹和笔记，分配下一个 BB-N ID
 2. **推进准备** → 逐步勾选 `## 验收标准` 里的清单项，状态自动推进
 3. **查看进度** → `Work/Brownbag Sessions/Brownbag Sessions.md` 索引页
 
-**日常节奏**: `/brownbag` 创建 → 准备过程中逐项打勾 → 全部完成时状态自动变为 done
+**日常节奏**: 模板创建 → 准备过程中逐项打勾 → 全部完成时状态自动变为 done
 
 ## 配置位置
 | 组件 | 位置 |
 |------|------|
-| 命令定义 | `.claude/skills/brownbag/SKILL.md` |
+| 命令定义 | 无，原 brownbag skill 已移除 |
 | 模板 | `Templates/Brownbag Session.md` |
 | 索引 | `Work/Brownbag Sessions/Brownbag Sessions.md` |
 
