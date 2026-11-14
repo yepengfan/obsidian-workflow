@@ -60,6 +60,11 @@
 /Profile/
 /Note/
 /Feeds/
+/Library/
+
+# Local artifacts and one-off learning tools
+/.lavish/
+/scripts/learning/
 
 # ── Pipeline runtime state ──
 scripts/ai-digest/history.json
