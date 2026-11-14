@@ -8,7 +8,6 @@ created: 2026-03-29
 updated: 2026-11-14
 depends_on: [work]
 requires:
-  cli: [claude]
   plugins: [dataview]
 commands: []
 templates: [Templates/Brownbag Session.md]
