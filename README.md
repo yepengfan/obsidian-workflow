@@ -166,7 +166,7 @@ flowchart TD
         LI --> PLAN["Learning/"]:::plan
         PLAN --> LL["/learning-log"]:::cmd
         LL --> LR["/learning-review"]:::cmd
-        LR -.-> BB["/brownbag"]:::cmd
+        LR -.-> BB["Brownbag Session template (manual)"]:::source
     end
 
     IR --> ZK["Zettelkasten/"]:::store
@@ -205,7 +205,9 @@ All commands run inside Claude Code (type `/command-name` in the chat).
 | `/meeting <title>` | Create a meeting note |
 | `/decision-log <decision>` | Record a decision with context and rationale |
 | `/project <name>` | Create a new project page in `Work/Projects/` |
-| `/brownbag <topic>` | Create a new brownbag session plan in `Work/Brownbag Sessions/` (auto-assigns BB-N id) |
+
+
+To create a brownbag session manually, copy the [Brownbag Session template](Templates/Brownbag%20Session.md) into `Work/Brownbag Sessions/<topic>/<topic>.md` and assign the next available BB-N ID.
 
 #### Learning
 

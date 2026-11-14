@@ -37,7 +37,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
   - `archive/` — Past years and completed projects
   - `2026/` — Current year daily notes (`YYYY-MM-DD.md`)
   - `Projects/` — Project pages (one per project, created from template)
-  - `Brownbag Sessions/` — Brownbag session plans. Each session lives in its own subfolder (e.g., `Brownbag Sessions/Bedrock Cost Optimization/`). Each session has a unique `id` (BB-1, BB-2, ...), `created` date, and acceptance criteria checklist (`## 验收标准`). Status is auto-inferred from the checklist: all unchecked → planning, partially checked → in-progress, all checked → done. Created via `/brownbag <topic>`. Index at `Brownbag Sessions/Brownbag Sessions.md`. Shared assets (e.g., slide templates) stay at the `Brownbag Sessions/` root.
+  - `Brownbag Sessions/` — Brownbag session plans. Each session lives in its own subfolder (e.g., `Brownbag Sessions/Bedrock Cost Optimization/`). Each session has a unique `id` (BB-1, BB-2, ...), `created` date, and acceptance criteria checklist (`## 验收标准`). Status is auto-inferred from the checklist: all unchecked → planning, partially checked → in-progress, all checked → done. Create new sessions manually from `Templates/Brownbag Session.md`. Index at `Brownbag Sessions/Brownbag Sessions.md`. Shared assets (e.g., slide templates) stay at the `Brownbag Sessions/` root.
 - **Tasks/** — 全库任务象限板（要事第一）。活页 `Tasks/Board.md`（gitignore）。模板 `Templates/Task Board.md`。命令 `/task-add` `/task-board`。任务行格式 `- [ ] ⭐ 📅 YYYY-MM-DD 标题 #task/work|life|other`
 
 ## Key Files
@@ -52,7 +52,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Templates/Learning Week.md** — Template for weekly learning logs (`Weeks/YYYY-WXX.md`).
 - **Templates/Algorithm Pattern.md** — Template for algorithm pattern cards (used by `/algo-solve`).
 - **Templates/Algorithm Log.md** — Template for daily algorithm practice logs (used by `/algo-solve`).
-- **Templates/Brownbag Session.md** — Template for brownbag session plans (used by `/brownbag` command).
+- **Templates/Brownbag Session.md** - Template for manually creating brownbag session plans.
 - **Templates/Task Board.md** — Template for the vault-wide Covey/Eisenhower board (used by `/task-add` `/task-board`). Live file is `Tasks/Board.md`.
 - **Templates/Home.md** — Reference backup + design decisions log for `Home.md` (note-creation button, toolbar design).
 - **Templates/Work Dashboard.md** — Reference backup + design decisions log for `Work/Work Dashboard.md`.
@@ -98,7 +98,7 @@ All commands are Agent Skills, living in `.agents/skills/<name>/SKILL.md` — th
 
 Always edit files under `.agents/skills/` — never edit through the `.claude/skills/` or `.codex/skills/` symlinks (same underlying files, but editing via the real path avoids any tool confusion about symlink resolution). When a future client only scans a different path, add another symlink pointing at `.agents/skills/` rather than duplicating files.
 
-Naming is flat and hyphenated: `{module}-{command}` (e.g. `/work-daily`, `/algo-solve`, `/zettelkasten-zettel`). A few short/global commands stay as-is with no module prefix (`/brownbag`, `/module-toggle`).
+Naming is flat and hyphenated: `{module}-{command}` (e.g. `/work-daily`, `/algo-solve`, `/zettelkasten-zettel`). Short/global commands such as `/module-toggle` have no module prefix.
 
 ```
 .claude/skills/
@@ -121,7 +121,6 @@ Naming is flat and hyphenated: `{module}-{command}` (e.g. `/work-daily`, `/algo-
 ├── algo-solve/                  # /algo-solve
 ├── book-init/                   # /book-init
 ├── book-read/                   # /book-read
-├── brownbag/                    # /brownbag
 ├── task-board/                  # /task-board
 ├── task-add/                    # /task-add
 ├── sysd-solve/                  # /sysd-solve
