@@ -6,7 +6,7 @@ status: active
 enabled: true
 created: 2026-09-14
 updated: 2026-11-17
-depends_on: []
+depends_on: [dashboard]
 requires:
   cli: [claude]
   plugins: [dataview]
@@ -72,3 +72,7 @@ Templates/Task Board.md      # git 内模板
 
 ---
 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

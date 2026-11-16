@@ -6,13 +6,13 @@ status: active
 enabled: true
 created: 2026-05-07
 updated: 2026-11-17
-depends_on: []
+depends_on: [dashboard]
 requires:
   cli: [claude]
   plugins: [dataview]
 commands: [solve]
 templates: [Templates/Algorithm Pattern.md, Templates/Algorithm Log.md, Templates/Algorithm Atom.md]
-scripts: [scripts/dashboard/algorithm/view.js]
+scripts: [scripts/dashboard/algorithm/view.js, scripts/dashboard/practice/view.js]
 hooks: []
 folders: [Learning/Practice/Algorithm/, Learning/Practice/Algorithm/Patterns/, Learning/Practice/Algorithm/Log/, Learning/Practice/Algorithm/Atoms/]
 config_files:
@@ -41,3 +41,7 @@ Coach messages, learner explanations and reflections, and new note content use E
 ## Quick Start
 
 1. Run `/algo-solve 543` to start a problem-solving session in Claude Code or Cursor. With `/algo-solve` alone, enter the problem number or title when prompted.
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

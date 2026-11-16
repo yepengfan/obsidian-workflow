@@ -1,29 +1,3 @@
-const ICONS = {
-  review:
-    '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10a9 9 0 1 1 2.4 8.6M3 4v6h6"/><path d="m9 12 2 2 4-4"/></svg>',
-  task: '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 3v18M3 12h18"/></svg>',
-  journal:
-    '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h12a2 2 0 0 1 2 2v16H6a2 2 0 0 1-2-2V5a2 2 0 0 1 1-2Z"/><path d="M8 7h7M8 11h7M8 15h4"/></svg>',
-  learning:
-    '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5 10 5-10 5-10-5ZM6 11v6c4 3 8 3 12 0v-6M22 9v7"/></svg>',
-  books:
-    '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c-3-2-7-2-10-1v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15"/></svg>',
-  algo: '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m8 5-6 7 6 7M16 5l6 7-6 7M14 3l-4 18"/></svg>',
-  sysd: '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="6" rx="1"/><rect x="1" y="16" width="8" height="6" rx="1"/><rect x="15" y="16" width="8" height="6" rx="1"/><path d="M12 8v4M5 16v-4h14v4"/></svg>',
-  frontend:
-    '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 8h20M8 8v13M5 5.5h.1M8 5.5h.1M11 5.5h.1"/></svg>',
-  zettel:
-    '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="18" r="3"/><circle cx="19" cy="18" r="3"/><path d="m10 8-4 7M14 8l4 7M8 18h8"/></svg>',
-  articles:
-    '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="18" height="20" rx="2"/><path d="M7 6h10M7 10h5M7 14h10M7 18h10"/></svg>',
-  essays:
-    '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 5 5L9 20l-6 1 1-6L16 3ZM13 6l5 5"/></svg>',
-  work: '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M8 7V3h8v4M2 12c6 4 14 4 20 0M10 13h4v4h-4z"/></svg>',
-  brownbag:
-    '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v13H3zM12 16v6M7 22h10M7 12V9M12 12V6M17 12V8"/></svg>',
-  profile:
-    '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg>',
-};
 // Pure calendar helpers keep counts stable across local midnight and DST.
 function dayKey(value) {
   const raw =
@@ -141,7 +115,7 @@ function brownbagStatus(page) {
 function spark(values) {
   const max = Math.max(1, ...values);
   return (
-    `<svg role="img" aria-label="最近 ${values.length} 周活动：${values.join("、")}" viewBox="0 0 100 42">` +
+    `<svg role="img" aria-label="Last ${values.length} weeks: ${values.join(", ")}" viewBox="0 0 100 42">` +
     values
       .map(
         (v, i) =>
@@ -154,7 +128,7 @@ function spark(values) {
 function segments(done, total) {
   if (!total) return "";
   return (
-    `<div class="home-segments" role="img" aria-label="已完成 ${done}，总计 ${total}">` +
+    `<div class="home-segments" role="img" aria-label="Completed ${done} of ${total}">` +
     Array.from(
       { length: total },
       (_, i) => `<i${i < done ? ' class="filled"' : ""}></i>`,
@@ -166,7 +140,7 @@ function distribution(values, labels) {
   const total = values.reduce((a, b) => a + b, 0);
   const title = labels.map((label, i) => `${label} ${values[i]}`).join("，");
   if (!total)
-    return `<div class="home-distribution" role="img" aria-label="暂无记录"><i style="flex:1;background:var(--background-modifier-border)"></i></div>`;
+    return `<div class="home-distribution" role="img" aria-label="No records"><i style="flex:1;background:var(--background-modifier-border)"></i></div>`;
   return (
     `<div class="home-distribution" role="img" aria-label="${title}">` +
     values
@@ -179,9 +153,17 @@ function distribution(values, labels) {
   );
 }
 async function renderHome(dv, app, Notice) {
-  const root = dv.el("section", "", { cls: "home-dashboard" });
+  const shared = {
+    app,
+    title: "Home",
+    description: "Your dashboard and starting point.",
+  };
+  await dv.view("scripts/dashboard/ui", shared);
+  const ICONS = shared.ui.icons;
+  const root = shared.ui.content;
+  root.classList.add("home-dashboard");
   if (dv.page("system/modules/dashboard/module")?.enabled !== true) {
-    root.createEl("p", { text: "Home 仪表盘已暂停。" });
+    root.createEl("p", { text: "Home dashboard is paused." });
     return;
   }
   const today = dayKey(new Date());
@@ -198,8 +180,8 @@ async function renderHome(dv, app, Notice) {
       if (!app.vault.getAbstractFileByPath(path)) {
         new Notice(
           path === "Tasks/Board.md"
-            ? "请先运行 /task-board 创建任务板"
-            : "找不到仪表盘：" + path,
+            ? "Run /task-board to create your task board first"
+            : "Dashboard unavailable: " + path,
         );
         return;
       }
@@ -221,12 +203,12 @@ async function renderHome(dv, app, Notice) {
     });
     glyph.innerHTML = ICONS[icon];
     name.createEl("h3", { text: title });
-    link(header, path, "仪表盘 ↗", "home-dashboard-link");
+    link(header, path, "Dashboard ↗", "home-dashboard-link");
     const body = el.createEl("div", { cls: "home-card-body" }),
       footer = el.createEl("div", { cls: "home-card-footer" });
     const active = dv.page(`system/modules/${id}/module`)?.enabled === true;
     if (!active) {
-      body.createEl("small", { text: "模块已暂停" });
+      body.createEl("small", { text: "Module paused" });
       el.classList.add("is-paused");
     }
     return { el, body, footer, active };
@@ -246,7 +228,7 @@ async function renderHome(dv, app, Notice) {
     b.addEventListener("click", action);
     return b;
   }
-  const daily = group("日常");
+  const daily = group("Daily");
   const review = card(
     daily,
     "practice-review",
@@ -256,13 +238,17 @@ async function renderHome(dv, app, Notice) {
   );
   if (review.active) {
     const stats = reviewCounts(query("Learning/Practice/Review/Items"), today);
-    metric(review.body, stats.today, "今日到期");
-    metric(review.body, stats.overdue, "逾期");
-    metric(review.body, stats.unstarted, "待首次");
-    link(review.footer, "Learning/Practice/Review/00_index.md", "开始练习 →");
+    metric(review.body, stats.today, "Due today");
+    metric(review.body, stats.overdue, "Overdue");
+    metric(review.body, stats.unstarted, "Not started");
+    link(
+      review.footer,
+      "Learning/Practice/Review/00_index.md",
+      "Review queue →",
+    );
     if (stats.invalid)
       review.footer.createEl("small", {
-        text: `${stats.invalid} 项日期需修正`,
+        text: `${stats.invalid} dates need attention`,
       });
   }
   const task = card(
@@ -280,13 +266,18 @@ async function renderHome(dv, app, Notice) {
       file ? (app.metadataCache.getFileCache(file)?.headings ?? []) : [],
       today,
     );
-    metric(task.body, stats.open.length, "未完成");
-    metric(task.body, stats.important, "重要");
+    metric(task.body, stats.open.length, "Open");
+    metric(task.body, stats.important, "Important");
     const matrix = task.body.createEl("div", {
       cls: "home-quadrants",
-      attr: { "aria-label": "任务四象限数量" },
+      attr: { "aria-label": "Task quadrant counts" },
     });
-    const names = ["重要且紧急", "重要不紧急", "不重要且紧急", "不重要不紧急"];
+    const names = [
+      "Important and urgent",
+      "Important, not urgent",
+      "Urgent, not important",
+      "Neither important nor urgent",
+    ];
     stats.quadrants.forEach((n, i) => {
       const cell = matrix.createEl("span", {
         cls: "q" + (i + 1),
@@ -299,8 +290,8 @@ async function renderHome(dv, app, Notice) {
       task.footer,
       "Tasks/Board.md",
       stats.unclassified
-        ? `${stats.unclassified} 项待分类 →`
-        : "查看与安排任务 →",
+        ? `${stats.unclassified} unclassified →`
+        : "Plan tasks →",
     );
   }
   const journal = card(
@@ -319,7 +310,7 @@ async function renderHome(dv, app, Notice) {
       container: journal.el,
     });
   }
-  const learning = group("学习");
+  const learning = group("Learning");
   const plans = query("Learning/Plans").filter(
     (p) =>
       p.file.name === "00_plan" &&
@@ -337,7 +328,7 @@ async function renderHome(dv, app, Notice) {
     "Learning/Dashboard.md",
   );
   if (plan.active) {
-    metric(plan.body, plans.length, "活跃计划");
+    metric(plan.body, plans.length, "Active plans");
     const roadmapPlan = plans.find(
       (p) => p.tracking === "system-design-practice",
     );
@@ -365,7 +356,7 @@ async function renderHome(dv, app, Notice) {
       "Learning/Dashboard.md",
       plans.length
         ? plans.map((p) => p.file.folder.split("/").pop()).join(" · ") + " →"
-        : "查看学习计划 →",
+        : "Browse plans →",
     );
   }
   const books = card(
@@ -379,23 +370,23 @@ async function renderHome(dv, app, Notice) {
     const metas = query("Learning/Books").filter((p) => p.file.name === "meta"),
       reading = metas.filter((p) => p.status === "reading").length,
       finished = metas.filter((p) => p.status === "finished").length;
-    metric(books.body, reading, "在读");
-    metric(books.body, finished, "已读完");
+    metric(books.body, reading, "Reading");
+    metric(books.body, finished, "Finished");
     const total = reading + finished,
       circ = 2 * Math.PI * 17;
     plot(
       books.body,
-      `<svg role="img" aria-label="在读 ${reading}，已读完 ${finished}" viewBox="0 0 48 48"><circle cx="24" cy="24" r="17" fill="none" stroke="var(--home-chart-muted)" stroke-width="6"/><circle cx="24" cy="24" r="17" fill="none" stroke="var(--home-series-0)" stroke-width="6" stroke-dasharray="${total ? (circ * finished) / total : 0} ${circ}" transform="rotate(-90 24 24)"/><text x="24" y="29" font-size="13" text-anchor="middle" fill="var(--text-normal)">${total}</text></svg>`,
-      "书籍数量分布",
+      `<svg role="img" aria-label="Reading ${reading}，Finished ${finished}" viewBox="0 0 48 48"><circle cx="24" cy="24" r="17" fill="none" stroke="var(--home-chart-muted)" stroke-width="6"/><circle cx="24" cy="24" r="17" fill="none" stroke="var(--home-series-0)" stroke-width="6" stroke-dasharray="${total ? (circ * finished) / total : 0} ${circ}" transform="rotate(-90 24 24)"/><text x="24" y="29" font-size="13" text-anchor="middle" fill="var(--text-normal)">${total}</text></svg>`,
+      "Reading and finished books",
     );
-    link(books.footer, "Learning/Books/Books Index.md", "继续阅读 →");
-    button(books.footer, "微信读书书架 ↗", () => {
+    link(books.footer, "Learning/Books/Books Index.md", "Reading library →");
+    button(books.footer, "WeRead library ↗", () => {
       if (
         !app.commands.executeCommandById(
           "obsidian-weread-plugin:open-weread-bookshelf-view",
         )
       )
-        new Notice("微信读书书架入口不可用");
+        new Notice("WeRead library is unavailable");
     });
   }
   for (const [domain, id, title, icon, tag, field] of [
@@ -442,28 +433,39 @@ async function renderHome(dv, app, Notice) {
       const done = sessions.filter((p) => sessionStatus(p) === "done").length,
         planned = sessions.filter((p) => sessionStatus(p) === "planned").length,
         wip = sessions.filter((p) => sessionStatus(p) === "wip").length;
-      metric(c.body, done, "已完成");
-      metric(c.body, planned, "计划中");
+      metric(c.body, done, "Completed");
+      metric(c.body, planned, "Planned");
       plot(
         c.body,
-        distribution([done, planned, wip], ["已完成", "计划中", "进行中"]),
-        `进行中 ${wip}`,
+        distribution(
+          [done, planned, wip],
+          ["Completed", "Planned", "In progress"],
+        ),
+        `In progress ${wip}`,
       );
     } else if (id === "algorithm") {
       const values = weeklyCounts(logs, field, today);
       metric(c.body, patterns.length, "Patterns");
-      plot(c.body, spark(values), `12 周活动 · 本周 ${values.at(-1)} 题`);
+      plot(
+        c.body,
+        spark(values),
+        `12-week activity · ${values.at(-1)} this week`,
+      );
     } else {
       metric(c.body, patterns.length, "Patterns");
       metric(
         c.body,
         logs.reduce((n, p) => n + countEntries(p[field]), 0),
-        "已练 Challenge",
+        "Completed challenges",
       );
     }
-    link(c.footer, `Learning/Practice/${domain}/00_index.md`, "练习与模式库 →");
+    link(
+      c.footer,
+      `Learning/Practice/${domain}/00_index.md`,
+      "Practice library →",
+    );
   }
-  const knowledge = group("知识与工作");
+  const knowledge = group("Knowledge & work");
   const zk = card(
     knowledge,
     "zettelkasten",
@@ -481,9 +483,9 @@ async function renderHome(dv, app, Notice) {
     metric(
       zk.body,
       query("Inbox").filter((p) => !p.file.path.includes("/archive/")).length,
-      "Inbox 待处理",
+      "Inbox to process",
     );
-    const add = button(zk.footer, "+ 收集到 Inbox", async () => {
+    const add = button(zk.footer, "+ Capture to Inbox", async () => {
       add.disabled = true;
       try {
         if (!app.vault.getAbstractFileByPath("Inbox"))
@@ -516,13 +518,13 @@ async function renderHome(dv, app, Notice) {
       insta = query("Instapaper Notes").filter(
         (p) => p.file.name !== "Instapaper Index",
       ).length;
-    metric(articles.body, matter + insta, "收藏");
+    metric(articles.body, matter + insta, "Saved");
     plot(
       articles.body,
       distribution([matter, insta], ["Matter", "Instapaper"]),
       `Matter ${matter} · Instapaper ${insta}`,
     );
-    link(articles.footer, "Library/Articles.md", "最近收藏与来源索引 →");
+    link(articles.footer, "Library/Articles.md", "Reading library →");
   }
   const essays = card(
     knowledge,
@@ -534,10 +536,10 @@ async function renderHome(dv, app, Notice) {
   if (essays.active) {
     metric(
       essays.body,
-      query("Essays").filter((p) => p.file.name !== "index").length,
-      "篇文章",
+      query("Essays").filter((p) => p.type === "essay").length,
+      "Essays",
     );
-    link(essays.footer, "Essays/index.md", "进入写作索引 →");
+    link(essays.footer, "Essays/index.md", "Writing library →");
   }
   const work = card(
     knowledge,
@@ -548,9 +550,9 @@ async function renderHome(dv, app, Notice) {
   );
   if (work.active) {
     const shortcuts = work.body.createEl("div", { cls: "home-shortcuts" });
-    for (const label of ["日常任务", "项目状态", "周 / 月视图"])
+    for (const label of ["Daily tasks", "Project status", "Week / month views"])
       shortcuts.createEl("span", { text: label });
-    link(work.footer, "Work/Work Dashboard.md", "工作总览 →");
+    link(work.footer, "Work/Work Dashboard.md", "Work overview →");
   }
   const brownbag = card(
     knowledge,
@@ -564,17 +566,17 @@ async function renderHome(dv, app, Notice) {
         String(p.id ?? "").startsWith("BB-"),
       ),
       done = pages.filter((p) => brownbagStatus(p) === "done").length;
-    metric(brownbag.body, done, "已完成");
-    metric(brownbag.body, pages.length - done, "准备中");
+    metric(brownbag.body, done, "Completed");
+    metric(brownbag.body, pages.length - done, "Preparing");
     plot(
       brownbag.body,
-      distribution([done, pages.length - done], ["已完成", "准备中"]),
-      `验收完成 ${done} / ${pages.length}`,
+      distribution([done, pages.length - done], ["Completed", "Preparing"]),
+      `Acceptance complete ${done} / ${pages.length}`,
     );
     link(
       brownbag.footer,
       "Work/Brownbag Sessions/Brownbag Sessions.md",
-      "分享与验收进度 →",
+      "Sessions & progress →",
     );
   }
   const profile = card(
@@ -612,15 +614,15 @@ async function renderHome(dv, app, Notice) {
         .join(" ");
       plot(
         profile.body,
-        `<svg role="img" aria-label="个人评估轮廓，完整维度见 Profile 仪表盘" viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" fill="none" stroke="var(--home-chart-muted)"/><circle cx="30" cy="30" r="11" fill="none" stroke="var(--home-chart-muted)"/><polygon points="${points}" fill="var(--home-chart-muted)" stroke="var(--interactive-accent)" stroke-width="1.4"/></svg>`,
+        `<svg role="img" aria-label="Assessment overview. Full dimensions on the Profile dashboard." viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" fill="none" stroke="var(--home-chart-muted)"/><circle cx="30" cy="30" r="11" fill="none" stroke="var(--home-chart-muted)"/><polygon points="${points}" fill="var(--home-chart-muted)" stroke="var(--interactive-accent)" stroke-width="1.4"/></svg>`,
         "PrinciplesYou",
       );
-    } else profile.body.createEl("small", { text: "尚未添加个人评估" });
-    link(profile.footer, "Profile/Dashboard.md", "能力雷达与完整档案 →");
+    } else profile.body.createEl("small", { text: "No assessment added yet" });
+    link(profile.footer, "Profile/Dashboard.md", "Assessment & profile →");
   }
   const footer = root.createEl("footer");
-  link(footer, "system/registry.md", "Registry / 系统管理");
-  link(footer, "GETTING_STARTED.md", "使用指南");
+  link(footer, "system/registry.md", "Module registry");
+  link(footer, "GETTING_STARTED.md", "Guide");
   // Dataview handles note changes. Calendar changes also refresh counts after sleep.
   let currentDay = today,
     timer;
@@ -661,5 +663,5 @@ if (typeof dv === "undefined")
   };
 else
   return renderHome(dv, input.app, input.Notice).catch((error) =>
-    dv.paragraph(`Home 未能更新：${error.message}`),
+    dv.paragraph(`Home could not refresh: ${error.message}`),
   );

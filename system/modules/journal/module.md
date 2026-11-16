@@ -57,3 +57,7 @@ Chatting with AI 0.12.0 的内部 `openChat`、视图 `newChat` / `sendMessage` 
 
 ## 仪表盘
 Home 使用 `scripts/journal/view.js` 的 compact 模式，只展示状态与新建入口。完整历史、统计、待回看和创建流程保留在 [[Journal/Dashboard]]。
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

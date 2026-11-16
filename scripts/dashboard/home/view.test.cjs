@@ -96,6 +96,9 @@ test("the isolated Dataview custom view renders every module and handles interna
       this.children.push(child);
       return child;
     }
+    setAttribute(name, value) {
+      this[name] = value;
+    }
     addEventListener(name, fn) {
       this.listeners[name] = fn;
     }
@@ -116,7 +119,14 @@ test("the isolated Dataview custom view renders every module and handles interna
     pages() {
       return [];
     },
-    view: async () => {},
+    view: async (name, input) => {
+      if (name === "scripts/dashboard/ui")
+        new Function(
+          "dv",
+          "input",
+          fs.readFileSync(__dirname + "/../ui/view.js", "utf8"),
+        )(dv, input);
+    },
     paragraph(text) {
       roots.push(new Element("p", { text }));
     },
@@ -144,11 +154,11 @@ test("the isolated Dataview custom view renders every module and handles interna
   const all = roots.flatMap((r) => r.all());
   assert.equal(all.filter((el) => el.tag === "h3").length, 14);
   assert.equal(
-    all.some((el) => el.textContent.startsWith("Home 未能更新")),
+    all.some((el) => el.textContent.startsWith("Home could not refresh")),
     false,
   );
   const link = all.find(
-    (el) => el.tag === "a" && el.textContent === "仪表盘 ↗",
+    (el) => el.tag === "a" && el.textContent === "Dashboard ↗",
   );
   let prevented = false,
     stopped = false;

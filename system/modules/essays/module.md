@@ -11,7 +11,7 @@ requires:
   plugins: [dataview]
 commands: []
 templates: []
-scripts: []
+scripts: [scripts/dashboard/essays/view.js]
 hooks: []
 folders: ['Essays/']
 config_files: ['Essays/index.md']
@@ -25,3 +25,7 @@ Home 展示精简摘要，完整内容通过本模块的独立仪表盘查看。
 
 ## Quick Start
 打开 [[Essays/index]] 查看内容和来源入口。
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

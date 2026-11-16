@@ -6,7 +6,7 @@ status: active
 enabled: true
 created: 2026-11-11
 updated: 2026-11-17
-depends_on: []
+depends_on: [dashboard]
 requires:
   python: ">=3.10"
   pip: [PyYAML]
@@ -59,3 +59,7 @@ Register a problem directly with `/practice-review-add algorithm 1071`. View the
 ## Configuration
 
 This file owns `practice_flows`, `review_time_limits`, `interval_days`, and `retry_days`. See [[Learning/Practice/Review/AGENTS|Practice review rules]] for practice and review handoffs.
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

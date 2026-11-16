@@ -410,3 +410,30 @@
   font-size: 12px;
   line-height: 1.5;
 }
+/* Match the shared Home/module cards. */
+.practice-review-dashboard .pr-metrics {
+  gap: 12px;
+}
+.practice-review-dashboard .pr-metric {
+  border-radius: 12px;
+  padding: 16px;
+}
+.practice-review-dashboard .pr-metric .pr-icon {
+  display: none;
+}
+.practice-review-dashboard .pr-metric > span:not(.pr-icon) {
+  order: -1;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin: 0;
+}
+.practice-review-dashboard .pr-metric strong {
+  font-size: 28px;
+  margin: 8px 0;
+}
+.practice-review-dashboard .pr-metric small {
+  font-size: 11px;
+}
+.practice-review-dashboard {
+  width: 100%;
+}

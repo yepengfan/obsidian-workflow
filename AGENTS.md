@@ -45,7 +45,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 ## Key Files
 
 - **GETTING_STARTED.md** — Onboarding guide for new users. Start here if you're setting up this vault for the first time.
-- **Home.md** - Compact module dashboard and feature entry. Runtime: `scripts/dashboard/home/view.js` and `view.css`. Each card opens the module dashboard; full details live in `scripts/dashboard/<module>/view.js`. Sync the wrapper and decisions in `Templates/Home.md` when changing the structure.
+- **Home.md** - Compact module dashboard and feature entry. Runtime: `scripts/dashboard/home/view.js` and `view.css`; shared shell, icons, controls, and styling: `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for dashboard maintenance and validation. Each card opens the module dashboard; full details live in `scripts/dashboard/<module>/view.js`. Sync the wrapper and decisions in `Templates/Home.md` when changing the structure.
 - **sortspec.md** — Custom file explorer sort order (Custom File Explorer Sorting plugin). Do not delete.
 - **Work/Work Dashboard.md** — Work dashboard with task views and project summary.
 - **Templates/Work Daily.md** — Template for daily work notes.
@@ -56,7 +56,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Templates/Algorithm Log.md** — Template for daily algorithm practice logs (used by `/algo-solve`).
 - **Templates/Brownbag Session.md** - Template for manually creating brownbag session plans.
 - **Templates/Task Board.md** — Template for the vault-wide Covey/Eisenhower board (used by `/task-add` `/task-board`). Live file is `Tasks/Board.md`.
-- **Templates/Home.md** — Reference backup + design decisions log for `Home.md` (note-creation button, toolbar design).
+- **Templates/Home.md** - Reference backup + design decisions log for `Home.md` (current wrapper and dashboard design history).
 - **Templates/Work Dashboard.md** — Reference backup + design decisions log for `Work/Work Dashboard.md`.
 - **Templates/Work Weekly View.md** — Reference backup + design decisions log for `Work/Weekly View.md`.
 - **Templates/Work Monthly View.md** — Reference backup + design decisions log for `Work/Monthly View.md`.
@@ -72,7 +72,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Zettel notes**: One idea per note, written in your own words (not copy-paste). Use `[[wikilinks]]` in the `Related::` field to connect to other zettel. Title should be a descriptive statement (e.g., "Distributed systems trade consistency for availability").
 - **Inbox notes**: No format required. Just capture the thought. Run `/zettelkasten-inbox-review` weekly to process: convert to zettel or archive to `Inbox/archive/YYYY-MM/`.
 - **Project tasks**: Group tasks under `### ProjectName` headings in daily notes (e.g., `### IS2`, `### IFM`). The heading name must match the filename in `Work/Projects/`. Dataview queries use `t.section.subpath` to filter tasks by project.
-- **Daily note H1**: Use `# DayName` only (e.g., `# Tuesday`). The date is already in the filename and `date:` frontmatter — repeating it in the H1 is redundant. Both `Templates/Work Daily.md` and the Home.md note-creation button follow this format.
+- **Daily note H1**: Use `# DayName` only (e.g., `# Tuesday`). The date is already in the filename and `date:` frontmatter - repeating it in the H1 is redundant. `Templates/Work Daily.md` and `/work-daily` follow this format.
 - **Dataview tag filtering**: Use `p.file.tags.includes("#tag")` (not `p.tags`) in dataviewjs queries for reliable tag matching.
 - **Dashboard template sync**: When editing `Work/Work Dashboard.md`, `Work/Weekly View.md`, `Work/Monthly View.md`, or `Tasks/Board.md`, update the corresponding `Templates/Work *.md` / `Templates/Task Board.md` reference file and bump its `updated:` frontmatter date. Append a new dated `> [!note]` entry to the Design Decisions section when making structural changes.
 - **Mermaid edge labels**: Never use `1.` `2.` `3.` in Mermaid edge labels (e.g., `-->|1. check|`) — Obsidian's renderer parses them as markdown lists and shows "Unsupported markdown: list". Use circled numbers instead: `-->|① check|` `-->|② miss|` `-->|③ write back|`.

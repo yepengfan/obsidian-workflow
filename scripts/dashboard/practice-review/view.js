@@ -162,9 +162,12 @@ function renderDashboard(
     now = () => new Date(),
     page = globalThis.document,
     window: win = globalThis.window,
+    container,
   } = {},
 ) {
-  const root = dv.el("section", "", { cls: "practice-review-dashboard" });
+  const root = container
+    ? container.createEl("section", { cls: "practice-review-dashboard" })
+    : dv.el("section", "", { cls: "practice-review-dashboard" });
   function icon(parent, name) {
     const span = parent.createEl("span", {
       cls: "pr-icon",
@@ -185,13 +188,15 @@ function renderDashboard(
     });
     return a;
   }
-  const header = root.createEl("header", { cls: "pr-header" });
-  const heading = header.createEl("div", { cls: "pr-heading" });
-  icon(heading, "review");
-  heading.createEl("h1", { text: "Practice Review" });
-  const navigation = header.createEl("nav");
-  link(navigation, "Home.md", "Home ↗");
-  link(navigation, "Learning/Practice/Review/AGENTS.md", "Review guide ↗");
+  if (!container) {
+    const header = root.createEl("header", { cls: "pr-header" });
+    const heading = header.createEl("div", { cls: "pr-heading" });
+    icon(heading, "review");
+    heading.createEl("h1", { text: "Practice Review" });
+    const navigation = header.createEl("nav");
+    link(navigation, "Home.md", "Home ↗");
+    link(navigation, "Learning/Practice/Review/AGENTS.md", "Review guide ↗");
+  }
   const config = dv.page("system/modules/practice-review/module.md");
   if (!config || config.enabled !== true) {
     root.createEl("p", {
@@ -603,7 +608,7 @@ if (typeof dv === "undefined")
   };
 else {
   try {
-    renderDashboard(dv, input.app);
+    renderDashboard(dv, input.app, { container: input.container });
   } catch (error) {
     dv.paragraph(`Practice Review could not load: ${error.message}`);
   }

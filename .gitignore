@@ -6,7 +6,8 @@
 # Bug found 2026-07: this cost us 7 untracked command files (work + learning).
 /Archive/
 /Attachments/
-/Essays/
+/Essays/*
+!/Essays/index.md
 /Excalidraw/
 /system-design-primer/
 /Kanban/
@@ -49,7 +50,11 @@
 /Learning/Practice/Review/Items/
 /WeRead/
 /ibooks-highlights/
-/Work/
+/Work/*
+!/Work/Work Dashboard.md
+!/Work/Brownbag Sessions/
+/Work/Brownbag Sessions/*
+!/Work/Brownbag Sessions/Brownbag Sessions.md
 # Live task board (Tasks/Board.md) is private, synced via S3/iCloud.
 # Templates/Task Board.md stays in git.
 /Tasks/

@@ -7,7 +7,7 @@
   --home-series-0: #53a783;
   --home-series-1: var(--home-chart-muted);
   --home-series-2: var(--interactive-accent);
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
   color: var(--text-normal);
   font-family: var(--font-interface);
@@ -31,12 +31,12 @@
   gap: 12px;
 }
 .home-dashboard .home-card {
-  padding: 13px 14px;
+  padding: 16px;
   min-height: 150px;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--background-primary);
   overflow-wrap: anywhere;
 }
@@ -52,7 +52,7 @@
   gap: 8px;
 }
 .home-dashboard .home-card h3 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
   line-height: 1.3;
   margin: 0;

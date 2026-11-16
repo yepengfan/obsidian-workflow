@@ -5,11 +5,12 @@ const isMobile = app.isMobile;
 (() => {
   const boardPath = "Tasks/Board.md";
   const fence = String.fromCharCode(96).repeat(3);
-  const section = dv.container.createEl("div", {
+  const section = (input.container || dv.container).createEl("div", {
+    cls: "task-dashboard-body",
     attr: { style: "margin-bottom:16px;" },
   });
   section.createEl("div", {
-    text: "🎯 任务象限板",
+    text: "Task quadrants",
     attr: { style: "font-size:0.9em;font-weight:700;margin-bottom:8px;" },
   });
 
@@ -22,7 +23,8 @@ const isMobile = app.isMobile;
   });
   const titleInp = form.createEl("input");
   titleInp.type = "text";
-  titleInp.placeholder = "任务标题";
+  titleInp.placeholder = "Task title";
+  titleInp.setAttribute("aria-label", "Task title");
   titleInp.setAttribute(
     "style",
     inpStyle + `flex:1;min-width:${isMobile ? "100%" : "140px"};`,
@@ -39,6 +41,7 @@ const isMobile = app.isMobile;
   const areaBtns = {};
   function paintArea() {
     for (const a of areas) {
+      areaBtns[a].setAttribute("aria-pressed", String(area === a));
       areaBtns[a].style.cssText =
         `padding:${isMobile ? "6px 10px" : "3px 10px"};border-radius:7px;border:none;cursor:pointer;font-size:0.78em;font-weight:600;` +
         (area === a
@@ -72,7 +75,9 @@ const isMobile = app.isMobile;
       ";color:" +
       (important ? "var(--text-on-accent)" : "var(--text-muted)") +
       ";";
-    starBtn.title = important ? "重要" : "不重要";
+    starBtn.title = important ? "Important" : "Not important";
+    starBtn.setAttribute("aria-pressed", String(important));
+    starBtn.setAttribute("aria-label", "Mark task important");
   }
   starBtn.addEventListener("click", () => {
     important = !important;
@@ -82,7 +87,8 @@ const isMobile = app.isMobile;
 
   const dueInp = form.createEl("input");
   dueInp.type = "date";
-  dueInp.title = "due（7 天内 = 紧急；空 = 不紧急）";
+  dueInp.setAttribute("aria-label", "Due date");
+  dueInp.title = "Due within 7 days = urgent; no date = not urgent";
   dueInp.setAttribute(
     "style",
     inpStyle + (isMobile ? "padding:6px 10px;" : ""),
@@ -116,25 +122,27 @@ const isMobile = app.isMobile;
       const traw = await app.vault.read(tmpl);
       const mi = traw.indexOf("## Reference Content");
       if (mi >= 0) {
-        const bi = traw.indexOf("# Task Board", mi);
-        if (bi >= 0) body = traw.slice(bi).replace(/\s+$/, "") + "\n";
+        const reference = traw.slice(mi + "## Reference Content".length);
+        const bi = reference.indexOf("\n---\n");
+        if (bi >= 0) body = reference.slice(bi).trim() + "\n";
       }
     }
     if (!body)
-      body = ["# Task Board", "", "## Tasks", "", "## Done", ""].join("\n");
-    const content = "---\ntags: [task-board]\n---\n\n" + body;
-    return await app.vault.create(boardPath, content);
+      throw new Error(
+        "Task Board template is unavailable. Restore Templates/Task Board.md and retry.",
+      );
+    return await app.vault.create(boardPath, body);
   }
 
   addBtn.addEventListener("click", async () => {
     const title = (titleInp.value || "").trim().replace(/\s+/g, " ");
     if (!title) {
-      new Notice("先写任务标题");
+      new Notice("Enter a task title first");
       return;
     }
     const due = (dueInp.value || "").trim();
     if (due && !/^\d{4}-\d{2}-\d{2}$/.test(due)) {
-      new Notice("due 必须是 YYYY-MM-DD");
+      new Notice("Use YYYY-MM-DD for the due date");
       return;
     }
     const bits = ["- [ ]"];
@@ -162,7 +170,7 @@ const isMobile = app.isMobile;
     const today = dv.date("today");
     const urgent = due && dv.date(due) <= today.plus({ days: 7 }).endOf("day");
     const q = important ? (urgent ? "Q1" : "Q2") : urgent ? "Q3" : "Q4";
-    new Notice("已加入 " + q + " · " + area);
+    new Notice("Added to " + q + " · " + area);
   });
   titleInp.addEventListener("keydown", (e) => {
     if (e.key === "Enter") addBtn.click();
@@ -172,7 +180,7 @@ const isMobile = app.isMobile;
   const bpage = dv.page(boardPath);
   if (!bfile || !bpage) {
     section.createEl("div", {
-      text: "还没有任务。上面填一条就会创建 Tasks/Board.md。",
+      text: "No tasks yet. Add your first task above.",
       attr: { style: "color:var(--text-muted);font-size:0.82em;" },
     });
     return;
@@ -283,7 +291,7 @@ const isMobile = app.isMobile;
   function moveLine(raw, q) {
     const match = raw.replace(/\r$/, "").match(/^(\s*[-*+] \[ \] )(.+)$/);
     if (!match || !/#task\/[^\s#]+/.test(match[2]))
-      throw new Error("请先在 Task Board 给任务选择领域，再移动象限。");
+      throw new Error("Assign an area before moving this task.");
     // Support Tasks emoji dates and Dataview inline due fields, without touching links or other dates.
     const duePattern =
       /📅\s*\d{4}-\d{2}-\d{2}|\[due::\s*\d{4}-\d{2}-\d{2}\s*\]|\(due::\s*\d{4}-\d{2}-\d{2}\s*\)/gi;
@@ -293,7 +301,7 @@ const isMobile = app.isMobile;
       dues.length > 1 ||
       /📅|\bdue\s*::/i.test(body.replace(duePattern, ""))
     ) {
-      throw new Error("截止日期格式不明确，请先在 Task Board 整理日期。");
+      throw new Error("Fix the ambiguous due date before moving this task.");
     }
     const urgent = q === "Q1" || q === "Q3";
     const important = q === "Q1" || q === "Q2";
@@ -301,7 +309,7 @@ const isMobile = app.isMobile;
       ? dv.date(dues[0].match(/\d{4}-\d{2}-\d{2}/)[0])
       : null;
     if (dues.length && (!due || due.isValid === false))
-      throw new Error("截止日期无效，请先在 Task Board 修改。");
+      throw new Error("Fix the invalid due date before moving this task.");
     const cutoff = dv.date("today").plus({ days: 7 }).endOf("day");
     const wasUrgent = due && due <= cutoff;
     if (urgent && !wasUrgent) {
@@ -329,7 +337,9 @@ const isMobile = app.isMobile;
           ?.replace(/\r$/, "")
           .match(/^\s*[-*+] \[ \] (.*)$/)?.[1];
         if (!taskInSection(lines, t.line) || text?.trim() !== t.text.trim()) {
-          throw new Error("任务已变化，请等首页刷新后再试。");
+          throw new Error(
+            "Task changed. Wait for the dashboard to refresh and try again.",
+          );
         }
         before = raw;
         after = moveLine(raw, q);
@@ -341,15 +351,15 @@ const isMobile = app.isMobile;
       const message = document.createDocumentFragment();
       message.createSpan({
         text:
-          "已移到 " +
+          "Moved to " +
           q +
           "。" +
           (q === "Q1" || q === "Q3"
-            ? "紧急截止日期已保留或设为 7 天后。"
-            : "紧急截止日期已清除，较远日期保留。") +
+            ? "Urgent date kept or set to 7 days from today."
+            : "Urgent date cleared; later dates kept.") +
           " ",
       });
-      const undo = message.createEl("button", { text: "撤销" });
+      const undo = message.createEl("button", { text: "Undo" });
       const notice = new Notice(message, 10000);
       undo.addEventListener("click", async () => {
         undo.disabled = true;
@@ -358,7 +368,7 @@ const isMobile = app.isMobile;
             const lines = content.split("\n");
             if (!taskInSection(lines, t.line) || lines[t.line] !== after)
               throw new Error(
-                "任务已再次变化，无法撤销；请在 Task Board 修改。",
+                "Task changed again. Undo is no longer available.",
               );
             lines[t.line] = before;
             return lines.join("\n");
@@ -366,17 +376,17 @@ const isMobile = app.isMobile;
           notice.hide();
           app.workspace.trigger("dataview:refresh-views");
         } catch (error) {
-          new Notice(error.message || "撤销失败。");
+          new Notice(error.message || "Undo failed.");
         }
       });
     } catch (error) {
-      new Notice(error.message || "移动失败，请重试。");
+      new Notice(error.message || "Move failed. Try again.");
     } finally {
       moving = false;
     }
   }
   root.createEl("div", {
-    text: "拖动 ⋮⋮ 到目标象限，或点 ⋮⋮ 选择。紧急：保留紧急日期或设为 7 天后；不紧急：清除紧急日期。",
+    text: "Drag ⋮⋮ to move a task, or click it to choose a quadrant. Urgent sets a date within 7 days. Not urgent clears an urgent date.",
     attr: {
       style: "color:var(--text-muted);font-size:0.85em;margin-bottom:8px;",
     },
@@ -390,7 +400,7 @@ const isMobile = app.isMobile;
         ? "margin-left:6px;border:none;background:transparent;cursor:pointer;color:var(--text-faint);font-size:0.95em;padding:6px 8px;"
         : "margin-left:6px;border:none;background:transparent;cursor:pointer;color:var(--text-faint);font-size:0.82em;",
     );
-    editBtn.title = "编辑";
+    editBtn.title = "Edit";
     editBtn.addEventListener("click", async (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -408,7 +418,7 @@ const isMobile = app.isMobile;
         !taskInSection(fileLines, lineNo) ||
         rawLine.replace(/^\s*[-*+] \[ \] /, "").trim() !== t.text.trim()
       ) {
-        new Notice("任务已变化，请刷新后再编辑");
+        new Notice("Task changed. Refresh before editing.");
         return;
       }
       const indent = (rawLine.match(/^(\s*)/) || ["", ""])[1];
@@ -499,18 +509,18 @@ const isMobile = app.isMobile;
       const dIn = drawer.createEl("input");
       dIn.type = "date";
       dIn.value = curDue;
-      dIn.title = "due（7 天内 = 紧急；空 = 不紧急）";
+      dIn.title = "Due within 7 days = urgent; no date = not urgent";
       dIn.setAttribute("style", inpStyle2);
 
-      const saveBtn = drawer.createEl("button", { text: "保存" });
+      const saveBtn = drawer.createEl("button", { text: "Save" });
       saveBtn.style.cssText =
         (isMobile ? "padding:6px 12px;" : "padding:3px 12px;") +
         "border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.78em;background:var(--interactive-accent);color:var(--text-on-accent);";
-      const delBtn = drawer.createEl("button", { text: "删除" });
+      const delBtn = drawer.createEl("button", { text: "Delete" });
       delBtn.style.cssText =
         (isMobile ? "padding:6px 12px;" : "padding:3px 10px;") +
         "border:1px solid var(--background-modifier-border);border-radius:6px;cursor:pointer;font-size:0.78em;background:var(--background-secondary);color:var(--text-error, #c4553a);";
-      const cancelBtn = drawer.createEl("button", { text: "取消" });
+      const cancelBtn = drawer.createEl("button", { text: "Cancel" });
       cancelBtn.style.cssText =
         (isMobile ? "padding:6px 12px;" : "padding:3px 10px;") +
         "border:1px solid var(--background-modifier-border);border-radius:6px;cursor:pointer;font-size:0.78em;background:var(--background-secondary);color:var(--text-muted);";
@@ -520,12 +530,12 @@ const isMobile = app.isMobile;
       saveBtn.addEventListener("click", async () => {
         const title = (tIn.value || "").trim().replace(/\s+/g, " ");
         if (!title) {
-          new Notice("标题不能为空");
+          new Notice("A task title is required");
           return;
         }
         const due = (dIn.value || "").trim();
         if (due && !/^\d{4}-\d{2}-\d{2}$/.test(due)) {
-          new Notice("due 必须是 YYYY-MM-DD");
+          new Notice("Use YYYY-MM-DD for the due date");
           return;
         }
         const bits = [indent + "- [" + status + "]"];
@@ -537,7 +547,7 @@ const isMobile = app.isMobile;
           await app.vault.process(f, (content) => {
             const cur = content.split("\n");
             if (cur[lineNo] !== rawLine || !taskInSection(cur, lineNo))
-              throw new Error("看板已变化，请刷新后重试");
+              throw new Error("Task board changed. Refresh and try again.");
             cur[lineNo] = bits.join(" ");
             return cur.join("\n");
           });
@@ -545,7 +555,7 @@ const isMobile = app.isMobile;
           new Notice(error.message);
           return;
         }
-        new Notice("已更新");
+        new Notice("Saved");
       });
 
       delBtn.addEventListener("click", async () => {
@@ -553,7 +563,7 @@ const isMobile = app.isMobile;
           await app.vault.process(f, (content) => {
             const cur = content.split("\n");
             if (cur[lineNo] !== rawLine || !taskInSection(cur, lineNo))
-              throw new Error("看板已变化，请刷新后重试");
+              throw new Error("Task board changed. Refresh and try again.");
             cur.splice(lineNo, 1);
             return cur.join("\n");
           });
@@ -561,7 +571,7 @@ const isMobile = app.isMobile;
           new Notice(error.message);
           return;
         }
-        new Notice("已删除");
+        new Notice("Deleted");
       });
 
       tIn.focus();
@@ -573,7 +583,7 @@ const isMobile = app.isMobile;
     const n = list.length != null ? list.length : arr.length;
     if (n === 0) {
       hostEl.createEl("div", {
-        text: "（空）",
+        text: "No tasks",
         attr: { style: "color:var(--text-faint);" },
       });
       return;
@@ -613,8 +623,8 @@ const isMobile = app.isMobile;
         const handle = li.createEl("button", {
           text: "⋮⋮",
           attr: {
-            "aria-label": "移动任务到象限",
-            title: "拖动到象限，或点击选择象限",
+            "aria-label": "Move task to quadrant",
+            title: "Drag to a quadrant, or click to choose",
             style:
               "position:absolute;top:0;right:0;bottom:0;width:36px;height:auto;min-height:36px;display:flex;align-items:center;justify-content:center;cursor:grab;border:none;border-left:1px solid var(--background-modifier-border);border-radius:0 6px 6px 0;background:transparent;color:var(--text-muted);padding:0;margin:0;box-shadow:none;",
           },
@@ -641,10 +651,10 @@ const isMobile = app.isMobile;
           e.stopPropagation();
           const menu = new Menu();
           for (const [q, label] of [
-            ["Q1", "重要 · 紧急"],
-            ["Q2", "重要 · 不紧急"],
-            ["Q3", "不重要 · 紧急"],
-            ["Q4", "不重要 · 不紧急"],
+            ["Q1", "Important · Urgent"],
+            ["Q2", "Important · Not urgent"],
+            ["Q3", "Not important · Urgent"],
+            ["Q4", "Not important · Not urgent"],
           ]) {
             menu.addItem((item) =>
               item.setTitle(q + " " + label).onClick(() => moveTask(t, q)),
@@ -681,6 +691,7 @@ const isMobile = app.isMobile;
   }
   paintPills();
   const grid = root.createEl("div", {
+    cls: "task-quadrant-grid",
     attr: {
       style: `display:grid;grid-template-columns:${isMobile ? "1fr" : "1fr 1fr"};gap:${isMobile ? "8px" : "10px"};`,
     },
@@ -689,25 +700,31 @@ const isMobile = app.isMobile;
     {
       id: "Q1",
       list: q1,
-      title: isMobile ? "Q1 重要·紧急" : "Q1 重要 · 紧急（立刻做）",
+      title: isMobile ? "Q1 Important · Urgent" : "Q1 Important · Urgent",
       border: "#c4553a",
     },
     {
       id: "Q2",
       list: q2,
-      title: isMobile ? "Q2 重要·不紧急" : "Q2 重要 · 不紧急（安排做）",
+      title: isMobile
+        ? "Q2 Important · Not urgent"
+        : "Q2 Important · Not urgent",
       border: "var(--interactive-accent)",
     },
     {
       id: "Q3",
       list: q3,
-      title: isMobile ? "Q3 不重要·紧急" : "Q3 不重要 · 紧急（压缩）",
+      title: isMobile
+        ? "Q3 Not important · Urgent"
+        : "Q3 Not important · Urgent",
       border: "var(--text-muted)",
     },
     {
       id: "Q4",
       list: q4,
-      title: isMobile ? "Q4 不重要·不紧急" : "Q4 不重要 · 不紧急（减少）",
+      title: isMobile
+        ? "Q4 Not important · Not urgent"
+        : "Q4 Not important · Not urgent",
       border: "var(--text-faint)",
     },
   ];
@@ -782,7 +799,7 @@ const isMobile = app.isMobile;
   });
   if (n2 === 0 && n1 >= 1)
     root.createEl("div", {
-      text: "Q1 偏多而 Q2 为空 - 效能在第二象限",
+      text: "Q1 is filling up. Reserve time for important tasks in Q2.",
       attr: {
         style: "margin-top:4px;color:var(--text-faint);font-size:0.82em;",
       },
@@ -793,6 +810,6 @@ const isMobile = app.isMobile;
         "margin-top:16px;border-top:1px solid var(--background-modifier-border);padding-top:10px;",
     },
   });
-  listWrap.createEl("h3", { text: "任务列表（点 ✎ 修改）" });
+  listWrap.createEl("h3", { text: "Task list · click ✎ to edit" });
   renderTasks(listWrap, open, false, true);
 })();

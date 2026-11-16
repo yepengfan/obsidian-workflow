@@ -8,6 +8,9 @@ updated: 2026-11-17
 
 ## Design Decisions
 
+> [!note] 2026-11-17 - Consistent module navigation and presentation
+> - Home and all module dashboards share the same header, icons, typography, spacing, and English control labels. Module libraries use shared search, filters, result counts, and pagination.
+
 > [!note] 2026-11-17 - Module summary dashboard
 > - Home uses compact module cards with icons, large numbers and small charts. Each card opens its independent dashboard.
 > - Full task editing, book shelves, practice analysis and Profile visualization live in module views under `scripts/dashboard/`.
@@ -201,7 +204,7 @@ updated: 2026-11-17
 ## Reference Content
 
 ---
-cssclasses: [dashboard]
+cssclasses: [dashboard, module-dashboard]
 ---
 
 ```dataviewjs

@@ -8,6 +8,9 @@ updated: 2026-11-17
 
 ## Design Decisions
 
+> [!note] 2026-11-17 - Shared dashboard shell
+> - Task capture and editing share Home navigation and styling, with labeled inputs and a matrix that stacks in narrow panes. Task records and movement semantics are preserved.
+
 > [!note] 2026-11-17 - Complete task workbench
 > - Capture, quadrant movement with undo, and per-task editing now render through `scripts/dashboard/tasks/view.js`. Home shows a read-only summary.
 
@@ -46,16 +49,14 @@ updated: 2026-11-17
 
 ---
 tags: [task-board]
+cssclasses: [dashboard, module-dashboard, task-board-page]
 ---
-
-# Task Board
-
-> 重要 = ⭐（人标）· 紧急 = 📅 due ≤ 今天+7 天 · 领域 = `#task/work` `#task/life` `#task/other`
-> 矩阵支持拖动或点 ⋮⋮ 移动象限。改任务在下方「任务列表」区，点条目后的 ✎（标题/领域/⭐/due/删除），改完自动重新分桶。无领域标签 → Unclassified。命令：`/task-add` `/task-board`
 
 ```dataviewjs
 const { Notice, Menu } = require("obsidian");
-await dv.view("scripts/dashboard/tasks", { app, Notice, Menu });
+const shared = { app, title: "Task Board", icon: "task", description: "Capture tasks and decide what deserves your attention." };
+await dv.view("scripts/dashboard/ui", shared);
+await dv.view("scripts/dashboard/tasks", { app, Notice, Menu, container: shared.ui.content });
 ```
 
 ## Tasks

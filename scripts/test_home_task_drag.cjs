@@ -4,7 +4,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 
 const home = readFileSync(join(__dirname, 'dashboard', 'tasks', 'view.js'), 'utf8');
-const logic = home.slice(home.indexOf('  let dragged = null;'), home.indexOf('  root.createEl("div", {\n    text: "拖动'));
+const logic = home.slice(home.indexOf('  let dragged = null;'), home.indexOf('  root.createEl("div", {\n    text: "Drag'));
 assert.ok(logic.includes('async function moveTask'));
 const handleCode = home.slice(home.lastIndexOf('      if (d && !editable) {', home.indexOf('        const handle = li.createEl')), home.indexOf('      if (editable) attachEdit'));
 const dropCode = home.slice(home.indexOf('    cell.setAttribute("data-quadrant"'), home.indexOf('    const head = cell.createEl', home.indexOf('    cell.setAttribute("data-quadrant"')));
@@ -125,7 +125,7 @@ test('undo refuses a concurrent edit', async () => {
   f.replace(edited);
   await f.notices[0].message.button.click();
   assert.equal(f.read(), edited);
-  assert.match(f.notices[1].message, /任务已再次变化/);
+  assert.match(f.notices[1].message, /Task changed again/);
 });
 
 test('drag events persist the destination, clear highlights, and ignore external drops', async () => {

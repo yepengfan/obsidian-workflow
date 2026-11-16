@@ -6,7 +6,7 @@ status: active
 enabled: true
 created: 2026-07-15
 updated: 2026-11-17
-depends_on: []
+depends_on: [dashboard]
 requires:
   cli: [claude]
   python: ">=3.10"
@@ -67,3 +67,7 @@ tags: [system/module]
 3. `/book-read` — 恢复读书 → 选书选章 → 落盘理解到 `understanding.md`
 4. `/book-write "书名"` — 为所有已读章补骨架到 `article.md`；加「第 N 章」只补一章；加「全书总结」生成全书脉络骨架。每章/全书总结你自己写
 5. `/book-init` 说「帮我补一下 epub_path」— 扫描并补全遗留书的 epub_path/pdf_path
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

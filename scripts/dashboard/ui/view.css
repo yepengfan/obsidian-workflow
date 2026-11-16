@@ -1,0 +1,416 @@
+/* Shared presentation for Home and module dashboards, scoped to these notes. */
+.module-dashboard .inline-title {
+  display: none;
+}
+.module-dashboard .markdown-preview-sizer {
+  max-width: 1000px;
+}
+.mdash {
+  container-type: inline-size;
+  font-family: var(--font-interface);
+  color: var(--text-normal);
+}
+.mdash *,
+.module-dashboard .journal-overview * {
+  box-sizing: border-box;
+  min-width: 0;
+}
+.mdash-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  font-size: 12px;
+  margin-bottom: 24px;
+}
+.mdash a {
+  color: var(--text-accent);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.mdash a:hover {
+  text-decoration: underline;
+}
+.mdash-header {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.mdash-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 24px;
+  background: color-mix(
+    in srgb,
+    var(--interactive-accent) 10%,
+    var(--background-primary)
+  );
+  color: var(--text-accent);
+}
+.mdash h1 {
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 0 0 6px;
+  letter-spacing: -0.5px;
+}
+.mdash p {
+  margin: 6px 0 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.mdash-muted {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.mdash-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.mdash-actions:empty,
+.mdash-feedback:empty {
+  display: none;
+}
+.mdash-feedback {
+  color: var(--text-accent);
+}
+.mdash-content {
+  display: grid;
+  gap: 24px;
+}
+.mdash-metrics {
+  display: grid;
+  grid-template-columns: repeat(var(--metric-count, 4), minmax(0, 1fr));
+  gap: 12px;
+}
+.mdash-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+}
+.mdash-metric strong {
+  font-size: 28px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.mdash-metric small {
+  font-size: 11px;
+}
+.mdash h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+.mdash h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.mdash-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.mdash-controls input {
+  flex: 1 1 220px;
+  width: 100%;
+}
+.mdash button,
+.mdash select,
+.mdash input {
+  font: inherit;
+  font-size: 12px;
+  min-height: 34px;
+  border-radius: 7px;
+}
+.mdash button {
+  padding: 6px 12px;
+}
+.mdash select {
+  max-width: 100%;
+}
+.mdash :is(a, button, input, select):focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 3px;
+}
+.mdash button:disabled {
+  opacity: 0.45;
+}
+.mdash-result-count {
+  min-height: 18px;
+}
+.mdash-table-scroll {
+  overflow-x: auto;
+}
+.mdash table.mdash-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 12px;
+}
+.mdash .mdash-table :is(th, td) {
+  font-size: 12px;
+  padding: 12px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.5;
+}
+.mdash .mdash-table th {
+  color: var(--text-muted);
+  font-weight: 500;
+  background: var(--background-secondary);
+  white-space: nowrap;
+}
+.mdash .mdash-table td:first-child {
+  min-width: 170px;
+}
+.mdash .mdash-table tbody tr:hover {
+  background: var(--background-secondary);
+}
+.mdash-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 12px;
+}
+.mdash-card {
+  padding: 18px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mdash-card p {
+  margin: 0;
+}
+.mdash-card .mdash-actions {
+  margin: auto 0 0;
+  padding-top: 8px;
+}
+.mdash-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.mdash-progress {
+  width: 100%;
+  accent-color: var(--interactive-accent);
+}
+.mdash-pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 12px;
+}
+.mdash-empty {
+  padding: 24px;
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: 8px;
+  color: var(--text-muted);
+}
+.mdash-bars {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: 12px;
+}
+.mdash-bar-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 1fr) minmax(50px, 2fr) 32px;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+.mdash-bar-row strong {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.mdash-track {
+  height: 6px;
+  border-radius: 8px;
+  background: var(--background-modifier-border);
+  overflow: hidden;
+}
+.mdash-fill {
+  height: 100%;
+  background: var(--interactive-accent);
+  border-radius: inherit;
+}
+.module-dashboard .journal-overview {
+  margin: 0;
+}
+.module-dashboard .journal-header h2 {
+  display: none;
+}
+.module-dashboard .task-dashboard-body {
+  container-type: inline-size;
+  font-size: 14px;
+}
+@container (max-width: 580px) {
+  .mdash-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mdash-metric {
+    padding: 12px;
+  }
+  .mdash-metric strong {
+    font-size: 24px;
+  }
+  .mdash h1 {
+    font-size: 24px;
+  }
+  .mdash-controls select {
+    flex: 1 1 120px;
+  }
+  .mdash-bar-row {
+    grid-template-columns: minmax(70px, 1fr) minmax(40px, 1fr) 28px;
+    gap: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .module-dashboard * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+.mdash-icon svg {
+  width: 24px;
+  height: 24px;
+}
+.mdash-nav:empty {
+  display: none;
+}
+.mdash .home-dashboard {
+  width: 100%;
+  display: block;
+}
+.module-dashboard .task-dashboard-body :is(button, input) {
+  min-height: 34px;
+}
+@container (max-width: 580px) {
+  .module-dashboard .task-quadrant-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+.markdown-rendered .mdash a {
+  text-decoration: none;
+}
+.markdown-rendered .mdash a:hover {
+  text-decoration: underline;
+}
+.mdash-actions a,
+.mdash-card details {
+  font-size: 12px;
+}
+.mdash-card summary {
+  cursor: pointer;
+}
+.mdash-badge {
+  align-self: flex-start;
+}
+.mdash .mdash-table .mdash-date {
+  white-space: nowrap;
+}
+.mdash-trend-scroll {
+  overflow-x: auto;
+  background: var(--background-secondary);
+  border-radius: 12px;
+  padding: 16px;
+}
+.mdash-trend {
+  display: grid;
+  grid-template-columns: repeat(var(--trend-count, 12), minmax(42px, 1fr));
+  gap: 8px;
+}
+.mdash-trend-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.mdash-trend-track {
+  height: 60px;
+  width: 14px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--background-modifier-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.mdash-trend-fill {
+  width: 100%;
+  background: var(--interactive-accent);
+}
+.mdash-trend-column small {
+  white-space: nowrap;
+  font-size: 10px;
+}
+.mdash-book-cover {
+  width: 36px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+/* Keep native controls at their intended size inside the task workbench. */
+.module-dashboard .task-dashboard-body input[type="checkbox"] {
+  min-height: 16px;
+  height: 16px;
+  width: 16px;
+  flex-shrink: 0;
+}
+.mdash .journal-overview .journal-day {
+  min-height: 64px;
+  height: auto;
+}
+.mdash .journal-numbers {
+  border-top: 0;
+  gap: 12px;
+}
+.mdash .journal-number {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+  padding: 16px;
+}
+.mdash .journal-number strong {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.mdash .journal-number small {
+  font-size: 12px;
+}
+.mdash .mdash-source {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 450px;
+}
+/* Private source records remain available in edit mode; reading mode uses the workbench. */
+.task-board-page .markdown-preview-section > .el-h2,
+.task-board-page .markdown-preview-section > .el-ul {
+  display: none;
+}
+.mdash .home-dashboard h2 {
+  margin: 24px 0 12px;
+}
+.mdash .home-dashboard h2:first-child {
+  margin-top: 8px;
+}

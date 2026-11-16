@@ -11,7 +11,7 @@ requires:
   plugins: [dataview, homepage]
 commands: []
 templates: [Templates/Home.md, Templates/Work Dashboard.md, Templates/Work Weekly View.md, Templates/Work Monthly View.md]
-scripts: [scripts/dashboard/home/view.js, scripts/dashboard/home/view.css]
+scripts: [scripts/dashboard/home/view.js, scripts/dashboard/home/view.css, scripts/dashboard/ui/view.js, scripts/dashboard/ui/view.css, scripts/dashboard/ui/view.test.cjs]
 hooks: []
 folders: []
 config_files: []
@@ -40,3 +40,7 @@ Home 结构变化时同步 `Templates/Home.md`；任务视图变化时同步 `Te
 
 ## 验证
 `node --test scripts/dashboard/home/view.test.cjs scripts/journal/view.test.cjs scripts/test_home_task_drag.cjs`
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

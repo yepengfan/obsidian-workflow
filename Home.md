@@ -1,5 +1,5 @@
 ---
-cssclasses: [dashboard]
+cssclasses: [dashboard, module-dashboard]
 ---
 
 ```dataviewjs
