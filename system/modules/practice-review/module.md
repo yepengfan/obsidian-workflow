@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-11-11
-updated: 2026-11-13
+updated: 2026-11-17
 depends_on: []
 requires:
   python: ">=3.10"
@@ -13,7 +13,7 @@ requires:
   plugins: [dataview]
 commands: [practice, practice-review-add, practice-review-today]
 templates: []
-scripts: [scripts/practice-review/review.py]
+scripts: [scripts/practice-review/review.py, scripts/dashboard/practice-review/view.js, scripts/dashboard/practice-review/view.css]
 hooks: []
 folders: [Learning/Practice/Review/]
 config_files:
@@ -45,8 +45,8 @@ Manage algorithm, system design, and behavioral interview practice through one d
 
 - The shared CLI lists overdue and due items and maintains review dates, rounds, and reflections.
 - `practice_flows` maps to `algo-solve`, `sysd-solve`, and `Flows/behavioral.md`. `Content/` defines each domain's review unit and post-attempt focus.
-- `Items/` stores problem prompts, review state, and attempt history through vault sync. `00_index.md` displays the queue.
-- The separate Practice section at the top of `Home.md` shows high-level counts and links to the full review dashboard.
+- `Items/` stores problem prompts, review state, and attempt history through vault sync. `00_index.md` opens the read-only dashboard with totals, a seven-day schedule, scheduling-stage distribution, and a searchable queue.
+- The Practice Review card on `Home.md` shows high-level counts and links to the full review dashboard.
 
 ## Quick Start
 

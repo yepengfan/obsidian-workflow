@@ -1,0 +1,412 @@
+.practice-review-page .inline-title {
+  display: none;
+}
+.practice-review-dashboard {
+  --pr-accent: var(--interactive-accent);
+  --pr-soft: color-mix(
+    in srgb,
+    var(--interactive-accent) 13%,
+    var(--background-primary)
+  );
+  --pr-muted: color-mix(
+    in srgb,
+    var(--interactive-accent) 25%,
+    var(--background-secondary)
+  );
+  font-family: var(--font-interface);
+  color: var(--text-normal);
+  max-width: 1000px;
+  margin: 0 auto;
+  container-type: inline-size;
+}
+.practice-review-dashboard *,
+.practice-review-dashboard *::before {
+  box-sizing: border-box;
+  min-width: 0;
+}
+.practice-review-dashboard .pr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.practice-review-dashboard .pr-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.practice-review-dashboard h1 {
+  font-size: 27px;
+  line-height: 1.25;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  letter-spacing: -0.5px;
+}
+.practice-review-dashboard .pr-heading .pr-icon {
+  width: 40px;
+  height: 40px;
+}
+.practice-review-dashboard .pr-icon {
+  width: 29px;
+  height: 29px;
+  padding: 6px;
+  display: inline-flex;
+  color: var(--pr-accent);
+  background: var(--pr-soft);
+  border-radius: 8px;
+}
+.practice-review-dashboard .pr-icon svg {
+  width: 100%;
+  height: 100%;
+}
+.practice-review-dashboard nav {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+}
+.practice-review-dashboard a {
+  color: var(--link-color);
+  cursor: pointer;
+  text-decoration: none;
+}
+.practice-review-dashboard a:hover {
+  text-decoration: underline;
+}
+.practice-review-dashboard .pr-subtitle {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 10px 0 22px;
+}
+.practice-review-dashboard .pr-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.practice-review-dashboard .pr-metric {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.practice-review-dashboard .pr-metric strong {
+  font-size: 29px;
+  line-height: 1.25;
+  margin-top: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.practice-review-dashboard .pr-metric > span:not(.pr-icon) {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 3px;
+}
+.practice-review-dashboard small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.practice-review-dashboard .pr-metric small {
+  margin-top: 6px;
+}
+.practice-review-dashboard .has-overdue strong {
+  color: var(--text-error);
+}
+.practice-review-dashboard .pr-next-action {
+  display: flex;
+  align-items: center;
+  gap: 8px 14px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  border-radius: 9px;
+  background: var(--background-secondary);
+  margin-top: 14px;
+}
+.practice-review-dashboard .pr-next-action strong {
+  font-size: 13px;
+}
+.practice-review-dashboard .pr-next-action > span {
+  color: var(--text-muted);
+  font-size: 12px;
+  flex: 1 1 200px;
+}
+.practice-review-dashboard .pr-next-action > small {
+  flex-basis: 100%;
+}
+.practice-review-dashboard .pr-next-action > small:empty {
+  display: none;
+}
+.practice-review-dashboard button,
+.practice-review-dashboard select,
+.practice-review-dashboard input {
+  font: inherit;
+  font-size: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  color: var(--text-normal);
+  background: var(--background-primary);
+  box-shadow: none;
+}
+.practice-review-dashboard button {
+  cursor: pointer;
+  padding: 6px 10px;
+  height: auto;
+  margin: 0;
+}
+.practice-review-dashboard button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.practice-review-dashboard a:focus-visible,
+.practice-review-dashboard button:focus-visible,
+.practice-review-dashboard select:focus-visible,
+.practice-review-dashboard input:focus-visible {
+  outline: 2px solid var(--pr-accent);
+  outline-offset: 3px;
+}
+.practice-review-dashboard .pr-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+.practice-review-dashboard .pr-panel {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  padding: 15px;
+}
+.practice-review-dashboard h2 {
+  font-size: 15px;
+  font-weight: 650;
+  margin: 0 0 5px;
+  border: 0;
+}
+.practice-review-dashboard .pr-caption {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0 0 16px;
+}
+.practice-review-dashboard .pr-schedule {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+.practice-review-dashboard .pr-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  border: 0;
+  padding: 3px 1px 7px;
+  background: transparent;
+}
+.practice-review-dashboard .pr-day strong {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.practice-review-dashboard .pr-day > span:not(.pr-bar-rail) {
+  font-size: 10px;
+  margin-top: 6px;
+}
+.practice-review-dashboard .pr-day small {
+  font-size: 9px;
+  white-space: nowrap;
+}
+.practice-review-dashboard .pr-bar-rail {
+  height: 70px;
+  width: min(25px, 80%);
+  display: flex;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.practice-review-dashboard .pr-bar-rail i {
+  display: block;
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--pr-muted);
+}
+.practice-review-dashboard .pr-day:hover {
+  background: var(--background-secondary);
+}
+.practice-review-dashboard .pr-day[aria-pressed="true"] {
+  background: var(--pr-soft);
+}
+.practice-review-dashboard .pr-day[aria-pressed="true"] .pr-bar-rail i {
+  background: var(--pr-accent);
+}
+.practice-review-dashboard .pr-stage {
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  margin: 11px 0;
+}
+.practice-review-dashboard .pr-stage strong {
+  text-align: right;
+  font-size: 11px;
+}
+.practice-review-dashboard .pr-stage-rail {
+  height: 8px;
+  background: var(--background-secondary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.practice-review-dashboard .pr-stage-rail i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--pr-accent);
+}
+.practice-review-dashboard .pr-stage-note {
+  margin-top: 15px;
+  font-size: 9px;
+}
+.practice-review-dashboard .pr-library {
+  margin-top: 25px;
+}
+.practice-review-dashboard .pr-filters {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin: 13px 0;
+}
+.practice-review-dashboard .pr-filters select {
+  width: auto;
+  max-width: 100%;
+  min-height: 34px;
+  padding: 5px 9px;
+}
+.practice-review-dashboard .pr-filters input {
+  flex: 1 1 180px;
+  min-height: 34px;
+  padding: 7px 10px;
+}
+.practice-review-dashboard .pr-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.practice-review-dashboard .pr-tabs button {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.practice-review-dashboard .pr-tabs button[aria-pressed="true"] {
+  background: var(--pr-soft);
+  border-color: var(--pr-accent);
+  color: var(--text-normal);
+}
+.practice-review-dashboard .pr-selection {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 5px 0;
+}
+.practice-review-dashboard .pr-selection button {
+  padding: 2px 7px;
+  font-size: 10px;
+}
+.practice-review-dashboard .pr-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+}
+.practice-review-dashboard table {
+  width: 100%;
+  min-width: 570px;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 12px;
+}
+.practice-review-dashboard th {
+  text-align: left;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 10px;
+  background: var(--background-secondary);
+}
+.practice-review-dashboard :is(th, td) {
+  border: 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding: 10px 12px;
+  vertical-align: top;
+}
+.practice-review-dashboard tr:last-child td {
+  border-bottom: 0;
+}
+.practice-review-dashboard td:first-child {
+  width: 43%;
+  overflow-wrap: anywhere;
+}
+.practice-review-dashboard td small {
+  margin-top: 4px;
+  font-size: 9px;
+}
+.practice-review-dashboard .pr-item-link {
+  font-weight: 600;
+}
+.practice-review-dashboard .pr-round-count {
+  font-variant-numeric: tabular-nums;
+}
+.practice-review-dashboard .pr-outcome {
+  font-size: 10px;
+}
+.practice-review-dashboard .pr-outcome.independent {
+  color: #39795c;
+}
+.practice-review-dashboard .pr-overdue,
+.practice-review-dashboard .pr-issue {
+  color: var(--text-error);
+}
+.practice-review-dashboard .pr-today {
+  color: var(--pr-accent);
+}
+.practice-review-dashboard .pr-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 0;
+  padding: 22px 15px;
+}
+.practice-review-dashboard .pr-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.practice-review-dashboard .pr-footnote {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin: 18px 0 6px;
+}
+@container (max-width: 580px) {
+  .practice-review-dashboard .pr-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .practice-review-dashboard .pr-charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .practice-review-dashboard .pr-metric {
+    padding: 12px;
+  }
+  .practice-review-dashboard .pr-metric strong {
+    font-size: 27px;
+  }
+  .practice-review-dashboard .pr-tabs button {
+    min-height: 36px;
+  }
+}
+
+.practice-review-dashboard td {
+  font-size: 12px;
+  line-height: 1.5;
+}
