@@ -5,14 +5,14 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-08-08
-depends_on: []
+updated: 2026-11-17
+depends_on: [dashboard]
 requires:
   cli: [claude]
   plugins: [dataview]
 commands: [zettel, retro, backlink, inbox-review, project-retro]
 templates: [Templates/Zettel.md, Templates/Inbox.md]
-scripts: []
+scripts: [scripts/dashboard/zettelkasten/view.js]
 hooks: [upgrade-zettel-status]
 folders: [Zettelkasten/, Inbox/, Inbox/archive/]
 config_files:
@@ -70,3 +70,7 @@ Zettelkasten/
 
 ---
 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

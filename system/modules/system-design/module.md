@@ -5,14 +5,14 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-12
-updated: 2026-11-13
-depends_on: []
+updated: 2026-11-17
+depends_on: [dashboard]
 requires:
   cli: [claude, node]
   plugins: [dataview]
 commands: [solve]
 templates: [Templates/SD Pattern.md, Templates/SD Log.md]
-scripts: [scripts/sd-excalidraw-template.js]
+scripts: [scripts/sd-excalidraw-template.js, scripts/dashboard/system-design/view.js, scripts/dashboard/practice/view.js]
 hooks: []
 folders: [Learning/Practice/System-Design/, Learning/Practice/System-Design/Solutions/, Learning/Practice/System-Design/Patterns/, Learning/Practice/System-Design/Log/, Learning/Practice/System-Design/Courses/]
 config_files:
@@ -44,3 +44,7 @@ Ongoing system design practice: interactive guidance → design review → patte
 ## Quick Start
 
 1. Run `/sysd-solve Design YouTube` to begin practice.
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

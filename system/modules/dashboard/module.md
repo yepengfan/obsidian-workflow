@@ -5,13 +5,13 @@ type: utility
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-11-11
+updated: 2026-11-17
 depends_on: []
 requires:
   plugins: [dataview, homepage]
 commands: []
 templates: [Templates/Home.md, Templates/Work Dashboard.md, Templates/Work Weekly View.md, Templates/Work Monthly View.md]
-scripts: []
+scripts: [scripts/dashboard/home/view.js, scripts/dashboard/home/view.css, scripts/dashboard/ui/view.js, scripts/dashboard/ui/view.css, scripts/dashboard/ui/view.test.cjs]
 hooks: []
 folders: []
 config_files: []
@@ -21,49 +21,26 @@ tags: [system/module]
 # Dashboard 仪表盘
 
 ## Overview
-Vault 的 UI 层。Home.md 是主入口，通过 Dataviewjs 实现标签页导航、按钮交互、雷达图可视化。顶部 Practice 区块展示待首次练习、今日到期、逾期和累计练习轮次，并链接到复习看板。Work 默认 tab 内嵌 Task Board 四象限；Work Dashboard / Weekly View / Monthly View 仍作为独立工作子页存在，不再挂在 Home 上。
-
-被依赖: [[system/modules/work/module|work]] · [[system/modules/feeds-ai-digest/module|feeds-ai-digest]] · [[system/modules/feeds-github-trending/module|feeds-github-trending]] · [[system/modules/profile/module|profile]]
+Home 是精简仪表盘与功能入口。模块卡片展示图标、真实统计与迷你图表，每张卡片链接到模块自己的完整仪表盘。Feeds 不在 Home 展示，管线与历史资料保持独立。
 
 ## 架构
+- `Home.md` 调用 `scripts/dashboard/home/view.js`，样式在同目录 `view.css`。
+- 日常：Practice Review、Task Board、Journal。
+- 学习：Learning、Books、Algorithm、System Design、Frontend。
+- 知识与工作：Zettelkasten、Articles、Essays、Work、Brownbag、Profile。
+- `scripts/dashboard/<module>/view.js` 承接完整内容。首页不渲染详细图表、任务编辑表单或整套书架。
+- Journal 完整仪表盘为 `Journal/Dashboard.md`，Profile 为 `Profile/Dashboard.md`，文章聚合为 `Library/Articles.md`。
+- 其他仪表盘沿用原有索引路径。任务源仍为私有 `Tasks/Board.md`，共享 UI 在 `scripts/dashboard/tasks/view.js`。
 
-```
-Home.md                          # 主仪表盘（Homepage 插件落地页）
-├── Practice                    # 练习与复习高层统计
-├── Journal                     # 日常记录与回顾
-├── [Work | Profile]             # 主标签组
-│   ├── Work → 四象限 Task Board（读 Tasks/Board.md）+ Zettel 捕捉
-│   └── Profile → Baseball Card 雷达图（全息效果）
-└── [AI Digest | GitHub Trending] # Feed 标签组
-    ├── AI Digest → 最新摘要预览
-    └── GitHub Trending → 最新趋势预览
+## Quick Start
+打开 [[Home]] 看模块摘要，点击卡片的仪表盘进入完整视图。通过 [[system/registry|Registry]] 管理模块启停；停用模块在首页显示暂停状态。
 
-Work/Work Dashboard.md           # 工作仪表盘（任务 × 项目 × 状态）
-Work/Weekly View.md              # 周视图
-Work/Monthly View.md             # 月视图
-```
+## 维护
+Home 结构变化时同步 `Templates/Home.md`；任务视图变化时同步 `Templates/Task Board.md`。私人记录仍通过 vault sync 同步，不加入 Git。
 
-### UI 模式
-- **Tab Factory**: `createTabGroup(dv, tabs, defaultId)` — 通用标签页生成器
-- **Pill/Segment 风格**: 药丸按钮切换面板
-- **CMS 模式**: 笔记创建按钮直接嵌入仪表盘（无需弹窗）
-- **Task Toolbar**: 项目选择器 + 优先级 emoji 按钮（🔴🟠🟡🟢）+ 排序
+## 验证
+`node --test scripts/dashboard/home/view.test.cjs scripts/journal/view.test.cjs scripts/test_home_task_drag.cjs`
 
-### 设计决策日志
-修改仪表盘时，必须同步更新对应的 `Templates/Work *.md` 备份文件，并在 Design Decisions 区域追加新的 `> [!note]` 条目。
+## Dashboard UI
 
-## 配置位置
-| 组件 | 位置 |
-|------|------|
-| Home.md 源码 | `Home.md`（Dataviewjs） |
-| Home.md 备份 | `Templates/Home.md` |
-| Work Dashboard | `Work/Work Dashboard.md` |
-| Dashboard 备份 | `Templates/Work Dashboard.md` |
-| Weekly 备份 | `Templates/Work Weekly View.md` |
-| Monthly 备份 | `Templates/Work Monthly View.md` |
-
----
-🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]
-
-## Journal
-首页 Work/Profile 之前展示精简的 Journal 打卡视图，位于任务象限板上方。今天的日期按钮每次新建独立记录，继续原篇请打开已有对话；近 7 天日期展示打卡状态并支持选择同日各篇；待回看默认折叠，底部只展示记录天数。运行时实现：`scripts/journal/view.js`；固定日常流程和配置见 [[system/modules/journal/module|Journal]]。
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

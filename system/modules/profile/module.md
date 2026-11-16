@@ -5,13 +5,13 @@ type: profile
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-06-12
+updated: 2026-11-17
 depends_on: [dashboard]
 requires:
   plugins: [dataview]
 commands: []
 templates: []
-scripts: []
+scripts: [scripts/dashboard/profile/view.js]
 hooks: []
 folders: [Profile/]
 config_files: []
@@ -21,7 +21,7 @@ tags: [system/module]
 # Profile 个人档案
 
 ## Overview
-个人评估和自我发展模块。包含 Ray Dalio 风格的 Baseball Card（PrinciplesYou 测评 + 自评 + 交叉验证），在 Home.md 通过雷达图展示。
+个人评估和自我发展模块。包含 Ray Dalio 风格的 Baseball Card（PrinciplesYou 测评 + 自评 + 交叉验证），在 Profile/Dashboard.md 展示完整雷达图，Home 只展示精简轮廓。
 
 依赖: [[system/modules/dashboard/module|dashboard]]
 
@@ -35,7 +35,7 @@ Profile/
 ```
 
 ### 展示
-- Home.md 的 Profile 标签页 → Dataview 雷达图（全息效果）
+- Profile/Dashboard.md → Dataview 雷达图（全息效果）
 
 ### 数据来源
 - PrinciplesYou 测评结果
@@ -46,7 +46,11 @@ Profile/
 | 组件 | 位置 |
 |------|------|
 | Baseball Card | `Profile/Personal Baseball Card.md` |
-| 展示层 | `Home.md`（Dataviewjs 雷达图代码） |
+| 展示层 | `scripts/dashboard/profile/view.js` |
 
 ---
 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

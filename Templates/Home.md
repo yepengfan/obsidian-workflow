@@ -1,12 +1,22 @@
 ---
 tags: template
 for: Home
-updated: 2026-11-11
+updated: 2026-11-17
 ---
 
 %% Reference template for Home.md. Not used to create new notes — edit the live file directly. Update this file whenever the dashboard structure changes, and bump the `updated:` frontmatter date. Append a new dated `> [!note]` entry to Design Decisions when making structural changes. %%
 
 ## Design Decisions
+
+> [!note] 2026-11-17 - Consistent module navigation and presentation
+> - Home and all module dashboards share the same header, icons, typography, spacing, and English control labels. Module libraries use shared search, filters, result counts, and pagination.
+
+> [!note] 2026-11-17 - Module summary dashboard
+> - Home uses compact module cards with icons, large numbers and small charts. Each card opens its independent dashboard.
+> - Full task editing, book shelves, practice analysis and Profile visualization live in module views under `scripts/dashboard/`.
+> - Feeds and vault inventory tables no longer appear on Home. Existing feed data and pipeline configuration are preserved.
+> - Journal keeps its independent-entry semantics in a compact Home summary and a full `Journal/Dashboard.md` view.
+
 
 > [!note] 2026-11-11 - Practice at the top
 > - Place the Practice statistics section first, immediately after frontmatter and before Journal.
@@ -190,3 +200,14 @@ updated: 2026-11-11
 > [!note] 2026-06-02 — Fix "本周" stats using rolling 7-day window instead of calendar week
 > - **Problem**: Algorithm tab stats line used `today.minus({ days: 7 })` (rolling 7-day window) while the bar chart used calendar week (Mon-Sun). This caused the "本周 X 题" number to disagree with the current week's bar.
 > - **Solution**: Changed `weekAgo` to compute current week's Monday (`todayD.weekday === 1 ? todayD : todayD.minus({ days: todayD.weekday - 1 })`), matching the bar chart's calendar week logic. Changed "本月" (rolling 30 days) to "上月" (previous calendar month, e.g. May 1–31). Applied to both desktop and mobile code paths.
+
+## Reference Content
+
+---
+cssclasses: [dashboard, module-dashboard]
+---
+
+```dataviewjs
+const { Notice } = require("obsidian");
+await dv.view("scripts/dashboard/home", { app, Notice });
+```

@@ -5,14 +5,14 @@ type: work
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-08-08
+updated: 2026-11-17
 depends_on: [dashboard]
 requires:
   cli: [claude]
   plugins: [dataview]
 commands: [daily, project, decision-log, meeting]
 templates: [Templates/Work Daily.md, Templates/Work Project.md]
-scripts: []
+scripts: [scripts/dashboard/work/view.js]
 hooks: []
 folders: [Work/]
 config_files:
@@ -79,3 +79,7 @@ Work/
 
 ---
 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

@@ -2,7 +2,7 @@
 
 The module has three parts:
 
-- Shared review and scheduling. `scripts/practice-review/review.py` lists due items, saves ended attempts and the learner's own reflection, and updates review metadata. `00_index.md` shows the queue in Obsidian.
+- Shared review and scheduling. `scripts/practice-review/review.py` lists due items, saves ended attempts and the learner's own reflection, and updates review metadata. `00_index.md` opens `scripts/dashboard/practice-review/view.js`: the read-only dashboard for totals, a seven-day schedule, scheduling stages, and domain/status/search filters. Dashboard interactions never record attempts or change scheduling metadata.
 - `practice_flows` in the module configuration selects each domain's authoritative workflow. Algorithm and system design use their existing skills for guidance, assessment and domain-specific saving. The behavioral workflow currently lives in `Flows/behavioral.md`.
 - `Content/<domain>.md` defines what belongs in a review item, including its neutral prompt, the material to recall, and questions to revisit after an attempt.
 

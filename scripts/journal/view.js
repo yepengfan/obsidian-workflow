@@ -149,12 +149,13 @@ async function launch(app, { now = new Date() } = {}) {
   } finally { state.launching = false; }
 }
 
-async function renderJournal(dv, app, { now = () => new Date(), page = globalThis.document, window: win = globalThis.window } = {}) {
-  const root = dv.el("section", "", { cls: "journal-overview" });
+async function renderJournal(dv, app, { now = () => new Date(), page = globalThis.document, window: win = globalThis.window, compact = false, container } = {}) {
+  const root = container ? container.createEl("section", { cls: compact ? "home-journal-summary" : "journal-overview" }) : dv.el("section", "", { cls: compact ? "home-journal-summary" : "journal-overview" });
   const style = root.createEl("style");
   style.textContent = `.journal-overview{margin:18px 0;padding:18px;border:1px solid var(--background-modifier-border);border-radius:12px}.journal-overview *{box-sizing:border-box;min-width:0}.journal-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.journal-header h2{margin:0}.journal-local-date{font-size:12px;color:var(--text-muted)}.journal-days{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}.journal-day{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:1 0 58px;min-height:64px;padding:8px;border-radius:8px;border:1px solid var(--background-modifier-border);background:var(--background-secondary);color:var(--text-normal);font-size:13px;cursor:pointer}.journal-day:disabled{opacity:.4;cursor:default}.journal-day[data-recorded=true]::after{content:"";width:3px;height:3px;border-radius:50%;background:currentColor}.journal-overview button.journal-day[aria-current=date]{flex-grow:1.6;background:var(--interactive-accent);color:var(--text-on-accent);border:2px solid var(--interactive-accent);font-weight:650;box-shadow:0 0 0 3px color-mix(in srgb,var(--interactive-accent) 20%,transparent)}.journal-today-tag{font-size:10px;line-height:1.2;font-weight:750;letter-spacing:1px;border-radius:4px;padding:2px 7px;background:color-mix(in srgb,var(--text-on-accent) 15%,transparent)}.journal-today-date{font-size:17px;line-height:1.2;font-weight:750;letter-spacing:.2px}.journal-overview details{padding:10px 0}.journal-overview summary{cursor:pointer;font-size:14px}.journal-overview a,.journal-overview li{overflow-wrap:anywhere}.journal-overview ul{padding-left:20px}.journal-numbers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-top:14px;border-top:1px solid var(--background-modifier-border);margin-top:12px}.journal-number strong{display:block;font-size:19px;font-variant-numeric:tabular-nums}.journal-number small{font-size:11px;color:var(--text-muted)}.journal-status{font-size:13px;color:var(--text-muted);margin-top:12px}.journal-status:empty,.journal-fallback:empty{display:none}.journal-overview textarea{width:100%;min-height:130px;font-size:.85em}@media(max-width:700px){.journal-overview{padding:16px}.journal-days{gap:6px}.journal-day{flex-basis:62px}}`;
   const header = root.createEl("div", { cls: "journal-header" });
-  header.createEl("h2", { text: "Journal" });
+  if (compact) header.hidden = true;
+  else header.createEl("h2", { text: "Journal" });
   const dateLabel = header.createEl("span", { cls: "journal-local-date" });
   const body = root.createEl("div");
   const status = root.createEl("div", { cls: "journal-status", attr: { "aria-live": "polite" } });
@@ -162,22 +163,22 @@ async function renderJournal(dv, app, { now = () => new Date(), page = globalThi
   let disposed = false, version = 0, timer, midnightTimer, followupsOpen = false;
   const link = (parent, path, label) => {
     const a = parent.createEl("a", { text: label, attr: { href: "#" } });
-    a.addEventListener("click", event => { event.preventDefault(); void app.workspace.openLinkText(path, "", false); });
+    a.addEventListener("click", event => { event.preventDefault(); event.stopPropagation?.(); void app.workspace.openLinkText(path, "", false); });
   };
   async function start(button) {
     if (button.disabled || stateFor(app).launching) return;
     button.disabled = true;
     fallback.empty();
-    status.textContent = "正在准备今天的记录…";
+    status.textContent = "Preparing today’s entry…";
     // Resolve the local date at click time, even if the screen slept through midnight.
     const result = await launch(app, { now: now() });
     if (disposed) return;
     button.disabled = false;
-    status.textContent = result.error ?? (result.busy ? "正在打开 Journal…" : "本篇模板已准备，已请求 AI 开始新记录。");
-    if (result.error && result.path) link(fallback, result.path, "打开今天的记录");
+    status.textContent = result.error ?? (result.busy ? "Opening Journal…" : "Entry prepared. A new journal conversation was requested.");
+    if (result.error && result.path) link(fallback, result.path, "Open today’s entry");
     if (result.error && result.prompt) {
-      fallback.createEl("p", { text: "可复制这段启动指令到 Chatting with AI：" });
-      const area = fallback.createEl("textarea", { attr: { readonly: "", "aria-label": "Journal 启动指令" } });
+      fallback.createEl("p", { text: "Copy this prompt into Chatting with AI:" });
+      const area = fallback.createEl("textarea", { attr: { readonly: "", "aria-label": "Journal start prompt" } });
       area.value = result.prompt;
       area.addEventListener("click", () => area.select());
     }
@@ -189,33 +190,64 @@ async function renderJournal(dv, app, { now = () => new Date(), page = globalThi
       const active = enabled(await read(app, MODULE_PATH));
       const clock = now();
       const today = localDay(clock);
-      const weekday = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"][clock.getDay()];
+      const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][clock.getDay()];
       if (disposed || current !== version) return;
       dateLabel.textContent = `${today} ${weekday}`;
-      if (!active) { body.empty(); body.createEl("p", { text: "Journal 模块已停用。已有记录仍保留，可通过 /module-toggle journal 启用。" }); return; }
+      if (!active) { body.empty(); body.createEl("p", { text: "Journal is paused. Enable it with /module-toggle journal." }); return; }
       const files = app.vault.getMarkdownFiles().filter(file => file.path.startsWith(DAILY_ROOT));
       const notes = await Promise.all(files.map(async file => ({ path: file.path, text: await app.vault.read(file) })));
       const data = snapshot(notes, clock);
       if (disposed || current !== version) return;
       body.empty();
+      if (compact) {
+        const summary = body.createEl("div", { cls: "home-card-body" });
+        const metric = summary.createEl("div", { cls: "home-metric" });
+        metric.createEl("strong", { text: String(data.pending.length) });
+        metric.createEl("small", { text: "To revisit" });
+        const activity = summary.createEl("div", { cls: "home-plot" });
+        const dots = activity.createEl("div", {
+          cls: "home-week",
+          attr: {
+            role: "img",
+            "aria-label": data.recent
+              .map((day) => `${day.day} ${day.recorded ? "Recorded" : "No entry"}`)
+              .join(", "),
+          },
+        });
+        for (const day of data.recent)
+          dots.createEl("i", {
+            cls: [
+              day.recorded ? "recorded" : "",
+              day.day === today ? "today" : "",
+            ].join(" "),
+            attr: { title: `${day.day} ${day.recorded ? "Recorded" : "No entry"}` },
+          });
+        activity.createEl("small", {
+          text: `Last 7 days · ${data.weekCount} days recorded`,
+        });
+        const footer = body.createEl("div", { cls: "home-card-footer" });
+        const create = footer.createEl("button", { text: "+ New journal entry" });
+        create.addEventListener("click", () => start(create));
+        return;
+      }
       const days = body.createEl("div", { cls: "journal-days" });
       const entries = body.createEl("div", { cls: "journal-entries" });
       function showEntries(day) {
         entries.empty();
         const notes = data.daily.filter(note => note.day === day && note.recorded);
-        entries.createEl("p", { text: `${day} · ${notes.length} 篇记录` });
+        entries.createEl("p", { text: `${day} · ${notes.length} entries` });
         const list = entries.createEl("ul");
         notes.forEach(note => link(list.createEl("li"), note.path, note.path.slice(DAILY_ROOT.length, -3)));
       }
       data.recent.forEach(day => {
         const isToday = day.day === today;
         const label = day.day.slice(5).replace("-", "/");
-        const action = isToday ? "今天，新建一篇记录" : day.recorded ? "已记录，打开原笔记" : "未记录";
+        const action = isToday ? "Today; create a new entry" : day.recorded ? "Recorded; open entry" : "No entry";
         const attr = { "data-recorded": String(day.recorded), "aria-label": `${day.day} ${action}`, title: `${day.day} ${action}` };
         if (isToday) attr["aria-current"] = "date";
         const button = days.createEl("button", { text: isToday ? "" : label, cls: "journal-day", attr });
         if (isToday) {
-          button.createEl("span", { text: "今天", cls: "journal-today-tag" });
+          button.createEl("span", { text: "Today", cls: "journal-today-tag" });
           button.createEl("span", { text: label, cls: "journal-today-date" });
         }
         button.disabled = (!isToday && !day.recorded) || (isToday && stateFor(app).launching);
@@ -223,35 +255,35 @@ async function renderJournal(dv, app, { now = () => new Date(), page = globalThi
           if (button.disabled) return;
           if (isToday) { await start(button); return; }
           try {
-            if (!enabled(await read(app, MODULE_PATH))) throw new Error("Journal 模块已停用");
+            if (!enabled(await read(app, MODULE_PATH))) throw new Error("Journal is paused");
             const notes = data.daily.filter(note => note.day === day.day && note.recorded);
             if (notes.length > 1) { showEntries(day.day); return; }
             const path = notes[0]?.path;
-            if (!path || !app.vault.getAbstractFileByPath(path)) throw new Error("记录尚未同步或已被移除");
+            if (!path || !app.vault.getAbstractFileByPath(path)) throw new Error("Entry is not synced or was removed");
             await app.workspace.openLinkText(path, "", false);
           } catch (error) { status.textContent = error.message; }
         });
       });
       const todayNotes = data.daily.filter(note => note.day === today && note.recorded);
       if (todayNotes.length) {
-        const browse = entries.createEl("button", { text: `查看今天的 ${todayNotes.length} 篇记录` });
+        const browse = entries.createEl("button", { text: `Browse today’s ${todayNotes.length} entries` });
         browse.addEventListener("click", () => showEntries(today));
       }
       const pending = body.createEl("details");
       pending.open = followupsOpen;
       pending.addEventListener("toggle", () => { followupsOpen = pending.open; });
-      pending.createEl("summary", { text: `待回看 ${data.pending.length}` });
-      if (!data.pending.length) pending.createEl("p", { text: "目前没有待回看事项。" });
+      pending.createEl("summary", { text: `To revisit ${data.pending.length}` });
+      if (!data.pending.length) pending.createEl("p", { text: "Nothing to revisit yet." });
       const ul = pending.createEl("ul");
       data.pending.forEach(item => link(ul.createEl("li"), `${item.path}#想再回看的事`, displayText(item.text)));
       const numbers = body.createEl("div", { cls: "journal-numbers" });
-      for (const [label, count] of [["累计记录天数", data.totalCount], ["本月记录天数", data.monthCount], ["近 7 天记录天数", data.weekCount]]) {
+      for (const [label, count] of [["Total days recorded", data.totalCount], ["Days this month", data.monthCount], ["Days in the last 7", data.weekCount]]) {
         const stat = numbers.createEl("div", { cls: "journal-number" });
         stat.createEl("strong", { text: String(count) });
         stat.createEl("small", { text: label });
       }
     } catch (error) {
-      if (!disposed && current === version) { body.empty(); status.textContent = `Journal 视图未能更新：${error.message}`; }
+      if (!disposed && current === version) { body.empty(); status.textContent = `Journal could not refresh: ${error.message}`; }
     }
   }
   const schedule = file => {
@@ -289,5 +321,5 @@ async function renderJournal(dv, app, { now = () => new Date(), page = globalThi
 if (typeof dv === "undefined") {
   module.exports = { scalar, enabled, localDay, validDay, dayPath, entryPath, sections, meaningful, parseDaily, snapshot, initialize, promptFor, launch, renderJournal };
 } else {
-  return renderJournal(dv, input.app);
+  return renderJournal(dv, input.app, { compact: input.compact === true, container: input.container });
 }

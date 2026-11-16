@@ -146,7 +146,7 @@ test('view refreshes after data writes and unregisters listeners on unload', asy
   for(const {name,callback} of f.events.values()) if(name==='modify')callback({path:`Journal/Daily/${localDay()}.md`});
   await new Promise(resolve=>setTimeout(resolve,200));
   assert.ok(root.all().some(el=>el.textContent==='等演练结果'));
-  assert.ok(root.all().some(el=>el.textContent==='待回看 1'));
+  assert.ok(root.all().some(el=>el.textContent==='To revisit 1'));
   f.callbacks.forEach(fn=>fn());
   assert.equal(f.events.size,0);
 });
@@ -187,9 +187,9 @@ test('compact view exposes date entry, check-ins and folded followups without re
   const elements = await mount(t,f,{now:()=>new Date(2026,10,9)});
   const buttons = elements().filter(el=>el.tag==='button');
   assert.equal(buttons.filter(el=>el.cls==='journal-day').length,7);
-  assert.deepEqual(buttons.find(el=>el.attributes['aria-current']==='date').children.map(el=>el.textContent),['今天','11/09']);
+  assert.deepEqual(buttons.find(el=>el.attributes['aria-current']==='date').children.map(el=>el.textContent),['Today','11/09']);
   assert.equal(buttons.filter(el=>el.disabled).length,5);
-  assert.ok(elements().some(el=>el.textContent==='2026-11-09 周一'));
+  assert.ok(elements().some(el=>el.textContent==='2026-11-09 Monday'));
   assert.ok(elements().some(el=>el.tag==='details' && !el.open));
   assert.equal(elements().some(el=>el.textContent.includes('PRIVATE')),false);
   assert.deepEqual(elements().filter(el=>el.cls==='journal-number').map(el=>el.children[0].textContent),['2','2','2']);
@@ -210,7 +210,7 @@ test('foreground return refreshes local year/day and listener cleanup prevents f
   assert.ok(elements().some(el=>el.cls==='journal-today-date' && el.textContent==='12/31'));
   page.hidden = false; page.fire('visibilitychange'); await settle();
   assert.ok(elements().some(el=>el.cls==='journal-today-date' && el.textContent==='01/01'));
-  assert.ok(elements().some(el=>el.textContent==='2027-01-01 周五'));
+  assert.ok(elements().some(el=>el.textContent==='2027-01-01 Friday'));
   clock = new Date(2027,0,2); win.fire('focus'); await settle();
   assert.ok(elements().some(el=>el.cls==='journal-today-date' && el.textContent==='01/02'));
   f.callbacks.forEach(fn=>fn());
@@ -259,7 +259,32 @@ test('past date offers every saved entry and today can browse records while crea
   assert.equal(f.count().sends,0);
   // Refresh after creating an entry still exposes today's saved records.
   await elements().find(el=>el.attributes['aria-current']==='date').listeners.click();
-  await elements().find(el=>el.textContent==='查看今天的 1 篇记录').listeners.click();
+  await elements().find(el=>el.textContent==='Browse today’s 1 entries').listeners.click();
   assert.ok(elements().some(el=>el.tag==='a' && el.textContent===paths[2].slice('Journal/Daily/'.length,-3)));
   assert.equal(elements().some(el=>el.textContent.includes('PRIVATE')),false);
+});
+
+test("Home compact summary retains launch and failure recovery without exposing journal text", async (t) => {
+  const f = fixture({ configured: false });
+  f.put(
+    "Journal/Daily/2026-11-08.md",
+    "## 原始记录\nPRIVATE CONTENT\n## 想再回看的事\n- [ ] 等结果",
+  );
+  const elements = await mount(t, f, {
+    compact: true,
+    now: () => new Date(2026, 10, 9),
+  });
+  assert.equal(
+    elements().some((el) => el.textContent.includes("PRIVATE")),
+    false,
+  );
+  assert.ok(elements().some((el) => el.textContent === "To revisit"));
+  const create = elements().find((el) => el.textContent === "+ New journal entry");
+  await create.listeners.click();
+  assert.ok(elements().some((el) => el.textContent.includes("登录")));
+  assert.ok(
+    elements().some(
+      (el) => el.tag === "textarea" && el.value.includes("Journal/Guide.md"),
+    ),
+  );
 });

@@ -38,8 +38,7 @@ Single line, this order:
 1. **Guard** — follow the GUARD callout above.
 
 2. **Ensure board** — `test -d Tasks || mkdir -p Tasks`. If `Tasks/Board.md` is missing, **do not copy the whole template file** (it contains Design Decisions). Build the live file as:
-   - YAML frontmatter `tags: [task-board]`
-   - then the body under `## Reference Content` in `Templates/Task Board.md`, starting at `# Task Board` through `## Done` (skip the `%% The sections below… %%` comment).
+   - Copy only the complete note under `## Reference Content` in `Templates/Task Board.md`, starting at its YAML `---` through `## Done`. This includes the dashboard CSS classes and Dataview wrapper. Skip the template's own frontmatter, Design Decisions, and reference comment.
    Ensure `## Tasks` and `## Done` exist.
 
 3. **Collect** (do not invent):

@@ -5,14 +5,14 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-03-29
-updated: 2026-11-13
-depends_on: [zettelkasten]
+updated: 2026-11-17
+depends_on: [zettelkasten, dashboard]
 requires:
   cli: [claude]
   plugins: [dataview]
 commands: [learning-init, learning-log, learning-review]
 templates: [Templates/Learning Plan.md, Templates/Learning Week.md]
-scripts: []
+scripts: [scripts/dashboard/learning/view.js]
 hooks: []
 folders: [Learning/, Learning/Plans/, Learning/Books/, Learning/Resources/]
 config_files:
@@ -77,3 +77,7 @@ Learning/
 
 ---
 🏠 [[Home]] · 📊 [[system/registry|Registry]] · 🚀 [[GETTING_STARTED|Getting Started]]
+
+## Dashboard UI
+
+The module dashboard uses the shared Home shell in `scripts/dashboard/ui/`. See `scripts/dashboard/README.md` for navigation, controls, private-data boundaries, and validation.

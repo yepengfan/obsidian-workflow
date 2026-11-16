@@ -6,7 +6,8 @@
 # Bug found 2026-07: this cost us 7 untracked command files (work + learning).
 /Archive/
 /Attachments/
-/Essays/
+/Essays/*
+!/Essays/index.md
 /Excalidraw/
 /system-design-primer/
 /Kanban/
@@ -18,6 +19,7 @@
 # Learning/ is vault content (books, patterns, logs, sandboxes) — not tracked.
 # Exceptions below are workflow tooling only (AGENTS.md, dashboards, init scripts).
 /Learning/*
+!/Learning/Dashboard.md
 !/Learning/Books/
 /Learning/Books/*
 !/Learning/Books/AGENTS.md
@@ -33,6 +35,7 @@
 /Learning/Practice/Algorithm/*
 !/Learning/Practice/Algorithm/AGENTS.md
 !/Learning/Practice/Algorithm/CLAUDE.md
+!/Learning/Practice/Algorithm/00_index.md
 !/Learning/Practice/Frontend/
 /Learning/Practice/Frontend/*
 !/Learning/Practice/Frontend/AGENTS.md
@@ -47,7 +50,11 @@
 /Learning/Practice/Review/Items/
 /WeRead/
 /ibooks-highlights/
-/Work/
+/Work/*
+!/Work/Work Dashboard.md
+!/Work/Brownbag Sessions/
+/Work/Brownbag Sessions/*
+!/Work/Brownbag Sessions/Brownbag Sessions.md
 # Live task board (Tasks/Board.md) is private, synced via S3/iCloud.
 # Templates/Task Board.md stays in git.
 /Tasks/
@@ -57,10 +64,12 @@
 /Journal/Review.md
 /Zettelkasten/*
 !/Zettelkasten/Zettelkasten Index.md
-/Profile/
+/Profile/*
+!/Profile/Dashboard.md
 /Note/
 /Feeds/
-/Library/
+/Library/*
+!/Library/Articles.md
 
 # Local artifacts and one-off learning tools
 /.lavish/

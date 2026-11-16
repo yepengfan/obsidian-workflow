@@ -1,0 +1,292 @@
+.task-dashboard-body {
+  font-size: 13px;
+}
+.task-dashboard-body .tb-composer {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.task-dashboard-body .tb-compose-title {
+  display: flex;
+  gap: 8px;
+}
+.task-dashboard-body .tb-compose-title input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+.task-dashboard-body .tb-compose-title .mod-cta {
+  flex-shrink: 0;
+}
+.task-dashboard-body .tb-compose-options {
+  display: flex;
+  gap: 12px 20px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.task-dashboard-body .tb-compose-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.task-dashboard-body .tb-compose-field input[type="date"] {
+  min-width: 145px;
+  width: 145px;
+}
+.task-dashboard-body .tb-field-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+.task-dashboard-body .tb-segments {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+}
+.task-dashboard-body .tb-segments button {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  box-shadow: none;
+  min-height: 28px;
+  padding: 4px 10px;
+}
+.task-dashboard-body .tb-segments button[aria-pressed="true"] {
+  background: var(--background-primary);
+  color: var(--text-normal);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+}
+.task-dashboard-body .tb-important {
+  min-height: 34px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: none;
+}
+.task-dashboard-body .tb-important[aria-pressed="true"] {
+  background: color-mix(
+    in srgb,
+    var(--interactive-accent) 10%,
+    var(--background-primary)
+  );
+  border-color: var(--interactive-accent);
+  color: var(--text-accent);
+}
+.task-dashboard-body .tb-destination {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.task-dashboard-body .tb-filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.task-dashboard-body .tb-filter-status {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.task-dashboard-body .tb-help {
+  margin-left: auto;
+  position: relative;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.task-dashboard-body .tb-help summary {
+  cursor: pointer;
+}
+.task-dashboard-body .tb-help p {
+  position: absolute;
+  top: 22px;
+  right: 0;
+  z-index: 5;
+  width: min(300px, 75vw);
+  padding: 14px;
+  margin: 0;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgb(0 0 0 / 10%);
+  font-size: 12px;
+}
+.task-dashboard-body .tb-quadrant {
+  padding: 12px;
+  min-width: 0;
+  min-height: 100px;
+  border: 1px solid var(--background-modifier-border);
+  border-left: 3px solid var(--tb-quadrant-accent);
+  border-radius: 10px;
+  background: var(--background-secondary);
+}
+.task-dashboard-body .tb-quadrant h3,
+.task-dashboard-body .tb-unclassified h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+.task-dashboard-body .tb-quadrant-subtitle {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.task-dashboard-body .tb-count {
+  align-self: flex-start;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+}
+.task-dashboard-body .tb-empty {
+  margin: 12px 0 4px;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+.task-dashboard-body ul.contains-task-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.task-dashboard-body li.dataview.tb-task-row {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 28px;
+  gap: 6px 8px;
+  padding: 10px;
+  margin: 8px 0 0;
+  list-style: none;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary) !important;
+  line-height: 1.5;
+  font-size: 13px;
+}
+.task-dashboard-body li.dataview.tb-task-row::before {
+  display: none;
+}
+.task-dashboard-body li.dataview.tb-task-row:hover,
+.task-dashboard-body li.dataview.tb-task-row:focus-within {
+  border-color: var(--interactive-accent);
+  background: color-mix(
+    in srgb,
+    var(--interactive-accent) 3%,
+    var(--background-primary)
+  ) !important;
+}
+.task-dashboard-body .tb-task-row > input[type="checkbox"] {
+  grid-column: 1;
+  grid-row: 1;
+  position: static !important;
+  margin: 2px 0 0 !important;
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  border-radius: 4px;
+}
+.task-dashboard-body .tb-task-title {
+  grid-column: 2;
+  grid-row: 1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  background: transparent !important;
+}
+.task-dashboard-body .is-expanded .tb-task-title {
+  display: block;
+}
+.task-dashboard-body .tb-task-meta {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+.task-dashboard-body .tb-area-badge {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--background-secondary);
+}
+.task-dashboard-body .tb-overdue {
+  color: var(--text-error);
+}
+.task-dashboard-body .tb-task-row button:is(.tb-move, .tb-edit, .tb-expand) {
+  min-height: 28px;
+  height: 28px;
+  padding: 3px 6px;
+  box-shadow: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  margin: 0;
+}
+.task-dashboard-body .tb-task-row button:is(.tb-move, .tb-edit) {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: start;
+  width: 28px;
+}
+.task-dashboard-body .tb-task-row .tb-move {
+  cursor: grab;
+}
+.task-dashboard-body .tb-task-row .tb-expand {
+  margin-left: auto;
+  color: var(--text-accent);
+}
+.task-dashboard-body .tb-task-row .tb-editor {
+  grid-column: 1 / -1;
+}
+.task-dashboard-body .tb-unclassified {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: 10px;
+}
+.task-dashboard-body .tb-list {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+.task-dashboard-body .tb-list > h3 {
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+.task-dashboard-body [hidden] {
+  display: none !important;
+}
+@container (max-width: 580px) {
+  .task-dashboard-body .tb-compose-options {
+    gap: 12px;
+  }
+  .task-dashboard-body .tb-quadrant {
+    min-height: 90px;
+  }
+}
+/* Dataview adds a 40px hover shadow to native task rows. Keep focus inside the card. */
+.task-dashboard-body li.dataview.tb-task-row {
+  box-shadow: none !important;
+  cursor: default;
+}
+.task-dashboard-body .tb-task-row button.tb-expand {
+  margin-left: auto;
+}
+.task-dashboard-body .tb-editor-options,
+.task-dashboard-body .tb-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: flex-end;
+  width: 100%;
+}
+.task-dashboard-body .tb-editor-actions {
+  justify-content: flex-end;
+  padding-top: 4px;
+}

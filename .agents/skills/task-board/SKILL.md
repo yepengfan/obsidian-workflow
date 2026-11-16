@@ -37,8 +37,7 @@ Operate on the live Eisenhower board at `Tasks/Board.md`. Usage: `/task-board` w
 1. **Guard** — follow the GUARD callout above.
 
 2. **Ensure board** — `test -d Tasks || mkdir -p Tasks`. If `Tasks/Board.md` is missing, **do not copy the whole template file** (it contains Design Decisions). Build the live file as:
-   - YAML frontmatter `tags: [task-board]`
-   - then the body under `## Reference Content` in `Templates/Task Board.md`, starting at `# Task Board` through `## Done` (skip the `%% The sections below… %%` comment).
+   - Copy only the complete note under `## Reference Content` in `Templates/Task Board.md`, starting at its YAML `---` through `## Done`. This includes the dashboard CSS classes and Dataview wrapper. Skip the template's own frontmatter, Design Decisions, and reference comment.
    Ensure `## Tasks` and `## Done` exist.
 
 3. **Parse** — Read `Tasks/Board.md`. Collect open tasks under `## Tasks` (stop at `## Done`). Skip fenced code blocks when scanning headings. Do not parse tasks inside dataviewjs fences.
