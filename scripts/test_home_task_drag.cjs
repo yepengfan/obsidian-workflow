@@ -4,10 +4,10 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 
 const home = readFileSync(join(__dirname, 'dashboard', 'tasks', 'view.js'), 'utf8');
-const logic = home.slice(home.indexOf('  let dragged = null;'), home.indexOf('  root.createEl("div", {\n    text: "Drag'));
+const logic = home.slice(home.indexOf('let dragged = null;'), home.indexOf('// Task movement UI.'));
 assert.ok(logic.includes('async function moveTask'));
-const handleCode = home.slice(home.lastIndexOf('      if (d && !editable) {', home.indexOf('        const handle = li.createEl')), home.indexOf('      if (editable) attachEdit'));
-const dropCode = home.slice(home.indexOf('    cell.setAttribute("data-quadrant"'), home.indexOf('    const head = cell.createEl', home.indexOf('    cell.setAttribute("data-quadrant"')));
+const handleCode = home.slice(home.lastIndexOf('if (d && !editable) {', home.indexOf('const handle = li.createEl')), home.indexOf('if (editable) attachEdit'));
+const dropCode = home.slice(home.indexOf('cell.setAttribute("data-quadrant"'), home.indexOf('    const head = cell.createEl', home.indexOf('cell.setAttribute("data-quadrant"')));
 
 // A fixed calendar isolates tests from the wall clock and the host timezone.
 function date(value) {

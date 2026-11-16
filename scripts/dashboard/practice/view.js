@@ -270,12 +270,10 @@ return (async () => {
       text: "Hello Interview",
       attr: { href: "https://www.hellointerview.com/" },
     });
-    resources
-      .createEl("p")
-      .createEl("a", {
-        text: "Codemia",
-        attr: { href: "https://codemia.io/" },
-      });
+    resources.createEl("p").createEl("a", {
+      text: "Codemia",
+      attr: { href: "https://codemia.io/" },
+    });
   } else if (input.domain === "frontend") {
     ui.section("Resources").createEl("a", {
       text: "GreatFrontEnd",

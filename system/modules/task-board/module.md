@@ -12,7 +12,7 @@ requires:
   plugins: [dataview]
 commands: [task-board, task-add]
 templates: [Templates/Task Board.md]
-scripts: [scripts/test_home_task_drag.cjs, scripts/dashboard/tasks/view.js]
+scripts: [scripts/test_home_task_drag.cjs, scripts/dashboard/tasks/view.js, scripts/dashboard/tasks/view.css, scripts/dashboard/tasks/view.test.cjs]
 hooks: []
 folders: [Tasks/]
 config_files:
@@ -54,11 +54,11 @@ Templates/Task Board.md      # git 内模板
 
 ## Quick Start
 
-1. **打开看板** → Home 的 Work tab（默认）直接显示四象限；或顶栏 Task Board 打开 `Tasks/Board.md`
-2. **加一条任务** → Home 标题栏填标题，选 Work/Life/Other，可选 ⭐ 和 due，点 `+ Task`（或 `/task-add`）
-3. **改现有任务** → Home 点任务 → 打开 Task Board → 在下方「任务列表」区点条目后的 `✎` 改标题/领域/⭐/due 或删除，自动重新分桶（上方矩阵只做可视化）
-4. **首页移动** → 拖动任务右侧独立栏的 ⋮⋮ 到 Q1-Q4，或点该栏选择象限。自动更新 ⭐；移入紧急象限时保留紧急日期，否则设为 7 天后；移入不紧急象限时清除紧急日期，保留较远日期。提示中可撤销。未分类任务先在 Task Board 选择领域。
-5. **分类重排** → `/task-board` — 补未分类、改 ⭐/📅
+1. **Open the board**: Home → Task Board → Dashboard, or open `Tasks/Board.md`.
+2. **Capture**: enter a title, choose Area and Important, optionally set Due, then inspect the quadrant preview and select Add task. Enter also submits once.
+3. **Browse**: area filters update quadrant counts, empty states, and the task list together. Unclassified tasks stay visible so they can be assigned an area. Long titles expand without changing the record.
+4. **Edit**: use Edit in the task list to change title, area, importance, or due date. The matrix retains completion and move controls.
+5. **Move**: drag the corner handle or click it for a quadrant menu. Importance and due-date semantics remain unchanged, with an Undo action after a move. Board help explains the date policy.
 
 **日常节奏**: `/task-add` 捕获 → `/task-board` 把要事放到 Q1/Q2
 

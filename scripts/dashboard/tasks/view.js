@@ -1,57 +1,95 @@
-const app = input.app;
-const { Notice, Menu } = input;
-const isMobile = app.isMobile;
-// ========== TASK BOARD (Eisenhower matrix, vault-wide) ==========
-(() => {
+// Presentation helpers never rewrite the underlying task text.
+function taskDisplayText(text) {
+  // Split protected Markdown first so normalization cannot change link targets or code.
+  return String(text)
+    .split(/(\[\[[^\]]+\]\]|\[[^\]]*\]\([^)]*\)|`[^`]*`)/g)
+    .map((part, index) =>
+      index % 2
+        ? part
+        : part
+            .replace(
+              /⭐\uFE0F?|📅\s*\d{4}-\d{2}-\d{2}|\[due::\s*\d{4}-\d{2}-\d{2}\s*\]|\(due::\s*\d{4}-\d{2}-\d{2}\s*\)|(?:^|(?<=\s))#task\/[^\s#]+/gu,
+              "",
+            )
+            .replace(/\s+/g, " "),
+    )
+    .join("")
+    .trim();
+}
+function taskArea(task) {
+  const tag = Array.from(task.tags || [])
+    .map(String)
+    .find((tag) => /^#?task\/[^\s#]+$/.test(tag));
+  return tag ? tag.replace(/^#?task\//, "") : null;
+}
+function taskMatchesArea(task, filter) {
+  // Notes without an area remain visible so they can be classified.
+  const area = taskArea(task);
+  return filter === "all" || area === null || area === filter;
+}
+function renderTaskBoard(dv, input) {
+  const app = input.app;
+  const { Notice, Menu } = input;
+  const isMobile = app.isMobile;
   const boardPath = "Tasks/Board.md";
   const fence = String.fromCharCode(96).repeat(3);
   const section = (input.container || dv.container).createEl("div", {
     cls: "task-dashboard-body",
     attr: { style: "margin-bottom:16px;" },
   });
-  section.createEl("div", {
-    text: "Task quadrants",
-    attr: { style: "font-size:0.9em;font-weight:700;margin-bottom:8px;" },
-  });
-
-  const inpStyle = `padding:4px 8px;border:1px solid var(--background-modifier-border);border-radius:6px;background:var(--background-primary);color:var(--text-normal);font-size:${isMobile ? "0.78em" : "0.82em"};`;
   const form = section.createEl("div", {
+    cls: "tb-composer",
+    attr: { role: "group", "aria-label": "Add a task" },
+  });
+  const titleRow = form.createEl("div", { cls: "tb-compose-title" });
+  const titleInp = titleRow.createEl("input", {
     attr: {
-      style:
-        "display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px;",
+      type: "text",
+      placeholder: "What needs doing?",
+      "aria-label": "Task title",
     },
   });
-  const titleInp = form.createEl("input");
-  titleInp.type = "text";
-  titleInp.placeholder = "Task title";
-  titleInp.setAttribute("aria-label", "Task title");
-  titleInp.setAttribute(
-    "style",
-    inpStyle + `flex:1;min-width:${isMobile ? "100%" : "140px"};`,
-  );
-
+  const addBtn = titleRow.createEl("button", {
+    text: "+ Add task",
+    cls: "mod-cta",
+    attr: { type: "button" },
+  });
+  const options = form.createEl("div", { cls: "tb-compose-options" });
+  const areaField = options.createEl("div", { cls: "tb-compose-field" });
+  areaField.createEl("span", { text: "Area", cls: "tb-field-label" });
+  const areaSeg = areaField.createEl("div", {
+    cls: "tb-segments",
+    attr: { role: "group", "aria-label": "New task area" },
+  });
   const areas = ["work", "life", "other"];
-  let area = "work";
-  const areaSeg = form.createEl("div", {
-    attr: {
-      style:
-        "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);",
-    },
-  });
+  let area = "work",
+    important = false,
+    destination;
   const areaBtns = {};
+  function updateDestination() {
+    if (!destination) return;
+    const due = dueInp.value ? dv.date(dueInp.value) : null;
+    const urgent =
+      due?.isValid !== false &&
+      due &&
+      due <= dv.date("today").plus({ days: 7 }).endOf("day");
+    const quadrant = important
+      ? urgent
+        ? "Q1 · Do now"
+        : "Q2 · Schedule"
+      : urgent
+        ? "Q3 · Handle quickly"
+        : "Q4 · Later";
+    destination.textContent = `Will add to ${quadrant}`;
+  }
   function paintArea() {
-    for (const a of areas) {
+    for (const a of areas)
       areaBtns[a].setAttribute("aria-pressed", String(area === a));
-      areaBtns[a].style.cssText =
-        `padding:${isMobile ? "6px 10px" : "3px 10px"};border-radius:7px;border:none;cursor:pointer;font-size:0.78em;font-weight:600;` +
-        (area === a
-          ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
-          : "background:transparent;color:var(--text-muted);");
-    }
   }
   for (const a of areas) {
     areaBtns[a] = areaSeg.createEl("button", {
       text: a[0].toUpperCase() + a.slice(1),
+      attr: { type: "button" },
     });
     areaBtns[a].addEventListener("click", () => {
       area = a;
@@ -59,43 +97,38 @@ const isMobile = app.isMobile;
     });
   }
   paintArea();
-
-  let important = false;
-  const starBtn = form.createEl("button", { text: "⭐" });
+  const starBtn = options.createEl("button", {
+    attr: { type: "button", "aria-label": "Mark task important" },
+    cls: "tb-important",
+  });
   function paintStar() {
-    starBtn.style.cssText =
-      `padding:${isMobile ? "6px 10px" : "3px 10px"};border-radius:6px;cursor:pointer;font-size:0.82em;border:1px solid ` +
-      (important
-        ? "var(--interactive-accent)"
-        : "var(--background-modifier-border)") +
-      ";background:" +
-      (important
-        ? "var(--interactive-accent)"
-        : "var(--background-secondary)") +
-      ";color:" +
-      (important ? "var(--text-on-accent)" : "var(--text-muted)") +
-      ";";
-    starBtn.title = important ? "Important" : "Not important";
+    starBtn.textContent = important ? "★ Important" : "☆ Important";
     starBtn.setAttribute("aria-pressed", String(important));
-    starBtn.setAttribute("aria-label", "Mark task important");
+    updateDestination();
   }
   starBtn.addEventListener("click", () => {
     important = !important;
     paintStar();
   });
   paintStar();
-
-  const dueInp = form.createEl("input");
-  dueInp.type = "date";
-  dueInp.setAttribute("aria-label", "Due date");
-  dueInp.title = "Due within 7 days = urgent; no date = not urgent";
-  dueInp.setAttribute(
-    "style",
-    inpStyle + (isMobile ? "padding:6px 10px;" : ""),
-  );
-
-  const addBtn = form.createEl("button", { text: "+ Task" });
-  addBtn.style.cssText = `padding:${isMobile ? "6px 10px" : "4px 14px"};border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:${isMobile ? "0.78em" : "0.82em"};background:var(--interactive-accent);color:var(--text-on-accent);white-space:nowrap;`;
+  const dueField = options.createEl("label", { cls: "tb-compose-field" });
+  dueField.createEl("span", {
+    text: "Due (optional)",
+    cls: "tb-field-label",
+  });
+  const dueInp = dueField.createEl("input", {
+    attr: {
+      type: "date",
+      "aria-label": "Due date",
+      title: "Due within 7 days = urgent; no date = not urgent",
+    },
+  });
+  dueInp.addEventListener("input", updateDestination);
+  destination = form.createEl("div", {
+    cls: "tb-destination",
+    attr: { role: "status", "aria-live": "polite" },
+  });
+  updateDestination();
 
   function headingIndex(lines, heading) {
     let inFence = false;
@@ -135,6 +168,7 @@ const isMobile = app.isMobile;
   }
 
   addBtn.addEventListener("click", async () => {
+    if (addBtn.disabled) return;
     const title = (titleInp.value || "").trim().replace(/\s+/g, " ");
     if (!title) {
       new Notice("Enter a task title first");
@@ -151,29 +185,42 @@ const isMobile = app.isMobile;
     bits.push(title);
     bits.push("#task/" + area);
     const line = bits.join(" ");
-    const f = await ensureBoard();
-    await app.vault.process(f, (raw) => {
-      const lines = raw.split("\n");
-      let at = headingIndex(lines, "## Tasks");
-      if (at < 0) {
-        lines.push("", "## Tasks", "");
-        at = lines.length - 2;
-      }
-      let ins = at + 1;
-      while (ins < lines.length && lines[ins].trim() === "") ins++;
-      lines.splice(ins, 0, line);
-      if (headingIndex(lines, "## Done") < 0) lines.push("", "## Done", "");
-      return lines.join("\n");
-    });
-    titleInp.value = "";
-    dueInp.value = "";
-    const today = dv.date("today");
-    const urgent = due && dv.date(due) <= today.plus({ days: 7 }).endOf("day");
-    const q = important ? (urgent ? "Q1" : "Q2") : urgent ? "Q3" : "Q4";
-    new Notice("Added to " + q + " · " + area);
+    addBtn.disabled = true;
+    try {
+      const f = await ensureBoard();
+      await app.vault.process(f, (raw) => {
+        const lines = raw.split("\n");
+        let at = headingIndex(lines, "## Tasks");
+        if (at < 0) {
+          lines.push("", "## Tasks", "");
+          at = lines.length - 2;
+        }
+        let ins = at + 1;
+        while (ins < lines.length && lines[ins].trim() === "") ins++;
+        lines.splice(ins, 0, line);
+        if (headingIndex(lines, "## Done") < 0) lines.push("", "## Done", "");
+        return lines.join("\n");
+      });
+      titleInp.value = "";
+      dueInp.value = "";
+      const today = dv.date("today");
+      const urgent =
+        due && dv.date(due) <= today.plus({ days: 7 }).endOf("day");
+      const q = important ? (urgent ? "Q1" : "Q2") : urgent ? "Q3" : "Q4";
+      updateDestination();
+      titleInp.focus();
+      new Notice("Added to " + q + " · " + area);
+    } catch (error) {
+      new Notice(error.message || "Could not add task. Try again.");
+    } finally {
+      addBtn.disabled = false;
+    }
   });
   titleInp.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") addBtn.click();
+    if (e.key === "Enter" && !e.isComposing) {
+      e.preventDefault();
+      addBtn.click();
+    }
   });
 
   const bfile = app.vault.getAbstractFileByPath(boardPath);
@@ -200,11 +247,7 @@ const isMobile = app.isMobile;
     t.line > tasksLine &&
     t.line < doneLine &&
     t.status === " ";
-  function domainOf(t) {
-    const tags = (t.tags || []).map((x) => String(x).replace(/^#/, ""));
-    const hit = tags.find((x) => x.startsWith("task/"));
-    return hit ? hit.replace(/^task\//, "") : null;
-  }
+  const domainOf = taskArea;
   function isImportant(t) {
     return (t.text || "").includes("⭐");
   }
@@ -222,32 +265,30 @@ const isMobile = app.isMobile;
   const q3 = classified.where((t) => !isImportant(t) && isUrgent(t));
   const q4 = classified.where((t) => !isImportant(t) && !isUrgent(t));
 
-  const root = section.createEl("div", {
-    attr: { style: "font-size:0.82em;" },
-  });
-  const pillWrap = root.createEl("div", {
-    attr: {
-      style:
-        "display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;",
-    },
-  });
+  const root = section.createEl("div", { cls: "tb-board" });
+  const pillWrap = root.createEl("div", { cls: "tb-filter-bar" });
+  pillWrap.createEl("span", { text: "Filter", cls: "tb-field-label" });
   const seg = pillWrap.createEl("div", {
-    attr: {
-      style:
-        "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);",
-    },
+    cls: "tb-segments",
+    attr: { role: "group", "aria-label": "Filter tasks by area" },
   });
   const pills = [
     { id: "all", label: "All" },
-    { id: "work", label: "Work" },
-    { id: "life", label: "Life" },
-    { id: "other", label: "Other" },
+    ...[...new Set([...areas, ...Array.from(classified).map(domainOf)])].map(
+      (id) => ({ id, label: id[0].toUpperCase() + id.slice(1) }),
+    ),
   ];
   const btns = {};
   let active = "all";
-  const cellBase = `background:var(--background-secondary);border:1px solid var(--background-modifier-border);border-radius:8px;padding:${isMobile ? "8px" : "10px"};min-height:${isMobile ? "56px" : "72px"};`;
-  const badgeStyle =
-    "font-size:0.72em;padding:1px 7px;border-radius:10px;background:var(--background-primary);border:1px solid var(--background-modifier-border);color:var(--text-muted);white-space:nowrap;";
+  const filterStatus = pillWrap.createEl("span", {
+    cls: "tb-filter-status",
+    attr: { role: "status", "aria-live": "polite" },
+  });
+  const help = pillWrap.createEl("details", { cls: "tb-help" });
+  help.createEl("summary", { text: "Board help" });
+  help.createEl("p", {
+    text: "Important is marked by you. Urgent means due within 7 days, including overdue. Drag the move handle or click it to choose a quadrant. Moving to urgent keeps an urgent due date or sets one 7 days from today; moving out clears an urgent date. You can undo a move. Unclassified tasks stay visible in every filter until you choose an area.",
+  });
   function asArray(list) {
     if (!list) return [];
     if (typeof list.array === "function") return list.array();
@@ -353,7 +394,7 @@ const isMobile = app.isMobile;
         text:
           "Moved to " +
           q +
-          "。" +
+          ". " +
           (q === "Q1" || q === "Q3"
             ? "Urgent date kept or set to 7 days from today."
             : "Urgent date cleared; later dates kept.") +
@@ -385,22 +426,15 @@ const isMobile = app.isMobile;
       moving = false;
     }
   }
-  root.createEl("div", {
-    text: "Drag ⋮⋮ to move a task, or click it to choose a quadrant. Urgent sets a date within 7 days. Not urgent clears an urgent date.",
-    attr: {
-      style: "color:var(--text-muted);font-size:0.85em;margin-bottom:8px;",
-    },
-  });
+  // Task movement UI.
 
   function attachEdit(li, t) {
-    const editBtn = li.createEl("button", { text: "✎" });
-    editBtn.setAttribute(
-      "style",
-      isMobile
-        ? "margin-left:6px;border:none;background:transparent;cursor:pointer;color:var(--text-faint);font-size:0.95em;padding:6px 8px;"
-        : "margin-left:6px;border:none;background:transparent;cursor:pointer;color:var(--text-faint);font-size:0.82em;",
-    );
-    editBtn.title = "Edit";
+    const editBtn = li.createEl("button", {
+      text: "Edit",
+      cls: "tb-edit",
+      attr: { type: "button", "aria-label": "Edit task" },
+    });
+    editBtn.title = "Edit task";
     editBtn.addEventListener("click", async (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -439,7 +473,7 @@ const isMobile = app.isMobile;
 
       const inpStyle2 =
         (isMobile ? "padding:6px 10px;" : "padding:4px 8px;") +
-        "border:1px solid var(--background-modifier-border);border-radius:6px;background:var(--background-primary);color:var(--text-normal);font-size:0.82em;";
+        "border:1px solid var(--background-modifier-border);border-radius:6px;background:var(--background-primary);color:var(--text-normal);font-size:12px;";
       const drawer = li.createEl("div", {
         cls: "tb-editor",
         attr: {
@@ -449,30 +483,30 @@ const isMobile = app.isMobile;
       });
       const tIn = drawer.createEl("input");
       tIn.type = "text";
+      tIn.setAttribute("aria-label", "Edit task title");
       tIn.value = curTitle;
       tIn.setAttribute(
         "style",
-        inpStyle2 + "flex:1;min-width:" + (isMobile ? "100%" : "120px") + ";",
+        inpStyle2 + "flex:1 0 100%;width:100%;min-width:0;",
       );
 
+      const editorOptions = drawer.createEl("div", {
+        cls: "tb-editor-options",
+      });
       const areaOpts = ["work", "life", "other", "none"];
-      const aSeg = drawer.createEl("div", {
-        attr: {
-          style:
-            "display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--background-secondary);",
-        },
+      const areaField = editorOptions.createEl("div", {
+        cls: "tb-compose-field",
+      });
+      areaField.createEl("span", { text: "Area", cls: "tb-field-label" });
+      const aSeg = areaField.createEl("div", {
+        cls: "tb-segments",
+        attr: { role: "group", "aria-label": "Edit task area" },
       });
       const aBtns = {};
       let areaSel = curArea || "none";
       function paintA() {
-        for (const a of areaOpts) {
-          aBtns[a].style.cssText =
-            (isMobile ? "padding:6px 10px;" : "padding:3px 8px;") +
-            "border-radius:7px;border:none;cursor:pointer;font-size:0.74em;font-weight:600;" +
-            (areaSel === a
-              ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
-              : "background:transparent;color:var(--text-muted);");
-        }
+        for (const a of areaOpts)
+          aBtns[a].setAttribute("aria-pressed", String(areaSel === a));
       }
       for (const a of areaOpts) {
         aBtns[a] = aSeg.createEl("button", {
@@ -485,20 +519,14 @@ const isMobile = app.isMobile;
       }
       paintA();
 
-      const sBtn = drawer.createEl("button", { text: "⭐" });
+      const sBtn = editorOptions.createEl("button", {
+        cls: "tb-important",
+        attr: { type: "button" },
+      });
       function paintS() {
-        sBtn.style.cssText =
-          "padding:3px 9px;border-radius:6px;cursor:pointer;font-size:0.82em;border:1px solid " +
-          (curImp
-            ? "var(--interactive-accent)"
-            : "var(--background-modifier-border)") +
-          ";background:" +
-          (curImp
-            ? "var(--interactive-accent)"
-            : "var(--background-secondary)") +
-          ";color:" +
-          (curImp ? "var(--text-on-accent)" : "var(--text-muted)") +
-          ";";
+        sBtn.textContent = curImp ? "★ Important" : "☆ Important";
+        sBtn.setAttribute("aria-pressed", String(curImp));
+        sBtn.setAttribute("aria-label", "Mark task important");
       }
       sBtn.addEventListener("click", () => {
         curImp = !curImp;
@@ -506,24 +534,34 @@ const isMobile = app.isMobile;
       });
       paintS();
 
-      const dIn = drawer.createEl("input");
+      const dueField = editorOptions.createEl("label", {
+        cls: "tb-compose-field",
+      });
+      dueField.createEl("span", {
+        text: "Due (optional)",
+        cls: "tb-field-label",
+      });
+      const dIn = dueField.createEl("input");
       dIn.type = "date";
+      dIn.setAttribute("aria-label", "Edit task due date");
       dIn.value = curDue;
       dIn.title = "Due within 7 days = urgent; no date = not urgent";
-      dIn.setAttribute("style", inpStyle2);
 
-      const saveBtn = drawer.createEl("button", { text: "Save" });
+      const editorActions = drawer.createEl("div", {
+        cls: "tb-editor-actions",
+      });
+      const saveBtn = editorActions.createEl("button", { text: "Save" });
       saveBtn.style.cssText =
         (isMobile ? "padding:6px 12px;" : "padding:3px 12px;") +
-        "border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.78em;background:var(--interactive-accent);color:var(--text-on-accent);";
-      const delBtn = drawer.createEl("button", { text: "Delete" });
+        "border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;background:var(--interactive-accent);color:var(--text-on-accent);";
+      const delBtn = editorActions.createEl("button", { text: "Delete" });
       delBtn.style.cssText =
         (isMobile ? "padding:6px 12px;" : "padding:3px 10px;") +
-        "border:1px solid var(--background-modifier-border);border-radius:6px;cursor:pointer;font-size:0.78em;background:var(--background-secondary);color:var(--text-error, #c4553a);";
-      const cancelBtn = drawer.createEl("button", { text: "Cancel" });
+        "border:1px solid var(--background-modifier-border);border-radius:6px;cursor:pointer;font-size:12px;background:var(--background-secondary);color:var(--text-error, #c4553a);";
+      const cancelBtn = editorActions.createEl("button", { text: "Cancel" });
       cancelBtn.style.cssText =
         (isMobile ? "padding:6px 12px;" : "padding:3px 10px;") +
-        "border:1px solid var(--background-modifier-border);border-radius:6px;cursor:pointer;font-size:0.78em;background:var(--background-secondary);color:var(--text-muted);";
+        "border:1px solid var(--background-modifier-border);border-radius:6px;cursor:pointer;font-size:12px;background:var(--background-secondary);color:var(--text-muted);";
 
       cancelBtn.addEventListener("click", () => drawer.remove());
 
@@ -578,20 +616,21 @@ const isMobile = app.isMobile;
     });
   }
 
-  function renderTasks(hostEl, list, withDomainFilter, editable = false) {
+  const taskViews = [];
+  function renderTasks(hostEl, list, editable = false) {
     const arr = asArray(list);
-    const n = list.length != null ? list.length : arr.length;
-    if (n === 0) {
-      hostEl.createEl("div", {
-        text: "No tasks",
-        attr: { style: "color:var(--text-faint);" },
-      });
-      return;
-    }
+    const empty = hostEl.createEl("p", { text: "No tasks", cls: "tb-empty" });
+    const view = { items: [], empty, count: null };
+    taskViews.push(view);
+    if (!arr.length) return view;
     const start = dv.container.childElementCount;
-    // Render each task once; nested tasks can belong to a different quadrant.
     dv.taskList(
-      arr.map((t) => ({ ...t, parent: null, children: [] })),
+      arr.map((t) => ({
+        ...t,
+        parent: null,
+        children: [],
+        visual: taskDisplayText(t.text),
+      })),
       false,
     );
     const nodes = Array.from(dv.container.children).slice(start);
@@ -601,32 +640,80 @@ const isMobile = app.isMobile;
       const t = arr[i];
       if (!t) return;
       const d = domainOf(t);
-      if (withDomainFilter) li.setAttribute("data-domain", d || "");
-      const meta = [];
-      if (t.due) {
-        const dd = dv.date(t.due);
-        if (dd) meta.push(dd.toFormat("yyyy-MM-dd"));
-      }
-      if (d) meta.push(d);
-      if (meta.length)
-        li.createEl("span", {
-          text: meta.join(" · "),
-          attr: {
-            style: "margin-left:8px;font-size:0.72em;color:var(--text-muted);",
-          },
+      view.items.push({ node: li, task: t });
+      li.classList.add("tb-task-row");
+      li.setAttribute("data-domain", d || "");
+      // Dataview's row click opens the raw source. The card's links and controls
+      // retain their own actions; plain text stays in the workbench.
+      li.addEventListener(
+        "click",
+        (e) => {
+          if (!e.target.closest("a,button,input")) e.stopImmediatePropagation();
+        },
+        { capture: true },
+      );
+      const title = Array.from(li.children).find(
+        (child) => child.tagName === "SPAN",
+      );
+      if (title) title.classList.add("tb-task-title");
+      const meta = li.createEl("div", { cls: "tb-task-meta" });
+      if (d)
+        meta.createEl("span", {
+          text: d[0].toUpperCase() + d.slice(1),
+          cls: "tb-area-badge",
         });
+      else meta.createEl("span", { text: "Needs area", cls: "tb-area-badge" });
+      if (editable && isImportant(t))
+        meta.createEl("span", { text: "Important", cls: "tb-priority" });
+      if (t.due) {
+        const date = dv.date(t.due);
+        if (date?.isValid !== false && date)
+          meta.createEl("span", {
+            text: date.toFormat("yyyy-MM-dd"),
+            cls: date < today ? "tb-overdue" : "tb-due",
+          });
+      }
+      if (title) {
+        const expand = meta.createEl("button", {
+          text: "Show more",
+          cls: "tb-expand",
+          attr: { type: "button", "aria-expanded": "false" },
+        });
+        let expanded = false;
+        const measure = () => {
+          expand.hidden =
+            !expanded && title.scrollHeight <= title.clientHeight + 1;
+        };
+        const setExpanded = (value) => {
+          expanded = value;
+          li.classList.toggle("is-expanded", expanded);
+          expand.textContent = expanded ? "Show less" : "Show more";
+          expand.setAttribute("aria-expanded", String(expanded));
+          measure();
+        };
+        expand.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setExpanded(!expanded);
+        });
+        title.addEventListener("focusin", () => {
+          if (!expand.hidden) setExpanded(true);
+        });
+        measure();
+        if (typeof ResizeObserver !== "undefined") {
+          const observer = new ResizeObserver(measure);
+          observer.observe(title);
+          dv.component.register(() => observer.disconnect());
+        }
+      }
       if (d && !editable) {
-        // Reserve a right-hand column across every wrapped line of the task.
-        li.style.position = "relative";
-        li.style.paddingRight = "44px";
-        li.style.minHeight = "36px";
         const handle = li.createEl("button", {
           text: "⋮⋮",
           attr: {
             "aria-label": "Move task to quadrant",
             title: "Drag to a quadrant, or click to choose",
-            style:
-              "position:absolute;top:0;right:0;bottom:0;width:36px;height:auto;min-height:36px;display:flex;align-items:center;justify-content:center;cursor:grab;border:none;border-left:1px solid var(--background-modifier-border);border-radius:0 6px 6px 0;background:transparent;color:var(--text-muted);padding:0;margin:0;box-shadow:none;",
+            class: "tb-move",
+            type: "button",
           },
         });
         handle.draggable = true;
@@ -666,30 +753,38 @@ const isMobile = app.isMobile;
       }
       if (editable) attachEdit(li, t);
     });
-  }
-  function paintPills() {
-    for (const p of pills) {
-      btns[p.id].style.cssText =
-        `padding:${isMobile ? "3px 10px" : "4px 14px"};border-radius:7px;border:none;cursor:pointer;font-size:${isMobile ? "0.78em" : "0.82em"};font-weight:600;transition:all 0.15s;` +
-        (active === p.id
-          ? "background:var(--background-primary);color:var(--text-normal);box-shadow:0 1px 3px rgba(0,0,0,0.08);"
-          : "background:transparent;color:var(--text-muted);box-shadow:none;");
-    }
+    return view;
   }
   function applyFilter(id) {
     active = id;
-    paintPills();
-    const items = grid.querySelectorAll("[data-domain]");
-    for (const el of items) {
-      const d = el.getAttribute("data-domain");
-      el.style.display = id === "all" || d === id ? "" : "none";
+    for (const p of pills)
+      btns[p.id].setAttribute("aria-pressed", String(active === p.id));
+    const matching = asArray(open).filter((t) => taskMatchesArea(t, active));
+    const label = pills.find((p) => p.id === active)?.label || active;
+    filterStatus.textContent =
+      active === "all"
+        ? `${matching.length} open`
+        : `${matching.filter((t) => domainOf(t) !== null).length} ${label} tasks${unclassified.length ? ` · ${unclassified.length} need an area` : ""}`;
+    for (const view of taskViews) {
+      let visible = 0;
+      for (const { node, task } of view.items) {
+        const show = taskMatchesArea(task, active);
+        node.hidden = !show;
+        if (show) visible++;
+      }
+      view.empty.hidden = visible > 0;
+      view.empty.textContent =
+        active === "all" ? "No tasks" : `No ${label} tasks`;
+      if (view.count) view.count.textContent = String(visible);
     }
   }
   for (const p of pills) {
-    btns[p.id] = seg.createEl("button", { text: p.label });
+    btns[p.id] = seg.createEl("button", {
+      text: p.label,
+      attr: { type: "button" },
+    });
     btns[p.id].addEventListener("click", () => applyFilter(p.id));
   }
-  paintPills();
   const grid = root.createEl("div", {
     cls: "task-quadrant-grid",
     attr: {
@@ -700,38 +795,40 @@ const isMobile = app.isMobile;
     {
       id: "Q1",
       list: q1,
-      title: isMobile ? "Q1 Important · Urgent" : "Q1 Important · Urgent",
+      title: "Q1 · Do now",
+      subtitle: "Important · Urgent",
       border: "#c4553a",
     },
     {
       id: "Q2",
       list: q2,
-      title: isMobile
-        ? "Q2 Important · Not urgent"
-        : "Q2 Important · Not urgent",
+      title: "Q2 · Schedule",
+      subtitle: "Important · Not urgent",
       border: "var(--interactive-accent)",
     },
     {
       id: "Q3",
       list: q3,
-      title: isMobile
-        ? "Q3 Not important · Urgent"
-        : "Q3 Not important · Urgent",
+      title: "Q3 · Handle quickly",
+      subtitle: "Not important · Urgent",
       border: "var(--text-muted)",
     },
     {
       id: "Q4",
       list: q4,
-      title: isMobile
-        ? "Q4 Not important · Not urgent"
-        : "Q4 Not important · Not urgent",
+      title: "Q4 · Later",
+      subtitle: "Not important · Not urgent",
       border: "var(--text-faint)",
     },
   ];
   for (const q of quads) {
     const n = q.list.length != null ? q.list.length : asArray(q.list).length;
-    const cell = grid.createEl("div", {
-      attr: { style: cellBase + `border-left:3px solid ${q.border};` },
+    const cell = grid.createEl("section", {
+      cls: "tb-quadrant",
+      attr: {
+        style: `--tb-quadrant-accent:${q.border};`,
+        "aria-label": q.title,
+      },
     });
     cell.setAttribute("data-quadrant", q.id);
     dropCells.push(cell);
@@ -761,55 +858,38 @@ const isMobile = app.isMobile;
           "display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;",
       },
     });
-    head.createEl("div", {
-      text: q.title,
-      attr: { style: "font-weight:600;color:var(--text-normal);" },
+    const heading = head.createEl("div");
+    heading.createEl("h3", { text: q.title });
+    heading.createEl("small", {
+      text: q.subtitle,
+      cls: "tb-quadrant-subtitle",
     });
-    head.createEl("span", { text: String(n), attr: { style: badgeStyle } });
-    renderTasks(cell.createEl("div", ""), q.list, true);
+    const count = head.createEl("span", {
+      text: String(n),
+      cls: "tb-count",
+      attr: { "aria-label": "Visible tasks" },
+    });
+    const view = renderTasks(cell.createEl("div"), q.list);
+    view.count = count;
   }
-  const unN =
-    unclassified.length != null
-      ? unclassified.length
-      : asArray(unclassified).length;
-  const unCell = root.createEl("div", {
-    attr: { style: cellBase + "margin-top:10px;" },
-  });
-  const unHead = unCell.createEl("div", {
-    attr: {
-      style:
-        "display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;",
-    },
-  });
-  unHead.createEl("div", {
-    text: "Unclassified",
-    attr: { style: "font-weight:600;color:var(--text-normal);" },
-  });
-  unHead.createEl("span", { text: String(unN), attr: { style: badgeStyle } });
-  renderTasks(unCell.createEl("div", ""), unclassified, false);
-  const n1 = q1.length != null ? q1.length : asArray(q1).length;
-  const n2 = q2.length != null ? q2.length : asArray(q2).length;
-  const n3 = q3.length != null ? q3.length : asArray(q3).length;
-  const n4 = q4.length != null ? q4.length : asArray(q4).length;
-  root.createEl("div", {
-    text: `Q1 ${n1} · Q2 ${n2} · Q3 ${n3} · Q4 ${n4} · Unclassified ${unN}`,
-    attr: {
-      style: "margin-top:10px;color:var(--text-muted);font-size:0.82em;",
-    },
-  });
-  if (n2 === 0 && n1 >= 1)
-    root.createEl("div", {
-      text: "Q1 is filling up. Reserve time for important tasks in Q2.",
-      attr: {
-        style: "margin-top:4px;color:var(--text-faint);font-size:0.82em;",
-      },
+  if (unclassified.length) {
+    const unCell = root.createEl("section", { cls: "tb-unclassified" });
+    unCell.createEl("h3", { text: `Needs an area · ${unclassified.length}` });
+    unCell.createEl("p", {
+      text: "Choose an area in the task list below. These tasks stay visible in every filter.",
+      cls: "tb-quadrant-subtitle",
     });
-  const listWrap = root.createEl("div", {
-    attr: {
-      style:
-        "margin-top:16px;border-top:1px solid var(--background-modifier-border);padding-top:10px;",
-    },
+    renderTasks(unCell.createEl("div"), unclassified);
+  }
+  const listWrap = root.createEl("section", { cls: "tb-list" });
+  listWrap.createEl("h3", { text: "Task list" });
+  listWrap.createEl("p", {
+    text: "Use Edit to change a task’s title, area, importance, or due date.",
+    cls: "tb-quadrant-subtitle",
   });
-  listWrap.createEl("h3", { text: "Task list · click ✎ to edit" });
-  renderTasks(listWrap, open, false, true);
-})();
+  renderTasks(listWrap, open, true);
+  applyFilter("all");
+}
+if (typeof dv === "undefined")
+  module.exports = { taskDisplayText, taskArea, taskMatchesArea };
+else renderTaskBoard(dv, input);

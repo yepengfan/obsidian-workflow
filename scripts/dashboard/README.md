@@ -6,23 +6,23 @@ All dashboards use `ui/view.js` and `ui/view.css` for one visual language: Home 
 
 ## Audit and resulting behavior
 
-| Page            | Issue addressed                                       | Result                                                                                                    |
-| --------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Home            | Full components crowded the entry page                | Compact cards, true counts and mini charts; shared header and icons                                       |
-| Practice Review | Empty today queue hid upcoming work                   | Due/overdue metrics, seven-day schedule, stages and composable queue filters                              |
-| Task Board      | Different controls and fixed desktop matrix           | Shared shell, labeled inputs, explicit importance state, narrow-pane stacking                             |
-| Journal         | Repeated titles and different navigation              | Shared shell, consistent labels; preserves calendar, entry creation and pending followups                 |
-| Learning        | Archived plan default and truncated activity filters  | Active-first plan cards; search and filter the full weekly log collection                                 |
-| Books           | Duplicate shelves and tables; mixed progress concepts | One filtered library; reading channel, chapter understanding and live WeRead percentage stay distinct     |
-| Algorithm       | Long category and atom tables; redundant links        | Searchable, paged patterns, atoms and logs; compact weekly activity                                       |
-| System Design   | Separate queue and inconsistent pattern views         | Roadmap-ordered sessions with progress/canvas links; shared library controls                              |
-| Frontend        | Separate visual conventions                           | Same practice summary, library and log browsing as other practice domains                                 |
-| Zettelkasten    | Unbounded cards; unclear link counts                  | Status/topic/search filters, pagination, update ordering, explicit reference counts and candidate actions |
-| Articles        | Unlimited title list and source dropdown only         | Totals, source/search filters, update dates and pagination                                                |
-| Essays          | Bare index without consistent navigation              | Shared summary and searchable writing library                                                             |
-| Work            | Large repeated time summaries and embedded sessions   | Today, searchable projects and dated notes; explicit links to time views and Brownbag                     |
-| Brownbag        | Bare table without progress browsing                  | Acceptance-based totals and status filter; session template entry                                         |
-| Profile         | Tiny labels and motion-heavy card                     | Readable static card, full profile entry, and labeled assessment dimensions                               |
+| Page            | Issue addressed                                       | Result                                                                                                      |
+| --------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Home            | Full components crowded the entry page                | Compact cards, true counts and mini charts; shared header and icons                                         |
+| Practice Review | Empty today queue hid upcoming work                   | Due/overdue metrics, seven-day schedule, stages and composable queue filters                                |
+| Task Board      | Different controls and fixed desktop matrix           | Expandable cards, clear capture with destination preview, synchronized filters/counts, narrow-pane stacking |
+| Journal         | Repeated titles and different navigation              | Shared shell, consistent labels; preserves calendar, entry creation and pending followups                   |
+| Learning        | Archived plan default and truncated activity filters  | Active-first plan cards; search and filter the full weekly log collection                                   |
+| Books           | Duplicate shelves and tables; mixed progress concepts | One filtered library; reading channel, chapter understanding and live WeRead percentage stay distinct       |
+| Algorithm       | Long category and atom tables; redundant links        | Searchable, paged patterns, atoms and logs; compact weekly activity                                         |
+| System Design   | Separate queue and inconsistent pattern views         | Roadmap-ordered sessions with progress/canvas links; shared library controls                                |
+| Frontend        | Separate visual conventions                           | Same practice summary, library and log browsing as other practice domains                                   |
+| Zettelkasten    | Unbounded cards; unclear link counts                  | Status/topic/search filters, pagination, update ordering, explicit reference counts and candidate actions   |
+| Articles        | Unlimited title list and source dropdown only         | Totals, source/search filters, update dates and pagination                                                  |
+| Essays          | Bare index without consistent navigation              | Shared summary and searchable writing library                                                               |
+| Work            | Large repeated time summaries and embedded sessions   | Today, searchable projects and dated notes; explicit links to time views and Brownbag                       |
+| Brownbag        | Bare table without progress browsing                  | Acceptance-based totals and status filter; session template entry                                           |
+| Profile         | Tiny labels and motion-heavy card                     | Readable static card, full profile entry, and labeled assessment dimensions                                 |
 
 ## Runtime ownership
 
@@ -45,7 +45,7 @@ Dataview custom views execute in an isolated scope. Import Obsidian APIs in the 
 ## Validation
 
 ```sh
-node --test scripts/dashboard/ui/view.test.cjs scripts/dashboard/home/view.test.cjs scripts/dashboard/practice-review/view.test.cjs scripts/journal/view.test.cjs scripts/test_home_task_drag.cjs
+node --test scripts/dashboard/tasks/view.test.cjs scripts/dashboard/ui/view.test.cjs scripts/dashboard/home/view.test.cjs scripts/dashboard/practice-review/view.test.cjs scripts/journal/view.test.cjs scripts/test_home_task_drag.cjs
 npx prettier --check scripts/dashboard
 ```
 

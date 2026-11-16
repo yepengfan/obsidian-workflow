@@ -8,6 +8,11 @@ updated: 2026-11-17
 
 ## Design Decisions
 
+> [!note] 2026-11-17 - Compact cards and synchronized filters
+> - Task cards use two-line previews with Show more/less, one area badge, contained focus, and a corner move control. Raw task text and links are preserved.
+> - Area filters update quadrant counts, empty states, and the editable task list together. Tasks without an area remain visible until classified; the section is absent when none exist.
+> - Capture separates task title, Area, Important, and optional Due controls and previews the resulting quadrant. Action headings, Board help, and removal of repeated totals reduce clutter. Styles live in `scripts/dashboard/tasks/view.css`.
+
 > [!note] 2026-11-17 - Shared dashboard shell
 > - Task capture and editing share Home navigation and styling, with labeled inputs and a matrix that stacks in narrow panes. Task records and movement semantics are preserved.
 
