@@ -7,6 +7,12 @@ cssclasses: [wide-page]
 
 # Books Index
 
+## 书架与阅读进度
+
+```dataviewjs
+await dv.view("scripts/dashboard/books", { app });
+```
+
 ## Currently Reading
 
 ```dataviewjs

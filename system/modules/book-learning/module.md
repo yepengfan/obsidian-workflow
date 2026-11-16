@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-07-15
-updated: 2026-10-31
+updated: 2026-11-17
 depends_on: []
 requires:
   cli: [claude]
@@ -14,7 +14,7 @@ requires:
   plugins: [dataview]
 commands: [book-init, read, write]
 templates: []
-scripts: [Learning/Books/book_init.py, Learning/Books/extract_fulltext.py, Learning/Books/test_extract_fulltext.py]
+scripts: [Learning/Books/book_init.py, Learning/Books/extract_fulltext.py, Learning/Books/test_extract_fulltext.py, scripts/dashboard/books/view.js]
 hooks: []
 folders: [Learning/Books/]
 config_files:

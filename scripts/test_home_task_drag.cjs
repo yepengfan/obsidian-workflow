@@ -3,10 +3,10 @@ const { join } = require('node:path');
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 
-const home = readFileSync(join(__dirname, '..', 'Home.md'), 'utf8');
+const home = readFileSync(join(__dirname, 'dashboard', 'tasks', 'view.js'), 'utf8');
 const logic = home.slice(home.indexOf('  let dragged = null;'), home.indexOf('  root.createEl("div", {\n    text: "拖动'));
 assert.ok(logic.includes('async function moveTask'));
-const handleCode = home.slice(home.lastIndexOf('      if (d) {', home.indexOf('        const handle = li.createEl')), home.indexOf('      // Click a task'));
+const handleCode = home.slice(home.lastIndexOf('      if (d && !editable) {', home.indexOf('        const handle = li.createEl')), home.indexOf('      if (editable) attachEdit'));
 const dropCode = home.slice(home.indexOf('    cell.setAttribute("data-quadrant"'), home.indexOf('    const head = cell.createEl', home.indexOf('    cell.setAttribute("data-quadrant"')));
 
 // A fixed calendar isolates tests from the wall clock and the host timezone.
@@ -43,7 +43,7 @@ function fixture(initial = '') {
   }
   const api = new Function('app', 'dv', 'bfile', 'Notice', 'document', logic + `
     return { moveLine, taskInSection, moveTask,
-      bindHandle(t, li) { const d = 'work'; ${handleCode} },
+      bindHandle(t, li) { const d = 'work', editable = false; ${handleCode} },
       bindDrop(cell, q) { ${dropCode} }
     };`)(app, { date }, bfile, Notice, document);
   return { ...api, notices, refreshes, read: () => content, replace: value => { content = value; } };
@@ -162,7 +162,8 @@ test('drag events persist the destination, clear highlights, and ignore external
 });
 
 test('all Home Dataview scripts parse', () => {
-  const blocks = [...home.matchAll(/^```dataviewjs\n([\s\S]*?)^```/gm)];
+  const source = readFileSync(join(__dirname, '..', 'Home.md'), 'utf8');
+  const blocks = [...source.matchAll(/^```dataviewjs\n([\s\S]*?)^```/gm)];
   assert.ok(blocks.length > 0);
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
   for (const [, source] of blocks) new AsyncFunction(source);

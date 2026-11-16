@@ -263,3 +263,28 @@ test('past date offers every saved entry and today can browse records while crea
   assert.ok(elements().some(el=>el.tag==='a' && el.textContent===paths[2].slice('Journal/Daily/'.length,-3)));
   assert.equal(elements().some(el=>el.textContent.includes('PRIVATE')),false);
 });
+
+test("Home compact summary retains launch and failure recovery without exposing journal text", async (t) => {
+  const f = fixture({ configured: false });
+  f.put(
+    "Journal/Daily/2026-11-08.md",
+    "## 原始记录\nPRIVATE CONTENT\n## 想再回看的事\n- [ ] 等结果",
+  );
+  const elements = await mount(t, f, {
+    compact: true,
+    now: () => new Date(2026, 10, 9),
+  });
+  assert.equal(
+    elements().some((el) => el.textContent.includes("PRIVATE")),
+    false,
+  );
+  assert.ok(elements().some((el) => el.textContent === "待回看"));
+  const create = elements().find((el) => el.textContent === "+ 新建一篇记录");
+  await create.listeners.click();
+  assert.ok(elements().some((el) => el.textContent.includes("登录")));
+  assert.ok(
+    elements().some(
+      (el) => el.tag === "textarea" && el.value.includes("Journal/Guide.md"),
+    ),
+  );
+});

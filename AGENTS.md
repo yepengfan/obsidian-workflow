@@ -21,7 +21,9 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
   - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/AGENTS.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/AGENTS.md`). Managed via `/algo-solve`, `/sysd-solve`.
   - `Books/` — Book reading workflow (see `Learning/Books/AGENTS.md`).
   - `Resources/` — Loose learning materials and skill builder resources (e.g., system-design-sketchnote).
-- **Journal/** - Daily work/life reflection. Shared workflow: `Journal/Guide.md`; private data: `Daily/YYYY-MM-DD-timestamp.md` (Unix milliseconds, one topic per file) and rolling `Review.md`. Home today button creates a new entry and conversation; continue existing entries in their original chats. `/journal-review` follows the same fixed daily flow. View/runtime: `scripts/journal/view.js`.
+- **Journal/** - Daily work/life reflection. Shared workflow: `Journal/Guide.md`; private data: `Daily/YYYY-MM-DD-timestamp.md` (Unix milliseconds, one topic per file) and rolling `Review.md`. Home today button creates a new entry and conversation; continue existing entries in their original chats. `/journal-review` follows the same fixed daily flow. Full dashboard: `Journal/Dashboard.md`. View/runtime: `scripts/journal/view.js` (compact on Home, full on the module page).
+- **Library/** - Article dashboard at `Library/Articles.md`, aggregating Matter and Instapaper sources without modifying synced notes.
+- **Essays/** - Writing index at `Essays/index.md`; Home shows a compact summary.
 - **Note/** — Persistent quick-reference notes (credentials, demo setups, etc.). Unlike Inbox (which is processed weekly), these stay as-is for easy access.
 - **Matter/** — Article notes from Matter app. **DO NOT MODIFY / DO NOT MOVE** — synced by Matter plugin, folder path is fixed.
 - **Instapaper Notes/** — Saved article highlights from Instapaper. **DO NOT MODIFY / DO NOT MOVE** — synced by Instapaper plugin, folder path is fixed.
@@ -29,7 +31,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **scripts/** — Vault automation scripts.
   - `ai-digest/` — Hybrid Python + Claude Code RSS digest pipeline. Python fetches 92 Karpathy-curated feeds and deduplicates (`fetch.py`), then Claude Code CLI scores and summarizes bilingually (`prompts/score.md`, `prompts/summarize.md`), and Python assembles Obsidian markdown reports (`write_reports.py`). Run via `bash scripts/ai-digest/run.sh`.
   - `github-trending/` — GitHub trending repos pipeline. Python fetches trending repos via GitHub Search API (`fetch.py`), Claude Haiku categorizes and scores with bilingual one-liners (`enrich.py`, `prompts/enrich.md`), and Python assembles Obsidian markdown reports (`write_reports.py`). Run via `bash scripts/github-trending/run.sh`.
-- **Profile/** — Personal assessment and self-development. Contains `Personal Baseball Card.md` (Ray Dalio-inspired Baseball Card with PrinciplesYou assessment + self-evaluation + cross-validation), PrinciplesYou assessment PDF, and profile photo. The Baseball Card is displayed on `Home.md` via a radar chart in the Work section's Card tab.
+- **Profile/** — Personal assessment and self-development. Contains `Personal Baseball Card.md` (Ray Dalio-inspired Baseball Card with PrinciplesYou assessment + self-evaluation + cross-validation), PrinciplesYou assessment PDF, and profile photo. The full Baseball Card renders at `Profile/Dashboard.md`; Home shows a compact radar preview.
 - **Templates/** — Note templates for all major workflows (Work Daily, Work Project, Learning Plan, Learning Week, Brownbag Session, Task Board, Zettel, Inbox, Home backup, Work Dashboard/Weekly/Monthly backups).
 - **system/** — Module registry and control center. Each vault feature is a "module" with a standardized manifest in `system/modules/`. The `system/registry.md` is a Dataview-powered dashboard showing all modules, their status, commands, dependencies, and configuration locations. **When adding a new feature, create a module file first** — see `system/README.md` for the workflow.
 - **WeRead/** — Book highlights synced from WeRead (微信读书). **DO NOT MODIFY / DO NOT MOVE** — this folder is auto-synced by plugin, folder path is fixed.
@@ -43,7 +45,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 ## Key Files
 
 - **GETTING_STARTED.md** — Onboarding guide for new users. Start here if you're setting up this vault for the first time.
-- **Home.md** — Dashboard using Dataview queries. Avoid modifying unless asked. Uses pill/segment tab UI: Work section has `[Work | Card]` tabs (Card shows Baseball Card radar chart with holographic effect); the **Task Board** four-quadrant matrix (reading `Tasks/Board.md`) is embedded in the Work panel and renders on load, with a `Task Board` button on the topBar to open the full board page. Feeds section has `[AI Digest | GitHub Trending]` tabs.
+- **Home.md** - Compact module dashboard and feature entry. Runtime: `scripts/dashboard/home/view.js` and `view.css`. Each card opens the module dashboard; full details live in `scripts/dashboard/<module>/view.js`. Sync the wrapper and decisions in `Templates/Home.md` when changing the structure.
 - **sortspec.md** — Custom file explorer sort order (Custom File Explorer Sorting plugin). Do not delete.
 - **Work/Work Dashboard.md** — Work dashboard with task views and project summary.
 - **Templates/Work Daily.md** — Template for daily work notes.

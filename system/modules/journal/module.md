@@ -5,7 +5,7 @@ type: utility
 status: active
 enabled: true
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-17
 depends_on: [dashboard]
 requires:
   plugins: [dataview, chatting-with-ai]
@@ -54,3 +54,6 @@ Chatting with AI 0.12.0 的内部 `openChat`、视图 `newChat` / `sendMessage` 
 - 自动化：`node --test scripts/journal/view.test.cjs`。
 - PoC：2026-11-09 用户已确认手机首页触发 Chatting with AI 可用。
 - 正式端到端：需验证保存后的 daily / Review / checklist 与跨设备同步；电脑 UI 自动化未获权限，不能以代码检查代替实际 UI 验收。
+
+## 仪表盘
+Home 使用 `scripts/journal/view.js` 的 compact 模式，只展示状态与新建入口。完整历史、统计、待回看和创建流程保留在 [[Journal/Dashboard]]。

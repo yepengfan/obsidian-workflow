@@ -5,14 +5,14 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-07
-updated: 2026-11-13
+updated: 2026-11-17
 depends_on: []
 requires:
   cli: [claude]
   plugins: [dataview]
 commands: [solve]
 templates: [Templates/Algorithm Pattern.md, Templates/Algorithm Log.md, Templates/Algorithm Atom.md]
-scripts: []
+scripts: [scripts/dashboard/algorithm/view.js]
 hooks: []
 folders: [Learning/Practice/Algorithm/, Learning/Practice/Algorithm/Patterns/, Learning/Practice/Algorithm/Log/, Learning/Practice/Algorithm/Atoms/]
 config_files:

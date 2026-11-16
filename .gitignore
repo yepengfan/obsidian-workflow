@@ -18,6 +18,7 @@
 # Learning/ is vault content (books, patterns, logs, sandboxes) — not tracked.
 # Exceptions below are workflow tooling only (AGENTS.md, dashboards, init scripts).
 /Learning/*
+!/Learning/Dashboard.md
 !/Learning/Books/
 /Learning/Books/*
 !/Learning/Books/AGENTS.md
@@ -33,6 +34,7 @@
 /Learning/Practice/Algorithm/*
 !/Learning/Practice/Algorithm/AGENTS.md
 !/Learning/Practice/Algorithm/CLAUDE.md
+!/Learning/Practice/Algorithm/00_index.md
 !/Learning/Practice/Frontend/
 /Learning/Practice/Frontend/*
 !/Learning/Practice/Frontend/AGENTS.md
@@ -57,10 +59,12 @@
 /Journal/Review.md
 /Zettelkasten/*
 !/Zettelkasten/Zettelkasten Index.md
-/Profile/
+/Profile/*
+!/Profile/Dashboard.md
 /Note/
 /Feeds/
-/Library/
+/Library/*
+!/Library/Articles.md
 
 # Local artifacts and one-off learning tools
 /.lavish/

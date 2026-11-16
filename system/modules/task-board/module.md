@@ -5,14 +5,14 @@ type: utility
 status: active
 enabled: true
 created: 2026-09-14
-updated: 2026-11-08
+updated: 2026-11-17
 depends_on: []
 requires:
   cli: [claude]
   plugins: [dataview]
 commands: [task-board, task-add]
 templates: [Templates/Task Board.md]
-scripts: [scripts/test_home_task_drag.cjs]
+scripts: [scripts/test_home_task_drag.cjs, scripts/dashboard/tasks/view.js]
 hooks: []
 folders: [Tasks/]
 config_files:

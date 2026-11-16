@@ -149,12 +149,13 @@ async function launch(app, { now = new Date() } = {}) {
   } finally { state.launching = false; }
 }
 
-async function renderJournal(dv, app, { now = () => new Date(), page = globalThis.document, window: win = globalThis.window } = {}) {
-  const root = dv.el("section", "", { cls: "journal-overview" });
+async function renderJournal(dv, app, { now = () => new Date(), page = globalThis.document, window: win = globalThis.window, compact = false, container } = {}) {
+  const root = container ? container.createEl("section", { cls: compact ? "home-journal-summary" : "journal-overview" }) : dv.el("section", "", { cls: compact ? "home-journal-summary" : "journal-overview" });
   const style = root.createEl("style");
   style.textContent = `.journal-overview{margin:18px 0;padding:18px;border:1px solid var(--background-modifier-border);border-radius:12px}.journal-overview *{box-sizing:border-box;min-width:0}.journal-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.journal-header h2{margin:0}.journal-local-date{font-size:12px;color:var(--text-muted)}.journal-days{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}.journal-day{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:1 0 58px;min-height:64px;padding:8px;border-radius:8px;border:1px solid var(--background-modifier-border);background:var(--background-secondary);color:var(--text-normal);font-size:13px;cursor:pointer}.journal-day:disabled{opacity:.4;cursor:default}.journal-day[data-recorded=true]::after{content:"";width:3px;height:3px;border-radius:50%;background:currentColor}.journal-overview button.journal-day[aria-current=date]{flex-grow:1.6;background:var(--interactive-accent);color:var(--text-on-accent);border:2px solid var(--interactive-accent);font-weight:650;box-shadow:0 0 0 3px color-mix(in srgb,var(--interactive-accent) 20%,transparent)}.journal-today-tag{font-size:10px;line-height:1.2;font-weight:750;letter-spacing:1px;border-radius:4px;padding:2px 7px;background:color-mix(in srgb,var(--text-on-accent) 15%,transparent)}.journal-today-date{font-size:17px;line-height:1.2;font-weight:750;letter-spacing:.2px}.journal-overview details{padding:10px 0}.journal-overview summary{cursor:pointer;font-size:14px}.journal-overview a,.journal-overview li{overflow-wrap:anywhere}.journal-overview ul{padding-left:20px}.journal-numbers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-top:14px;border-top:1px solid var(--background-modifier-border);margin-top:12px}.journal-number strong{display:block;font-size:19px;font-variant-numeric:tabular-nums}.journal-number small{font-size:11px;color:var(--text-muted)}.journal-status{font-size:13px;color:var(--text-muted);margin-top:12px}.journal-status:empty,.journal-fallback:empty{display:none}.journal-overview textarea{width:100%;min-height:130px;font-size:.85em}@media(max-width:700px){.journal-overview{padding:16px}.journal-days{gap:6px}.journal-day{flex-basis:62px}}`;
   const header = root.createEl("div", { cls: "journal-header" });
-  header.createEl("h2", { text: "Journal" });
+  if (compact) header.hidden = true;
+  else header.createEl("h2", { text: "Journal" });
   const dateLabel = header.createEl("span", { cls: "journal-local-date" });
   const body = root.createEl("div");
   const status = root.createEl("div", { cls: "journal-status", attr: { "aria-live": "polite" } });
@@ -198,6 +199,37 @@ async function renderJournal(dv, app, { now = () => new Date(), page = globalThi
       const data = snapshot(notes, clock);
       if (disposed || current !== version) return;
       body.empty();
+      if (compact) {
+        const summary = body.createEl("div", { cls: "home-card-body" });
+        const metric = summary.createEl("div", { cls: "home-metric" });
+        metric.createEl("strong", { text: String(data.pending.length) });
+        metric.createEl("small", { text: "待回看" });
+        const activity = summary.createEl("div", { cls: "home-plot" });
+        const dots = activity.createEl("div", {
+          cls: "home-week",
+          attr: {
+            role: "img",
+            "aria-label": data.recent
+              .map((day) => `${day.day} ${day.recorded ? "已记录" : "未记录"}`)
+              .join("，"),
+          },
+        });
+        for (const day of data.recent)
+          dots.createEl("i", {
+            cls: [
+              day.recorded ? "recorded" : "",
+              day.day === today ? "today" : "",
+            ].join(" "),
+            attr: { title: `${day.day} ${day.recorded ? "已记录" : "未记录"}` },
+          });
+        activity.createEl("small", {
+          text: `近 7 天 · ${data.weekCount} 天记录`,
+        });
+        const footer = body.createEl("div", { cls: "home-card-footer" });
+        const create = footer.createEl("button", { text: "+ 新建一篇记录" });
+        create.addEventListener("click", () => start(create));
+        return;
+      }
       const days = body.createEl("div", { cls: "journal-days" });
       const entries = body.createEl("div", { cls: "journal-entries" });
       function showEntries(day) {
@@ -289,5 +321,5 @@ async function renderJournal(dv, app, { now = () => new Date(), page = globalThi
 if (typeof dv === "undefined") {
   module.exports = { scalar, enabled, localDay, validDay, dayPath, entryPath, sections, meaningful, parseDaily, snapshot, initialize, promptFor, launch, renderJournal };
 } else {
-  return renderJournal(dv, input.app);
+  return renderJournal(dv, input.app, { compact: input.compact === true, container: input.container });
 }

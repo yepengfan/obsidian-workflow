@@ -5,14 +5,14 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-06-23
-updated: 2026-10-31
+updated: 2026-11-17
 depends_on: []
 requires:
   cli: [claude, node, npm]
   plugins: [dataview]
 commands: [solve]
 templates: [Templates/Frontend Pattern.md, Templates/Frontend Log.md]
-scripts: []
+scripts: [scripts/dashboard/frontend/view.js]
 hooks: []
 folders: [Learning/Practice/Frontend/, Learning/Practice/Frontend/Patterns/, Learning/Practice/Frontend/Log/, Learning/Practice/Frontend/sandbox/]
 config_files:
