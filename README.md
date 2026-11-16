@@ -2,6 +2,41 @@
 
 System files for my Obsidian knowledge management vault. Content (notes, highlights, attachments) is synced separately — this repo only tracks the **workflow infrastructure**.
 
+## Tests and CI
+
+[Function tests](https://github.com/yepengfan/obsidian-workflow/actions/workflows/tests.yml) runs on every pull request,
+on pushes to `main`, and on manual dispatch after the workflow is merged.
+It checks the tracked test files automatically:
+
+- JavaScript: dashboard, review, journal, and task-board functions on Node.js 22,
+  in UTC, Australia/Brisbane, and America/New_York.
+- Python: book-tooling functions, shared JSON parsing, and feed deduplication on
+  Python 3.13.
+
+The jobs use synthetic fixtures and temporary files. Private notes, Obsidian,
+AI services, and application secrets are not required. A failed test fails its
+check; merge approval and branch-protection settings remain separate.
+
+Run the same suites locally from the repository root:
+
+```sh
+git ls-files -z '*.test.cjs' '*/test_*.cjs' 'test_*.cjs' | xargs -0 node --test --test-reporter=spec
+python3.13 -m venv .venv
+.venv/bin/python -m pip install -r requirements-ci.txt
+git ls-files -z '*/test_*.py' 'test_*.py' '*_test.py' | xargs -0 .venv/bin/python -m pytest
+```
+
+Python dependencies are pinned in the generated `requirements-ci.txt`. To update
+them, edit `requirements-ci.in`, then regenerate the lock with:
+
+```sh
+uv pip compile --python-version 3.13 --universal requirements-ci.in --output-file requirements-ci.txt
+```
+
+The workflow uses read-only repository permissions and pins official actions to
+commit SHAs. Its configuration is `.github/workflows/tests.yml`; its registry
+entry is `system/modules/ci/module.md`.
+
 ## Philosophy
 
 This system is built on two complementary frameworks: **Second Brain** and **Zettelkasten**.
