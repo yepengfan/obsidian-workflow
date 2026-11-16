@@ -78,6 +78,13 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Mermaid edge labels**: Never use `1.` `2.` `3.` in Mermaid edge labels (e.g., `-->|1. check|`) — Obsidian's renderer parses them as markdown lists and shows "Unsupported markdown: list". Use circled numbers instead: `-->|① check|` `-->|② miss|` `-->|③ write back|`.
 - **Gitignored content & search tools**: Most content folders (`Learning/Practice/*`, `Work/`, `Tasks/`, `Zettelkasten/*`, `Inbox/`, etc.) are gitignored (synced via S3/iCloud, not git — see `.gitignore`). `Glob`/`Grep` respect `.gitignore` and silently return 0 results for these paths. Any skill/command that needs to scan such folders (e.g. detecting in-progress sessions) must use a shell directory listing (`ls`/`find`) instead.
 
+## Function tests
+
+CI and local test commands are documented in `README.md` under Tests and CI.
+`.github/workflows/tests.yml` discovers tracked JavaScript and Python tests;
+name new tests `*.test.cjs`, `test_*.cjs`, `test_*.py`, or `*_test.py` so CI includes them.
+Keep tests independent of private vault records and live service credentials.
+
 ## Installed Plugins
 
 Dataview, Kanban, Calendar, Excalidraw, Tag Wrangler, Table Editor, Footnotes, Mind Map, Homepage, Hider, Style Settings, URL into Selection, WeRead, Plugin Update Tracker, Custom File Explorer Sorting, Spaced Repetition, Shell Commands
