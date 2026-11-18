@@ -97,6 +97,40 @@ Write only when state actually changes. An ordinary question such as "What is QP
 
 Checkpoint roughly every 3-5 exchanges rather than on every reply.
 
+## Session status in chat
+
+Show the learner where the session stands with a **Session checkpoint** list followed by a **Delivery Framework** table:
+
+- when a session starts or resumes, before the first question;
+- whenever a step starts, completes, or is reopened;
+- when the learner pauses or ends the sitting;
+- whenever the learner asks where they are.
+
+Do not repeat it on ordinary turns within a step.
+
+```markdown
+**Session checkpoint**
+- **Problem:** <topic from progress.md>
+- **Source:** <source>
+- **Started:** <started date>
+- **Current step:** Step <n> - <step name>
+- **Previous focus:** <last completed step or key decision, or "None yet">
+- **Next:** <next action>
+- **Saved:** <"Up to date" or what is not yet saved to progress.md>
+
+**Delivery Framework**
+| Step | Status |
+|------|--------|
+| 1. Requirements | ✅ Done |
+| 2. Core Entities | 🔄 In progress |
+| 3. API / Interface | ⬜ Pending |
+| 4. Data Flow | ⬜ Pending |
+| 5. High-Level Design | ⬜ Pending |
+| 6. Deep Dives | ⬜ Pending |
+```
+
+Derive statuses from progress.md, the canvas reconciliation in **Resume a session**, and progress made in this conversation. Use the same ⬜/🔄/✅ meaning as the Progress table. Showing the status is not a save; report unsaved progress in **Saved** instead of implying it was written.
+
 ## Phase 1 - Guide the design
 
 1. Receive the problem name or description.
