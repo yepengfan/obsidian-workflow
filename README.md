@@ -10,8 +10,8 @@ It checks the tracked test files automatically:
 
 - JavaScript: dashboard, review, journal, and task-board functions on Node.js 22,
   in UTC, Australia/Brisbane, and America/New_York.
-- Python: book-tooling functions, shared JSON parsing, and feed deduplication on
-  Python 3.13.
+- Python: book-tooling functions, shared JSON parsing, feed deduplication, and
+  practice-review scheduling on Python 3.13.
 
 The jobs use synthetic fixtures and temporary files. Private notes, Obsidian,
 AI services, and application secrets are not required. A failed test fails its

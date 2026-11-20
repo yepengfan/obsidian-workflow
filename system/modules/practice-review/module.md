@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-11-11
-updated: 2026-11-17
+updated: 2026-11-20
 depends_on: [dashboard]
 requires:
   python: ">=3.10"
@@ -32,8 +32,9 @@ review_time_limits:
   algorithm: 30
   system-design: 45
   behavioral: 3
-interval_days: [1, 3, 7, 14, 30]
+interval_days: [1, 3, 7, 14, 60]
 retry_days: 1
+archive_after_final: true
 tags: [system/module]
 ---
 
@@ -58,7 +59,7 @@ Register a problem directly with `/practice-review-add algorithm 1071`. View the
 
 ## Configuration
 
-This file owns `practice_flows`, `review_time_limits`, `interval_days`, and `retry_days`. See [[Learning/Practice/Review/AGENTS|Practice review rules]] for practice and review handoffs.
+This file owns `practice_flows`, `review_time_limits`, `interval_days`, `retry_days`, and `archive_after_final`. See [[Learning/Practice/Review/AGENTS|Practice review rules]] for practice and review handoffs.
 
 ## Dashboard UI
 

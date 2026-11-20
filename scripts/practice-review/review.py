@@ -42,8 +42,17 @@ def read_note(path):
     return metadata, match[2]
 
 
+class FrontmatterDumper(yaml.SafeDumper):
+    """Write repeated values in full; Obsidian properties do not resolve YAML aliases."""
+
+    def ignore_aliases(self, data):
+        return True
+
+
 def write_note(path, metadata, body):
-    frontmatter = yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False)
+    frontmatter = yaml.dump(
+        metadata, Dumper=FrontmatterDumper, allow_unicode=True, sort_keys=False,
+    )
     temporary = None
     try:
         with tempfile.NamedTemporaryFile(
@@ -87,7 +96,10 @@ def load_config():
     flows = config.get("practice_flows")
     if not isinstance(flows, dict) or not flows:
         raise ValueError("practice_flows must map domains to their existing workflow files")
-    return intervals, retry, flows
+    archive = config.get("archive_after_final", False)
+    if type(archive) is not bool:
+        raise ValueError("archive_after_final must be true or false")
+    return intervals, retry, flows, archive
 
 
 def read_payload(path):
@@ -222,7 +234,7 @@ def add(payload, flows):
         return {**summarize(path, metadata), "created": True}
 
 
-def record(item_id, payload, day, intervals, retry_days):
+def record(item_id, payload, day, intervals, retry_days, archive_after_final=False):
     attempt_id = read_text_field(payload, "attempt_id", required=True)
     if ATTEMPT_ID.fullmatch(attempt_id) is None:
         raise ValueError("attempt_id must use letters, digits, hyphens or underscores")
@@ -251,7 +263,10 @@ def record(item_id, payload, day, intervals, retry_days):
         if last_review is not None and day < read_date(last_review):
             raise ValueError(f"Review date precedes the last review of {item_id}")
         stage = summary["stage"]
+        if stage >= len(intervals):
+            raise ValueError(f"{item_id} stage is outside interval_days")
         previous_due = summary["next_review"]
+        archived = False
         if outcome != "independent":
             next_review = day + timedelta(days=retry_days)
         elif previous_due is None:
@@ -259,6 +274,10 @@ def record(item_id, payload, day, intervals, retry_days):
             next_review = day + timedelta(days=intervals[stage])
         elif day < read_date(previous_due):
             next_review = read_date(previous_due)
+        elif archive_after_final and stage == len(intervals) - 1:
+            # Passing the final interval on time completes the schedule.
+            archived = True
+            next_review = None
         else:
             stage = min(stage + 1, len(intervals) - 1)
             next_review = day + timedelta(days=intervals[stage])
@@ -269,9 +288,12 @@ def record(item_id, payload, day, intervals, retry_days):
             next_review=next_review, last_outcome=outcome,
             attempt_ids=[*attempt_ids, attempt_id],
         )
+        if archived:
+            metadata.update(status="archived", archived_on=day)
+        schedule = "已归档" if archived else f"下次复习 {next_review}"
         entry = (
             f"### {day} · 第 {review_count} 轮\n\n"
-            f"**{OUTCOMES[outcome]}** · 下次复习 {next_review}\n\n"
+            f"**{OUTCOMES[outcome]}** · {schedule}\n\n"
             f"#### 本人心得\n\n{reflection}\n"
         )
         if submission.strip():
@@ -297,7 +319,7 @@ def main():
 
     try:
         day = read_date(args.date) if args.date is not None else date.today()
-        intervals, retry_days, flows = load_config()
+        intervals, retry_days, flows, archive_after_final = load_config()
         if args.command == "due":
             result = due(day)
         elif args.command == "show":
@@ -307,7 +329,7 @@ def main():
         else:
             result = record(
                 item_slug(args.id, "id"), read_payload(args.attempt_file),
-                day, intervals, retry_days,
+                day, intervals, retry_days, archive_after_final,
             )
     except (OSError, ValueError, OverflowError) as error:
         parser.exit(1, f"practice-review: {error}\n")
