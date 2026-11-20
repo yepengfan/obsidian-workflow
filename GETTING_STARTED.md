@@ -41,9 +41,11 @@ updated: 2026-03-29
 | **🟢 可选** | URL into Selection | 快速插入链接 |
 | **🟢 可选** | Footnotes | 脚注支持 |
 
-### Python（仅 Feeds 模块需要）
+### Python
 
-如果你要用 AI Digest 或 GitHub Trending：
+本地系统设计练习需要 Python 3.10+，使用标准库即可。间隔复习还需要 PyYAML。运行 `python3 --version` 可检查版本。
+
+如果你要用 AI Digest 或 GitHub Trending，需要 Python 3.13+：
 
 ```bash
 # 检查 Python 版本（需要 3.13+）
