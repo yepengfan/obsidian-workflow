@@ -16,6 +16,32 @@ Read `Learning/Practice/System-Design/AGENTS.md` for module instructions.
 
 Read and apply **English conversation and clarification** in `Learning/Practice/Review/AGENTS.md` for both direct invocations and `/practice` handoffs. Coach messages, learner explanations and reflections, and newly authored notes and diagram labels use English. Clarify unclear replies before assessing their meaning or recording them.
 
+## Coaching mode for this round
+
+Use one progression across all System Design topics, whether the learner starts
+a new design or selects a due review. The first two completed rounds default to
+`guided`. From round three onward the default is `mock_interview`.
+
+- At the start of a fresh round, assign a UUIDv4 (reuse the review's UUID as its
+  `attempt_id`). Run `python3 scripts/practice-review/design_coaching.py mode`
+  and announce the returned mode. A missing coaching log means zero completions.
+- **Guided.** Let the learner draw first. Ask them to trace one request, then
+  give one targeted question or hint at a time. Leave the next edit to them.
+- **Mock interview.** Let the learner drive. Clarify requirements and probe a
+  tradeoff or failure scenario. Hold design feedback until the debrief.
+  If the learner asks for a hint, track the substantive help in the assessment.
+- “Guide me” and “Switch to mock interview” change the active mode immediately.
+  Keep the drawing, current step and UUID. At a checkpoint save `round_id` and
+  `coaching_mode` in progress.md. Resume both on the same round. For a legacy
+  checkpoint missing these fields, initialize them once. A new round starts
+  with its domain default. A review always starts with the neutral prompt and
+  keeps prior solutions closed until the attempt ends.
+- After an ended round and reflection, preview and confirm saving the coaching
+  completion. Run `python3 scripts/practice-review/design_coaching.py complete <uuid>`.
+  On a scheduled review, save its outcome first, using the same UUID. Retry any
+  unfinished save with its original UUID. Only confirmed completions count;
+  starting, switching, pausing and resuming leave the count alone.
+
 ## Phase 0 - Initialize the Solution folder
 
 > [!WARNING] `Solutions/` content is excluded by `.gitignore`, except for `AGENTS.md` and `00_index.md`. To find WIP sessions, use shell `ls` to enumerate folders and read each `progress.md` frontmatter. Do not use `Glob` or `Grep`: they respect `.gitignore` and can silently return no results, causing a false conclusion that no session is in progress.
@@ -113,6 +139,7 @@ Do not repeat it on ordinary turns within a step.
 - **Problem:** <topic from progress.md>
 - **Source:** <source>
 - **Started:** <started date>
+- **Coaching mode:** <guided or mock interview>
 - **Current step:** Step <n> - <step name>
 - **Previous focus:** <last completed step or key decision, or "None yet">
 - **Next:** <next action>
@@ -138,7 +165,7 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
 3. Guide the learner through the six-step framework without directly giving a complete design.
 4. Use targeted questions to support their thinking at each step.
 
-**Guidance principles**:
+**Guided-mode prompts** (use mock-interview pacing when that mode is active):
 
 - Start with Requirements: "What are the three core functions of this system? What are its non-functional requirements?"
 - Guide estimates during Step 1: "What is the expected DAU? Read/write ratio? Storage scale?"
