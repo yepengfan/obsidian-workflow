@@ -48,6 +48,8 @@ a new design or selects a due review. The first two completed rounds default to
 
 > [!WARNING] `Solutions/` content is excluded by `.gitignore`, except for `AGENTS.md` and `00_index.md`. To find WIP sessions, use shell `ls` to enumerate folders and read each `progress.md` frontmatter. Do not use `Glob` or `Grep`: they respect `.gitignore` and can silently return no results, causing a false conclusion that no session is in progress.
 
+For all resume decisions, a WIP folder qualifies only while its round has no recorded `round_completed_on` date. An ended round can have pending artifact saves. A scheduled review starts a fresh attempt even if an earlier folder for that topic still has pending saves.
+
 ### Automatic resumption with no arguments
 
 When `$ARGUMENTS` is empty for a direct `/sysd-solve` invocation:
@@ -63,9 +65,9 @@ When `/practice` hands off to a new problem without a topic, ask for a new probl
 
 1. Extract the short topic name from `$ARGUMENTS`, such as "Design YouTube" → "YouTube" or "Bitly" → "Bitly".
 2. Use shell `ls Learning/Practice/System-Design/Solutions/` to enumerate matching `<topic>-*` folders. Do not use Glob/Grep.
-   - **A progress.md has `system-design/wip`** → use **Resume a session** to check progress.md and Excalidraw, then continue from the interrupted step.
+   - **A progress.md qualifies for WIP resumption** → use **Resume a session** to check progress.md and Excalidraw, then continue from the interrupted step.
    - **A progress.md has `system-design/planned`** → replace that tag with `system-design/wip`, check both files using **Resume a session**, and continue from the recorded next step. Start at Step 1 if the session is empty.
-   - **Matching folders exist, but none have wip/planned tags** → tell the learner how many times they have practiced the topic and ask whether to start another attempt.
+   - **Matching folders exist, but none are resumable or planned** → tell the learner how many times they have practiced the topic and ask whether to start another attempt.
    - **No matching folder exists** → create a Solution folder and files as described below.
 
 3. **Create a Solution folder**:
@@ -256,5 +258,6 @@ An explicit request to finish or a confirmed end to the time budget also trigger
 
 6. **Mark complete**:
    - One attempt uses the same Solution folder across steps, checkpoints and chats. On final completion, use the shared practice review registration and recording workflows: select or register the topic's review item, collect the learner's reflection and confirm the outcome. Use this round's stable attempt ID and actual completion date to record its spaced-repetition schedule once. If recording fails, keep the session resumable and retry the unfinished save.
-   - After the review record succeeds, replace `system-design/wip` with `system-design/done` in the Solution progress.md.
+   - When saving an ended round, record its actual local completion date as `round_completed_on` in progress.md even if the canvas save is pending. Pausing leaves this field unset.
+   - After the review record succeeds and agreed artifact saves are verified, replace `system-design/wip` with `system-design/done` in the Solution progress.md.
    - Retain progress.md, Excalidraw, Pattern cards, Logs, and Design Pattern / Key Technology documents as the complete practice record.

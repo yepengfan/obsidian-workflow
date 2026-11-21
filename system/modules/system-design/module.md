@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-12
-updated: 2026-11-21
+updated: 2026-11-22
 depends_on: [dashboard, practice-review]
 requires:
   cli: [claude, node]
