@@ -6,7 +6,7 @@ status: active
 enabled: true
 created: 2026-05-12
 updated: 2026-11-21
-depends_on: [dashboard]
+depends_on: [dashboard, practice-review]
 requires:
   cli: [claude, node]
   python: ">=3.10"

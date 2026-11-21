@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-11-11
-updated: 2026-11-20
+updated: 2026-11-21
 depends_on: [dashboard]
 requires:
   python: ">=3.10"
@@ -39,6 +39,8 @@ tags: [system/module]
 ---
 
 ## Overview
+
+System Design uses this module to schedule completed attempts. Entering practice also offers to resume saved System Design sessions before starting a new topic.
 
 Manage algorithm, system design, and behavioral interview practice through one due queue. Conversations and learner responses use English throughout reviews and new practice, including direct entries into the domain workflows. Clarify unclear replies before assessing their meaning or saving reflections. Each ended round saves the learner's own reflection and schedules the next review from actual performance. See `Learning/Practice/Review/AGENTS.md` for the shared conversation rules.
 

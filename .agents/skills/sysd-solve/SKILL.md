@@ -8,6 +8,8 @@ disable-model-invocation: true
 <!-- module: system-design -->
 > [!GUARD] Read `system/modules/system-design/module.md`. If `enabled: false` → reply "⛔ Module **system-design** is disabled. Enable it via `/module-toggle system-design`." and STOP. Do NOT proceed.
 
+> Read `system/modules/practice-review/module.md` before starting or resuming. If disabled, explain that System Design requires spaced review, offer `/module-toggle practice-review`, and stop. If its enabled state cannot be verified, report that and stop.
+
 Solve System Design problem: $ARGUMENTS
 
 Read `Learning/Practice/System-Design/AGENTS.md` for module instructions.
