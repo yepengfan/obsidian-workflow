@@ -19,6 +19,21 @@ Apply the shared **English conversation and clarification** rules in `Learning/P
 
 Use the client's available single-choice input, or numbered choices when that input is unavailable. A bare `/practice` offers `Algorithm` (`algorithm`), `System Design` (`system-design`) and `Behavioral Interview` (`behavioral`). Use a module already supplied in the request or current exchange; otherwise wait for the selection. Do not ask the learner to choose practice or Review.
 
+At a fresh practice entry, check enabled System Design practice for saved
+in-progress sessions before presenting the choices. Use the session catalog
+when available. In a local vault, list the direct session folders under
+`Learning/Practice/System-Design/Solutions/` and inspect their `progress.md`
+frontmatter for the exact `system-design/wip` tag. Planned and completed
+sessions do not qualify. Keep saved sessions separate from the due counts.
+
+With one unfinished session, name it and ask whether to resume. With several,
+list the topic and session folder or start date, and ask which one to resume.
+Also offer the ordinary practice choices and wait. If the learner selects a
+session, follow **Resume a session** in sysd-solve for that exact folder,
+reopening its saved progress and drawing. Check that the selected folder is still WIP before reopening its canvas.
+If they decline, continue the normal
+practice flow. An explicit topic or review request takes precedence.
+
 Resolve the module's authoritative workflow from `practice_flows` in the module configuration. Read that source and execute any module guard it declares before starting a domain action. If it is disabled, explain how to enable it and return to the module choice. Read `Learning/Practice/Review/Content/<domain>.md` for the selected module's review content.
 
 ## Complete due reviews
