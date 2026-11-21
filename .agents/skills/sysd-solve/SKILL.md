@@ -8,6 +8,8 @@ disable-model-invocation: true
 <!-- module: system-design -->
 > [!GUARD] Read `system/modules/system-design/module.md`. If `enabled: false` → reply "⛔ Module **system-design** is disabled. Enable it via `/module-toggle system-design`." and STOP. Do NOT proceed.
 
+> Read `system/modules/practice-review/module.md` before starting or resuming. If disabled, explain that System Design requires spaced review, offer `/module-toggle practice-review`, and stop. If its enabled state cannot be verified, report that and stop.
+
 Solve System Design problem: $ARGUMENTS
 
 Read `Learning/Practice/System-Design/AGENTS.md` for module instructions.
@@ -245,5 +247,6 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
    - If a referenced document is missing or an empty shell, tell the learner without automatically filling it in.
 
 6. **Mark complete**:
-   - Replace `system-design/wip` with `system-design/done` in the Solution progress.md.
+   - One attempt uses the same Solution folder across steps, checkpoints and chats. On final completion, use the shared practice review registration and recording workflows: select or register the topic's review item, collect the learner's reflection and confirm the outcome. Use this round's stable attempt ID and actual completion date to record its spaced-repetition schedule once. If recording fails, keep the session resumable and retry the unfinished save.
+   - After the review record succeeds, replace `system-design/wip` with `system-design/done` in the Solution progress.md.
    - Retain progress.md, Excalidraw, Pattern cards, Logs, and Design Pattern / Key Technology documents as the complete practice record.
