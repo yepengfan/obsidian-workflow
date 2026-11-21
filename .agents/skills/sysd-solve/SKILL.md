@@ -121,6 +121,15 @@ During guidance, read and update progress.md when any of these conditions applie
 
 Write only when state actually changes. An ordinary question such as "What is QPS?" does not require a checkpoint after the explanation.
 
+When a canvas client supplies review timing, retain it as optional session
+metadata. On the next approved progress.md save, append the submitted timing
+objects to the `canvas_reviews` frontmatter list. Preserve the UTC timestamps
+(`startedAt`, `reviewedAt`), `reviewNumber`, `elapsedSeconds` and
+`secondsSincePreviousReview`. Preserve prior entries and use the timer start
+and review number together to avoid duplicates. The first interval runs from
+the start of that timer. Only record supplied measurements, and assess the
+design independently of elapsed time.
+
 Checkpoint roughly every 3-5 exchanges rather than on every reply.
 
 ## Session status in chat
