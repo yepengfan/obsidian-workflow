@@ -116,7 +116,11 @@ test("the isolated Dataview custom view renders every module and handles interna
     page(path) {
       return path.startsWith("system/modules/") ? { enabled: true } : null;
     },
-    pages() {
+    pages(scope) {
+      if (scope === '"Learning/Practice/System-Design/Solutions"') return [
+        { file: { name: "progress", tags: ["#system-design/wip"] } },
+        { file: { name: "progress", tags: ["#system-design/wip"] }, round_completed_on: "2026-11-21" },
+      ];
       return [];
     },
     view: async (name, input) => {
@@ -157,6 +161,7 @@ test("the isolated Dataview custom view renders every module and handles interna
     all.some((el) => el.textContent.startsWith("Home could not refresh")),
     false,
   );
+  assert.ok(all.some((el) => el.textContent === "In progress 1"));
   const link = all.find(
     (el) => el.tag === "a" && el.textContent === "Dashboard ↗",
   );
