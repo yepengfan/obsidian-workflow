@@ -192,7 +192,15 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
 3. API or Interface: core interfaces and their inputs and outputs.
 4. Data Flow: the complete path from a request to storage or a response.
 5. High-Level Design: core components and their connections; generate a Mermaid architecture diagram.
-6. Deep Dives: examine 2-3 components to address non-functional requirements.
+6. Deep Dives: select up to three architectural challenges tied to the agreed requirements.
+
+**When to end the interview**
+
+In both Guided and Mock Interview modes, check before each follow-up whether the learner has shown how the core flows meet the agreed requirements and explained the main tradeoffs for the selected deep dives. Count evidence already in the drawing, conversation and saved progress. At a checkpoint, include the agreed scope, selected deep dives and any remaining assessment gaps in the existing progress notes so a resumed chat can use the same stopping rule.
+
+Once that evidence is sufficient, deliver the Phase 2 final review in the same turn. Ask a follow-up only when its answer could materially change the assessment of an agreed requirement or selected tradeoff. Leave optional extensions for the learner to request.
+
+An explicit request to finish or a confirmed end to the time budget also triggers the final review, even with gaps. Summarize strengths, decisions and remaining gaps using the available evidence, then offer to collect the reflection and save. A request to pause preserves the current step for resumption.
 
 **Step 5 diagram guidance**:
 
@@ -212,7 +220,7 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
    - **Single points of failure**: are any present?
    - **Cost**: is the design overengineered?
 3. Compare it with an appropriate reference design and identify gaps and improvements.
-4. Once the design passes review, enter Phase 3.
+4. Present the final assessment, including any unmet requirements. Offer Phase 3 and follow its reflection and save-confirmation rules.
 
 ## Phase 3 - Save learning evidence
 
