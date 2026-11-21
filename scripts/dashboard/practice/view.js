@@ -88,10 +88,11 @@ return (async () => {
               .pop()
               .replace(/-\d{4}-\d{2}-\d{2}$/, ""),
         );
-        const status =
-          ["wip", "planned", "done"].find((s) =>
-            list(p.file.tags).includes(`#system-design/${s}`),
-          ) || "unknown";
+        const status = p.round_completed_on && date(p.round_completed_on)
+          ? "done"
+          : ["wip", "planned", "done"].find((s) =>
+              list(p.file.tags).includes(`#system-design/${s}`),
+            ) || "unknown";
         const index = roadmap.findIndex((item) =>
           list(item.aliases).some((alias) =>
             topic.toLowerCase().includes(String(alias).toLowerCase()),

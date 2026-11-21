@@ -93,6 +93,7 @@ function countEntries(value) {
   return value == null ? 0 : Array.isArray(value) ? value.length : 1;
 }
 function sessionStatus(page) {
+  if (dayKey(page.round_completed_on)) return "done";
   const tags = Array.from(page.tags ?? page.file?.tags ?? []).map((t) =>
     String(t).replace(/^#/, ""),
   );
