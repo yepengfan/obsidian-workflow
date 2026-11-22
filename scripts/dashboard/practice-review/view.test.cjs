@@ -307,3 +307,18 @@ test("the dashboard executes in the isolated Dataview scope without plugin impor
     false,
   );
 });
+
+test("shows Bitly's first independent review and a new topic's first learning round", () => {
+  const design = (id, count) => ({
+    id, title: id, domain: "system-design", status: "active", review_count: count,
+    stage: 0, file: { name: id, path: id }, last_review: count ? "2026-11-22" : null,
+    next_review: count ? "2026-11-23" : null,
+  });
+  const history = "### 2026-11-21 · Round 1\n\n**assisted** · Next review 2026-11-22\n\n### 2026-11-22 · Round 2\n\n**assisted** · Next review 2026-11-23";
+  const { items } = buildSnapshot([design("bitly", 2), design("dropbox", 0)],
+    "2026-11-23", [1, 3, 7], new Map([["bitly", history]]));
+  assert.equal(items[0].completed, 2);
+  assert.equal(items[0].nextReview, "2026-11-25");
+  assert.equal(items[0].bucket, "upcoming");
+  assert.equal(items[1].completed, 0);
+});

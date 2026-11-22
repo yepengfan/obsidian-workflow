@@ -20,7 +20,7 @@ Use `algorithm`, `system-design`, or `behavioral` for the domain. The selected w
 
 `/practice` selects a domain, completes its due reviews, then starts a new problem. Use the client's choices when available and honor a domain already supplied in the request or current conversation. The entry has no practice/Review mode menu.
 
-Filter `due` to the selected domain's `overdue` and `today` items, ordered by next review date and stable ID. Show the review order and start the first item directly. Each review uses its domain’s attempt format followed by assessment, the learner's reflection and confirmed saving. After each saved round, refresh the queue and automatically start the next due item. Assisted or incomplete ended rounds follow the retry schedule; pending reflection or a paused attempt stays on the current item. `upcoming` and `unstarted` items are outside this due-review sequence.
+Filter `due` to the selected domain's `overdue` and `today` items, ordered by next review date and stable ID. Show the review order and start the first item directly. Each review uses its domain’s attempt format followed by assessment, the learner's reflection and confirmed saving. After each saved round, refresh the queue and automatically start the next due item. Use the returned next review date for each ended round; pending reflection or a paused attempt stays on the current item. `upcoming` and `unstarted` items are outside this due-review sequence.
 
 Once no due items remain, including when the queue was empty initially, automatically enter the selected domain's workflow for a new problem. Keep any explicitly supplied new topic pending until this handoff. Without a topic, ask for a new problem or interview question through that workflow's topic-input step; do not reuse the last reviewed topic or automatically restore an unrelated WIP session. Honor an explicit request to continue, pause, stop or change direction. The domain workflow owns initialization, guidance, assessment and domain-specific saving. Capture a reflection at the end.
 
@@ -39,6 +39,8 @@ Direct `/practice-review-today [id]` retains its queue listing or selected-item 
 ## Schedule
 
 `system/modules/practice-review/module.md` holds the configurable intervals. The defaults are 1, 3, 7, 14 and 60 days, calculated from the actual day each review ends. These intervals are a practical spaced review policy inspired by Ebbinghaus's forgetting curve.
+
+Each System Design topic uses its own completed round count. In the dashboard show the topic, upcoming round, mode and date. Completed rounds one and two use the first and second configured intervals (normally 1 and 3 days), including assisted completions. An incomplete attempt gets the retry interval and keeps the same learning round. From round three onward use the shared schedule below. A pause is a checkpoint. Resume the same session and attempt ID.
 
 | Round | Next review |
 | --- | --- |

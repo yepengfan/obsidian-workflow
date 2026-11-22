@@ -20,13 +20,11 @@ Read and apply **English conversation and clarification** in `Learning/Practice/
 
 ## Coaching mode for this round
 
-Use one progression across all System Design topics, whether the learner starts
-a new design or selects a due review. The first two completed rounds default to
-`guided`. From round three onward the default is `mock_interview`.
-
-- At the start of a fresh round, assign a UUIDv4 (reuse the review's UUID as its
-  `attempt_id`). Run `python3 scripts/practice-review/design_coaching.py mode`
-  and announce the returned mode. A missing coaching log means zero completions.
+Use the stable review item ID for this design problem across chats and sessions.
+Read its review summary with `review.py show <id>`. A new topic begins at zero.
+Use `completed_design_rounds + 1` as the upcoming round. Each topic gets two
+full guided learning rounds, then full mock interviews. Announce the topic,
+round and mode. Assign a UUIDv4 to a new round and use it as its attempt ID.
 - **Guided.** Let the learner draw first. Ask them to trace one request, then
   give one targeted question or hint at a time. Leave the next edit to them.
 - **Mock interview.** Let the learner drive. Clarify the current functional flow during High-Level Design. In Deep Dives,
@@ -36,13 +34,12 @@ a new design or selects a due review. The first two completed rounds default to
   Keep the drawing, current step and UUID. At a checkpoint save `round_id` and
   `coaching_mode` in progress.md. Resume both on the same round. For a legacy
   checkpoint missing these fields, initialize them once. A new round starts
-  with its domain default. A review always starts with the neutral prompt and
+  with its topic default. A review always starts with the neutral prompt and
   keeps prior solutions closed until the attempt ends.
-- After an ended round and reflection, preview and confirm saving the coaching
-  completion. Run `python3 scripts/practice-review/design_coaching.py complete <uuid>`.
-  On a scheduled review, save its outcome first, using the same UUID. Retry any
-  unfinished save with its original UUID. Only confirmed completions count;
-  starting, switching, pausing and resuming leave the count alone.
+- After completion, reflection and confirmation, use the shared review recording
+  procedure once, with the same UUID. Checkpoints, resumes and retries keep that
+  ID. Record actual help during learning. Normal interviewer questions asking
+  the learner to explain their choices are compatible with independent work.
 
 ## Phase 0 - Initialize the Solution folder
 
