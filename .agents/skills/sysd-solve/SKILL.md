@@ -193,7 +193,7 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
 2. Core Entities: entities and relationships, focused on business concepts.
 3. API or Interface: core interfaces and their inputs and outputs.
 4. Data Flow: the complete path from a request to storage or a response.
-5. High-Level Design: let the learner sketch the minimum components and trace each agreed user action end to end. While they are explaining, give them room to finish. If a functional path is missing, ask one question about that path. Once the learner has finished and each action has a working path, move to Deep Dives.
+5. High-Level Design: let the learner sketch the minimum components and trace each agreed functional requirement from its trigger to its outcome, including user requests, scheduled jobs and event-driven work where applicable. While they are explaining, give them room to finish. If a functional path is missing, ask one question about that path. Once the learner has finished and every agreed functional requirement has a working path, move to Deep Dives.
 6. Deep Dives: use the agreed non-functional requirements to select up to three challenges. For each, ask what breaks in the baseline design at the agreed target, how the learner would address it, and what the choice costs. Count tradeoffs the learner already explained.
 
 For example, in a URL shortener interview, Step 5 can establish who assigns a unique code, where the mapping lives and how a redirect finds it. If uniqueness under concurrent writes or p99 redirect latency is in scope, explore allocation strategies or caching in Step 6. Apply this boundary in both coaching modes.
