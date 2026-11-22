@@ -13,7 +13,7 @@ requires:
   plugins: [dataview]
 commands: [solve]
 templates: [Templates/SD Pattern.md, Templates/SD Log.md]
-scripts: [scripts/practice-review/design_coaching.py, scripts/sd-excalidraw-template.js, scripts/dashboard/system-design/view.js, scripts/dashboard/practice/view.js]
+scripts: [scripts/practice-review/review.py, scripts/sd-excalidraw-template.js, scripts/dashboard/system-design/view.js, scripts/dashboard/practice/view.js]
 hooks: []
 folders: [Learning/Practice/System-Design/, Learning/Practice/System-Design/Solutions/, Learning/Practice/System-Design/Patterns/, Learning/Practice/System-Design/Log/, Learning/Practice/System-Design/Courses/]
 config_files:

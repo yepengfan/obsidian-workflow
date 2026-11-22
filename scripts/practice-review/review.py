@@ -134,6 +134,54 @@ def read_date(value):
     raise ValueError("Dates must use YYYY-MM-DD")
 
 
+HISTORY_ROUND = re.compile(
+    r"^### (\d{4}-\d{2}-\d{2}) · (?:Round (\d+)|第 (\d+) 轮)\s*\n"
+    r"\*\*(independent|assisted|incomplete|独立完成|提示后完成|未完成)\*\* · ", re.MULTILINE,
+)
+
+
+def schedule_round(stage, previous_due, completed, outcome, day, intervals, retry_days, archive_after_final=False):
+    if completed is not None and completed < 2 and outcome != "incomplete":
+        stage = min(completed, len(intervals) - 1)
+    elif outcome != "independent":
+        return stage, day + timedelta(days=retry_days)
+    elif previous_due is None:
+        stage = 0
+    elif day < read_date(previous_due):
+        return stage, read_date(previous_due)
+    elif archive_after_final and stage == len(intervals) - 1:
+        return stage, None
+    else:
+        stage = min(stage + 1, len(intervals) - 1)
+    return stage, day + timedelta(days=intervals[stage])
+
+
+def design_progress(metadata, body, intervals, retry_days):
+    if metadata["domain"] != "system-design":
+        return {}
+    count = metadata.get("completed_design_rounds")
+    if count is not None:
+        if type(count) is not int or not 0 <= count <= metadata["review_count"]:
+            raise ValueError("Invalid completed_design_rounds")
+        return {"completed_design_rounds": count}
+    history = HISTORY_ROUND.findall(body)
+    if len(history) != metadata["review_count"] or any(
+        int(en or zh) != i for i, (_, en, zh, _) in enumerate(history, 1)
+    ):
+        return {"completed_design_rounds": 0}
+    completed = 0
+    stage, due_date = 0, None
+    translations = {label: key for key, label in OUTCOMES.items()}
+    for day, _, _, label in history:
+        outcome = translations.get(label, label)
+        stage, due_date = schedule_round(stage, due_date, completed, outcome, read_date(day), intervals, retry_days)
+        completed += outcome != "incomplete"
+    progress = {"completed_design_rounds": completed}
+    if history and history[-1][0] == str(metadata["last_review"]) and metadata["status"] == "active":
+        progress.update(stage=stage, next_review=due_date)
+    return progress
+
+
 def summarize(path, metadata):
     try:
         item_id = item_slug(metadata.get("id"), "id")
@@ -159,14 +207,17 @@ def summarize(path, metadata):
         for key in ("last_review", "next_review"):
             value = metadata.get(key)
             summary[key] = read_date(value).isoformat() if value is not None else None
+        if "completed_design_rounds" in metadata:
+            summary["completed_design_rounds"] = metadata["completed_design_rounds"]
         return summary
     except ValueError as error:
         raise ValueError(f"Invalid item {path.name}: {error}") from error
 
 
-def show(item_id):
+def show(item_id, intervals, retry_days):
     path = ITEMS / f"{item_id}.md"
-    metadata, _ = read_note(path)
+    metadata, body = read_note(path)
+    metadata.update(design_progress(metadata, body, intervals, retry_days))
     return {
         **summarize(path, metadata),
         "prompt": read_text_field(metadata, "prompt", required=True),
@@ -174,13 +225,14 @@ def show(item_id):
     }
 
 
-def due(today):
+def due(today, intervals, retry_days):
     day = today.isoformat()
     queue = {"date": day, "overdue": [], "today": [], "unstarted": [], "upcoming": []}
     for path in ITEMS.glob("*.md"):
-        metadata, _ = read_note(path)
+        metadata, body = read_note(path)
         if metadata.get("status") == "archived":
             continue
+        metadata.update(design_progress(metadata, body, intervals, retry_days))
         summary = summarize(path, metadata)
         next_review = summary["next_review"]
         if next_review is None:
@@ -224,6 +276,8 @@ def add(payload, flows):
             "prompt": prompt, "review_count": 0, "stage": 0,
             "last_review": None, "next_review": None, "attempt_ids": [],
         }
+        if domain == "system-design":
+            metadata["completed_design_rounds"] = 0
         if source:
             metadata["source"] = source
         body = f"# {' '.join(title.splitlines())}\n\n"
@@ -248,6 +302,7 @@ def record(item_id, payload, day, intervals, retry_days, archive_after_final=Fal
     path = ITEMS / f"{item_id}.md"
     with item_lock(item_id):
         metadata, body = read_note(path)
+        metadata.update(design_progress(metadata, body, intervals, retry_days))
         summary = summarize(path, metadata)
         if summary["status"] == "archived":
             raise ValueError(f"{item_id} is archived")
@@ -266,21 +321,11 @@ def record(item_id, payload, day, intervals, retry_days, archive_after_final=Fal
         if stage >= len(intervals):
             raise ValueError(f"{item_id} stage is outside interval_days")
         previous_due = summary["next_review"]
-        archived = False
-        if outcome != "independent":
-            next_review = day + timedelta(days=retry_days)
-        elif previous_due is None:
-            stage = 0
-            next_review = day + timedelta(days=intervals[stage])
-        elif day < read_date(previous_due):
-            next_review = read_date(previous_due)
-        elif archive_after_final and stage == len(intervals) - 1:
-            # Passing the final interval on time completes the schedule.
-            archived = True
-            next_review = None
-        else:
-            stage = min(stage + 1, len(intervals) - 1)
-            next_review = day + timedelta(days=intervals[stage])
+        completed = metadata.get("completed_design_rounds")
+        stage, next_review = schedule_round(stage, previous_due, completed, outcome, day, intervals, retry_days, archive_after_final)
+        archived = next_review is None
+        if completed is not None and outcome != "incomplete":
+            metadata["completed_design_rounds"] = completed + 1
 
         review_count = summary["review_count"] + 1
         metadata.update(
@@ -321,9 +366,9 @@ def main():
         day = read_date(args.date) if args.date is not None else date.today()
         intervals, retry_days, flows, archive_after_final = load_config()
         if args.command == "due":
-            result = due(day)
+            result = due(day, intervals, retry_days)
         elif args.command == "show":
-            result = show(item_slug(args.id, "id"))
+            result = show(item_slug(args.id, "id"), intervals, retry_days)
         elif args.command == "add":
             result = add(read_payload(args.item_file), flows)
         else:
