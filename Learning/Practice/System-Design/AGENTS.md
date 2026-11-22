@@ -74,8 +74,8 @@ The first five steps establish functional requirements coverage; the full six-st
 2. **Core Entities**: core entities and their relationships, focused on business concepts rather than full schemas.
 3. **API or Interface**: core interfaces (REST, gRPC, or WebSocket), focused on inputs and outputs.
 4. **Data Flow**: the complete path from a user request to final storage or a response.
-5. **High-Level Design**: core components and their connections, shown in a Mermaid architecture diagram.
-6. **Deep Dives**: examine 2-3 components to address scaling, consistency, and availability.
+5. **High-Level Design**: let the learner trace each agreed functional requirement through the minimum components and connections in the architecture diagram.
+6. **Deep Dives**: select up to three challenges from the agreed non-functional requirements and assess the design choices against those targets.
 
 Let the learner think at each step. Offer hints when they are stuck rather than directly supplying answers.
 
