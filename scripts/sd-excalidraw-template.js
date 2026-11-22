@@ -31,6 +31,7 @@ const sections = [
   { title: '4. Data Flow\n\nWrite Flow:\n\nRead Flow:', fontSize: 20, y: 2547, color: "#1e1e1e" },
   { title: "5. High-Level Design", fontSize: 28, y: 3747, color: "#1971c2" },
   { title: "6. Deep Dives", fontSize: 28, y: 4947, color: "#1971c2" },
+  { title: "7. Final Design", fontSize: 28, y: 6147, color: "#1971c2" },
 ];
 
 const elements = sections.map((s, i) => {
