@@ -44,7 +44,7 @@ function byDue(a, b) {
     a.path.localeCompare(b.path)
   );
 }
-function designProgress(page, history, intervals) {
+function designProgress(page, history, intervals, retryDays) {
   if (page.domain !== "system-design") return {};
   if (Number.isInteger(page.completed_design_rounds))
     return { completed: page.completed_design_rounds };
@@ -53,18 +53,30 @@ function designProgress(page, history, intervals) {
     return {};
   const full = entries.filter(m => !["incomplete", "未完成"].includes(m[4]));
   const completed = full.length;
-  const last = full.at(-1);
-  if (page.status === "active" && last && last === entries.at(-1) && completed <= 2 && last[1] === dateKey(page.last_review)) {
-    const stage = Math.min(completed - 1, intervals.length - 1);
-    return { completed, stage, nextReview: shiftDay(last[1], intervals[stage]) };
+  if (!entries.length || page.status !== "active" || entries.at(-1)[1] !== dateKey(page.last_review))
+    return { completed };
+  let stage = 0, nextReview = null, finished = 0;
+  for (const [, day, , , outcome] of entries) {
+    const complete = !["incomplete", "未完成"].includes(outcome);
+    if (complete) finished += 1;
+    if (complete && finished <= 2) {
+      stage = Math.min(finished - 1, intervals.length - 1);
+    } else if (!["independent", "独立完成"].includes(outcome)) {
+      nextReview = shiftDay(day, retryDays);
+      continue;
+    } else {
+      if (day < nextReview) continue;
+      stage = Math.min(stage + 1, intervals.length - 1);
+    }
+    nextReview = shiftDay(day, intervals[stage]);
   }
-  return { completed };
+  return { completed, stage, nextReview };
 }
-function buildSnapshot(pages, today, intervals, histories = new Map()) {
+function buildSnapshot(pages, today, intervals, histories = new Map(), retryDays = 1) {
   const items = [];
   for (const page of pages) {
     if (!["active", "archived"].includes(page.status)) continue;
-    const progress = designProgress(page, histories.get(page.file.path), intervals);
+    const progress = designProgress(page, histories.get(page.file.path), intervals, retryDays);
     const issues = [];
     const id = typeof page.id === "string" ? page.id : page.file.name;
     if (page.id !== page.file.name) issues.push("ID must match the filename");
@@ -238,7 +250,7 @@ function renderDashboard(
   const snapshot = buildSnapshot(
     Array.from(dv.pages('"Learning/Practice/Review/Items"')),
     today,
-    intervals, histories,
+    intervals, histories, config.retry_days,
   );
   root.createEl("p", {
     cls: "pr-subtitle",
@@ -520,7 +532,7 @@ function renderDashboard(
         text: `${item.id} · ${DOMAIN_LABELS[item.domain] ?? item.domain}`,
       });
       if (item.status === "active" && item.completed != null)
-        identity.createEl("small", { text: `Round ${item.completed + 1} · ${item.completed < 2 ? "Guided learning" : item.completed === 2 ? "First independent review" : "Independent review"}` });
+        identity.createEl("small", { text: `Round ${item.completed + 1} · ${item.completed < 2 ? "Guided learning" : item.completed === 2 ? "Mock interview (first independent review)" : "Mock interview"}` });
       const date = row.createEl("td");
       date.createEl("span", {
         text:

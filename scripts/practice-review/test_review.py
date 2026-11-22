@@ -112,7 +112,7 @@ def test_passing_final_interval_archives_item(vault):
     assert "&id" not in path.read_text(encoding="utf-8")
     assert "下次复习" not in body.split("### 2026-11-23")[1]
 
-    queue = review.due(date(2026, 11, 23), INTERVALS)
+    queue = review.due(date(2026, 11, 23), INTERVALS, RETRY)
     assert all(item["id"] != "lc-1" for key in ("overdue", "today", "unstarted", "upcoming")
                for item in queue[key])
     with pytest.raises(ValueError, match="archived"):
@@ -171,5 +171,10 @@ def test_each_design_gets_two_full_learning_rounds(vault):
     del metadata["completed_design_rounds"]
     metadata.update(stage=0, next_review=date(2026, 11, 23))
     review.write_note(path, metadata, body)
-    assert review.show("lc-1", INTERVALS)["next_review"] == "2026-11-25"
+    assert review.show("lc-1", INTERVALS, RETRY)["next_review"] == "2026-11-25"
     assert record(date(2026, 11, 25), "independent", "a3")["next_review"] == "2026-12-02"
+    metadata, body = read_item(path)
+    del metadata["completed_design_rounds"]
+    metadata.update(stage=1, next_review=date(2026, 11, 28))
+    review.write_note(path, metadata, body)
+    assert review.show("lc-1", INTERVALS, RETRY)["next_review"] == "2026-12-02"

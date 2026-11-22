@@ -21,7 +21,10 @@ Read and apply **English conversation and clarification** in `Learning/Practice/
 ## Coaching mode for this round
 
 Use the stable review item ID for this design problem across chats and sessions.
-Read its review summary with `review.py show <id>`. A new topic begins at zero.
+Check the review queue for that ID. For an existing item, read its summary with
+`review.py show <id>`. If the topic has no item yet, start guided round 1
+and register it during the confirmed completion save. If lookup fails, retry
+the lookup before choosing the round.
 Use `completed_design_rounds + 1` as the upcoming round. Each topic gets two
 full guided learning rounds, then full mock interviews. Announce the topic,
 round and mode. Assign a UUIDv4 to a new round and use it as its attempt ID.

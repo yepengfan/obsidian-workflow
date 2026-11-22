@@ -140,7 +140,23 @@ HISTORY_ROUND = re.compile(
 )
 
 
-def design_progress(metadata, body, intervals):
+def schedule_round(stage, previous_due, completed, outcome, day, intervals, retry_days, archive_after_final=False):
+    if completed is not None and completed < 2 and outcome != "incomplete":
+        stage = min(completed, len(intervals) - 1)
+    elif outcome != "independent":
+        return stage, day + timedelta(days=retry_days)
+    elif previous_due is None:
+        stage = 0
+    elif day < read_date(previous_due):
+        return stage, read_date(previous_due)
+    elif archive_after_final and stage == len(intervals) - 1:
+        return stage, None
+    else:
+        stage = min(stage + 1, len(intervals) - 1)
+    return stage, day + timedelta(days=intervals[stage])
+
+
+def design_progress(metadata, body, intervals, retry_days):
     if metadata["domain"] != "system-design":
         return {}
     count = metadata.get("completed_design_rounds")
@@ -153,13 +169,16 @@ def design_progress(metadata, body, intervals):
         int(en or zh) != i for i, (_, en, zh, _) in enumerate(history, 1)
     ):
         return {"completed_design_rounds": 0}
-    incomplete = ("incomplete", OUTCOMES["incomplete"])
-    completed = sum(entry[3] not in incomplete for entry in history)
+    completed = 0
+    stage, due_date = 0, None
+    translations = {label: key for key, label in OUTCOMES.items()}
+    for day, _, _, label in history:
+        outcome = translations.get(label, label)
+        stage, due_date = schedule_round(stage, due_date, completed, outcome, read_date(day), intervals, retry_days)
+        completed += outcome != "incomplete"
     progress = {"completed_design_rounds": completed}
-    if (0 < completed <= 2 and history[-1][3] not in incomplete
-            and history[-1][0] == str(metadata["last_review"]) and metadata["status"] == "active"):
-        stage = min(completed - 1, len(intervals) - 1)
-        progress.update(stage=stage, next_review=read_date(history[-1][0]) + timedelta(days=intervals[stage]))
+    if history and history[-1][0] == str(metadata["last_review"]) and metadata["status"] == "active":
+        progress.update(stage=stage, next_review=due_date)
     return progress
 
 
@@ -195,10 +214,10 @@ def summarize(path, metadata):
         raise ValueError(f"Invalid item {path.name}: {error}") from error
 
 
-def show(item_id, intervals):
+def show(item_id, intervals, retry_days):
     path = ITEMS / f"{item_id}.md"
     metadata, body = read_note(path)
-    metadata.update(design_progress(metadata, body, intervals))
+    metadata.update(design_progress(metadata, body, intervals, retry_days))
     return {
         **summarize(path, metadata),
         "prompt": read_text_field(metadata, "prompt", required=True),
@@ -206,14 +225,14 @@ def show(item_id, intervals):
     }
 
 
-def due(today, intervals):
+def due(today, intervals, retry_days):
     day = today.isoformat()
     queue = {"date": day, "overdue": [], "today": [], "unstarted": [], "upcoming": []}
     for path in ITEMS.glob("*.md"):
         metadata, body = read_note(path)
         if metadata.get("status") == "archived":
             continue
-        metadata.update(design_progress(metadata, body, intervals))
+        metadata.update(design_progress(metadata, body, intervals, retry_days))
         summary = summarize(path, metadata)
         next_review = summary["next_review"]
         if next_review is None:
@@ -283,7 +302,7 @@ def record(item_id, payload, day, intervals, retry_days, archive_after_final=Fal
     path = ITEMS / f"{item_id}.md"
     with item_lock(item_id):
         metadata, body = read_note(path)
-        metadata.update(design_progress(metadata, body, intervals))
+        metadata.update(design_progress(metadata, body, intervals, retry_days))
         summary = summarize(path, metadata)
         if summary["status"] == "archived":
             raise ValueError(f"{item_id} is archived")
@@ -302,27 +321,11 @@ def record(item_id, payload, day, intervals, retry_days, archive_after_final=Fal
         if stage >= len(intervals):
             raise ValueError(f"{item_id} stage is outside interval_days")
         previous_due = summary["next_review"]
-        archived = False
         completed = metadata.get("completed_design_rounds")
+        stage, next_review = schedule_round(stage, previous_due, completed, outcome, day, intervals, retry_days, archive_after_final)
+        archived = next_review is None
         if completed is not None and outcome != "incomplete":
             metadata["completed_design_rounds"] = completed + 1
-        if completed is not None and completed < 2 and outcome != "incomplete":
-            stage = min(completed, len(intervals) - 1)
-            next_review = day + timedelta(days=intervals[stage])
-        elif outcome != "independent":
-            next_review = day + timedelta(days=retry_days)
-        elif previous_due is None:
-            stage = 0
-            next_review = day + timedelta(days=intervals[stage])
-        elif day < read_date(previous_due):
-            next_review = read_date(previous_due)
-        elif archive_after_final and stage == len(intervals) - 1:
-            # Passing the final interval on time completes the schedule.
-            archived = True
-            next_review = None
-        else:
-            stage = min(stage + 1, len(intervals) - 1)
-            next_review = day + timedelta(days=intervals[stage])
 
         review_count = summary["review_count"] + 1
         metadata.update(
@@ -363,9 +366,9 @@ def main():
         day = read_date(args.date) if args.date is not None else date.today()
         intervals, retry_days, flows, archive_after_final = load_config()
         if args.command == "due":
-            result = due(day, intervals)
+            result = due(day, intervals, retry_days)
         elif args.command == "show":
-            result = show(item_slug(args.id, "id"), intervals)
+            result = show(item_slug(args.id, "id"), intervals, retry_days)
         elif args.command == "add":
             result = add(read_payload(args.item_file), flows)
         else:
