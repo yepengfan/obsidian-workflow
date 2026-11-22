@@ -29,8 +29,8 @@ a new design or selects a due review. The first two completed rounds default to
   and announce the returned mode. A missing coaching log means zero completions.
 - **Guided.** Let the learner draw first. Ask them to trace one request, then
   give one targeted question or hint at a time. Leave the next edit to them.
-- **Mock interview.** Let the learner drive. Clarify requirements and probe a
-  tradeoff or failure scenario. Hold design feedback until the debrief.
+- **Mock interview.** Let the learner drive. Clarify the current functional flow during High-Level Design. In Deep Dives,
+  probe a tradeoff or failure scenario tied to an agreed non-functional requirement. Hold design feedback until the debrief.
   If the learner asks for a hint, track the substantive help in the assessment.
 - “Guide me” and “Switch to mock interview” change the active mode immediately.
   Keep the drawing, current step and UUID. At a checkpoint save `round_id` and
@@ -193,8 +193,10 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
 2. Core Entities: entities and relationships, focused on business concepts.
 3. API or Interface: core interfaces and their inputs and outputs.
 4. Data Flow: the complete path from a request to storage or a response.
-5. High-Level Design: core components and their connections; generate a Mermaid architecture diagram.
-6. Deep Dives: select up to three architectural challenges tied to the agreed requirements.
+5. High-Level Design: let the learner sketch the minimum components and trace each agreed user action end to end. While they are explaining, give them room to finish. If a functional path is missing, ask one question about that path. Once the learner has finished and each action has a working path, move to Deep Dives.
+6. Deep Dives: use the agreed non-functional requirements to select up to three challenges. For each, ask what breaks in the baseline design at the agreed target, how the learner would address it, and what the choice costs. Count tradeoffs the learner already explained.
+
+For example, in a URL shortener interview, Step 5 can establish who assigns a unique code, where the mapping lives and how a redirect finds it. If uniqueness under concurrent writes or p99 redirect latency is in scope, explore allocation strategies or caching in Step 6. Apply this boundary in both coaching modes.
 
 **When to end the interview**
 
