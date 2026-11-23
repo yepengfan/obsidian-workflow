@@ -139,7 +139,9 @@ Untimed reviews have an idle timer and zero elapsed time. Paused time is exclude
 Deduplicate by review timestamp and sequence. Only record supplied measurements, and assess the
 design independently of elapsed time.
 
-At existing checkpoints, preserve an **Assessment** section in progress.md for this round. Record the relevant Core Concepts, Key Technologies and selected Design Patterns, including which are supporting. For each essential objective retain its completion criterion, status (open, demonstrated, or assessed with a gap), and a brief observation from the learner’s work. Record remaining essential gaps separately from optional future learning. Include the active-time budget, last verified elapsed time and measurement source (or unknown), and the decision to continue, pause or conclude with its reason. Restore this state across sittings and mode changes. Follow the existing save-confirmation rules.
+Track the reference-derived objectives privately throughout the attempt. For each one, keep its knowledge category, primary or supporting role, completion criterion, status (open, demonstrated, or assessed with a gap) and evidence.
+
+Before the debrief, keep every learner-visible checkpoint, save preview and progress.md neutral in both modes. Record the current stage, the learner's stated choices and open questions, the active-time budget, verified elapsed time and source (or unknown), and whether the round continues or pauses. Keep reference-derived targets, pattern names, criteria and gap assessments private. On resume, rebuild the private assessment from the matching references and reconcile it with the learner's recorded evidence and canvas before asking another question. At the debrief, present the objectives, evidence, remaining essential gaps, optional future learning and stopping reason. Include them in progress.md on the existing confirmed save.
 
 Checkpoint roughly every 3-5 exchanges rather than on every reply.
 
@@ -207,7 +209,7 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
 
 Before every follow-up or canvas-review request, update objective statuses from the conversation, canvas and saved progress. Apply these rules in order:
 
-1. An explicit finish request or verified active time at the limit triggers Phase 2 immediately, including with open objectives. The maximum is 45 minutes per round across sittings; honor a shorter agreed budget. Use trustworthy timer measurements or learner-confirmed active time. Count each measured interval once across stopwatch pauses, resets and resumes. An idle timer, an unknown interval or the calendar age of a checkpoint cannot establish elapsed practice time. A request to pause keeps an unfinished round resumable.
+1. An explicit finish request or verified active time at the limit triggers Phase 2 immediately, including with open objectives. Across sittings, use the shortest of the configured System Design limit (review_time_limits.system-design in the practice-review module), 45 minutes, and any shorter agreed budget. Use trustworthy timer measurements or learner-confirmed active time. Count each measured interval once across stopwatch pauses, resets and resumes. An idle timer, an unknown interval or the calendar age of a checkpoint cannot establish elapsed practice time. A request to pause keeps an unfinished round resumable.
 2. If the current stage is sufficiently assessed, advance without another question. Once all essential objectives have been assessed, deliver the final review in the same turn. An evidenced gap can be a final finding.
 3. Otherwise ask one question only if its answer could materially change the assessment of an essential objective. If none could, proceed to the final review. Capture secondary gaps and optional improvements for future learning.
 
