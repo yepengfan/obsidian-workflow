@@ -86,6 +86,12 @@ When `/practice` hands off to a new problem without a topic, ask for a new probl
 
 4. Tell the learner: "The Solution folder is ready. Open Excalidraw to start drawing." Include its wikilink.
 
+### Discover the assessment objectives
+
+Once the topic is known, prepare privately before the first interview question in either mode, including scheduled reviews. Resolve the topic through the Question Breakdowns index described in the module guide. Read the matching breakdown, then look up relevant notes in `Learning/Practice/System-Design/Core Concepts/`, `Key Technologies/` and `Design Patterns/` (all under the same System-Design folder). Read only notes relevant to this problem. If a reference is missing, use the available sources and the agreed scope; identify any unsupported assessment as such in the debrief.
+
+Choose essential objectives and distinguish supporting knowledge. For each essential objective, specify its stage, knowledge category, and what the learner could demonstrate to satisfy it. Refine the selection once requirements are agreed. Keep reference solutions, pattern names and expected mechanisms out of the neutral prompt and public checkpoint summary before the independent attempt. The learner may demonstrate the same understanding through a different sound design.
+
 ### Pre-created roadmap problems
 
 A learning plan may create Solution skeletons before practice begins. Their progress.md uses `tags: [system-design/planned]`, with all six steps marked ⬜.
@@ -106,7 +112,7 @@ A learning plan may create Solution skeletons before practice begins. Their prog
      - Update that step's Progress marker (⬜/🔄/✅) to reflect actual completion.
      - Update the next-step section to the current next action so resumption does not use a stale pointer.
    - If both agree, or Excalidraw contains only template placeholders, resume from progress.md's next step.
-4. Continue from the recorded next step without asking again about content already clear on the canvas. Focus on missing or empty parts. If the next-step section is empty and the canvas contains only placeholders, begin at Step 1.
+4. Restore the assessment state described below. For older checkpoints, reconstruct it once from the reference, saved progress and canvas. Apply the completion check before continuing. Continue from the recorded next step without asking again about content already clear on the canvas. Focus on missing or empty parts. If the next-step section is empty and the canvas contains only placeholders, begin at Step 1.
 
 > [!NOTE] Template placeholders are not learner content. `node scripts/sd-excalidraw-template.js` pre-fills the following fixed skeleton, which does not establish that a step is complete:
 > - Headings such as `Design: <topic>`, `1. Requirements`, `Functional Requirements`, `Non-Functional Requirements`, `Below the line (out of scope)`, `Back-of-Envelope`, `2. Core Entities`, `3. API / Interface`, `4. Data Flow`, `Write Flow:`, `Read Flow:`, `5. High-Level Design`, and `6. Deep Dives`.
@@ -132,6 +138,8 @@ successful review. When the learner starts a timer, retain its start timestamp.
 Untimed reviews have an idle timer and zero elapsed time. Paused time is excluded.
 Deduplicate by review timestamp and sequence. Only record supplied measurements, and assess the
 design independently of elapsed time.
+
+At existing checkpoints, preserve an **Assessment** section in progress.md for this round. Record the relevant Core Concepts, Key Technologies and selected Design Patterns, including which are supporting. For each essential objective retain its completion criterion, status (open, demonstrated, or assessed with a gap), and a brief observation from the learner’s work. Record remaining essential gaps separately from optional future learning. Include the active-time budget, last verified elapsed time and measurement source (or unknown), and the decision to continue, pause or conclude with its reason. Restore this state across sittings and mode changes. Follow the existing save-confirmation rules.
 
 Checkpoint roughly every 3-5 exchanges rather than on every reply.
 
@@ -192,18 +200,16 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
 2. Core Entities: entities and relationships, focused on business concepts.
 3. API or Interface: core interfaces and their inputs and outputs.
 4. Data Flow: the complete path from a request to storage or a response.
-5. High-Level Design: let the learner sketch the minimum components and trace each agreed user action end to end. While they are explaining, give them room to finish. If a functional path is missing, ask one question about that path. Once the learner has finished and each action has a working path, move to Deep Dives.
-6. Deep Dives: use the agreed non-functional requirements to select up to three challenges. For each, ask what breaks in the baseline design at the agreed target, how the learner would address it, and what the choice costs. Count tradeoffs the learner already explained.
-
-For example, in a URL shortener interview, Step 5 can establish who assigns a unique code, where the mapping lives and how a redirect finds it. If uniqueness under concurrent writes or p99 redirect latency is in scope, explore allocation strategies or caching in Step 6. Apply this boundary in both coaching modes.
+5. High-Level Design: let the learner finish tracing each agreed functional flow through the baseline architecture. Assess the essential Core Concepts and Key Technologies through those flows: what each component does and why its technology or architectural tradeoff fits. Advance once the flow and those choices have been assessed.
+6. Deep Dives: select up to three primary Design Patterns supported by the breakdown and agreed requirements. For each, assess the mechanism, a relevant failure scenario and the essential tradeoff. Supporting concepts and technologies can clarify that mechanism. For Dropbox, when Handling Large Blobs is primary, assess how the design handles an interrupted large upload. Once sufficient evidence exists, record unrelated database concurrency questions as future learning.
 
 **When to end the interview**
 
-In both Guided and Mock Interview modes, check before each follow-up whether the learner has shown how the core flows meet the agreed requirements and explained the main tradeoffs for the selected deep dives. Count evidence already in the drawing, conversation and saved progress. At a checkpoint, include the agreed scope, selected deep dives and any remaining assessment gaps in the existing progress notes so a resumed chat can use the same stopping rule.
+Before every follow-up or canvas-review request, update objective statuses from the conversation, canvas and saved progress. Apply these rules in order:
 
-Once that evidence is sufficient, deliver the Phase 2 final review in the same turn. Ask a follow-up only when its answer could materially change the assessment of an agreed requirement or selected tradeoff. Leave optional extensions for the learner to request.
-
-An explicit request to finish or a confirmed end to the time budget also triggers the final review, even with gaps. Summarize strengths, decisions and remaining gaps using the available evidence, then offer to collect the reflection and save. A request to pause preserves the current step for resumption.
+1. An explicit finish request or verified active time at the limit triggers Phase 2 immediately, including with open objectives. The maximum is 45 minutes per round across sittings; honor a shorter agreed budget. Use trustworthy timer measurements or learner-confirmed active time. Count each measured interval once across stopwatch pauses, resets and resumes. An idle timer, an unknown interval or the calendar age of a checkpoint cannot establish elapsed practice time. A request to pause keeps an unfinished round resumable.
+2. If the current stage is sufficiently assessed, advance without another question. Once all essential objectives have been assessed, deliver the final review in the same turn. An evidenced gap can be a final finding.
+3. Otherwise ask one question only if its answer could materially change the assessment of an essential objective. If none could, proceed to the final review. Capture secondary gaps and optional improvements for future learning.
 
 **Step 5 diagram guidance**:
 
@@ -215,7 +221,7 @@ An explicit request to finish or a confirmed end to the time budget also trigger
 ## Phase 2 - Review the design
 
 1. Receive the learner's design as text or a diagram.
-2. Review:
+2. Assess the agreed objectives using the available evidence. Apply these lenses where relevant:
    - **Requirements coverage**: are all functional requirements met?
    - **Scalability**: can it support the target scale?
    - **Tradeoffs**: are the benefits and drawbacks of key decisions explicit?
@@ -223,7 +229,7 @@ An explicit request to finish or a confirmed end to the time budget also trigger
    - **Single points of failure**: are any present?
    - **Cost**: is the design overengineered?
 3. Compare it with an appropriate reference design and identify gaps and improvements.
-4. Present the final assessment, including any unmet requirements. Offer Phase 3 and follow its reflection and save-confirmation rules.
+4. Summarize strengths, evidenced gaps, objectives left unassessed and future learning. Record the stopping reason. Offer Phase 3 and follow its reflection and save-confirmation rules.
 
 ## Phase 3 - Save learning evidence
 

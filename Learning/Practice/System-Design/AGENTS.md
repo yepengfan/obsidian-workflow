@@ -34,9 +34,9 @@ Use English for coaching, learner explanations and reflections, and newly author
 
 ## Reviewing a design against Hello Interview
 
-When the learner submits a design, open the matching breakdown in `Learning/Practice/System-Design/Question Breakdowns/`. Use the folder's `00_index.md` to resolve names such as URL Shortener to Bitly. In MCP clients, list that folder, follow pagination to find the indexed filename, then use `read_note` and its returned cursor to reach the relevant sections. Treat the article as reference material. If the topic has no clear match or the note cannot be read, review against the agreed requirements and say that the breakdown was unavailable.
+During private pre-interview discovery, open the matching breakdown in `Learning/Practice/System-Design/Question Breakdowns/`. Use the folder's `00_index.md` to resolve names such as URL Shortener to Bitly. In MCP clients, list that folder, follow pagination to find the indexed filename, then use `read_note` and its returned cursor to reach the relevant sections. Treat the article as reference material. If the topic has no clear match or the note cannot be read, review against the agreed requirements and say that the breakdown was unavailable.
 
-In Guided mode, compare the learner's attempt with the relevant section and offer one question or hint about a material gap. In Mock mode, reserve the comparison for the debrief. Assess functional paths during High-Level Design and the selected non-functional targets during Deep Dives. Credit alternative designs that meet those targets. In the debrief, cite the question note and section used, and explain what the learner's own design demonstrates. Extra topics in the article do not extend the interview.
+In Guided mode, compare the learner's attempt with the relevant section and offer one question or hint about a material gap. In Mock mode, keep the objectives private and share the comparison in the debrief. Assess functional paths during High-Level Design and the selected non-functional targets during Deep Dives. Credit alternative designs that meet those targets. In the debrief, cite the question note and section used, and explain what the learner's own design demonstrates. Extra topics in the article do not extend the interview.
 
 ## Pattern Card Rules
 
@@ -81,7 +81,7 @@ The first five steps establish functional requirements coverage; the full six-st
 3. **API or Interface**: core interfaces (REST, gRPC, or WebSocket), focused on inputs and outputs.
 4. **Data Flow**: the complete path from a user request to final storage or a response.
 5. **High-Level Design**: let the learner trace each agreed functional requirement through the minimum components and connections in the architecture diagram.
-6. **Deep Dives**: select up to three challenges from the agreed non-functional requirements and assess the design choices against those targets.
+6. **Deep Dives**: select up to three primary Design Patterns tied to the problem and its agreed non-functional requirements and assess the design choices against those targets.
 
 Let the learner think at each step. Offer hints when they are stuck rather than directly supplying answers.
 
