@@ -387,12 +387,17 @@ def finish(topic, attempt, progress_path, day, config):
             "system-design/done" in tags and all(str(metadata.get(k)) == v for k, v in binding.items())
         ):
             raise ValueError("Session is not awaiting registration")
-        metadata.update(binding)
-        write_note(path, metadata, body)
+        confirmed = {"topic": topic, "attempt": attempt}
+        if metadata.get("confirmed_registration", confirmed) != confirmed:
+            raise ValueError("Session has a different confirmed registration")
+        if "system-design/wip" in tags:
+            metadata.update(binding, confirmed_registration=confirmed)
+            write_note(path, metadata, body)
         result = register()
         current, body = read_note(path)
         if any(str(current.get(k)) != v for k, v in binding.items()):
             raise ValueError("Session changed during registration")
+        current.pop("confirmed_registration", None)
         tags = current["tags"]
         current["tags"] = ["system-design/done" if t == "system-design/wip" else t
                            for t in ([tags] if isinstance(tags, str) else tags)]

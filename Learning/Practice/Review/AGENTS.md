@@ -60,8 +60,10 @@ Run these from the vault. The script also resolves paths relative to itself.
 python3 scripts/practice-review/review.py due
 python3 scripts/practice-review/review.py show lc-1071
 python3 scripts/practice-review/review.py add --item-file /path/to/item.json
-python3 scripts/practice-review/review.py record lc-1071 --attempt-file /path/to/attempt.json
+python3 scripts/practice-review/review.py finish --item-file /path/to/item.json --attempt-file /path/to/attempt.json
 ```
+
+For confirmed completion in every enrolled module, `finish` ensures the item exists, records the attempt and verifies its schedule. Pass the existing System Design `--progress-path` to close its session after verification. Reuse the original ID and date when retrying.
 
 `add` reads `id`, `domain`, `title`, and `prompt`. Optional fields are `source` and `review_focus`. `show` returns the prompt, source and scheduling metadata. Read the note itself after the attempt when comparing past evidence.
 
