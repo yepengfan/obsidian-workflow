@@ -161,7 +161,7 @@ test("the isolated Dataview custom view renders every module and handles interna
     all.some((el) => el.textContent.startsWith("Home could not refresh")),
     false,
   );
-  assert.ok(all.some((el) => el.textContent === "In progress 1"));
+  assert.ok(all.some((el) => el.textContent === "In progress 2"));
   const link = all.find(
     (el) => el.tag === "a" && el.textContent === "Dashboard ↗",
   );

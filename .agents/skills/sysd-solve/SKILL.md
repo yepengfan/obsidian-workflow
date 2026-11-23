@@ -48,7 +48,7 @@ round and mode. Assign a UUIDv4 to a new round and use it as its attempt ID.
 
 > [!WARNING] `Solutions/` content is excluded by `.gitignore`, except for `AGENTS.md` and `00_index.md`. To find WIP sessions, use shell `ls` to enumerate folders and read each `progress.md` frontmatter. Do not use `Glob` or `Grep`: they respect `.gitignore` and can silently return no results, causing a false conclusion that no session is in progress.
 
-For all resume decisions, a WIP folder qualifies only while its round has no recorded `round_completed_on` date. An ended round can have pending artifact saves. A scheduled review starts a fresh attempt even if an earlier folder for that topic still has pending saves.
+For all resume decisions, a WIP folder qualifies only while its round has no recorded `round_completed_on` date. Offer Finish registration for an ended WIP round. Reuse its saved topic ID, round ID and completion date. A scheduled review starts a fresh attempt even if an earlier folder for that topic still has pending saves.
 
 ### Automatic resumption with no arguments
 
@@ -272,5 +272,5 @@ Before every follow-up or canvas-review request, update objective statuses from 
 6. **Mark complete**:
    - One attempt uses the same Solution folder across steps, checkpoints and chats. On final completion, use the shared practice review registration and recording workflows: select or register the topic's review item, collect the learner's reflection and confirm the outcome. Use this round's stable attempt ID and actual completion date to record its spaced-repetition schedule once. If recording fails, keep the session resumable and retry the unfinished save.
    - When saving an ended round, record its actual local completion date as `round_completed_on` in progress.md even if the canvas save is pending. Pausing leaves this field unset.
-   - After the review record succeeds and agreed artifact saves are verified, replace `system-design/wip` with `system-design/done` in the Solution progress.md.
+   - Use the shared finish command with the progress path. It verifies the registration before marking the session done. Track outstanding artifact saves separately.
    - Retain progress.md, Excalidraw, Pattern cards, Logs, and Design Pattern / Key Technology documents as the complete practice record.
