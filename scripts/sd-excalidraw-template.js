@@ -23,15 +23,16 @@ function makeId() {
 const requirements = ['1. Requirements', 'Functional Requirements\n1.\n2.\n3.',
     'Non-Functional Requirements\n1.\n2.\n3.', 'Below the line (out of scope)\n1.\n2.',
     'Back-of-Envelope\n- read/write ratio:\n- QPS:\n- storage:'].join('\n\n');
+const fontSize = 20;
 const sections = [
-  { title: `Design: ${topic}`, fontSize: 36, y: 0, color: "#1e1e1e" },
-  { title: requirements, fontSize: 20, y: 192, color: "#1e1e1e" },
-  { title: "2. Core Entities", fontSize: 28, y: 1107, color: "#1971c2" },
-  { title: "3. API / Interface", fontSize: 28, y: 1827, color: "#1971c2" },
-  { title: '4. Data Flow\n\nWrite Flow:\n\nRead Flow:', fontSize: 20, y: 2547, color: "#1e1e1e" },
-  { title: "5. High-Level Design", fontSize: 28, y: 3747, color: "#1971c2" },
-  { title: "6. Deep Dives", fontSize: 28, y: 4947, color: "#1971c2" },
-  { title: "7. Final Design", fontSize: 28, y: 6147, color: "#1971c2" },
+  { title: `Design: ${topic}`, y: 0, color: "#1e1e1e" },
+  { title: requirements, y: 192, color: "#1e1e1e" },
+  { title: "2. Core Entities", y: 1107, color: "#1971c2" },
+  { title: "3. API / Interface", y: 1827, color: "#1971c2" },
+  { title: '4. Data Flow\n\nWrite Flow:\n\nRead Flow:', y: 2547, color: "#1e1e1e" },
+  { title: "5. High-Level Design", y: 3747, color: "#1971c2" },
+  { title: "6. Deep Dives", y: 4947, color: "#1971c2" },
+  { title: "7. Final Design", y: 6147, color: "#1971c2" },
 ];
 
 const elements = sections.map((s, i) => {
@@ -43,8 +44,8 @@ const elements = sections.map((s, i) => {
       type: "text",
       x: 100,
       y: s.y,
-      width: s.fontSize > 24 ? 500 : 350,
-      height: s.title.split("\n").length * s.fontSize * 1.25,
+      width: Math.max(350, ...s.title.split("\n").map(line => line.length * fontSize * 0.7)),
+      height: s.title.split("\n").length * fontSize * 1.25,
       angle: 0,
       strokeColor: s.color,
       backgroundColor: "transparent",
@@ -66,7 +67,7 @@ const elements = sections.map((s, i) => {
       link: null,
       locked: false,
       text: s.title,
-      fontSize: s.fontSize,
+      fontSize,
       fontFamily: 5,
       textAlign: "left",
       verticalAlign: "top",
@@ -97,7 +98,7 @@ const drawing = {
     currentItemRoughness: 1,
     currentItemOpacity: 100,
     currentItemFontFamily: 5,
-    currentItemFontSize: 20,
+    currentItemFontSize: fontSize,
     currentItemTextAlign: "left",
     currentItemStartArrowhead: null,
     currentItemEndArrowhead: "arrow",
