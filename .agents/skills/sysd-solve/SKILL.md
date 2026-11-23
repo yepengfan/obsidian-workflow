@@ -122,6 +122,10 @@ A learning plan may create Solution skeletons before practice begins. Their prog
 
 ## Automatic checkpoints during Phases 1 and 2
 
+Before advancing to the next numbered step, checkpoint the current session's exact Excalidraw drawing and progress.md in Obsidian. This includes leaving Deep Dives for the Final Design canvas section or debrief. Save the latest learner edits first and verify the drawing, then record the completed step and next step in progress.md. Treat this transition as a checkpoint even when fewer than three exchanges have passed. With transition autosave authorized, proceed without asking again at each step. Respect an explicit request to keep work unsaved.
+
+If either write fails, keep the drawing open and the transition pending. Report which file was verified and retry the outstanding write using the same session. Preserve concurrent edits. A checkpoint does not complete the round or advance spaced repetition. Honor an explicit finish request with the debrief even if a save is pending.
+
 During guidance, read and update progress.md when any of these conditions applies:
 
 1. **A step changes status**: ⬜ becomes 🔄 (in progress) or ✅ (complete). Update its Progress row and Notes.
