@@ -3,6 +3,7 @@
 
 import argparse
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -304,8 +305,6 @@ def record(item_id, payload, day, intervals, retry_days, archive_after_final=Fal
         metadata, body = read_note(path)
         metadata.update(design_progress(metadata, body, intervals, retry_days))
         summary = summarize(path, metadata)
-        if summary["status"] == "archived":
-            raise ValueError(f"{item_id} is archived")
         attempt_ids = metadata.get("attempt_ids", [])
         if not isinstance(attempt_ids, list) or not all(
             isinstance(value, str) for value in attempt_ids
@@ -314,6 +313,8 @@ def record(item_id, payload, day, intervals, retry_days, archive_after_final=Fal
         if attempt_id in attempt_ids:
             return {**summary, "recorded": False}
 
+        if summary["status"] == "archived":
+            raise ValueError(f"{item_id} is archived")
         last_review = summary["last_review"]
         if last_review is not None and day < read_date(last_review):
             raise ValueError(f"Review date precedes the last review of {item_id}")
@@ -349,6 +350,56 @@ def record(item_id, payload, day, intervals, retry_days, archive_after_final=Fal
         return {**summarize(path, metadata), "recorded": True}
 
 
+def finish(topic, attempt, progress_path, day, config):
+    intervals, retry_days, flows, archive = config
+    item_id = item_slug(topic.get("id"), "id")
+    attempt_id = read_text_field(attempt, "attempt_id", required=True)
+    if not ATTEMPT_ID.fullmatch(attempt_id):
+        raise ValueError("Invalid attempt_id")
+
+    def register():
+        add(topic, flows)
+        record(item_id, attempt, day, intervals, retry_days, archive)
+        path = ITEMS / f"{item_id}.md"
+        saved, _ = read_note(path)
+        receipt = summarize(path, saved)
+        if attempt_id not in saved["attempt_ids"] or (
+            receipt["status"] == "active" and not receipt["next_review"]
+        ):
+            raise ValueError("Registration could not be verified")
+        return {**receipt, "verified": True, "attempt_id": attempt_id}
+
+    if progress_path is None:
+        return register()
+    path = (ROOT / progress_path).resolve()
+    solutions = (ROOT / "Learning/Practice/System-Design/Solutions").resolve()
+    if topic["domain"] != "system-design" or path.parent.parent != solutions or path.name != "progress.md":
+        raise ValueError("Invalid session progress path")
+    # Serialize finalizers for this folder even if they supply different topic IDs.
+    with item_lock("session." + hashlib.sha256(str(path).encode()).hexdigest()):
+        metadata, body = read_note(path)
+        tags = metadata.get("tags", [])
+        tags = [tags] if isinstance(tags, str) else tags
+        binding = {"round_id": attempt_id, "review_item_id": item_id, "round_completed_on": day.isoformat()}
+        if any(metadata.get(key) is not None and str(metadata[key]) != value for key, value in binding.items()):
+            raise ValueError("Session round does not match registration")
+        if "system-design/wip" not in tags and not (
+            "system-design/done" in tags and all(str(metadata.get(k)) == v for k, v in binding.items())
+        ):
+            raise ValueError("Session is not awaiting registration")
+        metadata.update(binding)
+        write_note(path, metadata, body)
+        result = register()
+        current, body = read_note(path)
+        if any(str(current.get(k)) != v for k, v in binding.items()):
+            raise ValueError("Session changed during registration")
+        tags = current["tags"]
+        current["tags"] = ["system-design/done" if t == "system-design/wip" else t
+                           for t in ([tags] if isinstance(tags, str) else tags)]
+        write_note(path, current, body)
+        return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--date", metavar="YYYY-MM-DD", help="Use this local date")
@@ -360,6 +411,10 @@ def main():
     record_parser = commands.add_parser("record", help="Record an ended practice round")
     record_parser.add_argument("id")
     record_parser.add_argument("--attempt-file", type=Path, required=True)
+    finish_parser = commands.add_parser("finish", help="Register and verify a confirmed round")
+    finish_parser.add_argument("--item-file", type=Path, required=True)
+    finish_parser.add_argument("--attempt-file", type=Path, required=True)
+    finish_parser.add_argument("--progress-path", type=Path)
     args = parser.parse_args()
 
     try:
@@ -371,6 +426,9 @@ def main():
             result = show(item_slug(args.id, "id"), intervals, retry_days)
         elif args.command == "add":
             result = add(read_payload(args.item_file), flows)
+        elif args.command == "finish":
+            result = finish(read_payload(args.item_file), read_payload(args.attempt_file),
+                            args.progress_path, day, (intervals, retry_days, flows, archive_after_final))
         else:
             result = record(
                 item_slug(args.id, "id"), read_payload(args.attempt_file),

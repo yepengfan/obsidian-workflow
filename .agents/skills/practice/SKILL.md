@@ -23,7 +23,7 @@ At a fresh practice entry, check enabled System Design practice for saved
 in-progress sessions before presenting the choices. Use the session catalog
 when available. In a local vault, list the direct session folders under
 `Learning/Practice/System-Design/Solutions/` and inspect their `progress.md`
-frontmatter for the exact `system-design/wip` tag and no recorded `round_completed_on` date. An ended round with pending artifact saves is ineligible for any resume prompt, including when its next review is due. Planned and completed
+frontmatter for the exact `system-design/wip` tag and no recorded `round_completed_on` date. For an ended WIP round, offer Finish registration separately. Check the review history first, collect missing reflection or confirmation and finish with the original ID and date. If registration already succeeded, recover the session closeout without counting it twice. Planned and completed
 sessions do not qualify. Keep saved sessions separate from the due counts.
 
 With one unfinished session, name it and ask whether to resume. With several,
