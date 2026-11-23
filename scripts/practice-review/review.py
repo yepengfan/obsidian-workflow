@@ -370,6 +370,8 @@ def finish(topic, attempt, progress_path, day, config):
         return {**receipt, "verified": True, "attempt_id": attempt_id}
 
     if progress_path is None:
+        if topic["domain"] == "system-design":
+            raise ValueError("System Design requires its session progress path")
         return register()
     path = (ROOT / progress_path).resolve()
     solutions = (ROOT / "Learning/Practice/System-Design/Solutions").resolve()
@@ -380,6 +382,11 @@ def finish(topic, attempt, progress_path, day, config):
         metadata, body = read_note(path)
         tags = metadata.get("tags", [])
         tags = [tags] if isinstance(tags, str) else tags
+        if metadata.get("review_item_id") is None:
+            saved_topic = metadata.get("topic")
+            title = read_text_field(topic, "title", required=True)
+            if not isinstance(saved_topic, str) or saved_topic.strip().lower() != title.strip().lower():
+                raise ValueError("Session topic does not match review title")
         binding = {"round_id": attempt_id, "review_item_id": item_id, "round_completed_on": day.isoformat()}
         if any(metadata.get(key) is not None and str(metadata[key]) != value for key, value in binding.items()):
             raise ValueError("Session round does not match registration")

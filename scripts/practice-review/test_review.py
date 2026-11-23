@@ -193,6 +193,12 @@ def test_finish_recovers_same_design_round(vault, monkeypatch):
     topic = {"id": "dropbox", "title": "Dropbox", "domain": domain, "prompt": "Design Dropbox."}
     attempt = {"attempt_id": "round-1", "outcome": "assisted", "reflection": "Resume uploads."}
     args = (topic, attempt, path, date(2026, 11, 23), (INTERVALS, RETRY, {domain: "flow.md"}, True))
+    with pytest.raises(ValueError, match="progress path"):
+        review.finish(topic, attempt, None, *args[3:])
+    with pytest.raises(ValueError, match="Session topic"):
+        review.finish({**topic, "title": "Bitly"}, *args[1:])
+    assert "round_id" not in review.read_note(path)[0]
+    assert not (review.ITEMS / "dropbox.md").exists()
     original_write = review.write_note
 
     def interrupt_close(target, fields, body):
