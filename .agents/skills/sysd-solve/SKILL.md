@@ -145,7 +145,7 @@ design independently of elapsed time.
 
 Track the reference-derived objectives privately throughout the attempt. For each one, keep its knowledge category, primary or supporting role, completion criterion, status (open, demonstrated, or assessed with a gap) and evidence.
 
-Before the debrief, keep every learner-visible checkpoint, save preview and progress.md neutral in both modes. Record the current stage, the learner's stated choices and open questions, the active-time budget, verified elapsed time and source (or unknown), and whether the round continues or pauses. Keep reference-derived targets, pattern names, criteria and gap assessments private. On resume, rebuild the private assessment from the matching references and reconcile it with the learner's recorded evidence and canvas before asking another question. At the debrief, present the objectives, evidence, remaining essential gaps, optional future learning and stopping reason. Include them in progress.md on the existing confirmed save.
+Before the debrief, keep every learner-visible checkpoint, save preview and progress.md neutral in both modes. Record the current stage, the learner's stated choices and open questions, the applicable mock check-in threshold and decision, verified elapsed time and source (or unknown), and whether the round continues or pauses. Keep reference-derived targets, pattern names, criteria and gap assessments private. On resume, rebuild the private assessment from the matching references and reconcile it with the learner's recorded evidence and canvas before asking another question. At the debrief, present the objectives, evidence, remaining essential gaps, optional future learning and stopping reason. Include them in progress.md on the existing confirmed save.
 
 Checkpoint roughly every 3-5 exchanges rather than on every reply.
 
@@ -213,9 +213,10 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
 
 Before every follow-up or canvas-review request, update objective statuses from the conversation, canvas and saved progress. Apply these rules in order:
 
-1. An explicit finish request or verified active time at the limit triggers Phase 2 immediately, including with open objectives. Across sittings, use the shortest of the configured System Design limit (review_time_limits.system-design in the practice-review module), 45 minutes, and any shorter agreed budget. Use trustworthy timer measurements or learner-confirmed active time. Count each measured interval once across stopwatch pauses, resets and resumes. An idle timer, an unknown interval or the calendar age of a checkpoint cannot establish elapsed practice time. A request to pause keeps an unfinished round resumable.
-2. If the current stage is sufficiently assessed, advance without another question. Once all essential objectives have been assessed, deliver the final review in the same turn. An evidenced gap can be a final finding.
-3. Otherwise ask one question only if its answer could materially change the assessment of an essential objective. If none could, proceed to the final review. Capture secondary gaps and optional improvements for future learning.
+1. On a finish request, start Phase 2 immediately. On a pause request, save the open round for resumption.
+2. Once all essential objectives have been assessed, deliver the final review in the same turn. An evidenced gap can be a final finding. Advance past a sufficiently assessed stage. Ask a follow-up only when it could materially change the assessment of an essential objective in the current stage. Otherwise proceed to the debrief and capture optional improvements there.
+3. Guided learning is self-paced. In Mock mode, before the next substantive question, compare verified active mock minutes with `review_time_limits.system-design` in the practice-review module. When the threshold is reached or passed and objectives remain, ask “Would you like to continue until we finish, or move to the final review now?” Wait for the answer. If the learner continues, use the normal completion criteria for the rest of this round. If they finish, start Phase 2.
+4. Use stopwatch intervals or learner-confirmed active time. Exclude pauses and Guided intervals, and count each interval once across resets, mode switches and resumed sittings. Unknown elapsed time cannot trigger the check-in. Preserve verified active mock time and the check-in decision in the round checkpoint; restore them on resume. A new round starts with a fresh check-in.
 
 **Step 5 diagram guidance**:
 

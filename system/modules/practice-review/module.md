@@ -30,7 +30,7 @@ practice_flows:
   behavioral: Learning/Practice/Review/Flows/behavioral.md
 review_time_limits:
   algorithm: 30
-  system-design: 45
+  system-design: 60
   behavioral: 3
 interval_days: [1, 3, 7, 14, 60]
 retry_days: 1
