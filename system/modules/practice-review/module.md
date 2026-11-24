@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-11-11
-updated: 2026-11-22
+updated: 2026-11-24
 depends_on: [dashboard]
 requires:
   python: ">=3.10"
