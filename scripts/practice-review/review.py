@@ -336,14 +336,10 @@ def validate_concepts(values):
 
 
 def read_outcome(payload, domain):
-    if "outcome" not in payload or payload.get("outcome") in (None, ""):
-        if domain != "system-design":
-            raise ValueError("outcome must be independent, assisted or incomplete")
+    if "outcome" not in payload and domain == "system-design":
         return "completed"
     outcome = payload.get("outcome")
-    if not isinstance(outcome, str) or outcome not in OUTCOMES:
-        raise ValueError("outcome must be independent, assisted or incomplete")
-    if domain != "system-design" and outcome == "completed":
+    if not isinstance(outcome, str) or outcome not in {"independent", "assisted", "incomplete"}:
         raise ValueError("outcome must be independent, assisted or incomplete")
     return outcome
 
@@ -567,6 +563,15 @@ def question_outline(item_id=None, concept_ids=None):
 
 
 def migrate(intervals, retry_days, archive_after_final):
+    path = ITEMS / "sysd-url-shortener.md"
+    if path.is_file():
+        with item_lock("sysd-url-shortener"):
+            metadata, body = read_note(path)
+            if metadata.get("domain") == "system-design" and metadata.get("concept_ids") is None:
+                metadata["concept_ids"] = [
+                    "scaling.sharding", "consistency.replica-lag", "id.counter", "cache.expiry",
+                ]
+                write_note(path, metadata, body)
     backfill = design_profile.apply_backfill(ROOT)
     schedule = recalculate(intervals, retry_days, archive_after_final)
     with item_lock("system-design-profile"):
