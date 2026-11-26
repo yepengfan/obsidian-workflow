@@ -5,7 +5,7 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-11-11
-updated: 2026-11-26
+updated: 2026-11-27
 depends_on: [dashboard]
 requires:
   python: ">=3.10"
@@ -40,9 +40,7 @@ tags: [system/module]
 
 ## Overview
 
-System Design uses this module to schedule each completed round from the actual completion date and to rebuild an evidence-backed concept profile. Entering practice also offers to resume saved System Design sessions before starting a new topic. Run `python3 scripts/practice-review/review.py migrate` to backfill located observations, recalculate active System Design dates, and rebuild the profile. Other modules keep their outcome schedule.
-
-Manage algorithm, system design, and behavioral interview practice through one due queue. Conversations and learner responses use English throughout reviews and new practice, including direct entries into the domain workflows. Clarify unclear replies before assessing their meaning or saving reflections. Each ended round saves the learner's own reflection and schedules the next review from actual performance. See `Learning/Practice/Review/AGENTS.md` for the shared conversation rules.
+Manage algorithm, system design, and behavioral interview practice through one due queue. See `Learning/Practice/Review/AGENTS.md` for conversation rules, domain scheduling, evidence-backed profiles, and the migration procedure.
 
 ## Architecture
 

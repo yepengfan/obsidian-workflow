@@ -45,18 +45,40 @@ function byDue(a, b) {
     a.path.localeCompare(b.path)
   );
 }
-function designProgress(page, history, intervals, retryDays, archiveAfterFinal) {
+function designProgress(
+  page,
+  history,
+  intervals,
+  retryDays,
+  archiveAfterFinal,
+) {
   if (page.domain !== "system-design") return {};
   const stored = Number.isInteger(page.completed_design_rounds)
     ? { completed: page.completed_design_rounds }
     : {};
-  const entries = [...(history ?? "").matchAll(/^### (\d{4}-\d{2}-\d{2}) · (?:Round (\d+)|第 (\d+) 轮)\s*\n\*\*(independent|assisted|incomplete|completed|独立完成|提示后完成|未完成|已完成)\*\* · /gmu)];
-  if (entries.length !== page.review_count || entries.some((m, i) => Number(m[2] ?? m[3]) !== i + 1))
+  const entries = [
+    ...(history ?? "").matchAll(
+      /^### (\d{4}-\d{2}-\d{2}) · (?:Round (\d+)|第 (\d+) 轮)\s*\n\*\*(independent|assisted|incomplete|completed|独立完成|提示后完成|未完成|已完成)\*\* · /gmu,
+    ),
+  ];
+  if (
+    entries.length !== page.review_count ||
+    entries.some((m, i) => Number(m[2] ?? m[3]) !== i + 1)
+  )
     return stored;
-  const completed = entries.filter(m => !["incomplete", "未完成"].includes(m[4])).length;
-  if (!entries.length || page.status !== "active" || entries.at(-1)[1] !== dateKey(page.last_review))
+  const completed = entries.filter(
+    (m) => !["incomplete", "未完成"].includes(m[4]),
+  ).length;
+  if (
+    !entries.length ||
+    page.status !== "active" ||
+    entries.at(-1)[1] !== dateKey(page.last_review)
+  )
     return { ...stored, completed };
-  let stage = 0, nextReview = null, finished = 0, archived = false;
+  let stage = 0,
+    nextReview = null,
+    finished = 0,
+    archived = false;
   for (const [, day, , , outcome] of entries) {
     if (archived) continue;
     const complete = !["incomplete", "未完成"].includes(outcome);
@@ -69,13 +91,31 @@ function designProgress(page, history, intervals, retryDays, archiveAfterFinal) 
     archived = archiveAfterFinal && finished > intervals.length;
     nextReview = archived ? null : shiftDay(day, intervals[stage]);
   }
-  return { completed, stage, nextReview, status: archived ? "archived" : "active" };
+  return {
+    completed,
+    stage,
+    nextReview,
+    status: archived ? "archived" : "active",
+  };
 }
-function buildSnapshot(pages, today, intervals, histories = new Map(), retryDays = 1, archiveAfterFinal = false) {
+function buildSnapshot(
+  pages,
+  today,
+  intervals,
+  histories = new Map(),
+  retryDays = 1,
+  archiveAfterFinal = false,
+) {
   const items = [];
   for (const page of pages) {
     if (!["active", "archived"].includes(page.status)) continue;
-    const progress = designProgress(page, histories.get(page.file.path), intervals, retryDays, archiveAfterFinal);
+    const progress = designProgress(
+      page,
+      histories.get(page.file.path),
+      intervals,
+      retryDays,
+      archiveAfterFinal,
+    );
     const status = progress.status ?? page.status;
     const issues = [];
     const id = typeof page.id === "string" ? page.id : page.file.name;
@@ -89,11 +129,14 @@ function buildSnapshot(pages, today, intervals, histories = new Map(), retryDays
       Number.isInteger(page.stage) &&
       page.stage >= 0 &&
       page.stage < intervals.length
-        ? progress.stage ?? page.stage
+        ? (progress.stage ?? page.stage)
         : null;
     if (stage === null) issues.push("Invalid scheduling stage");
-    const nextReview =
-      Object.hasOwn(progress, "nextReview") ? progress.nextReview : (page.next_review == null ? null : dateKey(page.next_review));
+    const nextReview = Object.hasOwn(progress, "nextReview")
+      ? progress.nextReview
+      : page.next_review == null
+        ? null
+        : dateKey(page.next_review);
     if (page.next_review != null && !dateKey(page.next_review))
       issues.push("Invalid next review date");
     const lastReview =
@@ -192,7 +235,8 @@ function renderDashboard(
     now = () => new Date(),
     page = globalThis.document,
     window: win = globalThis.window,
-    container, histories,
+    container,
+    histories,
   } = {},
 ) {
   const root = container
@@ -250,7 +294,10 @@ function renderDashboard(
   const snapshot = buildSnapshot(
     Array.from(dv.pages('"Learning/Practice/Review/Items"')),
     today,
-    intervals, histories, config.retry_days, config.archive_after_final === true,
+    intervals,
+    histories,
+    config.retry_days,
+    config.archive_after_final === true,
   );
   root.createEl("p", {
     cls: "pr-subtitle",
@@ -532,7 +579,9 @@ function renderDashboard(
         text: `${item.id} · ${DOMAIN_LABELS[item.domain] ?? item.domain}`,
       });
       if (item.status === "active" && item.completed != null)
-        identity.createEl("small", { text: `Round ${item.completed + 1} · ${item.completed < 2 ? "Guided learning" : item.completed === 2 ? "Mock interview (first independent review)" : item.completed === 5 ? "Final mock interview + summary and archive" : "Mock interview"}` });
+        identity.createEl("small", {
+          text: `Round ${item.completed + 1} · ${item.completed < 2 ? "Guided learning" : item.completed === 2 ? "Mock interview (first independent review)" : item.completed === 5 ? "Final mock interview + summary and archive" : "Mock interview"}`,
+        });
       const date = row.createEl("td");
       date.createEl("span", {
         text:
@@ -643,7 +692,11 @@ else {
     try {
       const histories = new Map();
       for (const p of dv.pages('"Learning/Practice/Review/Items"')) {
-        if (p.domain === "system-design" && p.status !== "archived" && p.review_count > 0)
+        if (
+          p.domain === "system-design" &&
+          p.status !== "archived" &&
+          p.review_count > 0
+        )
           histories.set(p.file.path, await dv.io.load(p.file.path));
       }
       renderDashboard(dv, input.app, { container: input.container, histories });

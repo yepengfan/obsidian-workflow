@@ -282,6 +282,8 @@ To create a brownbag session manually, copy the [Brownbag Session template](Temp
 2. **方案审核** — 审需求覆盖、可扩展性、trade-offs、单点故障、成本
 3. **沉淀** — 归类到已有 Pattern card 或新建 + 写当日 Log
 
+使用 `/practice system-design` 先完成到期复习，再开始新题。流程维护基于作答证据的概念画像和六轮复习序列。调度规则、画像重建及现有记录迁移见[复习指南](Learning/Practice/Review/AGENTS.md)。
+
 #### Feeds
 
 | Command | When to use |

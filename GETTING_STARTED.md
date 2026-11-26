@@ -43,7 +43,7 @@ updated: 2026-03-29
 
 ### Python
 
-本地系统设计练习需要 Python 3.10+，使用标准库即可。间隔复习还需要 PyYAML。运行 `python3 --version` 可检查版本。
+本地系统设计练习及其画像、间隔复习需要 Python 3.10+ 和 PyYAML。运行 `python3 --version` 可检查版本。
 
 如果你要用 AI Digest 或 GitHub Trending，需要 Python 3.13+：
 
