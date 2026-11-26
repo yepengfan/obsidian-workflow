@@ -461,8 +461,9 @@ test("terminal replay honors archive policy and leaves other domains active", ()
     DESIGN_SAMPLE.retry_days,
     false,
   );
-  assert.equal(snapshot.items[0].status, "active");
-  assert.equal(snapshot.items[0].nextReview, "2027-03-20");
+  assert.equal(snapshot.counts.archived, 1);
+  assert.equal(snapshot.items[0].status, "archived");
+  assert.equal(snapshot.items[0].nextReview, null);
   const algorithm = buildSnapshot(
     [{ ...page, domain: "algorithm" }],
     "2027-01-20",
@@ -473,6 +474,53 @@ test("terminal replay honors archive policy and leaves other domains active", ()
   );
   assert.equal(algorithm.items[0].status, "active");
   assert.equal(algorithm.items[0].nextReview, page.next_review);
+});
+test("system design closes at round six for shorter and longer intervals", () => {
+  for (const intervals of [
+    [1, 3, 7],
+    [1, 3, 7, 14, 60, 90],
+  ]) {
+    const steps = [];
+    let day = "2026-11-20";
+    for (let number = 0; number < 6; number += 1) {
+      steps.push({ date: day, outcome: "assisted" });
+      const page = legacyDesign(steps);
+      const snapshot = buildSnapshot(
+        [page],
+        day,
+        intervals,
+        new Map([[page.file.path, designHistory(steps)]]),
+        1,
+        false,
+      );
+      const shown = snapshot.items[0];
+      if (number < 5) {
+        const next = shiftDay(day, intervals[Math.min(number, intervals.length - 1)]);
+        assert.equal(shown.status, "active");
+        assert.equal(shown.nextReview, next);
+        day = next;
+      } else {
+        assert.equal(shown.status, "archived");
+        assert.equal(shown.nextReview, null);
+        assert.equal(shown.completed, 6);
+      }
+    }
+    const algorithm = buildSnapshot(
+      [item("algo", { review_count: 6, stage: 4, last_review: day, next_review: day })],
+      day,
+      intervals,
+      new Map([
+        [
+          "Learning/Practice/Review/Items/algo.md",
+          designHistory(steps),
+        ],
+      ]),
+      1,
+      false,
+    );
+    assert.equal(algorithm.items[0].status, "active");
+    assert.equal(algorithm.items[0].nextReview, day);
+  }
 });
 test("terminal legacy topics render in archived history without round seven", async (t) => {
   const steps = DESIGN_SAMPLE.rounds;

@@ -7,7 +7,7 @@ import json
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -607,24 +607,88 @@ def test_recalculate_six_legacy_completions_normalizes_lifecycle(vault, archive)
     metadata, _ = read_item(path)
     review.write_note(path, metadata, history)
     queue = review.due(date(2027, 1, 20), INTERVALS, RETRY, archive)
-    assert bool(queue["upcoming"]) is (not archive)
+    assert not queue["upcoming"]
     assert not queue["unstarted"]
     shown = review.show("lc-1", INTERVALS, RETRY, archive)
-    assert shown["status"] == ("archived" if archive else "active")
+    assert shown["status"] == "archived"
     report = review.recalculate(INTERVALS, RETRY, archive)
     assert len(report["updated"]) == 1
     metadata, body = read_item(path)
-    assert metadata["status"] == ("archived" if archive else "active")
+    assert metadata["status"] == "archived"
     assert metadata["completed_design_rounds"] == 6
     assert metadata["last_review"] == date(2027, 1, 19)
+    assert metadata["archived_on"] == date(2027, 1, 19)
+    assert metadata["next_review"] is None
     assert body == history
-    if archive:
-        assert metadata["archived_on"] == date(2027, 1, 19)
-        assert metadata["next_review"] is None
-    else:
-        assert metadata["next_review"] == date(2027, 3, 20)
-        assert "archived_on" not in metadata
     assert not review.recalculate(INTERVALS, RETRY, archive)["updated"]
+
+
+def test_design_completion_closes_at_round_six_for_other_interval_lengths(vault):
+    for intervals in ([1, 3, 7], [1, 3, 7, 14, 60, 90]):
+        item_id = f"sd-{len(intervals)}"
+        path = vault / "Learning/Practice/Review/Items" / f"{item_id}.md"
+        review.write_note(path, {
+            "id": item_id, "domain": "system-design", "title": "Bitly",
+            "status": "active", "prompt": "Design Bitly.", "review_count": 0,
+            "stage": 0, "last_review": None, "next_review": None, "attempt_ids": [],
+        }, "# Bitly\n\n## 练习记录\n")
+        day = date(2026, 11, 20)
+        for number in range(1, 6):
+            result = review.record(item_id, {
+                "attempt_id": f"r{number}", "outcome": "assisted", "reflection": "done",
+            }, day, intervals, 1, False)
+            day += timedelta(days=intervals[min(number - 1, len(intervals) - 1)])
+            assert result["next_review"] == day.isoformat()
+            assert result["status"] == "active"
+            assert result["completed_design_rounds"] == number
+        retry = review.record(item_id, {
+            "attempt_id": "r6-retry", "outcome": "incomplete", "reflection": "not yet",
+        }, day, intervals, 1, True)
+        assert retry["status"] == "active"
+        assert retry["completed_design_rounds"] == 5
+        assert retry["next_review"] == (day + timedelta(days=1)).isoformat()
+        final_day = day + timedelta(days=1)
+        final = review.record(item_id, {
+            "attempt_id": "r6", "outcome": "assisted", "reflection": "final",
+        }, final_day, intervals, 1, False)
+        assert final["status"] == "archived"
+        assert final["next_review"] is None
+        assert final["completed_design_rounds"] == 6
+        saved, _ = read_item(path)
+        assert saved["archived_on"] == final_day
+    algorithm = review.schedule_round(
+        4, date(2026, 12, 1), None, "independent", date(2026, 12, 2),
+        [1, 3, 7, 14, 60], 1, False,
+    )
+    assert algorithm == (4, date(2027, 1, 31))
+
+
+def test_round_six_summary_follows_the_fixed_round_not_the_interval_length(vault, monkeypatch):
+    review_root = vault / "Learning/Practice/Review"
+    monkeypatch.setattr(review, "REVIEW", review_root)
+    (review_root / "Content").mkdir(exist_ok=True)
+    (review_root / "Content/system-design.md").touch()
+    (vault / "flow.md").touch()
+    for intervals in ([1, 3, 7], [1, 3, 7, 14, 60, 90]):
+        item_id = f"summary-{len(intervals)}"
+        topic = {"id": item_id, "title": "Bitly", "domain": "system-design", "prompt": "Design Bitly."}
+        config = (intervals, 1, {"system-design": "flow.md"}, False)
+        day = date(2026, 11, 20)
+        for number in range(1, 7):
+            path = vault / "Learning/Practice/System-Design/Solutions" / f"{item_id}-r{number}" / "progress.md"
+            path.parent.mkdir(parents=True)
+            review.write_note(path, {"topic": "Bitly", "tags": ["system-design/wip"]}, "# Bitly\n")
+            receipt = review.finish(
+                topic, {"attempt_id": f"r{number}", "reflection": "done"}, path, day, config,
+            )
+            if number < 6:
+                assert receipt["status"] == "active"
+                assert "## Round summary" not in path.read_text(encoding="utf-8")
+                day = date.fromisoformat(receipt["next_review"])
+            else:
+                assert receipt["status"] == "archived"
+                assert receipt["attempt_completed_round"] == 6
+                assert path.read_text(encoding="utf-8").count("## Round summary") == 1
 
 
 def prepare_design_finish(vault, monkeypatch):

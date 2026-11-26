@@ -32,6 +32,7 @@ OUTCOMES = {
     "independent": "独立完成", "assisted": "提示后完成", "incomplete": "未完成",
     "completed": "已完成",
 }
+DESIGN_ROUNDS = 6
 
 
 def read_note(path):
@@ -154,12 +155,10 @@ def schedule_round(stage, previous_due, completed, outcome, day, intervals, retr
     if completed is not None:
         if outcome == "incomplete":
             return stage, day + timedelta(days=retry_days)
-        final = len(intervals) - 1
-        if completed >= len(intervals):
-            if archive_after_final:
-                return stage, None
-            return final, day + timedelta(days=intervals[final])
-        stage = min(completed, final)
+        # Six rounds are fixed. Intervals only choose the date between rounds.
+        if completed >= DESIGN_ROUNDS - 1:
+            return stage, None
+        stage = min(completed, len(intervals) - 1)
         return stage, day + timedelta(days=intervals[stage])
     if outcome != "independent":
         return stage, day + timedelta(days=retry_days)
@@ -194,12 +193,13 @@ def design_progress(metadata, body, intervals, retry_days, archive_after_final=F
     archived_on = None
     for day, _, _, label in history:
         outcome = translations.get(label, label)
-        stage, due_date = schedule_round(
-            stage, due_date, completed, outcome, read_date(day), intervals, retry_days, archive_after_final,
-        )
+        if archived_on is None:
+            stage, due_date = schedule_round(
+                stage, due_date, completed, outcome, read_date(day), intervals, retry_days, archive_after_final,
+            )
+            if due_date is None:
+                archived_on = read_date(day)
         completed += outcome != "incomplete"
-        if due_date is None and archive_after_final and archived_on is None:
-            archived_on = read_date(day)
     progress = {"completed_design_rounds": completed}
     if history and history[-1][0] == str(metadata["last_review"]) and metadata["status"] == "active":
         progress.update(stage=stage, next_review=due_date)
@@ -500,7 +500,7 @@ def finish(topic, attempt, progress_path, day, config):
         tags = current["tags"]
         current["tags"] = ["system-design/done" if t == "system-design/wip" else t
                            for t in ([tags] if isinstance(tags, str) else tags)]
-        if result["attempt_completed_round"] == len(intervals) + 1 and "## Round summary" not in body:
+        if result["attempt_completed_round"] == DESIGN_ROUNDS and "## Round summary" not in body:
             body = body.rstrip() + "\n\n" + design_profile.round_summary(
                 problem_observations(item_id, path),
             )

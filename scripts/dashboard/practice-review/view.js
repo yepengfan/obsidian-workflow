@@ -50,7 +50,7 @@ function designProgress(
   history,
   intervals,
   retryDays,
-  archiveAfterFinal,
+  _archiveAfterFinal,
 ) {
   if (page.domain !== "system-design") return {};
   const stored = Number.isInteger(page.completed_design_rounds)
@@ -88,7 +88,7 @@ function designProgress(
     }
     stage = Math.min(finished, intervals.length - 1);
     finished += 1;
-    archived = archiveAfterFinal && finished > intervals.length;
+    archived = finished >= 6;
     nextReview = archived ? null : shiftDay(day, intervals[stage]);
   }
   return {
