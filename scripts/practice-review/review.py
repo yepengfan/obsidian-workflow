@@ -418,12 +418,23 @@ def finish(topic, attempt, progress_path, day, config):
         add(topic, flows)
         record(item_id, attempt, day, intervals, retry_days, archive)
         path = ITEMS / f"{item_id}.md"
-        saved, _ = read_note(path)
+        saved, history_body = read_note(path)
         receipt = summarize(path, saved)
         if attempt_id not in saved["attempt_ids"] or (
             receipt["status"] == "active" and not receipt["next_review"]
         ):
             raise ValueError("Registration could not be verified")
+        if saved["domain"] == "system-design":
+            attempt_number = saved["review_count"] - len(saved["attempt_ids"]) + saved["attempt_ids"].index(attempt_id) + 1
+            later_completions = sum(
+                label not in ("incomplete", OUTCOMES["incomplete"])
+                for _, en, zh, label in HISTORY_ROUND.findall(history_body)
+                if int(en or zh) > attempt_number
+            )
+            receipt["attempt_completed_round"] = (
+                saved["completed_design_rounds"] - later_completions
+                if read_outcome(attempt, saved["domain"]) != "incomplete" else None
+            )
         return {**receipt, "verified": True, "attempt_id": attempt_id}
 
     if progress_path is None:
@@ -472,7 +483,7 @@ def finish(topic, attempt, progress_path, day, config):
         tags = current["tags"]
         current["tags"] = ["system-design/done" if t == "system-design/wip" else t
                            for t in ([tags] if isinstance(tags, str) else tags)]
-        if result["status"] == "archived" and "## Round summary" not in body:
+        if result["attempt_completed_round"] == len(intervals) + 1 and "## Round summary" not in body:
             body = body.rstrip() + "\n\n" + design_profile.round_summary(
                 problem_observations(item_id, path),
             )

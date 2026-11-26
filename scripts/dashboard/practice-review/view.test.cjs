@@ -162,7 +162,7 @@ class Element {
     return [this, ...this.children.flatMap((p) => p.all())];
   }
 }
-function fixture(pages, { enabled = true, intervals = INTERVALS } = {}) {
+function fixture(pages, { enabled = true, intervals = INTERVALS, archiveAfterFinal = false } = {}) {
   const roots = [],
     cleanup = [],
     opened = [],
@@ -170,6 +170,7 @@ function fixture(pages, { enabled = true, intervals = INTERVALS } = {}) {
   const config = {
     enabled,
     interval_days: intervals,
+    archive_after_final: archiveAfterFinal,
     practice_flows: {
       algorithm: "algo-solve",
       "system-design": "sysd-solve",
@@ -360,4 +361,64 @@ test("the sixth round announces the final mock, summary and archive", async (t) 
   await mount(t, f);
   assert.ok(f.elements().some(p =>
     p.textContent === "Round 6 · Final mock interview + summary and archive"));
+});
+
+
+test("an omitted System Design outcome renders as completed", async (t) => {
+  const f = fixture([item("completed", { domain: "system-design", last_outcome: "completed" })]);
+  await mount(t, f);
+  assert.ok(f.elements().some(p => p.textContent === "Completed"));
+  assert.ok(!f.elements().some(p => p.textContent === "No recorded outcome"));
+});
+
+const DESIGN_SAMPLE = JSON.parse(fs.readFileSync(
+  __dirname + "/../../practice-review/fixtures/design-rounds.json", "utf8"));
+function designHistory(steps) {
+  return steps.map((step, i) =>
+    `### ${step.date} · Round ${i + 1}\n\n**${step.outcome}** · Next review legacy\n`).join("\n");
+}
+function legacyDesign(steps) {
+  return item("legacy", {
+    domain: "system-design", review_count: steps.length, stage: 0,
+    last_review: steps.at(-1).date, next_review: "2027-01-20",
+  });
+}
+test("dashboard replay follows each shared sample step, including terminal archive", () => {
+  const steps = [];
+  for (const step of DESIGN_SAMPLE.rounds) {
+    steps.push(step);
+    const snapshot = buildSnapshot([legacyDesign(steps)], step.date,
+      DESIGN_SAMPLE.intervals, new Map([["Learning/Practice/Review/Items/legacy.md", designHistory(steps)]]),
+      DESIGN_SAMPLE.retry_days, true);
+    assert.equal(snapshot.items[0].completed, step.completed_design_rounds);
+    assert.equal(snapshot.items[0].nextReview, step.next_review);
+    assert.equal(snapshot.items[0].status, step.status);
+    assert.equal(snapshot.counts.archived, step.status === "archived" ? 1 : 0);
+  }
+});
+test("terminal replay honors archive policy and leaves other domains active", () => {
+  const steps = DESIGN_SAMPLE.rounds;
+  const page = legacyDesign(steps);
+  const histories = new Map([[page.file.path, designHistory(steps)]]);
+  const snapshot = buildSnapshot([page], "2027-01-20", DESIGN_SAMPLE.intervals,
+    histories, DESIGN_SAMPLE.retry_days, false);
+  assert.equal(snapshot.items[0].status, "active");
+  assert.equal(snapshot.items[0].nextReview, "2027-03-20");
+  const algorithm = buildSnapshot([{...page, domain: "algorithm"}], "2027-01-20",
+    DESIGN_SAMPLE.intervals, histories, 1, true);
+  assert.equal(algorithm.items[0].status, "active");
+  assert.equal(algorithm.items[0].nextReview, page.next_review);
+});
+test("terminal legacy topics render in archived history without round seven", async (t) => {
+  const steps = DESIGN_SAMPLE.rounds;
+  const f = fixture([legacyDesign(steps)], { intervals: DESIGN_SAMPLE.intervals, archiveAfterFinal: true });
+  t.after(() => f.cleanup.forEach(fn => fn()));
+  renderDashboard(f.dv, f.app, {
+    now: () => new Date(2027, 0, 20, 12),
+    histories: new Map([["Learning/Practice/Review/Items/legacy.md", designHistory(steps)]]),
+  });
+  assert.ok(f.elements().some(p => p.textContent === "Archived 1"));
+  f.elements().find(p => p.textContent === "Archived 1").listeners.click();
+  assert.equal(f.elements().filter(p => p.cls === "pr-item-link").length, 1);
+  assert.ok(!f.elements().some(p => p.textContent.startsWith("Round 7")));
 });

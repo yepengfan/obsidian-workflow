@@ -7,6 +7,7 @@ const OUTCOME_LABELS = {
   independent: "Independent",
   assisted: "With help",
   incomplete: "Incomplete",
+  completed: "Completed",
 };
 const ICONS = {
   review:
@@ -44,7 +45,7 @@ function byDue(a, b) {
     a.path.localeCompare(b.path)
   );
 }
-function designProgress(page, history, intervals, retryDays) {
+function designProgress(page, history, intervals, retryDays, archiveAfterFinal) {
   if (page.domain !== "system-design") return {};
   const stored = Number.isInteger(page.completed_design_rounds)
     ? { completed: page.completed_design_rounds }
@@ -55,8 +56,9 @@ function designProgress(page, history, intervals, retryDays) {
   const completed = entries.filter(m => !["incomplete", "未完成"].includes(m[4])).length;
   if (!entries.length || page.status !== "active" || entries.at(-1)[1] !== dateKey(page.last_review))
     return { ...stored, completed };
-  let stage = 0, nextReview = null, finished = 0;
+  let stage = 0, nextReview = null, finished = 0, archived = false;
   for (const [, day, , , outcome] of entries) {
+    if (archived) continue;
     const complete = !["incomplete", "未完成"].includes(outcome);
     if (!complete) {
       nextReview = shiftDay(day, retryDays);
@@ -64,15 +66,17 @@ function designProgress(page, history, intervals, retryDays) {
     }
     stage = Math.min(finished, intervals.length - 1);
     finished += 1;
-    nextReview = shiftDay(day, intervals[stage]);
+    archived = archiveAfterFinal && finished > intervals.length;
+    nextReview = archived ? null : shiftDay(day, intervals[stage]);
   }
-  return { completed, stage, nextReview };
+  return { completed, stage, nextReview, status: archived ? "archived" : "active" };
 }
-function buildSnapshot(pages, today, intervals, histories = new Map(), retryDays = 1) {
+function buildSnapshot(pages, today, intervals, histories = new Map(), retryDays = 1, archiveAfterFinal = false) {
   const items = [];
   for (const page of pages) {
     if (!["active", "archived"].includes(page.status)) continue;
-    const progress = designProgress(page, histories.get(page.file.path), intervals, retryDays);
+    const progress = designProgress(page, histories.get(page.file.path), intervals, retryDays, archiveAfterFinal);
+    const status = progress.status ?? page.status;
     const issues = [];
     const id = typeof page.id === "string" ? page.id : page.file.name;
     if (page.id !== page.file.name) issues.push("ID must match the filename");
@@ -89,8 +93,8 @@ function buildSnapshot(pages, today, intervals, histories = new Map(), retryDays
         : null;
     if (stage === null) issues.push("Invalid scheduling stage");
     const nextReview =
-      progress.nextReview ?? (page.next_review == null ? null : dateKey(page.next_review));
-    if (page.next_review != null && !nextReview)
+      Object.hasOwn(progress, "nextReview") ? progress.nextReview : (page.next_review == null ? null : dateKey(page.next_review));
+    if (page.next_review != null && !dateKey(page.next_review))
       issues.push("Invalid next review date");
     const lastReview =
       page.last_review == null ? null : dateKey(page.last_review);
@@ -102,7 +106,7 @@ function buildSnapshot(pages, today, intervals, histories = new Map(), retryDays
         : "unknown";
     if (domain === "unknown") issues.push("Missing domain");
     const bucket =
-      page.status === "archived"
+      status === "archived"
         ? "archived"
         : issues.length
           ? "attention"
@@ -118,7 +122,7 @@ function buildSnapshot(pages, today, intervals, histories = new Map(), retryDays
       title: String(page.title || id),
       domain,
       path: page.file.path,
-      status: page.status,
+      status,
       rounds,
       completed: progress.completed,
       stage,
@@ -246,7 +250,7 @@ function renderDashboard(
   const snapshot = buildSnapshot(
     Array.from(dv.pages('"Learning/Practice/Review/Items"')),
     today,
-    intervals, histories, config.retry_days,
+    intervals, histories, config.retry_days, config.archive_after_final === true,
   );
   root.createEl("p", {
     cls: "pr-subtitle",
