@@ -23,7 +23,7 @@ At a fresh practice entry, check enabled System Design practice for saved
 in-progress sessions before presenting the choices. Use the session catalog
 when available. In a local vault, list the direct session folders under
 `Learning/Practice/System-Design/Solutions/` and inspect their `progress.md`
-frontmatter for the exact `system-design/wip` tag and no recorded `round_completed_on` date. An ended round with pending artifact saves is ineligible for any resume prompt, including when its next review is due. Planned and completed
+frontmatter for the exact `system-design/wip` tag and no recorded `round_completed_on` date. For an ended WIP round, offer Finish registration separately. Check the review history first, collect missing reflection or confirmation and finish with the original ID and date. If registration already succeeded, recover the session closeout without counting it twice. Planned and completed
 sessions do not qualify. Keep saved sessions separate from the due counts.
 
 With one unfinished session, name it and ask whether to resume. With several,
@@ -41,7 +41,7 @@ Resolve the module's authoritative workflow from `practice_flows` in the module 
 - Run `python3 scripts/practice-review/review.py due`. Filter `overdue` and `today` by the selected `domain`, ordered by `next_review` ascending and then stable ID. Briefly show the counts and review order, then start the first item without another mode or item-selection menu. `upcoming` and `unstarted` items are not due reviews.
 - If the learner explicitly selected a review item, use `show <id>` to verify that it is active and belongs to the selected module. Resolve a mismatched or unknown object before starting. Review that item first, then continue with the remaining due items.
 - For each item, run the selected-item procedure in `.agents/skills/practice-review-today/SKILL.md`: neutral prompt, domain-specific coaching mode, mapped workflow assessment, the learner's reflection, and confirmed recording. Wait for the learner's submission and reflection before advancing. Keep each item's own stable `attempt_id` through retries and follow-ups.
-- After recording an ended round, refresh `due` for this module and start its next due item automatically. An `assisted` or `incomplete` round follows the existing retry schedule; it does not require an immediate same-session repeat. A paused attempt or pending reflection remains on the current item.
+- For each System Design item show its date, upcoming round and mode using its completed_design_rounds. After recording an ended round, refresh `due` for this module and start its next due item automatically. The returned schedule accounts for the topic’s learning rounds; it does not require an immediate same-session repeat. A paused attempt or pending reflection remains on the current item.
 - When no due items remain, briefly confirm that the module's due reviews are complete and immediately enter **Start a new problem**. If there were none at the start, go straight there. Do not ask for permission to switch to new practice. Honor an explicit request to pause, stop or change direction.
 
 ## Start a new problem

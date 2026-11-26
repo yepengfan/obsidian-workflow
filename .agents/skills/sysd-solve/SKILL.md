@@ -20,13 +20,14 @@ Read and apply **English conversation and clarification** in `Learning/Practice/
 
 ## Coaching mode for this round
 
-Use one progression across all System Design topics, whether the learner starts
-a new design or selects a due review. The first two completed rounds default to
-`guided`. From round three onward the default is `mock_interview`.
-
-- At the start of a fresh round, assign a UUIDv4 (reuse the review's UUID as its
-  `attempt_id`). Run `python3 scripts/practice-review/design_coaching.py mode`
-  and announce the returned mode. A missing coaching log means zero completions.
+Use the stable review item ID for this design problem across chats and sessions.
+Check the review queue for that ID. For an existing item, read its summary with
+`review.py show <id>`. If the topic has no item yet, start guided round 1
+and register it during the confirmed completion save. If lookup fails, retry
+the lookup before choosing the round.
+Use `completed_design_rounds + 1` as the upcoming round. Each topic gets two
+full guided learning rounds, then full mock interviews. Announce the topic,
+round and mode. Assign a UUIDv4 to a new round and use it as its attempt ID.
 - **Guided.** Let the learner draw first. Ask them to trace one request, then
   give one targeted question or hint at a time. Leave the next edit to them.
 - **Mock interview.** Let the learner drive. Clarify the current functional flow during High-Level Design. In Deep Dives,
@@ -36,19 +37,18 @@ a new design or selects a due review. The first two completed rounds default to
   Keep the drawing, current step and UUID. At a checkpoint save `round_id` and
   `coaching_mode` in progress.md. Resume both on the same round. For a legacy
   checkpoint missing these fields, initialize them once. A new round starts
-  with its domain default. A review always starts with the neutral prompt and
+  with its topic default. A review always starts with the neutral prompt and
   keeps prior solutions closed until the attempt ends.
-- After an ended round and reflection, preview and confirm saving the coaching
-  completion. Run `python3 scripts/practice-review/design_coaching.py complete <uuid>`.
-  On a scheduled review, save its outcome first, using the same UUID. Retry any
-  unfinished save with its original UUID. Only confirmed completions count;
-  starting, switching, pausing and resuming leave the count alone.
+- After completion, reflection and confirmation, use the shared review recording
+  procedure once, with the same UUID. Checkpoints, resumes and retries keep that
+  ID. Record actual help during learning. Normal interviewer questions asking
+  the learner to explain their choices are compatible with independent work.
 
 ## Phase 0 - Initialize the Solution folder
 
 > [!WARNING] `Solutions/` content is excluded by `.gitignore`, except for `AGENTS.md` and `00_index.md`. To find WIP sessions, use shell `ls` to enumerate folders and read each `progress.md` frontmatter. Do not use `Glob` or `Grep`: they respect `.gitignore` and can silently return no results, causing a false conclusion that no session is in progress.
 
-For all resume decisions, a WIP folder qualifies only while its round has no recorded `round_completed_on` date. An ended round can have pending artifact saves. A scheduled review starts a fresh attempt even if an earlier folder for that topic still has pending saves.
+For all resume decisions, a WIP folder qualifies only while its round has no recorded `round_completed_on` date. Offer Finish registration for an ended WIP round. Reuse its saved topic ID, round ID and completion date. A scheduled review starts a fresh attempt even if an earlier folder for that topic still has pending saves.
 
 ### Automatic resumption with no arguments
 
@@ -86,6 +86,12 @@ When `/practice` hands off to a new problem without a topic, ask for a new probl
 
 4. Tell the learner: "The Solution folder is ready. Open Excalidraw to start drawing." Include its wikilink.
 
+### Discover the assessment objectives
+
+Once the topic is known, prepare privately before the first interview question in either mode, including scheduled reviews. Resolve the topic through the Question Breakdowns index described in the module guide. Read the matching breakdown, then look up relevant notes in `Learning/Practice/System-Design/Core Concepts/`, `Key Technologies/` and `Design Patterns/` (all under the same System-Design folder). Read only notes relevant to this problem. If a reference is missing, use the available sources and the agreed scope; identify any unsupported assessment as such in the debrief.
+
+Choose essential objectives and distinguish supporting knowledge. For each essential objective, specify its stage, knowledge category, and what the learner could demonstrate to satisfy it. Refine the selection once requirements are agreed. Keep reference solutions, pattern names and expected mechanisms out of the neutral prompt and public checkpoint summary before the independent attempt. The learner may demonstrate the same understanding through a different sound design.
+
 ### Pre-created roadmap problems
 
 A learning plan may create Solution skeletons before practice begins. Their progress.md uses `tags: [system-design/planned]`, with all six steps marked ⬜.
@@ -106,7 +112,7 @@ A learning plan may create Solution skeletons before practice begins. Their prog
      - Update that step's Progress marker (⬜/🔄/✅) to reflect actual completion.
      - Update the next-step section to the current next action so resumption does not use a stale pointer.
    - If both agree, or Excalidraw contains only template placeholders, resume from progress.md's next step.
-4. Continue from the recorded next step without asking again about content already clear on the canvas. Focus on missing or empty parts. If the next-step section is empty and the canvas contains only placeholders, begin at Step 1.
+4. Restore the assessment state described below. For older checkpoints, reconstruct it once from the reference, saved progress and canvas. Apply the completion check before continuing. Continue from the recorded next step without asking again about content already clear on the canvas. Focus on missing or empty parts. If the next-step section is empty and the canvas contains only placeholders, begin at Step 1.
 
 > [!NOTE] Template placeholders are not learner content. `node scripts/sd-excalidraw-template.js` pre-fills the following fixed skeleton, which does not establish that a step is complete:
 > - Headings such as `Design: <topic>`, `1. Requirements`, `Functional Requirements`, `Non-Functional Requirements`, `Below the line (out of scope)`, `Back-of-Envelope`, `2. Core Entities`, `3. API / Interface`, `4. Data Flow`, `Write Flow:`, `Read Flow:`, `5. High-Level Design`, and `6. Deep Dives`.
@@ -115,6 +121,10 @@ A learning plan may create Solution skeletons before practice begins. Their prog
 > Count these as draft content only after the learner adds or replaces them with actual text.
 
 ## Automatic checkpoints during Phases 1 and 2
+
+Before advancing to the next numbered step, checkpoint the current session's exact Excalidraw drawing and progress.md in Obsidian. This includes leaving Deep Dives for the Final Design canvas section or debrief. Save the latest learner edits first and verify the drawing, then record the completed step and next step in progress.md. Treat this transition as a checkpoint even when fewer than three exchanges have passed. Step-transition autosave is enabled for these two session files. Announce it when starting or resuming and checkpoint without a separate prompt at each step. If the learner opts out, skip both checkpoint writes and advance in chat. Set the session checkpoint’s **Saved** field to “Unsaved” and retain the active drawing and draft progress.
+
+If either write fails, keep the drawing open and the transition pending. Report which file was verified and retry the outstanding write using the same session. Preserve concurrent edits. A checkpoint does not complete the round or advance spaced repetition. Honor an explicit finish request with the debrief even if a save is pending.
 
 During guidance, read and update progress.md when any of these conditions applies:
 
@@ -127,12 +137,15 @@ Write only when state actually changes. An ordinary question such as "What is QP
 
 When a canvas client supplies review timing, retain it as optional session
 metadata. On the next approved progress.md save, append the submitted timing
-objects to the `canvas_reviews` frontmatter list. Preserve each review's UTC timestamp and sequence, the timer state, its selected
-duration, elapsed and remaining seconds, and the timed interval since the last
+objects to the `canvas_reviews` frontmatter list. Preserve each review's UTC timestamp and sequence, the stopwatch state, total elapsed seconds at the click, and the timed interval since the last
 successful review. When the learner starts a timer, retain its start timestamp.
 Untimed reviews have an idle timer and zero elapsed time. Paused time is excluded.
 Deduplicate by review timestamp and sequence. Only record supplied measurements, and assess the
 design independently of elapsed time.
+
+Track the reference-derived objectives privately throughout the attempt. For each one, keep its knowledge category, primary or supporting role, completion criterion, status (open, demonstrated, or assessed with a gap) and evidence.
+
+Before the debrief, keep every learner-visible checkpoint, save preview and progress.md neutral in both modes. Record the current stage, the learner's stated choices and open questions, the applicable mock check-in threshold and decision, verified elapsed time and source (or unknown), and whether the round continues or pauses. Keep reference-derived targets, pattern names, criteria and gap assessments private. On resume, rebuild the private assessment from the matching references and reconcile it with the learner's recorded evidence and canvas before asking another question. At the debrief, present the objectives, evidence, remaining essential gaps, optional future learning and stopping reason. Include them in progress.md on the existing confirmed save.
 
 Checkpoint roughly every 3-5 exchanges rather than on every reply.
 
@@ -193,18 +206,17 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
 2. Core Entities: entities and relationships, focused on business concepts.
 3. API or Interface: core interfaces and their inputs and outputs.
 4. Data Flow: the complete path from a request to storage or a response.
-5. High-Level Design: let the learner sketch the minimum components and trace each agreed functional requirement from its trigger to its outcome, including user requests, scheduled jobs and event-driven work where applicable. While they are explaining, give them room to finish. If a functional path is missing, ask one question about that path. Once the learner has finished and every agreed functional requirement has a working path, move to Deep Dives.
-6. Deep Dives: use the agreed non-functional requirements to select up to three challenges. For each, ask what breaks in the baseline design at the agreed target, how the learner would address it, and what the choice costs. Count tradeoffs the learner already explained.
-
-For example, in a URL shortener interview, Step 5 can establish who assigns a unique code, where the mapping lives and how a redirect finds it. If uniqueness under concurrent writes or p99 redirect latency is in scope, explore allocation strategies or caching in Step 6. Apply this boundary in both coaching modes.
+5. High-Level Design: let the learner sketch the minimum components and trace each agreed functional requirement from its trigger to its outcome, including user requests, scheduled jobs and event-driven work where applicable. Assess the essential Core Concepts and Key Technologies through those flows: what each component does and why its technology or architectural tradeoff fits. While they are explaining, give them room to finish. If a functional path is missing, ask one question about that path. Advance once every agreed functional requirement has a working path and those choices have been assessed.
+6. Deep Dives: select up to three primary Design Patterns supported by the breakdown and agreed requirements. For each, assess the mechanism, a relevant failure scenario and the essential tradeoff. Supporting concepts and technologies can clarify that mechanism. For Dropbox, when Handling Large Blobs is primary, assess how the design handles an interrupted large upload. Once sufficient evidence exists, record unrelated database concurrency questions as future learning.
 
 **When to end the interview**
 
-In both Guided and Mock Interview modes, check before each follow-up whether the learner has shown how the core flows meet the agreed requirements and explained the main tradeoffs for the selected deep dives. Count evidence already in the drawing, conversation and saved progress. At a checkpoint, include the agreed scope, selected deep dives and any remaining assessment gaps in the existing progress notes so a resumed chat can use the same stopping rule.
+Before every follow-up or canvas-review request, update objective statuses from the conversation, canvas and saved progress. Apply these rules in order:
 
-Once that evidence is sufficient, deliver the Phase 2 final review in the same turn. Ask a follow-up only when its answer could materially change the assessment of an agreed requirement or selected tradeoff. Leave optional extensions for the learner to request.
-
-An explicit request to finish or a confirmed end to the time budget also triggers the final review, even with gaps. Summarize strengths, decisions and remaining gaps using the available evidence, then offer to collect the reflection and save. A request to pause preserves the current step for resumption.
+1. On a finish request, start Phase 2 immediately. On a pause request, save the open round for resumption.
+2. Once all essential objectives have been assessed, deliver the final review in the same turn. An evidenced gap can be a final finding. Advance past a sufficiently assessed stage. Ask a follow-up only when it could materially change the assessment of an essential objective in the current stage. Otherwise proceed to the debrief and capture optional improvements there.
+3. Guided learning is self-paced. In Mock mode, before the next substantive question, compare verified active mock minutes with `review_time_limits.system-design` in the practice-review module. When the threshold is reached or passed and objectives remain, ask “Would you like to continue until we finish, or move to the final review now?” Wait for the answer. If the learner continues, use the normal completion criteria for the rest of this round. If they finish, start Phase 2.
+4. Use stopwatch intervals or learner-confirmed active time. Exclude pauses and Guided intervals, and count each interval once across resets, mode switches and resumed sittings. Unknown elapsed time cannot trigger the check-in. Preserve verified active mock time and the check-in decision in the round checkpoint; restore them on resume. A new round starts with a fresh check-in.
 
 **Step 5 diagram guidance**:
 
@@ -216,7 +228,7 @@ An explicit request to finish or a confirmed end to the time budget also trigger
 ## Phase 2 - Review the design
 
 1. Receive the learner's design as text or a diagram.
-2. Review:
+2. Assess the agreed objectives using the available evidence. Apply these lenses where relevant:
    - **Requirements coverage**: are all functional requirements met?
    - **Scalability**: can it support the target scale?
    - **Tradeoffs**: are the benefits and drawbacks of key decisions explicit?
@@ -224,7 +236,7 @@ An explicit request to finish or a confirmed end to the time budget also trigger
    - **Single points of failure**: are any present?
    - **Cost**: is the design overengineered?
 3. Compare it with an appropriate reference design and identify gaps and improvements.
-4. Present the final assessment, including any unmet requirements. Offer Phase 3 and follow its reflection and save-confirmation rules.
+4. Summarize strengths, evidenced gaps, objectives left unassessed and future learning. Record the stopping reason. Offer Phase 3 and follow its reflection and save-confirmation rules.
 
 ## Phase 3 - Save learning evidence
 
@@ -261,5 +273,5 @@ An explicit request to finish or a confirmed end to the time budget also trigger
 6. **Mark complete**:
    - One attempt uses the same Solution folder across steps, checkpoints and chats. On final completion, use the shared practice review registration and recording workflows: select or register the topic's review item, collect the learner's reflection and confirm the outcome. Use this round's stable attempt ID and actual completion date to record its spaced-repetition schedule once. If recording fails, keep the session resumable and retry the unfinished save.
    - When saving an ended round, record its actual local completion date as `round_completed_on` in progress.md even if the canvas save is pending. Pausing leaves this field unset.
-   - After the review record succeeds and agreed artifact saves are verified, replace `system-design/wip` with `system-design/done` in the Solution progress.md.
+   - Use the shared finish command with the progress path. It verifies the registration before marking the session done. Track outstanding artifact saves separately.
    - Retain progress.md, Excalidraw, Pattern cards, Logs, and Design Pattern / Key Technology documents as the complete practice record.

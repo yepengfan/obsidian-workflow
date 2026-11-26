@@ -88,8 +88,8 @@ return (async () => {
               .pop()
               .replace(/-\d{4}-\d{2}-\d{2}$/, ""),
         );
-        const status = p.round_completed_on && date(p.round_completed_on)
-          ? "done"
+        const status = list(p.file.tags).includes("#system-design/wip") && date(p.round_completed_on)
+          ? "Finish registration"
           : ["wip", "planned", "done"].find((s) =>
               list(p.file.tags).includes(`#system-design/${s}`),
             ) || "unknown";
@@ -130,6 +130,7 @@ return (async () => {
             label: "Session status",
             options: [
               ["", "All sessions"],
+              ["Finish registration", "Finish registration"],
               ["wip", "In progress"],
               ["planned", "Planned"],
               ["done", "Completed"],
@@ -139,8 +140,8 @@ return (async () => {
           },
         ],
         sort: (a, b) =>
-          ["wip", "planned", "done", "unknown"].indexOf(a.status) -
-            ["wip", "planned", "done", "unknown"].indexOf(b.status) ||
+          ["Finish registration", "wip", "planned", "done", "unknown"].indexOf(a.status) -
+            ["Finish registration", "wip", "planned", "done", "unknown"].indexOf(b.status) ||
           a.order - b.order ||
           a.path.localeCompare(b.path),
         columns: [

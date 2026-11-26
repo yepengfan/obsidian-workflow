@@ -112,7 +112,7 @@ def test_passing_final_interval_archives_item(vault):
     assert "&id" not in path.read_text(encoding="utf-8")
     assert "下次复习" not in body.split("### 2026-11-23")[1]
 
-    queue = review.due(date(2026, 11, 23))
+    queue = review.due(date(2026, 11, 23), INTERVALS, RETRY)
     assert all(item["id"] != "lc-1" for key in ("overdue", "today", "unstarted", "upcoming")
                for item in queue[key])
     with pytest.raises(ValueError, match="archived"):
@@ -156,3 +156,55 @@ def test_load_config_rejects_non_boolean_archive_flag(vault):
     write_module(vault, archive_after_final="yes")
     with pytest.raises(ValueError, match="archive_after_final"):
         review.load_config()
+
+
+def test_each_design_gets_two_full_learning_rounds(vault):
+    path = write_item(vault, domain="system-design")
+    record(date(2026, 11, 20), "incomplete", "ended-incomplete")
+    first = record(date(2026, 11, 21), "assisted")
+    assert first["next_review"] == "2026-11-22"
+    second = record(date(2026, 11, 22), "assisted", "a2")
+    assert second["next_review"] == "2026-11-25"
+    assert second["completed_design_rounds"] == 2
+    assert not record(date(2026, 11, 22), "assisted", "a2")["recorded"]
+    metadata, body = read_item(path)
+    del metadata["completed_design_rounds"]
+    metadata.update(stage=0, next_review=date(2026, 11, 23))
+    review.write_note(path, metadata, body)
+    assert review.show("lc-1", INTERVALS, RETRY)["next_review"] == "2026-11-25"
+    assert record(date(2026, 11, 25), "independent", "a3")["next_review"] == "2026-12-02"
+    metadata, body = read_item(path)
+    del metadata["completed_design_rounds"]
+    metadata.update(stage=1, next_review=date(2026, 11, 28))
+    review.write_note(path, metadata, body)
+    assert review.show("lc-1", INTERVALS, RETRY)["next_review"] == "2026-12-02"
+
+
+def test_finish_recovers_same_design_round(vault, monkeypatch):
+    domain = "system-design"
+    review_root = vault / "Learning/Practice/Review"
+    monkeypatch.setattr(review, "REVIEW", review_root)
+    (review_root / "Content").mkdir()
+    (review_root / "Content/system-design.md").touch()
+    (vault / "flow.md").touch()
+    path = vault / "Learning/Practice/System-Design/Solutions/Dropbox/progress.md"
+    path.parent.mkdir(parents=True)
+    review.write_note(path, {"tags": ["system-design/wip"], "topic": "Dropbox"}, "all six stages")
+    topic = {"id": "dropbox", "title": "Dropbox", "domain": domain, "prompt": "Design Dropbox."}
+    attempt = {"attempt_id": "round-1", "outcome": "assisted", "reflection": "Resume uploads."}
+    args = (topic, attempt, path, date(2026, 11, 23), (INTERVALS, RETRY, {domain: "flow.md"}, True))
+    original_write = review.write_note
+
+    def interrupt_close(target, fields, body):
+        if target == path and "system-design/done" in fields.get("tags", []):
+            raise OSError("interrupted after review write")
+        original_write(target, fields, body)
+
+    monkeypatch.setattr(review, "write_note", interrupt_close)
+    with pytest.raises(OSError):
+        review.finish(*args)
+    monkeypatch.setattr(review, "write_note", original_write)
+    for _ in range(2):
+        receipt = review.finish(*args)
+        assert receipt["review_count"] == 1 and str(receipt["next_review"]) == "2026-11-24"
+    assert review.read_note(path)[0]["tags"] == ["system-design/done"]

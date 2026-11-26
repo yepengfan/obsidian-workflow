@@ -44,10 +44,39 @@ function byDue(a, b) {
     a.path.localeCompare(b.path)
   );
 }
-function buildSnapshot(pages, today, intervals) {
+function designProgress(page, history, intervals, retryDays) {
+  if (page.domain !== "system-design") return {};
+  if (Number.isInteger(page.completed_design_rounds))
+    return { completed: page.completed_design_rounds };
+  const entries = [...(history ?? "").matchAll(/^### (\d{4}-\d{2}-\d{2}) · (?:Round (\d+)|第 (\d+) 轮)\s*\n\*\*(independent|assisted|incomplete|独立完成|提示后完成|未完成)\*\* · /gmu)];
+  if (entries.length !== page.review_count || entries.some((m, i) => Number(m[2] ?? m[3]) !== i + 1))
+    return {};
+  const full = entries.filter(m => !["incomplete", "未完成"].includes(m[4]));
+  const completed = full.length;
+  if (!entries.length || page.status !== "active" || entries.at(-1)[1] !== dateKey(page.last_review))
+    return { completed };
+  let stage = 0, nextReview = null, finished = 0;
+  for (const [, day, , , outcome] of entries) {
+    const complete = !["incomplete", "未完成"].includes(outcome);
+    if (complete) finished += 1;
+    if (complete && finished <= 2) {
+      stage = Math.min(finished - 1, intervals.length - 1);
+    } else if (!["independent", "独立完成"].includes(outcome)) {
+      nextReview = shiftDay(day, retryDays);
+      continue;
+    } else {
+      if (day < nextReview) continue;
+      stage = Math.min(stage + 1, intervals.length - 1);
+    }
+    nextReview = shiftDay(day, intervals[stage]);
+  }
+  return { completed, stage, nextReview };
+}
+function buildSnapshot(pages, today, intervals, histories = new Map(), retryDays = 1) {
   const items = [];
   for (const page of pages) {
     if (!["active", "archived"].includes(page.status)) continue;
+    const progress = designProgress(page, histories.get(page.file.path), intervals, retryDays);
     const issues = [];
     const id = typeof page.id === "string" ? page.id : page.file.name;
     if (page.id !== page.file.name) issues.push("ID must match the filename");
@@ -60,11 +89,11 @@ function buildSnapshot(pages, today, intervals) {
       Number.isInteger(page.stage) &&
       page.stage >= 0 &&
       page.stage < intervals.length
-        ? page.stage
+        ? progress.stage ?? page.stage
         : null;
     if (stage === null) issues.push("Invalid scheduling stage");
     const nextReview =
-      page.next_review == null ? null : dateKey(page.next_review);
+      progress.nextReview ?? (page.next_review == null ? null : dateKey(page.next_review));
     if (page.next_review != null && !nextReview)
       issues.push("Invalid next review date");
     const lastReview =
@@ -95,6 +124,7 @@ function buildSnapshot(pages, today, intervals) {
       path: page.file.path,
       status: page.status,
       rounds,
+      completed: progress.completed,
       stage,
       nextReview,
       lastReview,
@@ -162,7 +192,7 @@ function renderDashboard(
     now = () => new Date(),
     page = globalThis.document,
     window: win = globalThis.window,
-    container,
+    container, histories,
   } = {},
 ) {
   const root = container
@@ -220,7 +250,7 @@ function renderDashboard(
   const snapshot = buildSnapshot(
     Array.from(dv.pages('"Learning/Practice/Review/Items"')),
     today,
-    intervals,
+    intervals, histories, config.retry_days,
   );
   root.createEl("p", {
     cls: "pr-subtitle",
@@ -501,6 +531,8 @@ function renderDashboard(
       identity.createEl("small", {
         text: `${item.id} · ${DOMAIN_LABELS[item.domain] ?? item.domain}`,
       });
+      if (item.status === "active" && item.completed != null)
+        identity.createEl("small", { text: `Round ${item.completed + 1} · ${item.completed < 2 ? "Guided learning" : item.completed === 2 ? "Mock interview (first independent review)" : "Mock interview"}` });
       const date = row.createEl("td");
       date.createEl("span", {
         text:
@@ -607,9 +639,16 @@ if (typeof dv === "undefined")
     renderDashboard,
   };
 else {
-  try {
-    renderDashboard(dv, input.app, { container: input.container });
-  } catch (error) {
-    dv.paragraph(`Practice Review could not load: ${error.message}`);
-  }
+  return (async () => {
+    try {
+      const histories = new Map();
+      for (const p of dv.pages('"Learning/Practice/Review/Items"')) {
+        if (p.domain === "system-design" && p.completed_design_rounds == null && p.review_count > 0)
+          histories.set(p.file.path, await dv.io.load(p.file.path));
+      }
+      renderDashboard(dv, input.app, { container: input.container, histories });
+    } catch (error) {
+      dv.paragraph(`Practice Review could not load: ${error.message}`);
+    }
+  })();
 }
