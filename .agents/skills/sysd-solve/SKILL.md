@@ -25,9 +25,16 @@ Check the review queue for that ID. For an existing item, read its summary with
 `review.py show <id>`. If the topic has no item yet, start guided round 1
 and register it during the confirmed completion save. If lookup fails, retry
 the lookup before choosing the round.
-Use `completed_design_rounds + 1` as the upcoming round. Each topic gets two
-full guided learning rounds, then full mock interviews. Announce the topic,
-round and mode. Assign a UUIDv4 to a new round and use it as its attempt ID.
+Use `completed_design_rounds + 1` as the upcoming round. Rounds 1 and 2 are
+guided. Rounds 3 through 6 are mock interviews. Round 6 is the final mock,
+then cites existing observations, writes the round summary, and archives the topic. A completed
+round advances from its actual completion date regardless of whether the
+outcome is assisted, independent, or omitted. A pause does not advance.
+Announce the topic, round and mode. Assign a UUIDv4 to a new round and use it
+as its attempt ID. Run `python3 scripts/practice-review/review.py outline <id>`
+for a registered item. Before registration, run `python3 scripts/practice-review/review.py outline --concept-ids <concept-id> ...` using the topic's concept list and retain that list as `concept_ids` for completion registration. Run the outline before choosing deep-dive follow-ups. Ask this problem's concepts first, then
+the returned in-scope weak or uncovered concepts. Do not reveal the answer in
+the question, and do not ask about a concept that is outside this problem.
 - **Guided.** Let the learner draw first. Ask them to trace one request, then
   give one targeted question or hint at a time. Leave the next edit to them.
 - **Mock interview.** Let the learner drive. Clarify the current functional flow during High-Level Design. In Deep Dives,
@@ -207,7 +214,7 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
 3. API or Interface: core interfaces and their inputs and outputs.
 4. Data Flow: the complete path from a request to storage or a response.
 5. High-Level Design: let the learner sketch the minimum components and trace each agreed functional requirement from its trigger to its outcome, including user requests, scheduled jobs and event-driven work where applicable. Assess the essential Core Concepts and Key Technologies through those flows: what each component does and why its technology or architectural tradeoff fits. While they are explaining, give them room to finish. If a functional path is missing, ask one question about that path. Advance once every agreed functional requirement has a working path and those choices have been assessed.
-6. Deep Dives: select up to three primary Design Patterns supported by the breakdown and agreed requirements. For each, assess the mechanism, a relevant failure scenario and the essential tradeoff. Supporting concepts and technologies can clarify that mechanism. For Dropbox, when Handling Large Blobs is primary, assess how the design handles an interrupted large upload. Once sufficient evidence exists, record unrelated database concurrency questions as future learning.
+6. Deep Dives: ask the concepts and patterns in this problem's `concept_ids` before using profile follow-ups. Then use `outline` to revisit an in-scope weak point in a new scenario and to give an uncovered concept its first question. A mastered concept can take one variant. Select up to three primary Design Patterns supported by the breakdown and agreed requirements. For each, assess the mechanism, a relevant failure scenario and the essential tradeoff. Supporting concepts and technologies can clarify that mechanism. For Dropbox, when Handling Large Blobs is primary, assess how the design handles an interrupted large upload. Once sufficient evidence exists, record unrelated database concurrency questions as future learning.
 
 **When to end the interview**
 
@@ -271,7 +278,7 @@ Before every follow-up or canvas-review request, update objective statuses from 
    - If a referenced document is missing or an empty shell, tell the learner without automatically filling it in.
 
 6. **Mark complete**:
-   - One attempt uses the same Solution folder across steps, checkpoints and chats. On final completion, use the shared practice review registration and recording workflows: select or register the topic's review item, collect the learner's reflection and confirm the outcome. Use this round's stable attempt ID and actual completion date to record its spaced-repetition schedule once. If recording fails, keep the session resumable and retry the unfinished save.
+   - One attempt uses the same Solution folder across steps, checkpoints and chats. On final completion, use the shared practice review registration and recording workflows: select or register the topic's review item, collect the learner's reflection, and save one `concept_observations` entry per located answer. `performance` is `mastered`, `partial`, `weak`, or `uncovered`. Interviewer explanations are not learner evidence. Round 6 remains the final mock plus summary and archive. Save `concept_observations` for the learner's actual final-mock answers before writing the closing summary. The closing summary cites observations already saved and is not a new observation. System Design may omit `outcome`; scheduling uses the completed round. Use this round's stable attempt ID and actual completion date to record its spaced-repetition schedule once. If recording or the profile rebuild fails, keep the session resumable and retry the same attempt. A retry must not create a second round or a second copy of an observation.
    - When saving an ended round, record its actual local completion date as `round_completed_on` in progress.md even if the canvas save is pending. Pausing leaves this field unset.
    - Use the shared finish command with the progress path. It verifies the registration before marking the session done. Track outstanding artifact saves separately.
    - Retain progress.md, Excalidraw, Pattern cards, Logs, and Design Pattern / Key Technology documents as the complete practice record.

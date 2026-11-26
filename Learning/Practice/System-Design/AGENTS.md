@@ -19,6 +19,7 @@ Use English for coaching, learner explanations and reflections, and newly author
 | `Learning/Practice/System-Design/Log/` | Practice session logs |
 | `Learning/Practice/System-Design/Courses/` | Course notes, such as Hello Interview |
 | `Learning/Practice/System-Design/Attachments/` | Shared media, including diagrams and screenshots not specific to one problem |
+| `Learning/Practice/System-Design/Profile.md` | Rebuilt index of concept evidence. Edit session assessments, then run `python3 scripts/practice-review/review.py profile`. Do not edit the index by hand. |
 | `Learning/Practice/System-Design/00_index.md` | Dataview dashboard |
 | `Templates/SD Pattern.md` | Template for new pattern cards |
 | `Templates/SD Log.md` | Template for new logs |
