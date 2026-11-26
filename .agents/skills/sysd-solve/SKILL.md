@@ -206,7 +206,7 @@ Derive statuses from progress.md, the canvas reconciliation in **Resume a sessio
 2. Core Entities: entities and relationships, focused on business concepts.
 3. API or Interface: core interfaces and their inputs and outputs.
 4. Data Flow: the complete path from a request to storage or a response.
-5. High-Level Design: let the learner finish tracing each agreed functional flow through the baseline architecture. Assess the essential Core Concepts and Key Technologies through those flows: what each component does and why its technology or architectural tradeoff fits. Advance once the flow and those choices have been assessed.
+5. High-Level Design: let the learner sketch the minimum components and trace each agreed functional requirement from its trigger to its outcome, including user requests, scheduled jobs and event-driven work where applicable. Assess the essential Core Concepts and Key Technologies through those flows: what each component does and why its technology or architectural tradeoff fits. While they are explaining, give them room to finish. If a functional path is missing, ask one question about that path. Advance once every agreed functional requirement has a working path and those choices have been assessed.
 6. Deep Dives: select up to three primary Design Patterns supported by the breakdown and agreed requirements. For each, assess the mechanism, a relevant failure scenario and the essential tradeoff. Supporting concepts and technologies can clarify that mechanism. For Dropbox, when Handling Large Blobs is primary, assess how the design handles an interrupted large upload. Once sufficient evidence exists, record unrelated database concurrency questions as future learning.
 
 **When to end the interview**
