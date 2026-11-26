@@ -168,6 +168,11 @@ def normalize_observation(raw, attempt_id, day):
         raise ValueError("observation date must use YYYY-MM-DD")
     if type(observation["learner"]) is not bool:
         raise ValueError("learner must be true or false")
+    if "evidence_order" in raw:
+        order = raw["evidence_order"]
+        if type(order) is not int or order < 0:
+            raise ValueError("evidence_order must be a nonnegative integer")
+        observation["evidence_order"] = order
     error_id = raw.get("error_id", "")
     if error_id:
         observation["error_id"] = _identifier(error_id, CONCEPT_ID, "error_id")
@@ -205,7 +210,7 @@ def upsert_observations(body, incoming):
         return _drop_extra_fences(updated)
     block = f"## Assessment\n\n{fence}"
     if "## Assessment" in body:
-        return re.sub(r"(## Assessment\s*\n)", r"\1\n" + fence, body, count=1)
+        return re.sub(r"(## Assessment\s*\n)", lambda match: match.group(1) + "\n" + fence, body, count=1)
     return body.rstrip() + "\n\n" + block
 
 
@@ -257,26 +262,12 @@ def collect(root):
             deduped.append(observation)
         elif previous != comparable:
             raise ValueError(f"observation {key} conflicts across sessions")
-    deduped.sort(key=lambda item: (item["concept_id"], item["date"], item["observation_id"]))
+    deduped.sort(key=lambda item: (item["concept_id"], *evidence_chronology(item)))
     return deduped
 
 
-def _latest_state(observations):
-    evidenced = [item for item in observations if item["learner"] and item["performance"] in EVIDENCED]
-    if not evidenced:
-        return "uncovered", "uncovered", None
-    latest_date = max(item["date"] for item in evidenced)
-    current = [item for item in evidenced if item["date"] == latest_date]
-    performances = {item["performance"] for item in current}
-    if "mastered" in performances and performances & {"partial", "weak"}:
-        latest = "inconsistent"
-    elif "partial" in performances:
-        latest = "partial"
-    elif "weak" in performances:
-        latest = "weak"
-    else:
-        latest = "mastered"
-    return latest, latest, latest_date
+def evidence_chronology(observation):
+    return observation["date"], observation.get("evidence_order", 0)
 
 
 def build_model(observations):
@@ -287,22 +278,15 @@ def build_model(observations):
         grouped.setdefault(observation["concept_id"], []).append(observation)
     concepts = {}
     for concept_id, items in grouped.items():
-        items = sorted(items, key=lambda item: (item["date"], item["observation_id"]))
-        latest, _, last_observed = _latest_state(items)
+        items = sorted(items, key=evidence_chronology)
         evidenced = [item for item in items if item["performance"] in EVIDENCED]
-        latest_date = max((item["date"] for item in evidenced), default=None)
-        current = [item for item in evidenced if item["date"] == latest_date]
-        contrary = []
-        state = latest
-        if latest in EVIDENCED:
-            mastered_now = latest == "mastered"
-            for item in evidenced:
-                if item["date"] == latest_date:
-                    continue
-                earlier_mastered = item["performance"] == "mastered"
-                if earlier_mastered != mastered_now:
-                    state = "inconsistent"
-                    contrary.append(item)
+        current = evidenced[-1:]
+        latest = current[0]["performance"] if current else "uncovered"
+        last_observed = current[0]["date"] if current else items[-1]["date"]
+        contrary = [
+            item for item in evidenced[:-1]
+            if (item["performance"] == "mastered") != (latest == "mastered")
+        ]
         repeated = []
         by_error = {}
         for item in items:
@@ -318,9 +302,9 @@ def build_model(observations):
                 })
         latest_links = [item["link"] for item in current] or [items[-1]["link"]]
         concepts[concept_id] = {
-            "state": state,
+            "state": latest,
             "latest": latest,
-            "last_observed": last_observed or items[-1]["date"],
+            "last_observed": last_observed,
             "evidence": latest_links,
             "observations": items,
             "repeated": repeated,
@@ -408,7 +392,7 @@ def outline(concept_ids, model):
                 "reason": "No prior learner evidence. Use a first diagnostic question.",
                 "evidence": [],
             })
-        elif concept["state"] == "mastered" and concept["latest"] == "mastered":
+        elif concept["latest"] == "mastered":
             spot_checks.append({
                 "concept_id": concept_id,
                 "phase": "spot_check",
@@ -444,9 +428,9 @@ def round_summary(observations):
     for concept_id in sorted(model["concepts"]):
         concept = model["concepts"][concept_id]
         links = ", ".join(concept["evidence"])
-        if concept["latest"] == "mastered" and concept["state"] == "mastered":
+        if concept["latest"] == "mastered":
             mastered.append(f"- {concept_id}: {links}")
-        if concept["latest"] in {"partial", "weak"} or concept["state"] == "inconsistent":
+        if concept["latest"] in {"partial", "weak"}:
             weak.append(f"- {concept_id}: {concept['latest']} · {links}")
         for item in concept["repeated"]:
             repeated.append(f"- {concept_id} / {item['error_id']}: {', '.join(item['links'])}")

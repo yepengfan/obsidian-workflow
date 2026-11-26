@@ -528,7 +528,7 @@ function renderDashboard(
         text: `${item.id} · ${DOMAIN_LABELS[item.domain] ?? item.domain}`,
       });
       if (item.status === "active" && item.completed != null)
-        identity.createEl("small", { text: `Round ${item.completed + 1} · ${item.completed < 2 ? "Guided learning" : item.completed === 2 ? "Mock interview (first independent review)" : "Mock interview"}` });
+        identity.createEl("small", { text: `Round ${item.completed + 1} · ${item.completed < 2 ? "Guided learning" : item.completed === 2 ? "Mock interview (first independent review)" : item.completed === 5 ? "Final mock interview + summary and archive" : "Mock interview"}` });
       const date = row.createEl("td");
       date.createEl("span", {
         text:

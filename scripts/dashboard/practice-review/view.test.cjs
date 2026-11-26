@@ -350,3 +350,14 @@ test("an assisted third system-design round is dated from its completion", () =>
   assert.equal(items[0].nextReview, "2026-12-02");
   assert.equal(items[0].bucket, "upcoming");
 });
+
+
+test("the sixth round announces the final mock, summary and archive", async (t) => {
+  const f = fixture([item("final", {
+    domain: "system-design", completed_design_rounds: 5, review_count: 5,
+    stage: 4, next_review: "2027-01-19",
+  })]);
+  await mount(t, f);
+  assert.ok(f.elements().some(p =>
+    p.textContent === "Round 6 · Final mock interview + summary and archive"));
+});

@@ -191,15 +191,20 @@ def design_progress(metadata, body, intervals, retry_days, archive_after_final=F
     completed = 0
     stage, due_date = 0, None
     translations = {label: key for key, label in OUTCOMES.items()}
+    archived_on = None
     for day, _, _, label in history:
         outcome = translations.get(label, label)
         stage, due_date = schedule_round(
             stage, due_date, completed, outcome, read_date(day), intervals, retry_days, archive_after_final,
         )
         completed += outcome != "incomplete"
+        if due_date is None and archive_after_final and archived_on is None:
+            archived_on = read_date(day)
     progress = {"completed_design_rounds": completed}
     if history and history[-1][0] == str(metadata["last_review"]) and metadata["status"] == "active":
         progress.update(stage=stage, next_review=due_date)
+        if archived_on is not None:
+            progress.update(status="archived", archived_on=archived_on, next_review=None)
     return progress
 
 
@@ -256,6 +261,8 @@ def due(today, intervals, retry_days, archive_after_final=False):
         if metadata.get("status") == "archived":
             continue
         metadata.update(design_progress(metadata, body, intervals, retry_days, archive_after_final))
+        if metadata.get("status") == "archived":
+            continue
         summary = summarize(path, metadata)
         next_review = summary["next_review"]
         if next_review is None:
@@ -511,12 +518,12 @@ def recalculate(intervals, retry_days, archive_after_final):
                 _same_date(metadata.get("next_review"), desired_next)
                 and metadata.get("stage") == desired_stage
                 and metadata.get("completed_design_rounds") == desired_completed
+                and metadata.get("status") == progress.get("status", metadata.get("status"))
+                and _same_date(metadata.get("archived_on"), progress.get("archived_on", metadata.get("archived_on")))
             ):
                 report["unchanged"].append(path.stem)
                 continue
-            metadata["next_review"] = desired_next
-            metadata["stage"] = desired_stage
-            metadata["completed_design_rounds"] = desired_completed
+            metadata.update(progress)
             write_note(path, metadata, body)
             report["updated"].append({
                 "id": path.stem,
@@ -533,11 +540,14 @@ def _same_date(left, right):
     return read_date(left) == read_date(right)
 
 
-def question_outline(item_id):
-    metadata, _ = read_note(ITEMS / f"{item_id}.md")
-    if metadata.get("domain") != "system-design":
-        raise ValueError("outline is only available for system design")
-    concepts = metadata.get("concept_ids") or []
+def question_outline(item_id=None, concept_ids=None):
+    if item_id is not None:
+        metadata, _ = read_note(ITEMS / f"{item_id}.md")
+        if metadata.get("domain") != "system-design":
+            raise ValueError("outline is only available for system design")
+        concepts = metadata.get("concept_ids") or []
+    else:
+        concepts = concept_ids or []
     if concepts:
         validate_concepts(concepts)
     with item_lock("system-design-profile"):
@@ -573,7 +583,9 @@ def main():
     finish_parser.add_argument("--attempt-file", type=Path, required=True)
     finish_parser.add_argument("--progress-path", type=Path)
     commands.add_parser("profile", help="Rebuild the System Design profile index")
-    commands.add_parser("outline", help="Select evidence-backed follow-ups for one item").add_argument("id")
+    outline_parser = commands.add_parser("outline", help="Select evidence-backed follow-ups for a topic")
+    outline_parser.add_argument("id", nargs="?")
+    outline_parser.add_argument("--concept-ids", nargs="+")
     commands.add_parser("recalculate", help="Recalculate active System Design review dates")
     commands.add_parser("backfill", help="Backfill located assessment observations")
     commands.add_parser("migrate", help="Backfill evidence, recalculate dates and rebuild the profile")
@@ -596,7 +608,9 @@ def main():
                 model = design_profile.rebuild(ROOT)
             result = {"concepts": sorted(model["concepts"])}
         elif args.command == "outline":
-            result = question_outline(item_slug(args.id, "id"))
+            if (args.id is None) == (args.concept_ids is None):
+                raise ValueError("provide an item id or --concept-ids")
+            result = question_outline(item_slug(args.id, "id") if args.id else None, args.concept_ids)
         elif args.command == "recalculate":
             result = recalculate(intervals, retry_days, archive_after_final)
         elif args.command == "backfill":

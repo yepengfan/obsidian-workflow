@@ -1,5 +1,11 @@
 {
-  "intervals": [1, 3, 7, 14, 60],
+  "intervals": [
+    1,
+    3,
+    7,
+    14,
+    60
+  ],
   "retry_days": 1,
   "rounds": [
     {
@@ -27,7 +33,8 @@
       "completed_design_rounds": 3,
       "stage": 2,
       "next_review": "2026-11-17",
-      "status": "active"
+      "status": "active",
+      "concurrent_copies": 2
     },
     {
       "date": "2026-11-17",

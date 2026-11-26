@@ -26,13 +26,13 @@ Check the review queue for that ID. For an existing item, read its summary with
 and register it during the confirmed completion save. If lookup fails, retry
 the lookup before choosing the round.
 Use `completed_design_rounds + 1` as the upcoming round. Rounds 1 and 2 are
-guided. Rounds 3 through 5 are mock interviews. Round 6 cites existing
-observations, writes the round summary, and archives the topic. A completed
+guided. Rounds 3 through 6 are mock interviews. Round 6 is the final mock,
+then cites existing observations, writes the round summary, and archives the topic. A completed
 round advances from its actual completion date regardless of whether the
 outcome is assisted, independent, or omitted. A pause does not advance.
 Announce the topic, round and mode. Assign a UUIDv4 to a new round and use it
 as its attempt ID. Run `python3 scripts/practice-review/review.py outline <id>`
-before choosing deep-dive follow-ups. Ask this problem's concepts first, then
+for a registered item. Before registration, run `python3 scripts/practice-review/review.py outline --concept-ids <concept-id> ...` using the topic's concept list and retain that list as `concept_ids` for completion registration. Run the outline before choosing deep-dive follow-ups. Ask this problem's concepts first, then
 the returned in-scope weak or uncovered concepts. Do not reveal the answer in
 the question, and do not ask about a concept that is outside this problem.
 - **Guided.** Let the learner draw first. Ask them to trace one request, then

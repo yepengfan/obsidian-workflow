@@ -223,11 +223,16 @@ def test_design_rounds_follow_the_shared_completion_schedule(vault):
         payload = {
             "attempt_id": step["attempt_id"], "outcome": step["outcome"], "reflection": "ok",
         }
-        result = review.record(
-            "lc-1", payload, date.fromisoformat(step["date"]),
-            FIXTURE["intervals"], FIXTURE["retry_days"], True,
-        )
-        assert result["recorded"] is True
+        def save(_):
+            return review.record(
+                "lc-1", payload, date.fromisoformat(step["date"]),
+                FIXTURE["intervals"], FIXTURE["retry_days"], True,
+            )
+
+        with ThreadPoolExecutor(max_workers=step.get("concurrent_copies", 1)) as pool:
+            receipts = list(pool.map(save, range(step.get("concurrent_copies", 1))))
+        assert sum(receipt["recorded"] for receipt in receipts) == 1
+        result = next(receipt for receipt in receipts if receipt["recorded"])
         assert result["completed_design_rounds"] == step["completed_design_rounds"]
         assert result["stage"] == step["stage"]
         assert result["status"] == step["status"]
@@ -510,3 +515,105 @@ def test_round_six_summary_cites_existing_observations(vault, monkeypatch):
         topic, attempt, closing, date(2027, 1, 19), (INTERVALS, RETRY, {domain: "flow.md"}, True),
     )
     assert closing.read_text(encoding="utf-8").count("## Round summary") == 1
+
+
+@pytest.mark.parametrize("summary", [r"C:\uploads", r"literal \1 and \g<1> and \n"])
+def test_observation_in_existing_assessment_preserves_literal_text(summary):
+    observation = design_profile.normalize_stored({
+        "observation_id": "literal", "attempt_id": "r1", "concept_id": "cache.expiry",
+        "performance": "partial", "summary": summary, "anchor": "Assessment",
+        "date": "2026-11-26",
+    })
+    updated = design_profile.upsert_observations("## Assessment\n\nExisting assessment\n", [observation])
+    assert design_profile.parse_fences(updated) == [observation]
+    assert "Existing assessment" in updated
+
+
+@pytest.mark.parametrize("later_day", ["2026-11-26", "2026-11-27"])
+def test_latest_answer_overrides_weak_evidence_without_discarding_it(vault, later_day):
+    observations = [{
+        "observation_id": "z-first", "attempt_id": "r1", "concept_id": "cache.expiry",
+        "performance": "weak", "summary": "Needed help.", "anchor": "First answer",
+        "date": "2026-11-26",
+    }, {
+        "observation_id": "a-later", "attempt_id": "r1", "concept_id": "cache.expiry",
+        "performance": "mastered", "summary": "Explained the constraint.", "anchor": "Later answer",
+        "date": later_day,
+    }]
+    _progress(vault, "Bitly", design_profile.render_fence(observations))
+    model = design_profile.rebuild(vault)
+    concept = model["concepts"]["cache.expiry"]
+    assert concept["state"] == concept["latest"] == "mastered"
+    assert [item["observation_id"] for item in concept["contrary"]] == ["z-first"]
+    assert [item["observation_id"] for item in concept["observations"]] == ["z-first", "a-later"]
+    assert concept["evidence"] == [concept["observations"][-1]["link"]]
+    outline = review.question_outline(concept_ids=["cache.expiry"])
+    assert not outline["follow_ups"]
+    assert outline["spot_checks"][0]["evidence"] == concept["evidence"]
+    summary = design_profile.round_summary(design_profile.collect(vault))
+    assert "cache.expiry" in summary.split("### Mastered")[1].split("### Still weak")[0]
+    assert "cache.expiry" not in summary.split("### Still weak")[1]
+    assert design_profile.rebuild(vault) == model
+
+
+def test_known_same_day_evidence_order_survives_cross_session_rebuild(vault):
+    base = {
+        "attempt_id": "r1", "concept_id": "cache.expiry", "summary": "Answer",
+        "anchor": "Assessment", "date": "2026-11-26",
+    }
+    _progress(vault, "Z-early", design_profile.render_fence([
+        {**base, "observation_id": "z-first", "performance": "weak", "evidence_order": 1},
+    ]))
+    _progress(vault, "A-late", design_profile.render_fence([
+        {**base, "observation_id": "a-later", "attempt_id": "r2", "performance": "mastered", "evidence_order": 2},
+    ]))
+    model = design_profile.rebuild(vault)
+    concept = model["concepts"]["cache.expiry"]
+    assert concept["latest"] == "mastered"
+    assert [item["evidence_order"] for item in concept["observations"]] == [1, 2]
+    assert all("timestamp" not in item for item in concept["observations"])
+
+
+def test_first_round_cli_outline_uses_topic_concepts_without_registration(vault, monkeypatch, capsys):
+    monkeypatch.setattr(review, "load_config", lambda: (INTERVALS, RETRY, {}, True))
+    monkeypatch.setattr("sys.argv", ["review.py", "outline", "--concept-ids", "cache.expiry", "id.counter"])
+    review.main()
+    outline = json.loads(capsys.readouterr().out)
+    assert outline["concept_ids"] == ["cache.expiry", "id.counter"]
+    assert [item["concept_id"] for item in outline["core"]] == outline["concept_ids"]
+    assert [item["concept_id"] for item in outline["uncovered"]] == outline["concept_ids"]
+    assert not list(review.ITEMS.glob("*.md"))
+    path = write_item(vault, domain="system-design", concept_ids=outline["concept_ids"])
+    assert review.question_outline("lc-1") == outline
+    assert path.is_file()
+
+
+@pytest.mark.parametrize("archive", [False, True])
+def test_recalculate_six_legacy_completions_normalizes_lifecycle(vault, archive):
+    history = "".join(
+        f"\n### {step['date']} · Round {i}\n\n**{step['outcome']}** · Next review legacy\n"
+        for i, step in enumerate(FIXTURE["rounds"], 1)
+    )
+    path = write_item(vault, domain="system-design", review_count=len(FIXTURE["rounds"]),
+                      last_review=date(2027, 1, 19), next_review=date(2027, 1, 20), stage=1)
+    metadata, _ = read_item(path)
+    review.write_note(path, metadata, history)
+    queue = review.due(date(2027, 1, 20), INTERVALS, RETRY, archive)
+    assert bool(queue["upcoming"]) is (not archive)
+    assert not queue["unstarted"]
+    shown = review.show("lc-1", INTERVALS, RETRY, archive)
+    assert shown["status"] == ("archived" if archive else "active")
+    report = review.recalculate(INTERVALS, RETRY, archive)
+    assert len(report["updated"]) == 1
+    metadata, body = read_item(path)
+    assert metadata["status"] == ("archived" if archive else "active")
+    assert metadata["completed_design_rounds"] == 6
+    assert metadata["last_review"] == date(2027, 1, 19)
+    assert body == history
+    if archive:
+        assert metadata["archived_on"] == date(2027, 1, 19)
+        assert metadata["next_review"] is None
+    else:
+        assert metadata["next_review"] == date(2027, 3, 20)
+        assert "archived_on" not in metadata
+    assert not review.recalculate(INTERVALS, RETRY, archive)["updated"]
