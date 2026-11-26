@@ -162,7 +162,10 @@ class Element {
     return [this, ...this.children.flatMap((p) => p.all())];
   }
 }
-function fixture(pages, { enabled = true, intervals = INTERVALS, archiveAfterFinal = false } = {}) {
+function fixture(
+  pages,
+  { enabled = true, intervals = INTERVALS, archiveAfterFinal = false } = {},
+) {
   const roots = [],
     cleanup = [],
     opened = [],
@@ -311,13 +314,24 @@ test("the dashboard executes in the isolated Dataview scope without plugin impor
 
 test("shows Bitly's first independent review and a new topic's first learning round", () => {
   const design = (id, count) => ({
-    id, title: id, domain: "system-design", status: "active", review_count: count,
-    stage: 0, file: { name: id, path: id }, last_review: count ? "2026-11-22" : null,
+    id,
+    title: id,
+    domain: "system-design",
+    status: "active",
+    review_count: count,
+    stage: 0,
+    file: { name: id, path: id },
+    last_review: count ? "2026-11-22" : null,
     next_review: count ? "2026-11-23" : null,
   });
-  const history = "### 2026-11-21 · Round 1\n\n**assisted** · Next review 2026-11-22\n\n### 2026-11-22 · Round 2\n\n**assisted** · Next review 2026-11-23";
-  const { items } = buildSnapshot([design("bitly", 2), design("dropbox", 0)],
-    "2026-11-23", [1, 3, 7], new Map([["bitly", history]]));
+  const history =
+    "### 2026-11-21 · Round 1\n\n**assisted** · Next review 2026-11-22\n\n### 2026-11-22 · Round 2\n\n**assisted** · Next review 2026-11-23";
+  const { items } = buildSnapshot(
+    [design("bitly", 2), design("dropbox", 0)],
+    "2026-11-23",
+    [1, 3, 7],
+    new Map([["bitly", history]]),
+  );
   assert.equal(items[0].completed, 2);
   assert.equal(items[0].nextReview, "2026-11-25");
   assert.equal(items[0].bucket, "upcoming");
@@ -339,57 +353,96 @@ test("an assisted third system-design round is dated from its completion", () =>
     "**assisted** · Next review 2026-11-26",
   ].join("\n");
   const page = {
-    id: "bitly", title: "bitly", domain: "system-design", status: "active",
-    review_count: 3, stage: 1, completed_design_rounds: 3,
+    id: "bitly",
+    title: "bitly",
+    domain: "system-design",
+    status: "active",
+    review_count: 3,
+    stage: 1,
+    completed_design_rounds: 3,
     file: { name: "bitly", path: "bitly" },
-    last_review: "2026-11-25", next_review: "2026-11-26",
+    last_review: "2026-11-25",
+    next_review: "2026-11-26",
   };
   const { items } = buildSnapshot(
-    [page], "2026-11-26", [1, 3, 7, 14, 60], new Map([["bitly", history]]),
+    [page],
+    "2026-11-26",
+    [1, 3, 7, 14, 60],
+    new Map([["bitly", history]]),
   );
   assert.equal(items[0].completed, 3);
   assert.equal(items[0].nextReview, "2026-12-02");
   assert.equal(items[0].bucket, "upcoming");
 });
 
-
 test("the sixth round announces the final mock, summary and archive", async (t) => {
-  const f = fixture([item("final", {
-    domain: "system-design", completed_design_rounds: 5, review_count: 5,
-    stage: 4, next_review: "2027-01-19",
-  })]);
+  const f = fixture([
+    item("final", {
+      domain: "system-design",
+      completed_design_rounds: 5,
+      review_count: 5,
+      stage: 4,
+      next_review: "2027-01-19",
+    }),
+  ]);
   await mount(t, f);
-  assert.ok(f.elements().some(p =>
-    p.textContent === "Round 6 · Final mock interview + summary and archive"));
+  assert.ok(
+    f
+      .elements()
+      .some(
+        (p) =>
+          p.textContent ===
+          "Round 6 · Final mock interview + summary and archive",
+      ),
+  );
 });
-
 
 test("an omitted System Design outcome renders as completed", async (t) => {
-  const f = fixture([item("completed", { domain: "system-design", last_outcome: "completed" })]);
+  const f = fixture([
+    item("completed", { domain: "system-design", last_outcome: "completed" }),
+  ]);
   await mount(t, f);
-  assert.ok(f.elements().some(p => p.textContent === "Completed"));
-  assert.ok(!f.elements().some(p => p.textContent === "No recorded outcome"));
+  assert.ok(f.elements().some((p) => p.textContent === "Completed"));
+  assert.ok(!f.elements().some((p) => p.textContent === "No recorded outcome"));
 });
 
-const DESIGN_SAMPLE = JSON.parse(fs.readFileSync(
-  __dirname + "/../../practice-review/fixtures/design-rounds.json", "utf8"));
+const DESIGN_SAMPLE = JSON.parse(
+  fs.readFileSync(
+    __dirname + "/../../practice-review/fixtures/design-rounds.json",
+    "utf8",
+  ),
+);
 function designHistory(steps) {
-  return steps.map((step, i) =>
-    `### ${step.date} · Round ${i + 1}\n\n**${step.outcome}** · Next review legacy\n`).join("\n");
+  return steps
+    .map(
+      (step, i) =>
+        `### ${step.date} · Round ${i + 1}\n\n**${step.outcome}** · Next review legacy\n`,
+    )
+    .join("\n");
 }
 function legacyDesign(steps) {
   return item("legacy", {
-    domain: "system-design", review_count: steps.length, stage: 0,
-    last_review: steps.at(-1).date, next_review: "2027-01-20",
+    domain: "system-design",
+    review_count: steps.length,
+    stage: 0,
+    last_review: steps.at(-1).date,
+    next_review: "2027-01-20",
   });
 }
 test("dashboard replay follows each shared sample step, including terminal archive", () => {
   const steps = [];
   for (const step of DESIGN_SAMPLE.rounds) {
     steps.push(step);
-    const snapshot = buildSnapshot([legacyDesign(steps)], step.date,
-      DESIGN_SAMPLE.intervals, new Map([["Learning/Practice/Review/Items/legacy.md", designHistory(steps)]]),
-      DESIGN_SAMPLE.retry_days, true);
+    const snapshot = buildSnapshot(
+      [legacyDesign(steps)],
+      step.date,
+      DESIGN_SAMPLE.intervals,
+      new Map([
+        ["Learning/Practice/Review/Items/legacy.md", designHistory(steps)],
+      ]),
+      DESIGN_SAMPLE.retry_days,
+      true,
+    );
     assert.equal(snapshot.items[0].completed, step.completed_design_rounds);
     assert.equal(snapshot.items[0].nextReview, step.next_review);
     assert.equal(snapshot.items[0].status, step.status);
@@ -400,25 +453,44 @@ test("terminal replay honors archive policy and leaves other domains active", ()
   const steps = DESIGN_SAMPLE.rounds;
   const page = legacyDesign(steps);
   const histories = new Map([[page.file.path, designHistory(steps)]]);
-  const snapshot = buildSnapshot([page], "2027-01-20", DESIGN_SAMPLE.intervals,
-    histories, DESIGN_SAMPLE.retry_days, false);
+  const snapshot = buildSnapshot(
+    [page],
+    "2027-01-20",
+    DESIGN_SAMPLE.intervals,
+    histories,
+    DESIGN_SAMPLE.retry_days,
+    false,
+  );
   assert.equal(snapshot.items[0].status, "active");
   assert.equal(snapshot.items[0].nextReview, "2027-03-20");
-  const algorithm = buildSnapshot([{...page, domain: "algorithm"}], "2027-01-20",
-    DESIGN_SAMPLE.intervals, histories, 1, true);
+  const algorithm = buildSnapshot(
+    [{ ...page, domain: "algorithm" }],
+    "2027-01-20",
+    DESIGN_SAMPLE.intervals,
+    histories,
+    1,
+    true,
+  );
   assert.equal(algorithm.items[0].status, "active");
   assert.equal(algorithm.items[0].nextReview, page.next_review);
 });
 test("terminal legacy topics render in archived history without round seven", async (t) => {
   const steps = DESIGN_SAMPLE.rounds;
-  const f = fixture([legacyDesign(steps)], { intervals: DESIGN_SAMPLE.intervals, archiveAfterFinal: true });
-  t.after(() => f.cleanup.forEach(fn => fn()));
+  const f = fixture([legacyDesign(steps)], {
+    intervals: DESIGN_SAMPLE.intervals,
+    archiveAfterFinal: true,
+  });
+  t.after(() => f.cleanup.forEach((fn) => fn()));
   renderDashboard(f.dv, f.app, {
     now: () => new Date(2027, 0, 20, 12),
-    histories: new Map([["Learning/Practice/Review/Items/legacy.md", designHistory(steps)]]),
+    histories: new Map([
+      ["Learning/Practice/Review/Items/legacy.md", designHistory(steps)],
+    ]),
   });
-  assert.ok(f.elements().some(p => p.textContent === "Archived 1"));
-  f.elements().find(p => p.textContent === "Archived 1").listeners.click();
-  assert.equal(f.elements().filter(p => p.cls === "pr-item-link").length, 1);
-  assert.ok(!f.elements().some(p => p.textContent.startsWith("Round 7")));
+  assert.ok(f.elements().some((p) => p.textContent === "Archived 1"));
+  f.elements()
+    .find((p) => p.textContent === "Archived 1")
+    .listeners.click();
+  assert.equal(f.elements().filter((p) => p.cls === "pr-item-link").length, 1);
+  assert.ok(!f.elements().some((p) => p.textContent.startsWith("Round 7")));
 });
