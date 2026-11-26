@@ -1,0 +1,69 @@
+{
+  "intervals": [1, 3, 7, 14, 60],
+  "retry_days": 1,
+  "rounds": [
+    {
+      "date": "2026-11-01",
+      "outcome": "assisted",
+      "attempt_id": "r1",
+      "completed_design_rounds": 1,
+      "stage": 0,
+      "next_review": "2026-11-02",
+      "status": "active"
+    },
+    {
+      "date": "2026-11-02",
+      "outcome": "assisted",
+      "attempt_id": "r2",
+      "completed_design_rounds": 2,
+      "stage": 1,
+      "next_review": "2026-11-05",
+      "status": "active"
+    },
+    {
+      "date": "2026-11-10",
+      "outcome": "assisted",
+      "attempt_id": "r3",
+      "completed_design_rounds": 3,
+      "stage": 2,
+      "next_review": "2026-11-17",
+      "status": "active"
+    },
+    {
+      "date": "2026-11-17",
+      "outcome": "incomplete",
+      "attempt_id": "r3-pause",
+      "completed_design_rounds": 3,
+      "stage": 2,
+      "next_review": "2026-11-18",
+      "status": "active"
+    },
+    {
+      "date": "2026-11-18",
+      "outcome": "assisted",
+      "attempt_id": "r4",
+      "completed_design_rounds": 4,
+      "stage": 3,
+      "next_review": "2026-12-02",
+      "status": "active"
+    },
+    {
+      "date": "2026-11-20",
+      "outcome": "independent",
+      "attempt_id": "r5",
+      "completed_design_rounds": 5,
+      "stage": 4,
+      "next_review": "2027-01-19",
+      "status": "active"
+    },
+    {
+      "date": "2027-01-19",
+      "outcome": "assisted",
+      "attempt_id": "r6",
+      "completed_design_rounds": 6,
+      "stage": 4,
+      "next_review": null,
+      "status": "archived"
+    }
+  ]
+}

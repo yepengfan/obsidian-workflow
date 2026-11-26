@@ -296,7 +296,7 @@ LeetCode 刷题 + 模式沉淀系统。详细规则见 `Learning/Practice/Algori
 
 ## Practice Review
 
-`Learning/Practice/Review/` combines a shared review queue with domain practice flows and separate content definitions. `/practice` selects a domain, automatically works through its overdue and today reviews, then enters that domain's workflow for a new problem. With no due reviews, it starts new practice immediately. Direct entries are `/practice-review-add <domain> <topic>` and `/practice-review-today [id]`. See `Learning/Practice/Review/AGENTS.md` for the scheduling and handoff rules. Personal review items in `Items/` sync with the vault outside git.
+`Learning/Practice/Review/` combines a shared review queue with domain practice flows and separate content definitions. `/practice` selects a domain, automatically works through its overdue and today reviews, then enters that domain's workflow for a new problem. With no due reviews, it starts new practice immediately. Direct entries are `/practice-review-add <domain> <topic>` and `/practice-review-today [id]`. See `Learning/Practice/Review/AGENTS.md` for the scheduling and handoff rules. System Design schedules completed rounds from the actual completion date and rebuilds `Learning/Practice/System-Design/Profile.md` from session observations. Personal review items in `Items/` sync with the vault outside git.
 
 ## Frontend System
 
@@ -344,3 +344,10 @@ React & Next.js 前端练习系统。题源: GreatFrontEnd。详细规则见 `Le
     Phase 2: Code Review（React + a11y + 性能）
     Phase 3: 沉淀 pattern + log
 ```
+
+## Maintaining this file
+
+Keep this file for knowledge useful to almost every future agent session in this project.
+Do not repeat what the codebase already shows; point to the authoritative file or command instead.
+Prefer rewriting or pruning existing entries over appending new ones.
+When updating this file, preserve this bar for all agents and keep entries concise.

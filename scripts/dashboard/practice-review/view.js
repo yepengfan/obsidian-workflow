@@ -46,28 +46,24 @@ function byDue(a, b) {
 }
 function designProgress(page, history, intervals, retryDays) {
   if (page.domain !== "system-design") return {};
-  if (Number.isInteger(page.completed_design_rounds))
-    return { completed: page.completed_design_rounds };
-  const entries = [...(history ?? "").matchAll(/^### (\d{4}-\d{2}-\d{2}) · (?:Round (\d+)|第 (\d+) 轮)\s*\n\*\*(independent|assisted|incomplete|独立完成|提示后完成|未完成)\*\* · /gmu)];
+  const stored = Number.isInteger(page.completed_design_rounds)
+    ? { completed: page.completed_design_rounds }
+    : {};
+  const entries = [...(history ?? "").matchAll(/^### (\d{4}-\d{2}-\d{2}) · (?:Round (\d+)|第 (\d+) 轮)\s*\n\*\*(independent|assisted|incomplete|completed|独立完成|提示后完成|未完成|已完成)\*\* · /gmu)];
   if (entries.length !== page.review_count || entries.some((m, i) => Number(m[2] ?? m[3]) !== i + 1))
-    return {};
-  const full = entries.filter(m => !["incomplete", "未完成"].includes(m[4]));
-  const completed = full.length;
+    return stored;
+  const completed = entries.filter(m => !["incomplete", "未完成"].includes(m[4])).length;
   if (!entries.length || page.status !== "active" || entries.at(-1)[1] !== dateKey(page.last_review))
-    return { completed };
+    return { ...stored, completed };
   let stage = 0, nextReview = null, finished = 0;
   for (const [, day, , , outcome] of entries) {
     const complete = !["incomplete", "未完成"].includes(outcome);
-    if (complete) finished += 1;
-    if (complete && finished <= 2) {
-      stage = Math.min(finished - 1, intervals.length - 1);
-    } else if (!["independent", "独立完成"].includes(outcome)) {
+    if (!complete) {
       nextReview = shiftDay(day, retryDays);
       continue;
-    } else {
-      if (day < nextReview) continue;
-      stage = Math.min(stage + 1, intervals.length - 1);
     }
+    stage = Math.min(finished, intervals.length - 1);
+    finished += 1;
     nextReview = shiftDay(day, intervals[stage]);
   }
   return { completed, stage, nextReview };
@@ -643,7 +639,7 @@ else {
     try {
       const histories = new Map();
       for (const p of dv.pages('"Learning/Practice/Review/Items"')) {
-        if (p.domain === "system-design" && p.completed_design_rounds == null && p.review_count > 0)
+        if (p.domain === "system-design" && p.status !== "archived" && p.review_count > 0)
           histories.set(p.file.path, await dv.io.load(p.file.path));
       }
       renderDashboard(dv, input.app, { container: input.container, histories });

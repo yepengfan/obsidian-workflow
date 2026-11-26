@@ -322,3 +322,31 @@ test("shows Bitly's first independent review and a new topic's first learning ro
   assert.equal(items[0].bucket, "upcoming");
   assert.equal(items[1].completed, 0);
 });
+
+test("an assisted third system-design round is dated from its completion", () => {
+  const history = [
+    "### 2026-11-21 · Round 1",
+    "",
+    "**assisted** · Next review 2026-11-22",
+    "",
+    "### 2026-11-22 · Round 2",
+    "",
+    "**assisted** · Next review 2026-11-25",
+    "",
+    "### 2026-11-25 · Round 3",
+    "",
+    "**assisted** · Next review 2026-11-26",
+  ].join("\n");
+  const page = {
+    id: "bitly", title: "bitly", domain: "system-design", status: "active",
+    review_count: 3, stage: 1, completed_design_rounds: 3,
+    file: { name: "bitly", path: "bitly" },
+    last_review: "2026-11-25", next_review: "2026-11-26",
+  };
+  const { items } = buildSnapshot(
+    [page], "2026-11-26", [1, 3, 7, 14, 60], new Map([["bitly", history]]),
+  );
+  assert.equal(items[0].completed, 3);
+  assert.equal(items[0].nextReview, "2026-12-02");
+  assert.equal(items[0].bucket, "upcoming");
+});

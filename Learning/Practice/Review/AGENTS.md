@@ -40,7 +40,9 @@ Direct `/practice-review-today [id]` retains its queue listing or selected-item 
 
 `system/modules/practice-review/module.md` holds the configurable intervals. The defaults are 1, 3, 7, 14 and 60 days, calculated from the actual day each review ends. These intervals are a practical spaced review policy inspired by Ebbinghaus's forgetting curve.
 
-Each System Design topic uses its own completed round count. In the dashboard show the topic, upcoming round, mode and date. Completed rounds one and two use the first and second configured intervals (normally 1 and 3 days), including assisted completions. An incomplete attempt gets the retry interval and keeps the same learning round. From round three onward use the shared schedule below. A pause is a checkpoint. Resume the same session and attempt ID.
+Each System Design topic advances one completed round from the actual completion date, using `interval_days` in order: 1, 3, 7, 14, then 60 days. Rounds 1 and 2 are guided. Rounds 3 through 5 are mock interviews. Round 6 writes a summary that cites existing observations, then archives the topic. Assisted, independent, and omitted outcomes all count as a completed round. An incomplete attempt or pause keeps the same round and uses `retry_days`. Repeating an `attempt_id` does not add another round or another observation. Early and late completions both move one round forward from the day the round actually ended. Other modules keep the outcome schedule below.
+
+In the dashboard show the System Design topic, upcoming round, mode and date. A pause is a checkpoint. Resume the same session and attempt ID.
 
 | Round | Next review |
 | --- | --- |
@@ -65,8 +67,10 @@ python3 scripts/practice-review/review.py finish --item-file /path/to/item.json 
 
 For confirmed completion in every enrolled module, `finish` ensures the item exists, records the attempt and verifies its schedule. Pass the existing System Design `--progress-path` to close its session after verification. Reuse the original ID and date when retrying.
 
-`add` reads `id`, `domain`, `title`, and `prompt`. Optional fields are `source` and `review_focus`. `show` returns the prompt, source and scheduling metadata. Read the note itself after the attempt when comparing past evidence.
+`add` reads `id`, `domain`, `title`, and `prompt`. Optional fields are `source`, `review_focus`, and `concept_ids`. `show` returns the prompt, source and scheduling metadata. Read the note itself after the attempt when comparing past evidence.
 
-`due` returns `overdue`, `today`, `unstarted`, and `upcoming` metadata lists. Filter them by domain for the interactive menu.
+`due` returns `overdue`, `today`, `unstarted`, and `upcoming` metadata lists. Filter them by domain for the interactive menu. For System Design, a parsable history corrects the in-memory due date from completed rounds. `recalculate` writes that date back, and `migrate` also backfills located observations and rebuilds the profile.
 
-`record` reads `attempt_id`, `outcome`, and `reflection`. Optional fields are `submission` and `observations`. Outcomes are `independent`, `assisted`, and `incomplete`. Use the same `attempt_id` when retrying the same save. Keep the actual completion date on delayed saves using `--date YYYY-MM-DD` before the subcommand.
+`record` reads `attempt_id` and `reflection`. `outcome` is required for every module except System Design, where it may be omitted. Optional fields are `submission` and `observations`. Outcomes are `independent`, `assisted`, and `incomplete`. Use the same `attempt_id` when retrying the same save. Keep the actual completion date on delayed saves using `--date YYYY-MM-DD` before the subcommand.
+
+`finish` accepts optional `concept_observations` on the attempt. Each observation has `observation_id`, `concept_id`, `performance` (`mastered`, `partial`, `weak`, or `uncovered`), `summary`, and `anchor`. The same attempt does not append a second copy. `profile` rebuilds `Learning/Practice/System-Design/Profile.md`. `outline <id>` returns this problem's concepts first, then in-scope weak or uncovered follow-ups with evidence links. `backfill` writes only approved observations whose locator text is present in the progress note.

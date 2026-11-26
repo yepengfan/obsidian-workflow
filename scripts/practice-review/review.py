@@ -13,6 +13,8 @@ from contextlib import contextmanager
 from datetime import date, timedelta
 from pathlib import Path
 
+import design_profile
+
 try:
     import yaml
 except ImportError:
@@ -26,7 +28,10 @@ ITEMS = REVIEW / "Items"
 FRONTMATTER = re.compile(r"\A---\r?\n(.*?)\r?\n---(?:\r?\n|\Z)(.*)\Z", re.DOTALL)
 SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 ATTEMPT_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
-OUTCOMES = {"independent": "独立完成", "assisted": "提示后完成", "incomplete": "未完成"}
+OUTCOMES = {
+    "independent": "独立完成", "assisted": "提示后完成", "incomplete": "未完成",
+    "completed": "已完成",
+}
 
 
 def read_note(path):
@@ -137,16 +142,28 @@ def read_date(value):
 
 HISTORY_ROUND = re.compile(
     r"^### (\d{4}-\d{2}-\d{2}) · (?:Round (\d+)|第 (\d+) 轮)\s*\n"
-    r"\*\*(independent|assisted|incomplete|独立完成|提示后完成|未完成)\*\* · ", re.MULTILINE,
+    r"\*\*(independent|assisted|incomplete|completed|独立完成|提示后完成|未完成|已完成)\*\* · ",
+    re.MULTILINE,
 )
 
 
 def schedule_round(stage, previous_due, completed, outcome, day, intervals, retry_days, archive_after_final=False):
-    if completed is not None and completed < 2 and outcome != "incomplete":
-        stage = min(completed, len(intervals) - 1)
-    elif outcome != "independent":
+    # System Design advances one completed round from the actual completion
+    # date. Assisted, independent and omitted outcomes all count. A pause does
+    # not. Other domains keep the outcome schedule below.
+    if completed is not None:
+        if outcome == "incomplete":
+            return stage, day + timedelta(days=retry_days)
+        final = len(intervals) - 1
+        if completed >= len(intervals):
+            if archive_after_final:
+                return stage, None
+            return final, day + timedelta(days=intervals[final])
+        stage = min(completed, final)
+        return stage, day + timedelta(days=intervals[stage])
+    if outcome != "independent":
         return stage, day + timedelta(days=retry_days)
-    elif previous_due is None:
+    if previous_due is None:
         stage = 0
     elif day < read_date(previous_due):
         return stage, read_date(previous_due)
@@ -157,25 +174,28 @@ def schedule_round(stage, previous_due, completed, outcome, day, intervals, retr
     return stage, day + timedelta(days=intervals[stage])
 
 
-def design_progress(metadata, body, intervals, retry_days):
+def design_progress(metadata, body, intervals, retry_days, archive_after_final=False):
     if metadata["domain"] != "system-design":
         return {}
     count = metadata.get("completed_design_rounds")
-    if count is not None:
-        if type(count) is not int or not 0 <= count <= metadata["review_count"]:
-            raise ValueError("Invalid completed_design_rounds")
-        return {"completed_design_rounds": count}
+    review_count = metadata["review_count"]
+    if count is not None and (type(count) is not int or not 0 <= count <= review_count):
+        raise ValueError("Invalid completed_design_rounds")
     history = HISTORY_ROUND.findall(body)
-    if len(history) != metadata["review_count"] or any(
+    if len(history) != review_count or any(
         int(en or zh) != i for i, (_, en, zh, _) in enumerate(history, 1)
     ):
-        return {"completed_design_rounds": 0}
+        if count is None:
+            return {"completed_design_rounds": 0}
+        return {"completed_design_rounds": count}
     completed = 0
     stage, due_date = 0, None
     translations = {label: key for key, label in OUTCOMES.items()}
     for day, _, _, label in history:
         outcome = translations.get(label, label)
-        stage, due_date = schedule_round(stage, due_date, completed, outcome, read_date(day), intervals, retry_days)
+        stage, due_date = schedule_round(
+            stage, due_date, completed, outcome, read_date(day), intervals, retry_days, archive_after_final,
+        )
         completed += outcome != "incomplete"
     progress = {"completed_design_rounds": completed}
     if history and history[-1][0] == str(metadata["last_review"]) and metadata["status"] == "active":
@@ -210,15 +230,17 @@ def summarize(path, metadata):
             summary[key] = read_date(value).isoformat() if value is not None else None
         if "completed_design_rounds" in metadata:
             summary["completed_design_rounds"] = metadata["completed_design_rounds"]
+        if isinstance(metadata.get("last_outcome"), str):
+            summary["last_outcome"] = metadata["last_outcome"]
         return summary
     except ValueError as error:
         raise ValueError(f"Invalid item {path.name}: {error}") from error
 
 
-def show(item_id, intervals, retry_days):
+def show(item_id, intervals, retry_days, archive_after_final=False):
     path = ITEMS / f"{item_id}.md"
     metadata, body = read_note(path)
-    metadata.update(design_progress(metadata, body, intervals, retry_days))
+    metadata.update(design_progress(metadata, body, intervals, retry_days, archive_after_final))
     return {
         **summarize(path, metadata),
         "prompt": read_text_field(metadata, "prompt", required=True),
@@ -226,14 +248,14 @@ def show(item_id, intervals, retry_days):
     }
 
 
-def due(today, intervals, retry_days):
+def due(today, intervals, retry_days, archive_after_final=False):
     day = today.isoformat()
     queue = {"date": day, "overdue": [], "today": [], "unstarted": [], "upcoming": []}
     for path in ITEMS.glob("*.md"):
         metadata, body = read_note(path)
         if metadata.get("status") == "archived":
             continue
-        metadata.update(design_progress(metadata, body, intervals, retry_days))
+        metadata.update(design_progress(metadata, body, intervals, retry_days, archive_after_final))
         summary = summarize(path, metadata)
         next_review = summary["next_review"]
         if next_review is None:
@@ -266,10 +288,15 @@ def add(payload, flows):
     path = ITEMS / f"{item_id}.md"
     with item_lock(item_id):
         if path.exists():
-            existing, _ = read_note(path)
+            existing, body = read_note(path)
             summary = summarize(path, existing)
             if summary["domain"] != domain or summary["title"] != title:
                 raise ValueError(f"{item_id} already belongs to a different item")
+            concepts = payload.get("concept_ids", [])
+            if concepts and not existing.get("concept_ids"):
+                existing["concept_ids"] = validate_concepts(concepts)
+                write_note(path, existing, body)
+                summary = summarize(path, existing)
             return {**summary, "created": False}
 
         metadata = {
@@ -281,6 +308,9 @@ def add(payload, flows):
             metadata["completed_design_rounds"] = 0
         if source:
             metadata["source"] = source
+        concepts = payload.get("concept_ids", [])
+        if concepts:
+            metadata["concept_ids"] = validate_concepts(concepts)
         body = f"# {' '.join(title.splitlines())}\n\n"
         if focus.strip():
             body += f"## 回顾重点\n\n{focus}\n\n"
@@ -289,13 +319,32 @@ def add(payload, flows):
         return {**summarize(path, metadata), "created": True}
 
 
+def validate_concepts(values):
+    if not isinstance(values, list) or not values or any(
+        not isinstance(value, str) or design_profile.CONCEPT_ID.fullmatch(value) is None
+        for value in values
+    ):
+        raise ValueError("concept_ids must be reusable concept identifiers")
+    return values
+
+
+def read_outcome(payload, domain):
+    if "outcome" not in payload or payload.get("outcome") in (None, ""):
+        if domain != "system-design":
+            raise ValueError("outcome must be independent, assisted or incomplete")
+        return "completed"
+    outcome = payload.get("outcome")
+    if not isinstance(outcome, str) or outcome not in OUTCOMES:
+        raise ValueError("outcome must be independent, assisted or incomplete")
+    if domain != "system-design" and outcome == "completed":
+        raise ValueError("outcome must be independent, assisted or incomplete")
+    return outcome
+
+
 def record(item_id, payload, day, intervals, retry_days, archive_after_final=False):
     attempt_id = read_text_field(payload, "attempt_id", required=True)
     if ATTEMPT_ID.fullmatch(attempt_id) is None:
         raise ValueError("attempt_id must use letters, digits, hyphens or underscores")
-    outcome = read_text_field(payload, "outcome", required=True)
-    if outcome not in OUTCOMES:
-        raise ValueError("outcome must be independent, assisted or incomplete")
     reflection = read_text_field(payload, "reflection", required=True)
     submission = read_text_field(payload, "submission")
     observations = read_text_field(payload, "observations")
@@ -303,8 +352,9 @@ def record(item_id, payload, day, intervals, retry_days, archive_after_final=Fal
     path = ITEMS / f"{item_id}.md"
     with item_lock(item_id):
         metadata, body = read_note(path)
-        metadata.update(design_progress(metadata, body, intervals, retry_days))
+        metadata.update(design_progress(metadata, body, intervals, retry_days, archive_after_final))
         summary = summarize(path, metadata)
+        outcome = read_outcome(payload, summary["domain"])
         attempt_ids = metadata.get("attempt_ids", [])
         if not isinstance(attempt_ids, list) or not all(
             isinstance(value, str) for value in attempt_ids
@@ -390,10 +440,24 @@ def finish(topic, attempt, progress_path, day, config):
         confirmed = {"topic": topic, "attempt": attempt}
         if metadata.get("confirmed_registration", confirmed) != confirmed:
             raise ValueError("Session has a different confirmed registration")
+        raw_observations = attempt.get("concept_observations") or []
+        if not isinstance(raw_observations, list):
+            raise ValueError("concept_observations must be a list")
+        normalized = [
+            design_profile.normalize_observation(item, attempt_id, day)
+            for item in raw_observations
+        ]
+        if normalized:
+            body = design_profile.upsert_observations(body, normalized)
         if "system-design/wip" in tags:
             metadata.update(binding, confirmed_registration=confirmed)
             write_note(path, metadata, body)
+        elif normalized:
+            write_note(path, metadata, body)
         result = register()
+        # A failed index rebuild must not record the round again on retry.
+        with item_lock("system-design-profile"):
+            design_profile.rebuild(ROOT)
         current, body = read_note(path)
         if any(str(current.get(k)) != v for k, v in binding.items()):
             raise ValueError("Session changed during registration")
@@ -401,8 +465,96 @@ def finish(topic, attempt, progress_path, day, config):
         tags = current["tags"]
         current["tags"] = ["system-design/done" if t == "system-design/wip" else t
                            for t in ([tags] if isinstance(tags, str) else tags)]
+        if result["status"] == "archived" and "## Round summary" not in body:
+            body = body.rstrip() + "\n\n" + design_profile.round_summary(
+                problem_observations(item_id, path),
+            )
         write_note(path, current, body)
         return result
+
+
+def problem_observations(item_id, progress_path):
+    selected = []
+    folder = progress_path.parent.resolve()
+    for observation in design_profile.collect(ROOT):
+        source = (ROOT / observation["source"]).resolve()
+        if source.parent == folder:
+            selected.append(observation)
+            continue
+        try:
+            metadata, _ = read_note(source)
+        except (OSError, ValueError):
+            continue
+        if metadata.get("review_item_id") == item_id:
+            selected.append(observation)
+    return selected
+
+
+def recalculate(intervals, retry_days, archive_after_final):
+    report = {"updated": [], "unchanged": [], "skipped": []}
+    for path in sorted(ITEMS.glob("*.md")):
+        metadata, body = read_note(path)
+        if metadata.get("domain") != "system-design" or metadata.get("status") != "active":
+            continue
+        with item_lock(path.stem):
+            metadata, body = read_note(path)
+            if metadata.get("domain") != "system-design" or metadata.get("status") != "active":
+                continue
+            progress = design_progress(metadata, body, intervals, retry_days, archive_after_final)
+            if metadata.get("review_count", 0) and "next_review" not in progress:
+                report["skipped"].append({"id": path.stem, "reason": "history does not match review_count"})
+                continue
+            desired_next = progress.get("next_review", metadata.get("next_review"))
+            desired_stage = progress.get("stage", metadata.get("stage"))
+            desired_completed = progress.get("completed_design_rounds")
+            if (
+                _same_date(metadata.get("next_review"), desired_next)
+                and metadata.get("stage") == desired_stage
+                and metadata.get("completed_design_rounds") == desired_completed
+            ):
+                report["unchanged"].append(path.stem)
+                continue
+            metadata["next_review"] = desired_next
+            metadata["stage"] = desired_stage
+            metadata["completed_design_rounds"] = desired_completed
+            write_note(path, metadata, body)
+            report["updated"].append({
+                "id": path.stem,
+                "next_review": None if desired_next is None else read_date(desired_next).isoformat(),
+                "stage": desired_stage,
+                "completed_design_rounds": desired_completed,
+            })
+    return report
+
+
+def _same_date(left, right):
+    if left is None or right is None:
+        return left is None and right is None
+    return read_date(left) == read_date(right)
+
+
+def question_outline(item_id):
+    metadata, _ = read_note(ITEMS / f"{item_id}.md")
+    if metadata.get("domain") != "system-design":
+        raise ValueError("outline is only available for system design")
+    concepts = metadata.get("concept_ids") or []
+    if concepts:
+        validate_concepts(concepts)
+    with item_lock("system-design-profile"):
+        model = design_profile.rebuild(ROOT)
+    return design_profile.outline(concepts, model)
+
+
+def migrate(intervals, retry_days, archive_after_final):
+    backfill = design_profile.apply_backfill(ROOT)
+    schedule = recalculate(intervals, retry_days, archive_after_final)
+    with item_lock("system-design-profile"):
+        model = design_profile.rebuild(ROOT)
+    return {
+        "backfill": backfill,
+        "schedule": schedule,
+        "concepts": sorted(model["concepts"]),
+    }
 
 
 def main():
@@ -420,20 +572,37 @@ def main():
     finish_parser.add_argument("--item-file", type=Path, required=True)
     finish_parser.add_argument("--attempt-file", type=Path, required=True)
     finish_parser.add_argument("--progress-path", type=Path)
+    commands.add_parser("profile", help="Rebuild the System Design profile index")
+    commands.add_parser("outline", help="Select evidence-backed follow-ups for one item").add_argument("id")
+    commands.add_parser("recalculate", help="Recalculate active System Design review dates")
+    commands.add_parser("backfill", help="Backfill located assessment observations")
+    commands.add_parser("migrate", help="Backfill evidence, recalculate dates and rebuild the profile")
     args = parser.parse_args()
 
     try:
         day = read_date(args.date) if args.date is not None else date.today()
         intervals, retry_days, flows, archive_after_final = load_config()
         if args.command == "due":
-            result = due(day, intervals, retry_days)
+            result = due(day, intervals, retry_days, archive_after_final)
         elif args.command == "show":
-            result = show(item_slug(args.id, "id"), intervals, retry_days)
+            result = show(item_slug(args.id, "id"), intervals, retry_days, archive_after_final)
         elif args.command == "add":
             result = add(read_payload(args.item_file), flows)
         elif args.command == "finish":
             result = finish(read_payload(args.item_file), read_payload(args.attempt_file),
                             args.progress_path, day, (intervals, retry_days, flows, archive_after_final))
+        elif args.command == "profile":
+            with item_lock("system-design-profile"):
+                model = design_profile.rebuild(ROOT)
+            result = {"concepts": sorted(model["concepts"])}
+        elif args.command == "outline":
+            result = question_outline(item_slug(args.id, "id"))
+        elif args.command == "recalculate":
+            result = recalculate(intervals, retry_days, archive_after_final)
+        elif args.command == "backfill":
+            result = design_profile.apply_backfill(ROOT)
+        elif args.command == "migrate":
+            result = migrate(intervals, retry_days, archive_after_final)
         else:
             result = record(
                 item_slug(args.id, "id"), read_payload(args.attempt_file),
