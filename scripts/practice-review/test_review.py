@@ -3,7 +3,11 @@
 Run: python -m pytest scripts/practice-review/test_review.py
 """
 
+import json
+import subprocess
+import sys
 from datetime import date
+from pathlib import Path
 
 import pytest
 import yaml
@@ -193,6 +197,12 @@ def test_finish_recovers_same_design_round(vault, monkeypatch):
     topic = {"id": "dropbox", "title": "Dropbox", "domain": domain, "prompt": "Design Dropbox."}
     attempt = {"attempt_id": "round-1", "outcome": "assisted", "reflection": "Resume uploads."}
     args = (topic, attempt, path, date(2026, 11, 23), (INTERVALS, RETRY, {domain: "flow.md"}, True))
+    with pytest.raises(ValueError, match="progress path"):
+        review.finish(topic, attempt, None, *args[3:])
+    with pytest.raises(ValueError, match="Session topic"):
+        review.finish({**topic, "title": "Bitly"}, *args[1:])
+    assert "round_id" not in review.read_note(path)[0]
+    assert not (review.ITEMS / "dropbox.md").exists()
     original_write = review.write_note
 
     def interrupt_close(target, fields, body):
@@ -208,3 +218,99 @@ def test_finish_recovers_same_design_round(vault, monkeypatch):
         receipt = review.finish(*args)
         assert receipt["review_count"] == 1 and str(receipt["next_review"]) == "2026-11-24"
     assert review.read_note(path)[0]["tags"] == ["system-design/done"]
+
+
+def prepare_design_finish(vault, monkeypatch):
+    domain = "system-design"
+    review_root = vault / "Learning/Practice/Review"
+    monkeypatch.setattr(review, "REVIEW", review_root)
+    (review_root / "Content").mkdir(exist_ok=True)
+    (review_root / "Content/system-design.md").touch()
+    (vault / "flow.md").touch()
+    topic = {"id": "youtube", "title": "YouTube", "domain": domain, "prompt": "Design YouTube."}
+    attempt = {"attempt_id": "round-1", "outcome": "assisted", "reflection": "Use a CDN."}
+    config = (INTERVALS, RETRY, {domain: "flow.md"}, False)
+    return topic, attempt, config
+
+
+def write_session(vault, folder, saved_topic):
+    path = vault / "Learning/Practice/System-Design/Solutions" / folder / "progress.md"
+    path.parent.mkdir(parents=True)
+    review.write_note(path, {"tags": ["system-design/wip"], "topic": saved_topic}, "session")
+    return path
+
+
+def test_finish_accepts_full_problem_description_and_rejects_unrelated_session(vault, monkeypatch):
+    topic, attempt, config = prepare_design_finish(vault, monkeypatch)
+    described = write_session(vault, "YouTube", "Design YouTube")
+    unrelated = write_session(vault, "Bitly", "Design Bitly")
+    contained = write_session(vault, "Music", "Design YouTube Music")
+    with pytest.raises(ValueError, match="Session topic"):
+        review.finish(topic, attempt, unrelated, date(2026, 11, 23), config)
+    with pytest.raises(ValueError, match="Session topic"):
+        review.finish(topic, attempt, contained, date(2026, 11, 23), config)
+    assert "round_id" not in review.read_note(unrelated)[0]
+    assert "round_id" not in review.read_note(contained)[0]
+    assert not (review.ITEMS / "youtube.md").exists()
+    receipt = review.finish(topic, attempt, described, date(2026, 11, 23), config)
+    assert receipt["verified"] is True and receipt["review_count"] == 1
+    assert review.read_note(described)[0]["tags"] == ["system-design/done"]
+
+
+def cli_vault(tmp_path):
+    script = tmp_path / "scripts/practice-review/review.py"
+    script.parent.mkdir(parents=True)
+    script.write_text(Path(review.__file__).read_text(encoding="utf-8"), encoding="utf-8")
+    module = tmp_path / "system/modules/practice-review"
+    module.mkdir(parents=True)
+    config = {"enabled": True, "interval_days": INTERVALS, "retry_days": RETRY,
+              "practice_flows": {"system-design": "flow.md", "algorithm": "flow.md"}}
+    (module / "module.md").write_text(f"---\n{yaml.safe_dump(config)}---\n", encoding="utf-8")
+    (tmp_path / "flow.md").write_text("flow\n", encoding="utf-8")
+    content = tmp_path / "Learning/Practice/Review/Content"
+    content.mkdir(parents=True)
+    (content / "system-design.md").write_text("content\n", encoding="utf-8")
+    (content / "algorithm.md").write_text("content\n", encoding="utf-8")
+    return script
+
+
+def run_finish_cli(script, vault, item, progress=None):
+    item_path = vault / "item.json"
+    attempt_path = vault / "attempt.json"
+    item_path.write_text(json.dumps(item), encoding="utf-8")
+    attempt_path.write_text(json.dumps({
+        "attempt_id": "round-1", "outcome": "assisted", "reflection": "Use a CDN.",
+    }), encoding="utf-8")
+    command = [sys.executable, str(script), "--date", "2026-11-23", "finish",
+               "--item-file", str(item_path), "--attempt-file", str(attempt_path)]
+    if progress is not None:
+        command.extend(["--progress-path", progress])
+    return subprocess.run(command, cwd=vault, capture_output=True, text=True)
+
+
+def test_finish_cli_accepts_full_description_and_rejects_unrelated_session(tmp_path):
+    script = cli_vault(tmp_path)
+    topic = {"id": "youtube", "domain": "system-design", "title": "YouTube", "prompt": "Design YouTube."}
+    unrelated = write_session(tmp_path, "Bitly", "Design Bitly")
+    described = write_session(tmp_path, "YouTube", "Design YouTube")
+    rejected = run_finish_cli(script, tmp_path, topic,
+                              "Learning/Practice/System-Design/Solutions/Bitly/progress.md")
+    assert rejected.returncode == 1
+    assert rejected.stderr == "practice-review: Session topic does not match review title\n"
+    assert "Traceback" not in rejected.stderr
+    assert "round_id" not in review.read_note(unrelated)[0]
+    assert not (tmp_path / "Learning/Practice/Review/Items/youtube.md").exists()
+    accepted = run_finish_cli(script, tmp_path, topic,
+                              "Learning/Practice/System-Design/Solutions/YouTube/progress.md")
+    assert accepted.returncode == 0, accepted.stderr
+    assert json.loads(accepted.stdout)["review_count"] == 1
+    assert review.read_note(described)[0]["tags"] == ["system-design/done"]
+
+
+def test_finish_cli_reports_missing_domain_without_traceback(tmp_path):
+    script = cli_vault(tmp_path)
+    result = run_finish_cli(script, tmp_path, {"id": "two-sum", "title": "Two Sum", "prompt": "Find two numbers."})
+    assert result.returncode == 1
+    assert result.stderr == "practice-review: domain must be a lowercase slug, such as lc-1071\n"
+    assert "Traceback" not in result.stderr
+    assert result.stdout == ""

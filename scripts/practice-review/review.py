@@ -350,9 +350,23 @@ def record(item_id, payload, day, intervals, retry_days, archive_after_final=Fal
         return {**summarize(path, metadata), "recorded": True}
 
 
+def session_topic_matches(saved_topic, title):
+    # The session stores the full problem description. The review title is the short name
+    # produced by removing a leading "Design " when that prefix is present.
+    if not isinstance(saved_topic, str):
+        return False
+    saved = saved_topic.strip().lower()
+    expected = title.strip().lower()
+    if saved == expected:
+        return True
+    prefix = "design "
+    return saved.startswith(prefix) and saved[len(prefix):].strip() == expected
+
+
 def finish(topic, attempt, progress_path, day, config):
     intervals, retry_days, flows, archive = config
     item_id = item_slug(topic.get("id"), "id")
+    domain = item_slug(topic.get("domain"), "domain")
     attempt_id = read_text_field(attempt, "attempt_id", required=True)
     if not ATTEMPT_ID.fullmatch(attempt_id):
         raise ValueError("Invalid attempt_id")
@@ -370,16 +384,23 @@ def finish(topic, attempt, progress_path, day, config):
         return {**receipt, "verified": True, "attempt_id": attempt_id}
 
     if progress_path is None:
+        if domain == "system-design":
+            raise ValueError("System Design requires its session progress path")
         return register()
     path = (ROOT / progress_path).resolve()
     solutions = (ROOT / "Learning/Practice/System-Design/Solutions").resolve()
-    if topic["domain"] != "system-design" or path.parent.parent != solutions or path.name != "progress.md":
+    if domain != "system-design" or path.parent.parent != solutions or path.name != "progress.md":
         raise ValueError("Invalid session progress path")
     # Serialize finalizers for this folder even if they supply different topic IDs.
     with item_lock("session." + hashlib.sha256(str(path).encode()).hexdigest()):
         metadata, body = read_note(path)
         tags = metadata.get("tags", [])
         tags = [tags] if isinstance(tags, str) else tags
+        if metadata.get("review_item_id") is None:
+            saved_topic = metadata.get("topic")
+            title = read_text_field(topic, "title", required=True)
+            if not session_topic_matches(saved_topic, title):
+                raise ValueError("Session topic does not match review title")
         binding = {"round_id": attempt_id, "review_item_id": item_id, "round_completed_on": day.isoformat()}
         if any(metadata.get(key) is not None and str(metadata[key]) != value for key, value in binding.items()):
             raise ValueError("Session round does not match registration")
