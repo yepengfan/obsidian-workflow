@@ -75,7 +75,12 @@ Toggle a module's enabled state.
        - `(required)`: ✅ set → show (masked), ❌ not set → hard failure
        - `(optional)` or no prefix: ✅ set → show (masked), ⚠️ not set → soft warning
 
-     **f. `depends_on`** — Module dependencies:
+     **f. `requires.mcp`** - MCP tools (e.g. `practice`):
+     - Check that the current session exposes a tool with that name from a connected MCP server. Clients may prefix it with the server name, such as `mcp__<server>__practice`.
+     - ✅ found → show
+     - ❌ not found → hard failure: "MCP tool **<name>** is not available. Connect the MCP server named in the module's Setup section first."
+
+     **g. `depends_on`** - Module dependencies:
      - Read each dependency's module.md
      - ✅ `enabled: true` → ok
      - ❌ `enabled: false` → flag: "Dependency **<name>** is disabled. Enable it first."
@@ -89,6 +94,7 @@ Toggle a module's enabled state.
      ✅ Packages: aiohttp
      ✅ Plugins: dataview, obsidian-shellcommands
      ⚠️ Env: GITHUB_TOKEN not set — (optional) Higher API rate limit
+     ✅ MCP: practice
      ✅ Modules: dashboard (enabled)
      ```
 

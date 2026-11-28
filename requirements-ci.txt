@@ -34,7 +34,5 @@ pygments==2.21.0
     # via pytest
 pytest==9.2.0
     # via -r requirements-ci.in
-pyyaml==6.0.3
-    # via -r requirements-ci.in
 yarl==1.25.1
     # via aiohttp

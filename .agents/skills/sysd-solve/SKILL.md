@@ -22,7 +22,7 @@ Read and apply **English conversation and clarification** in `Learning/Practice/
 
 Use the stable review item ID for this design problem across chats and sessions.
 Check the review queue for that ID. For an existing item, read its summary with
-`review.py show <id>`. If the topic has no item yet, start guided round 1
+`practice_review`. If the topic has no item yet, start guided round 1
 and register it during the confirmed completion save. If lookup fails, retry
 the lookup before choosing the round.
 Use `completed_design_rounds + 1` as the upcoming round. Rounds 1 and 2 are
@@ -31,8 +31,8 @@ then cites existing observations, writes the round summary, and archives the top
 round advances from its actual completion date regardless of whether the
 outcome is assisted, independent, or omitted. A pause does not advance.
 Announce the topic, round and mode. Assign a UUIDv4 to a new round and use it
-as its attempt ID. Run `python3 scripts/practice-review/review.py outline <id>`
-for a registered item. Before registration, run `python3 scripts/practice-review/review.py outline --concept-ids <concept-id> ...` using the topic's concept list and retain that list as `concept_ids` for completion registration. Run the outline before choosing deep-dive follow-ups. Ask this problem's concepts first, then
+as its attempt ID. Call `practice_design_outline` with `id`
+for a registered item. Before registration, call it with `concept_ids` using the topic's concept list and retain that list as `concept_ids` for completion registration. Run the outline before choosing deep-dive follow-ups. Ask this problem's concepts first, then
 the returned in-scope weak or uncovered concepts. Do not reveal the answer in
 the question, and do not ask about a concept that is outside this problem.
 - **Guided.** Let the learner draw first. Ask them to trace one request, then
@@ -222,7 +222,7 @@ Before every follow-up or canvas-review request, update objective statuses from 
 
 1. On a finish request, start Phase 2 immediately. On a pause request, save the open round for resumption.
 2. Once all essential objectives have been assessed, deliver the final review in the same turn. An evidenced gap can be a final finding. Advance past a sufficiently assessed stage. Ask a follow-up only when it could materially change the assessment of an essential objective in the current stage. Otherwise proceed to the debrief and capture optional improvements there.
-3. Guided learning is self-paced. In Mock mode, before the next substantive question, compare verified active mock minutes with `review_time_limits.system-design` in the practice-review module. When the threshold is reached or passed and objectives remain, ask “Would you like to continue until we finish, or move to the final review now?” Wait for the answer. If the learner continues, use the normal completion criteria for the rest of this round. If they finish, start Phase 2.
+3. Guided learning is self-paced. In Mock mode, before the next substantive question, compare verified active mock minutes with the System Design time limit that `practice` returns (`consumers.system-design.time_limit` in the practice-review module). When the threshold is reached or passed and objectives remain, ask “Would you like to continue until we finish, or move to the final review now?” Wait for the answer. If the learner continues, use the normal completion criteria for the rest of this round. If they finish, start Phase 2.
 4. Use stopwatch intervals or learner-confirmed active time. Exclude pauses and Guided intervals, and count each interval once across resets, mode switches and resumed sittings. Unknown elapsed time cannot trigger the check-in. Preserve verified active mock time and the check-in decision in the round checkpoint; restore them on resume. A new round starts with a fresh check-in.
 
 **Step 5 diagram guidance**:

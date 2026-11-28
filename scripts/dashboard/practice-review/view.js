@@ -1,7 +1,6 @@
 const DOMAIN_LABELS = {
   algorithm: "Algorithm",
   "system-design": "System Design",
-  behavioral: "Behavioral Interview",
 };
 const OUTCOME_LABELS = {
   independent: "Independent",
@@ -364,7 +363,7 @@ function renderDashboard(
     domainCounts.set(item.domain, (domainCounts.get(item.domain) ?? 0) + 1);
   const domains = Array.from(
     new Set([
-      ...Object.keys(config.practice_flows ?? DOMAIN_LABELS),
+      ...Object.keys(config.consumers ?? DOMAIN_LABELS),
       ...domainCounts.keys(),
     ]),
   );

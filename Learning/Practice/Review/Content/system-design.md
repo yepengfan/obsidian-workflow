@@ -5,7 +5,7 @@
 - Use one design problem that can be reconstructed in a single round. Use `sysd-<slug>`, such as `sysd-url-shortener`. Reuse its original ID across designs for the same problem.
 - Put the problem, given scenario, and agreed requirements or scale constraints in `prompt`. Leave architecture choices open.
 - Use `review_focus` for requirements, capacity assumptions, key decisions, tradeoffs, or a previously difficult data path. Open previous designs and review focus only after the attempt ends. The `source` may point to the original prompt or related records.
-- Maintain `concept_ids` on the review item, using reusable ids such as `cache.expiry`. Before deep-dive questions, run `python3 scripts/practice-review/review.py outline <id>`. Ask this problem's concepts first. Then follow up on in-scope weak or uncovered concepts, and use a variant only for a mastered concept. Do not import a follow-up whose concept is outside this problem.
+- Maintain `concept_ids` on the review item, using reusable ids such as `cache.expiry`. Before deep-dive questions, call `practice_design_outline` with the item `id`. Ask this problem's concepts first. Then follow up on in-scope weak or uncovered concepts, and use a variant only for a mastered concept. Do not import a follow-up whose concept is outside this problem.
 
 ## Reflect after the attempt
 
