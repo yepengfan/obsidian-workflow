@@ -1,6 +1,7 @@
 const DOMAIN_LABELS = {
   algorithm: "Algorithm",
   "system-design": "System Design",
+  "sd-blocks": "SD Blocks",
 };
 const RESULT_LABELS = { passed: "Passed", failed: "Failed" };
 const ICONS = {

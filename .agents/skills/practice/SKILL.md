@@ -17,7 +17,7 @@ Apply the shared **English conversation and clarification** rules in `Learning/P
 
 ## Select module
 
-Use the client's available single-choice input, or numbered choices when that input is unavailable. A bare `/practice` offers `Algorithm` (`algorithm`) and `System Design` (`system-design`). Use a module already supplied in the request or current exchange; otherwise wait for the selection. Do not ask the learner to choose practice or Review.
+Use the client's available single-choice input, or numbered choices when that input is unavailable. A bare `/practice` offers `Algorithm` (`algorithm`), `System Design` (`system-design`) and `SD Blocks` (`sd-blocks`). Use a module already supplied in the request or current exchange; otherwise wait for the selection. Do not ask the learner to choose practice or Review.
 
 At a fresh practice entry, check enabled System Design practice for saved
 in-progress sessions before presenting the choices. Use the session catalog
@@ -46,7 +46,7 @@ Call the `practice` MCP tool with the selected `domain`. It checks that the modu
 
 ## Start a new problem
 
-- Enter the mapped workflow for new practice, passing through a new topic supplied for this invocation only after the due reviews are complete. If none was supplied, ask for a new problem or interview question using that workflow's topic-input step and wait. Do not reuse the last reviewed topic or automatically restore an unrelated WIP session. An explicit request to continue a session takes precedence over the default new-problem handoff.
+- Enter the mapped workflow for new practice, passing through a new topic supplied for this invocation only after the due reviews are complete. If none was supplied, ask for a new problem or interview question using that workflow's topic-input step and wait. For SD Blocks, new practice is the next block to triage, chosen as in **Start** of its skill, which also covers a map where every block is enrolled. Do not reuse the last reviewed topic or automatically restore an unrelated WIP session. An explicit request to continue a session takes precedence over the default new-problem handoff.
 - That workflow owns initialization, guidance, assessment and optional domain-specific saving. Do not add a shared topic menu or infer a topic from earlier conversation. For example, after algorithm reviews, enter `algo-solve` and ask for a new problem number or title when none was supplied.
 - Begin one stable `attempt_id` for this attempt and keep it through continuation and retries. When the round ends, register its review object using steps 1-3 in `.agents/skills/practice-review-add/SKILL.md` if it needs an item. Use an existing item's stable ID when available.
 - Close the actual practice round using **Review and save** in `.agents/skills/practice-review-today/SKILL.md`, retaining the assessment already produced by the mapped workflow. Collect the learner's own reflection, preserve the observed assistance and submission, and record the round through the practice MCP tools.

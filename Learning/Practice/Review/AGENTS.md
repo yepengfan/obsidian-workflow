@@ -3,15 +3,15 @@
 The module has three parts:
 
 - Shared review and scheduling. The Obsidian workspace MCP server lists due items, saves ended attempts and the learner's own reflection, and updates review metadata (see **MCP tools**). `00_index.md` opens `scripts/dashboard/practice-review/view.js`: the read-only dashboard for totals, a seven-day schedule, scheduling stages, and domain/status/search filters. Dashboard interactions never record attempts or change scheduling metadata.
-- `consumers` in the module configuration registers each module that uses spaced review: whether it is enabled, its own module, its authoritative workflow and its review time limit. Algorithm and system design use their existing skills for guidance, assessment and domain-specific saving.
+- `consumers` in the module configuration registers each module that uses spaced review: whether it is enabled, its own module, its authoritative workflow, its review time limit and an optional `placement_interval`. Algorithm, System Design and SD Blocks use their own skills for guidance, assessment and domain-specific saving.
 - `Content/<domain>.md` defines what belongs in a review item, including its neutral prompt, the material to recall, and questions to revisit after an attempt.
 
-Use `algorithm` or `system-design` for the domain. The selected workflow owns practice and assessment. This module connects its results to personal reflection and scheduling.
+Use `algorithm`, `system-design` or `sd-blocks` for the domain. The selected workflow owns practice and assessment. This module connects its results to personal reflection and scheduling.
 
 ## English conversation and clarification
 
 - Conduct practice and review conversations entirely in English, including module choices, problem prompts, hints, feedback, and reflection questions. Present non-English source material in English while preserving exact identifiers, links, and code. These rules remain active through domain-workflow handoffs and take precedence over their default language choices.
-- The Algorithm and System Design workflows also apply these rules when entered directly. Write new note content, template-derived text, and diagram labels in English while preserving existing filenames, links, metadata identifiers, and historical user content.
+- The Algorithm, System Design and SD Blocks workflows also apply these rules when entered directly. Write new note content, template-derived text, and diagram labels in English while preserving existing filenames, links, metadata identifiers, and historical user content.
 - Ask the learner to use English for explanations, interview answers, and reflections. When they reply in another language, ask them to restate their meaning in English before using that explanation or saving the reflection. Keep their own English wording in new records; preserve historical records as written.
 - When a reply is unclear, identify the ambiguous phrase and ask a focused question about what they mean. For example, if "calculate directly in the array" could mean building a result list or modifying the input, ask which they intend. Wait for clarification before assessing that claim or recording that reflection; do not infer their intent or silently replace it with a polished interpretation.
 - Accept concise, clear English without requiring extra justification or a grammar exercise. Keep clarification neutral during independent attempts. Language clarification alone is not substantive solution help; record any actual problem-solving assistance separately in the assessment.
@@ -56,6 +56,8 @@ Every ended attempt is judged, including the first attempt at a new problem. Eac
 - `no_substantive_help` means the same in every module: the learner proposed every mechanism, approach and answer direction. Neutral interviewer probes are not help; a hint, a named technique, a corrected approach or a revealed answer is.
 - `within_time_limit` uses the module's `time_limit`. Work may continue past it to finish, but the attempt does not pass.
 
+A module with a `placement_interval` can record an item's first attempt as a placement (`placement: true`). A passed placement moves the item to the stage that waits that interval; a failed one is an ordinary fail.
+
 An active item is overdue when its next date is earlier than today. An item is due today when its next date equals today. Items awaiting their first recorded attempt have a separate list.
 
 ## MCP tools
@@ -64,16 +66,17 @@ The Obsidian workspace MCP server is the only implementation of scheduling, both
 
 | Tool | Use |
 | --- | --- |
-| `practice` | Check that a module can be reviewed and return the schedule rule, its workflow, time limit, pass criteria and entry instructions. `time_limits` and `pass_criteria` are keyed by domain, also for a single-domain call: `time_limits["system-design"]`, `pass_criteria.algorithm`. Without a domain it lists every module with the reason any is unavailable. |
+| `practice` | Check that a module can be reviewed and return the schedule rule, its workflow, time limit, pass criteria and entry instructions. `time_limits`, `pass_criteria` and `placement_intervals` are keyed by domain, also for a single-domain call: `time_limits["system-design"]`, `pass_criteria.algorithm`. Without a domain it lists every module with the reason any is unavailable. For `sd-blocks` it also returns `blocks`, every block of the map with its item. |
 | `practice_reviews` | One domain's `overdue`, `today`, `unstarted`, and `upcoming` lists, already ordered by date and stable ID. |
-| `practice_review` | One item's prompt, source and scheduling metadata, without its history. Read the note after the attempt when comparing past evidence. |
+| `practice_review` | One item's prompt, source and scheduling metadata, without its history. Read the note after the attempt when comparing past evidence. An SD Blocks item also returns its `block` with the points ordered for rotation. |
 | `practice_add_review` | Register `id`, `domain`, `title`, and `prompt`, with optional `source`, `review_focus`, and `concept_ids`. An existing item is returned unchanged with `created: false`. |
 | `practice_finish_round` | Confirmed completion in every enrolled module: ensure the item exists, record the attempt and verify its schedule. Pass the System Design `progress_path` to close its session. |
 | `practice_record_review` | Record one ended attempt on an existing item. |
+| `practice_block_template` | A fresh SD Blocks review canvas showing the scenario, at `Blocks/Reviews/<block>/`. |
 | `practice_design_outline` | System Design follow-ups for an item `id`, or for `concept_ids` before registration. |
 | `practice_rebuild_design_profile` | Rebuild `Learning/Practice/System-Design/Profile.md` from session assessments. |
 
-An attempt has `attempt_id`, `reflection`, `completed_on`, the actual local day the attempt ended, and `criteria`: one `{id, met, evidence}` per criterion the module declares. Optional fields are `submission`, `observations`, and System Design `concept_observations`. Reuse the same `attempt_id` and `completed_on` when retrying a save; a repeated `attempt_id` is recorded only once.
+An attempt has `attempt_id`, `reflection`, `completed_on`, the actual local day the attempt ended, and `criteria`: one `{id, met, evidence}` per criterion the module declares. Optional fields are `submission`, `observations`, System Design `concept_observations`, and `placement` where the module declares a `placement_interval`. SD Blocks attempts also require `points`: one `{id, result, evidence}` per examined point, with `result` `mastered`, `partial` or `weak`. Reuse the same `attempt_id` and `completed_on` when retrying a save; a repeated `attempt_id` is recorded only once.
 
 `practice_finish_round` with a System Design `progress_path` stores `concept_observations` in a `practice-observations` YAML fence under the session's Assessment. Without that path it only registers the attempt and schedule.
 
