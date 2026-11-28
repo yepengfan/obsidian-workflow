@@ -44,7 +44,7 @@ Every ended attempt is judged, including new practice. Judge each criterion in `
 - `no_substantive_help`: the learner proposed every mechanism, approach and answer direction. A hint, a named technique, a corrected approach or a revealed answer is help.
 - `within_time_limit`: the attempt reached the end of Deep Dives within the System Design time limit (`time_limits["system-design"]`) of verified active time. Continuing past the check-in is allowed, but this criterion is then not met. Unknown elapsed time is not met.
 - `all_steps_done`: all six steps were completed.
-- `core_blocks_partial`: find the problem's row in the Problems table of `Learning/Practice/System-Design/Blocks.md` by its breakdown note, and submit the row's id as `problem`. Met when every block in its `core` column has at least one learner observation tagged with that `block` in this attempt, and all of them are `mastered` or `partial`. The server checks this judgment. For a problem without a row, judge it on the item's `concept_ids` instead and leave out `problem`.
+- `core_blocks_partial`: use the Problems row found while discovering the objectives, and submit its id as `problem`. Met when every block in its `core` column has at least one learner observation tagged with that `block` in this attempt, and all of them are `mastered` or `partial`. The server checks this judgment. For a problem without a row, judge it on the item's `concept_ids` instead and leave out `problem`.
 
 Do not decide pass or fail yourself: the MCP server checks that every criterion was judged and computes the result. Show the learner each judgment with its evidence in the debrief and include it in the confirmed save preview.
 
@@ -93,6 +93,8 @@ When `/practice` hands off to a new problem without a topic, ask for a new probl
 ### Discover the assessment objectives
 
 Once the topic is known, prepare privately before the first interview question in either mode, including scheduled reviews. Resolve the topic through the Question Breakdowns index described in the module guide. Read the matching breakdown, then look up relevant notes in `Learning/Practice/System-Design/Core Concepts/`, `Key Technologies/` and `Design Patterns/` (all under the same System-Design folder). Read only notes relevant to this problem. If a reference is missing, use the available sources and the agreed scope; identify any unsupported assessment as such in the debrief.
+
+Find the problem's row in the Problems table of `Learning/Practice/System-Design/Blocks.md` by its breakdown note now, and keep the row's id for `problem`. Every block in its `core` column is an essential objective, judged by `core_blocks_partial`: plan where in the attempt the learner can show it, and do not apply the completion rule while a core block has no learner answer. A problem without a row has no core blocks beyond its `concept_ids`.
 
 Choose essential objectives and distinguish supporting knowledge. For each essential objective, specify its stage, knowledge category, and what the learner could demonstrate to satisfy it. Refine the selection once requirements are agreed. Keep reference solutions, pattern names and expected mechanisms out of the neutral prompt and public checkpoint summary before the independent attempt. The learner may demonstrate the same understanding through a different sound design.
 
