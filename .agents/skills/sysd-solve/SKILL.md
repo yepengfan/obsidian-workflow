@@ -67,7 +67,7 @@ When `/practice` hands off to a new problem without a topic, suggest one as desc
 
 ### Choose a new problem
 
-`practice` with domain `system-design` returns `roadmap`, the learning plan's progress. When its `status` is `ready` and it has a `next` problem, suggest that problem by default: its title, phase and core gap count from `next.preflight` (see **Pre-problem check**). Do not show its `focus`, which names the technique the problem trains. Say when the check is unavailable, with its `error`. Let the learner choose another problem instead. When the roadmap is complete (`next` is null), say so. When it is null or `unavailable`, give the returned `reason` if any. In those cases ask for a problem, for example `/sysd-solve Design YouTube`.
+`practice` with domain `system-design` returns `roadmap`, the learning plan's progress. Reuse that result when this conversation already has it, as after a `/practice` handoff that selected System Design. Otherwise, including a direct `/sysd-solve` and an overview handoff, call `practice` with domain `system-design` first: the overview carries no `roadmap`. When its `status` is `ready` and it has a `next` problem, suggest that problem by default: its title, phase and core gap count from `next.preflight` (see **Pre-problem check**). Do not show its `focus`, which names the technique the problem trains. Say when the check is unavailable, with its `error`. Let the learner choose another problem instead. When the roadmap is complete (`next` is null), say so. When it is null or `unavailable`, give the returned `reason` if any. In those cases ask for a problem, for example `/sysd-solve Design YouTube`.
 
 ### With arguments
 
