@@ -74,7 +74,7 @@ When `/practice` hands off to a new problem without a topic, suggest one as desc
 1. Extract the short topic name from `$ARGUMENTS`, such as "Design YouTube" → "YouTube" or "Bitly" → "Bitly".
 2. Use shell `ls Learning/Practice/System-Design/Solutions/` to enumerate matching `<topic>-*` folders. Do not use Glob/Grep.
    - **A progress.md qualifies for WIP resumption** → use **Resume a session** to check progress.md and Excalidraw, then continue from the interrupted step.
-   - **A progress.md has `system-design/planned`** → replace that tag with `system-design/wip`, check both files using **Resume a session**, and continue from the recorded next step. Start at Step 1 if the session is empty.
+   - **A progress.md has `system-design/planned`** → run the **Pre-problem check** first. Once the learner starts the design, either directly or after any triage, replace that tag with `system-design/wip`. Then check both files using **Resume a session**, and continue from the recorded next step. Start at Step 1 if the session is empty.
    - **Matching folders exist, but none are resumable or planned** → tell the learner how many times they have practiced the topic and ask whether to start another attempt.
    - **No matching folder exists** → create a Solution folder and files as described below.
 
@@ -94,7 +94,7 @@ When `/practice` hands off to a new problem without a topic, suggest one as desc
 
 4. Tell the learner: "The Solution folder is ready. Open Excalidraw to start drawing." Include its wikilink.
 
-For new practice, run the **Pre-problem check** before step 3 creates the folder or a planned skeleton's canvas is opened.
+For new practice, run the **Pre-problem check** before step 3 creates the folder, and before a planned skeleton becomes WIP or its canvas is opened. A planned skeleton stays planned while the learner triages blocks or stops before starting the design, so it is never offered as a session to resume.
 
 ### Discover the assessment objectives
 
@@ -126,7 +126,7 @@ Keep the result for the debrief. A weak answer about a tagged block brings its r
 A learning plan may create Solution skeletons before practice begins. Their progress.md uses `tags: [system-design/planned]`, with all six steps marked ⬜.
 
 - A planned problem is not a WIP session. A direct `/sysd-solve` without arguments must not list or automatically resume it.
-- When the learner specifies that problem, first switch its tag to `system-design/wip` as described above, then begin guidance.
+- When the learner specifies that problem, run the **Pre-problem check**, then switch its tag to `system-design/wip` as described above once the design starts, then begin guidance.
 - The dashboard shows planned problems as unstarted, with links to their existing progress files.
 
 ### Resume a session
