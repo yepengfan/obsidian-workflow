@@ -23,7 +23,7 @@ Read and apply **English conversation and clarification** in `Learning/Practice/
 
 Call `practice` with `domain: sd-blocks`. It checks the block map and returns `blocks`: every block in `Blocks.md`, in map order, with its title, article `note`, number of points and its review item (`item_id`, `status`, `stage`, `next_review`), or `item: null` when the block has no item yet. It also returns `time_limits`, `pass_criteria` and `placement_intervals` for `sd-blocks`. If SD Blocks is unavailable, report the reason and every listed map error, and stop.
 
-- A block named in `$ARGUMENTS`, by id or title, is reviewed first: a review if it has an active item, otherwise triage.
+- A block named in `$ARGUMENTS`, by id or title, is reviewed first: triage when its `item` is null, otherwise a **Review** of its item. An archived item follows the archived-item rule in `Learning/Practice/Review/AGENTS.md`: the attempt is judged but not scheduled until the learner reactivates the item, and it is never a placement.
 - Otherwise call `practice_reviews` with `domain: sd-blocks` and review its `overdue` and `today` items in order, as `/practice` does.
 - When none are due, suggest the first block in map order that has no item and let the learner choose another. Wait for the choice. Then triage it.
 
@@ -31,12 +31,10 @@ Every attempt has one UUIDv4 attempt ID, kept through retries and saves.
 
 ## Triage
 
-Triage a block that has no item. Name the block, without listing its points, and ask how well the learner knows it: not at all, vaguely, or well.
+Triage only a block whose `item` is null: one with any item, active or archived, already has attempts and is never placed. Name the block, without listing its points, and ask how well the learner knows it: not at all, vaguely, or well.
 
 - **Not at all** or **vaguely**: run a **Primer**.
 - **Well**: run a **Review** as a placement.
-
-A block whose item is archived follows the archived-item rule in `Learning/Practice/Review/AGENTS.md`: the attempt is judged but not scheduled until the learner reactivates the item.
 
 ## Primer
 
@@ -67,5 +65,5 @@ Do not decide pass or fail yourself; the server computes it. Show each judgment 
 
 1. Ask for the learner's own short reflection, then preview the canvas save and the review record together and wait for explicit confirmation.
 2. Save the canvas with `practice_save_canvas` at the template's path, using a null revision.
-3. Call `practice_finish_round`. Put `id: sdb-<block>`, `domain: sd-blocks`, the block's title and the prompt `Review the <title> building block in a fresh scenario.` in `topic`. Put the attempt ID, the actual local completion date, the reflection, `criteria`, `points` (one `{id, result, evidence}` per examined point) and the scenario as `submission` in `attempt`. Add `placement: true` for a triage review of a familiar block, which is always the item's first attempt.
+3. Call `practice_finish_round`. Put `id: sdb-<block>`, `domain: sd-blocks`, the block's title and the prompt `Review the <title> building block in a fresh scenario.` in `topic`. Put the attempt ID, the actual local completion date, the reflection, `criteria`, `points` (one `{id, result, evidence}` per examined point) and the scenario as `submission` in `attempt`. Add `placement: true` only for a triage review of a familiar block, whose `item` was null, so it is always the item's first attempt.
 4. Report the returned stage and next review date. A passed placement starts at the stage that waits `placement_intervals["sd-blocks"]` days. Continue with the next due review, or offer the next block to triage.
