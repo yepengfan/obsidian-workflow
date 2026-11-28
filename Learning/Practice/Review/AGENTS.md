@@ -74,6 +74,7 @@ The Obsidian workspace MCP server is the only implementation of scheduling, both
 | `practice_record_review` | Record one ended attempt on an existing item. |
 | `practice_block_template` | A fresh SD Blocks review canvas showing the scenario, at `Blocks/Reviews/<block>/`. |
 | `practice_design_outline` | System Design follow-ups for an item `id`, or for `concept_ids` before registration. |
+| `practice_design_preflight` | A System Design problem's core and supporting blocks with their SD Blocks reviews and gaps, by `problem` id or `breakdown` title. |
 | `practice_rebuild_design_profile` | Rebuild `Learning/Practice/System-Design/Profile.md` from session assessments. |
 
 An attempt has `attempt_id`, `reflection`, `completed_on`, the actual local day the attempt ended, and `criteria`: one `{id, met, evidence}` per criterion the module declares. Optional fields are `submission`, `observations`, System Design `concept_observations` and `problem`, and `placement` where the module declares a `placement_interval`. A System Design `problem` is the id of the topic's row in the Problems table of `Blocks.md`. SD Blocks attempts also require `points`: one `{id, result, evidence}` per examined point, with `result` `mastered`, `partial` or `weak`. Reuse the same `attempt_id` and `completed_on` when retrying a save; a repeated `attempt_id` is recorded only once.
