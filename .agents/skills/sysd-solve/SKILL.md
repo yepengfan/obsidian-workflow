@@ -116,12 +116,14 @@ New practice only: a scheduled review stays neutral, so it never names the probl
 
 A block's name names a technique, and naming a technique before or during the attempt is substantive help. So the result stays private unless the learner chooses triage: tell the learner only how many core gaps there are.
 
-- **Two or more core gaps.** Offer triage before the problem. Explain that triage names the blocks the problem needs, so this attempt will then not meet `no_substantive_help` and is reviewed the next day. Let the learner choose:
-  - **Triage.** Triage each core block whose gap is `not_enrolled`, one at a time, following **Triage** in `.agents/skills/sd-blocks/SKILL.md`, after loading SD Blocks with `practice` and domain `sd-blocks` for its points and pass criteria. That gives a primer for a block the learner does not know, or a placement review for one they know well. Then return to this problem, and judge `no_substantive_help` not met, citing the triage.
-  - **Start now.** Name no block, and continue as for fewer gaps.
-- **Fewer than two core gaps.** Start the problem without naming any block. Plan a neutral Deep Dives question for each gap, a core block that `last_failed` or a supporting block with a gap, that does not name its technique.
+- **Two or more core gaps, at least one of them `not_enrolled`.** Offer triage of the `not_enrolled` core blocks before the problem. Explain that triage names the blocks the problem needs, so this attempt will then not meet `no_substantive_help` and is reviewed the next day. Let the learner choose:
+  - **Triage.** Triage each core block whose gap is `not_enrolled`, one at a time, following **Triage** in `.agents/skills/sd-blocks/SKILL.md`, after loading SD Blocks with `practice` and domain `sd-blocks` for its points and pass criteria. That gives a primer for a block the learner does not know, or a placement review for one they know well. Then return to this problem. If any block was triaged, judge `no_substantive_help` not met, citing the triage.
+  - **Start now.** Name no block, and start the problem.
+- **Otherwise**, with fewer than two core gaps or only `last_failed` ones, start the problem without naming any block.
 - **`sd_blocks` is `unavailable`.** The blocks have no reviews. Say that the check could not see them, and start the problem.
 - **`problem` is null.** Blocks.md has no row for this breakdown. Start the problem. In the debrief, after the attempt ends, draft a row for the learner to confirm: an id from the breakdown's title in kebab-case, `[[Question Breakdowns/<title>]]`, and `core` and `uses` taken from the patterns and technologies the breakdown relies on, using only block ids from Blocks.md. A block may not be in both columns. The learner maintains Blocks.md, and the MCP server only reads it. In a session with file access, add the confirmed row to the Problems table. Otherwise, give it to the learner to add. The server sees the row once the vault syncs. This attempt has no `problem`, so `core_blocks_partial` is judged on `concept_ids`.
+
+Plan a neutral Deep Dives question, one that does not name its technique, for each gap not triaged: a core block that `last_failed`, a `not_enrolled` core block that was not triaged, and a supporting block with a gap.
 
 Keep the result for the debrief, and show it there in full. A weak answer about a tagged block brings its review forward (see **Phase 3**).
 
