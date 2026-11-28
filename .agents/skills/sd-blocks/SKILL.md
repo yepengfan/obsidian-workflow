@@ -25,7 +25,8 @@ Call `practice` with `domain: sd-blocks`. It checks the block map and returns `b
 
 - A block named in `$ARGUMENTS`, by id or title, is reviewed first: triage when its `item` is null, otherwise a **Review** of its item. An archived item follows the archived-item rule in `Learning/Practice/Review/AGENTS.md`: the attempt is judged but not scheduled until the learner reactivates the item, and it is never a placement.
 - Otherwise call `practice_reviews` with `domain: sd-blocks` and review its `overdue` and `today` items in order, as `/practice` does.
-- When none are due, suggest the first block in map order that has no item and let the learner choose another. Wait for the choice. Then triage it.
+- When none are due and some block has `item: null`, suggest the first such block in map order and let the learner choose another. Wait for the choice. Then triage it.
+- When none are due and every block has an item, there is nothing to triage. Say that every block is enrolled, and list the `upcoming` items from `practice_reviews` with their dates; archived blocks are finished. Offer an early review of an upcoming item, which counts like an on-time one, and otherwise end. Do not suggest triage.
 
 Every attempt has one UUIDv4 attempt ID, kept through retries and saves.
 
