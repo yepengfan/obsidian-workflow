@@ -137,6 +137,7 @@ When saving, follow the module's Pattern, Atom, and Log Rules:
 
 Record the attempt in practice review with the same confirmation, also when the learner stopped without a passing solution and only the review record is offered:
 
+- First check whether the problem already has a review item with `practice_review`. If it fails with `review_archived` or returns an item whose `status` is not `active`, follow the archived-item rule in `Learning/Practice/Review/AGENTS.md` instead of calling `practice_finish_round`, and say so in the saving question.
 - Call `practice_finish_round` once. Put the problem in `topic` following **Create an item** in `Learning/Practice/Review/Content/algorithm.md`: its stable `id`, `domain: algorithm`, `title`, a neutral `prompt` and the verified `source` link. An existing item is reused. Put the attempt ID, the actual local completion date as `completed_on`, the learner's reflection and the `criteria` judgments in `attempt`.
 - Report the returned next review date. Retry a failed record with the same attempt ID; it is recorded only once. If practice review is unavailable, say the attempt was not recorded.
 
