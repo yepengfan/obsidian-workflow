@@ -61,16 +61,20 @@ When `$ARGUMENTS` is empty for a direct `/sysd-solve` invocation:
 1. Run shell `ls Learning/Practice/System-Design/Solutions/` to enumerate subfolders. Read each `progress.md` and check for the `system-design/wip` tag. Follow the warning above rather than using Glob/Grep.
 2. **One WIP session** → restore it using **Resume a session** below, checking both progress.md and Excalidraw, and continue from the interrupted step.
 3. **Multiple WIP sessions** → list the topic, start date, and current progress of each, then ask which one to continue.
-4. **No WIP sessions** → reply: "No practice session is in progress. Please specify a problem, for example `/sysd-solve Design YouTube`."
+4. **No WIP sessions** → reply that no practice session is in progress, and suggest a problem as described in **Choose a new problem**.
 
-When `/practice` hands off to a new problem without a topic, ask for a new problem and wait instead of automatically restoring an unrelated WIP session. An independent review starts from its neutral prompt and uses Phase 2 after submission; do not restore old designs before that attempt.
+When `/practice` hands off to a new problem without a topic, suggest one as described in **Choose a new problem** and wait, instead of automatically restoring an unrelated WIP session. An independent review starts from its neutral prompt and uses Phase 2 after submission; do not restore old designs before that attempt.
+
+### Choose a new problem
+
+`practice` with domain `system-design` returns `roadmap`, the learning plan's progress. Reuse that result only when this conversation already has it and nothing has been saved since, such as an attempt, a review or a triage. A save can finish the suggested problem or change its gaps. Otherwise, including a direct `/sysd-solve` and an overview handoff, call `practice` with domain `system-design` again before suggesting a problem: the overview carries no `roadmap`, and the call only reads. When its `status` is `ready` and it has a `next` problem, suggest that problem by default: its title, phase and core gap count from `next.preflight` (see **Pre-problem check**). Do not show its `focus`, which names the technique the problem trains. Say when the check is unavailable, with its `error`. Let the learner choose another problem instead. When the roadmap is complete (`next` is null), say so. When it is null or `unavailable`, give the returned `reason` if any. In those cases ask for a problem, for example `/sysd-solve Design YouTube`.
 
 ### With arguments
 
 1. Extract the short topic name from `$ARGUMENTS`, such as "Design YouTube" → "YouTube" or "Bitly" → "Bitly".
 2. Use shell `ls Learning/Practice/System-Design/Solutions/` to enumerate matching `<topic>-*` folders. Do not use Glob/Grep.
    - **A progress.md qualifies for WIP resumption** → use **Resume a session** to check progress.md and Excalidraw, then continue from the interrupted step.
-   - **A progress.md has `system-design/planned`** → replace that tag with `system-design/wip`, check both files using **Resume a session**, and continue from the recorded next step. Start at Step 1 if the session is empty.
+   - **A progress.md has `system-design/planned`** → run the **Pre-problem check** first. Once the learner starts the design, either directly or after any triage, replace that tag with `system-design/wip`. Then check both files using **Resume a session**, and continue from the recorded next step. Start at Step 1 if the session is empty.
    - **Matching folders exist, but none are resumable or planned** → tell the learner how many times they have practiced the topic and ask whether to start another attempt.
    - **No matching folder exists** → create a Solution folder and files as described below.
 
@@ -90,6 +94,8 @@ When `/practice` hands off to a new problem without a topic, ask for a new probl
 
 4. Tell the learner: "The Solution folder is ready. Open Excalidraw to start drawing." Include its wikilink.
 
+For new practice, run the **Pre-problem check** before step 3 creates the folder, and before a planned skeleton becomes WIP or its canvas is opened. A planned skeleton stays planned while the learner triages blocks or stops before starting the design, so it is never offered as a session to resume.
+
 ### Discover the assessment objectives
 
 Once the topic is known, prepare privately before the first interview question in either mode, including scheduled reviews. Resolve the topic through the Question Breakdowns index described in the module guide. Read the matching breakdown, then look up relevant notes in `Learning/Practice/System-Design/Core Concepts/`, `Key Technologies/` and `Design Patterns/` (all under the same System-Design folder). Read only notes relevant to this problem. If a reference is missing, use the available sources and the agreed scope; identify any unsupported assessment as such in the debrief.
@@ -98,12 +104,35 @@ Find the problem's row in the Problems table of `Learning/Practice/System-Design
 
 Choose essential objectives and distinguish supporting knowledge. For each essential objective, specify its stage, knowledge category, and what the learner could demonstrate to satisfy it. Refine the selection once requirements are agreed. Keep reference solutions, pattern names and expected mechanisms out of the neutral prompt and public checkpoint summary before the independent attempt. The learner may demonstrate the same understanding through a different sound design.
 
+### Pre-problem check
+
+New practice only: a scheduled review stays neutral, so it never names the problem's blocks before the attempt ends. Once the breakdown is resolved, call `practice_design_preflight` with its note title as `breakdown`, or with the row's id as `problem`. The result lists the problem's `core` and `uses` blocks, each with its SD Blocks `review` and `gap`:
+
+- `not_enrolled`: the block has no review yet.
+- `last_failed`: its latest review failed.
+- `null`: no gap. An archived block has finished its schedule.
+
+`core_gaps` counts the core blocks with a gap.
+
+A block's name names a technique, and naming a technique before or during the attempt is substantive help. So the result stays private unless the learner chooses triage: tell the learner only how many core gaps there are.
+
+- **Two or more core gaps, at least one of them `not_enrolled`.** Offer triage of the `not_enrolled` core blocks before the problem. Explain that triage names the blocks the problem needs, so this attempt will then not meet `no_substantive_help` and is reviewed the next day. Let the learner choose:
+  - **Triage.** Triage each core block whose gap is `not_enrolled`, one at a time, following **Triage** in `.agents/skills/sd-blocks/SKILL.md`, after loading SD Blocks with `practice` and domain `sd-blocks` for its points and pass criteria. That gives a primer for a block the learner does not know, or a placement review for one they know well. Then return to this problem. If any block was triaged, judge `no_substantive_help` not met, citing the triage.
+  - **Start now.** Name no block, and start the problem.
+- **Otherwise**, with fewer than two core gaps or only `last_failed` ones, start the problem without naming any block.
+- **`sd_blocks` is `unavailable`.** The blocks have no reviews. Say that the check could not see them, and start the problem.
+- **`problem` is null.** Blocks.md has no row for this breakdown. Start the problem. In the debrief, after the attempt ends, draft a row for the learner to confirm: an id from the breakdown's title in kebab-case, `[[Question Breakdowns/<title>]]`, and `core` and `uses` taken from the patterns and technologies the breakdown relies on, using only block ids from Blocks.md. A block may not be in both columns. The learner maintains Blocks.md, and the MCP server only reads it. In a session with file access, add the confirmed row to the Problems table. Otherwise, give it to the learner to add. The server sees the row once the vault syncs. This attempt has no `problem`, so `core_blocks_partial` is judged on `concept_ids`.
+
+Plan a neutral Deep Dives question, one that does not name its technique, for each gap not triaged: a core block that `last_failed`, a `not_enrolled` core block that was not triaged, and a supporting block with a gap.
+
+Keep the result for the debrief, and show it there in full. A weak answer about a tagged block brings its review forward (see **Phase 3**).
+
 ### Pre-created roadmap problems
 
 A learning plan may create Solution skeletons before practice begins. Their progress.md uses `tags: [system-design/planned]`, with all six steps marked ⬜.
 
 - A planned problem is not a WIP session. A direct `/sysd-solve` without arguments must not list or automatically resume it.
-- When the learner specifies that problem, first switch its tag to `system-design/wip` as described above, then begin guidance.
+- When the learner specifies that problem, run the **Pre-problem check**, then switch its tag to `system-design/wip` as described above once the design starts, then begin guidance.
 - The dashboard shows planned problems as unstarted, with links to their existing progress files.
 
 ### Resume a session

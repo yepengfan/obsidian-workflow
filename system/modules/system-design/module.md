@@ -18,6 +18,7 @@ folders: [Learning/Practice/System-Design/, Learning/Practice/System-Design/Solu
 config_files:
   - .agents/skills/sysd-solve/SKILL.md
   - Learning/Practice/System-Design/AGENTS.md
+roadmap: Learning/Plans/SYSD/00_plan.md
 pass_criteria:
   - no_substantive_help
   - within_time_limit
@@ -38,6 +39,7 @@ Ongoing system design practice: interactive guidance → design review → patte
 - **Log/**: Practice session records.
 - **Courses/**: Course notes, such as Hello Interview.
 - **Solutions/**: One folder per session, following `planned → wip → done`.
+- **`roadmap`**: the learning plan whose frontmatter `roadmap` lists the problems in order. `practice` suggests its first problem without a finished session for new practice.
 
 ### Data Flow
 

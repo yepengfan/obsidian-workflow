@@ -140,8 +140,8 @@ system-design/planned → system-design/wip → system-design/done
 - `planned`: a learning plan has pre-created a Solution skeleton, but practice has not started; all six steps remain ⬜.
 - `wip`: practice is in progress. New sessions created by `/sysd-solve <topic>` start here.
 - `done`: design, review, and Phase 3 saving are complete.
-- A direct `/sysd-solve` without arguments automatically resumes only actual WIP sessions and does not list planned ones. A `/practice` handoff to a new problem asks for a topic instead of restoring unrelated WIP.
-- When a planned topic is selected, replace its status with WIP and continue from progress.md's recorded next step.
+- A direct `/sysd-solve` without arguments automatically resumes only actual WIP sessions and does not list planned ones. A `/practice` handoff to a new problem suggests the roadmap's next problem, or asks for a topic, instead of restoring unrelated WIP (sysd-solve **Choose a new problem**).
+- When a planned topic is selected, run the sysd-solve **Pre-problem check** first. Replace its status with WIP only once the learner starts the design, directly or after any triage, then continue from progress.md's recorded next step. A skeleton left while the learner triages stays planned.
 
 ### Excalidraw
 
