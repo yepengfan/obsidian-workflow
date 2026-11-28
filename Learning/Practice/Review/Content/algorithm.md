@@ -15,10 +15,10 @@
 
 ## Judge the attempt
 
-Judge both criteria in `pass_criteria.algorithm`, with evidence from the pasted code and conversation:
+Judge both criteria in `pass_criteria.algorithm` (the response keys it by domain), with evidence from the pasted code and conversation:
 
 - `no_substantive_help`: the learner chose the approach and wrote the code without a hint, named technique, corrected approach or revealed answer. Clarifying the prompt is not help.
-- `tests_pass`: the final LeetCode submission passed every test case. A fix after review feedback can meet it, but that feedback then fails `no_substantive_help`.
+- `tests_pass`: the final submission passed every test case of the item's judge, LeetCode or the source's own. For a source without an online judge, run every public example and the edge cases checked in review. A fix after review feedback can meet it, but that feedback then fails `no_substantive_help`.
 
 The server passes the attempt only when both are met.
 

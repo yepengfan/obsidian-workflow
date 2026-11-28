@@ -21,7 +21,7 @@ config_files:
 pass_criteria:
   - no_substantive_help
   - id: tests_pass
-    rule: The final LeetCode submission passed every test case.
+    rule: The final submission passed every test case of the item's judge, LeetCode or the source's own. Without an online judge, it passed every public example and each edge case checked in review.
 tags: [system/module]
 ---
 
@@ -40,7 +40,7 @@ Coach messages, learner explanations and reflections, and new note content use E
 
 ### Data Flow
 
-- **Input**: `/algo-solve <LC#>` → guided problem solving → code review → user confirmation → save a pattern card and log entry.
+- **Input**: `/algo-solve <LC#>` → guided problem solving → code review → criteria judgment and reflection → user confirmation → save a pattern card, log entry and practice review record.
 
 ## Quick Start
 

@@ -63,7 +63,7 @@ The Obsidian workspace MCP server is the only implementation of scheduling, both
 
 | Tool | Use |
 | --- | --- |
-| `practice` | Check that a module can be reviewed and return the schedule rule, its workflow, time limit, pass criteria and entry instructions. Without a domain it lists every module with the reason any is unavailable. |
+| `practice` | Check that a module can be reviewed and return the schedule rule, its workflow, time limit, pass criteria and entry instructions. `time_limits` and `pass_criteria` are keyed by domain, also for a single-domain call: `time_limits["system-design"]`, `pass_criteria.algorithm`. Without a domain it lists every module with the reason any is unavailable. |
 | `practice_reviews` | One domain's `overdue`, `today`, `unstarted`, and `upcoming` lists, already ordered by date and stable ID. |
 | `practice_review` | One item's prompt, source and scheduling metadata, without its history. Read the note after the attempt when comparing past evidence. |
 | `practice_add_review` | Register `id`, `domain`, `title`, and `prompt`, with optional `source`, `review_focus`, and `concept_ids`. An existing item is returned unchanged with `created: false`. |
