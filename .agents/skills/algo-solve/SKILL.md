@@ -2,8 +2,9 @@
 name: algo-solve
 description: >-
   Algorithm coaching focused on recognizing patterns and matching each pattern
-  to suitable solution tools. Guide LeetCode practice,
-  review code, and optionally save pattern cards and learning evidence.
+  to suitable solution tools. Guide LeetCode practice, review code, judge
+  the attempt, and optionally save pattern cards, learning evidence and the
+  practice review record.
 disable-model-invocation: true
 ---
 
@@ -13,6 +14,8 @@ disable-model-invocation: true
 Practice problem: $ARGUMENTS
 
 If neither a problem number or title nor a request to continue a known problem was explicitly supplied for this invocation, ask the learner to enter a problem number or title and wait. Resume an earlier problem only when the learner explicitly asks to continue it.
+
+Assign a UUIDv4 attempt ID when the problem starts and keep it through follow-ups and retries.
 
 Read `Learning/Practice/Algorithm/AGENTS.md` for storage conventions, guiding heuristics, Python pitfalls, and verification rules. This skill owns the coaching workflow; the module file owns note maintenance.
 
@@ -105,6 +108,12 @@ For Swap Nodes in Pairs, the learner says "reverse every two nodes." This is a c
 
 If their implementation later increments a counter without advancing the pointer, show the failing input and the mismatched counter/pointer positions. Treat it as an implementation bug, not failed pattern recognition. Once corrected, confirm the fix and finish review without a recognition quiz.
 
+## Judge the attempt
+
+Every ended attempt is judged, including a first attempt at a new problem: when the solution passes review, or when the learner stops without one. Judge both criteria in `pass_criteria.algorithm` from `practice` with their evidence (in a direct invocation, call `practice` with `domain: algorithm` to read them), following **Judge the attempt** in `Learning/Practice/Review/Content/algorithm.md`. Help given during coaching fails `no_substantive_help`; do not decide pass or fail yourself. Show the judgments, then ask for the learner's own short reflection on what happened and what they will try next. A pause is not an ended attempt.
+
+When `/practice` or `/practice-review-today` runs this skill for a scheduled review, that workflow records the attempt; reuse its attempt ID and skip the review record below.
+
 ## Save learning evidence after one confirmation
 
 When a learner-provided solution passes review, include the saving question in the same response after the review and any applicable clarity assessment. This applies to a correct first submission and to corrected or refined resubmissions; do not end with only a correctness verdict. If an earlier saving question is still unanswered and the learner submits another correct version, briefly repeat the pending question. A code resubmission is not saving consent. Skip the question only when the learner has already authorized saving, declined it for this problem, or the session has already been saved.
@@ -113,7 +122,7 @@ After review passes, classify before asking whether to save:
 
 1. Summarize the actual solution pattern and recognition cues, grounded in the learner's proposed approach and code.
 2. Scan existing pattern titles and relevant frontmatter, `Key Insight`, and `Composed Of` sections to decide whether to update a card or create one. Follow the module's Pattern Card Rules; do not force a new card merely because the problem is new.
-3. Name the proposed card and briefly explain the classification. Ask whether to save that classification to the card and daily log, explicitly stating when a new card will be created. Reuse an already proposed classification when repeating an unanswered question after a resubmission.
+3. Name the proposed card and briefly explain the classification. Ask whether to save that classification to the card and daily log, together with the practice review record, explicitly stating when a new card or review item will be created. Reuse an already proposed classification when repeating an unanswered question after a resubmission.
 
 Confirmation (including "go" or its equivalent) authorizes classification and saving together. If the learner already explicitly requested saving, state the classification and proceed without asking again. Resolve a requested classification change before writing. A refusal ends the session without vault writes.
 
@@ -125,5 +134,10 @@ When saving, follow the module's Pattern, Atom, and Log Rules:
 - Keep personal learning evidence in the daily log: the recognition outcome, any actual recognition/tool-selection error, any separate implementation error, and the feedback that resolved it. Record follow-up practice only for an observed gap. Do not invent a missing explanation or require reflection to fill log fields. Use "none observed" or "not observed" as appropriate. The result emoji describes the solution outcome, not a permanent ability rating.
 - Append the problem to the card and daily log using existing metadata conventions. Use `Templates/Algorithm Log.md` for new logs. Preserve existing entries and avoid duplicate problem records when updating the same session.
 - Check for reusable atoms using the module's granularity criteria. Keep taxonomy work out of the coaching conversation unless it affects the learner's understanding or requires a classification decision.
+
+Record the attempt in practice review with the same confirmation, also when the learner stopped without a passing solution and only the review record is offered:
+
+- Call `practice_finish_round` once. Put the problem in `topic` following **Create an item** in `Learning/Practice/Review/Content/algorithm.md`: its stable `id`, `domain: algorithm`, `title`, a neutral `prompt` and the verified `source` link. An existing item is reused. Put the attempt ID, the actual local completion date as `completed_on`, the learner's reflection and the `criteria` judgments in `attempt`.
+- Report the returned next review date. Retry a failed record with the same attempt ID; it is recorded only once. If practice review is unavailable, say the attempt was not recorded.
 
 Preserve the existing pattern/atom/log organization and dashboard metadata. Add relevant sections as needed to cards touched by the session; do not bulk-migrate historical notes or leave template guidance/placeholders in finished notes.

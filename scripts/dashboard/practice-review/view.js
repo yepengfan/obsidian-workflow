@@ -2,19 +2,14 @@ const DOMAIN_LABELS = {
   algorithm: "Algorithm",
   "system-design": "System Design",
 };
-const OUTCOME_LABELS = {
-  independent: "Independent",
-  assisted: "With help",
-  incomplete: "Incomplete",
-  completed: "Completed",
-};
+const RESULT_LABELS = { passed: "Passed", failed: "Failed" };
 const ICONS = {
   review:
     '<path d="M3 10a9 9 0 1 1 2.4 8.6M3 4v6h6"/><path d="m9 12 2 2 4-4"/>',
   due: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6M17 2v6M3 11h18m-13 5 2 2 4-4"/>',
   overdue: '<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 17h.01"/>',
   upcoming: '<path d="M4 4h16v16H4zM4 9h16M8 2v5M16 2v5m-6 8 3 3 4-5"/>',
-  rounds: '<path d="M5 3h14v18H5zM8 7h8M8 11h8M8 15h5"/>',
+  attempts: '<path d="M5 3h14v18H5zM8 7h8M8 11h8M8 15h5"/>',
 };
 
 function dateKey(value) {
@@ -44,98 +39,32 @@ function byDue(a, b) {
     a.path.localeCompare(b.path)
   );
 }
-function designProgress(
-  page,
-  history,
-  intervals,
-  retryDays,
-  _archiveAfterFinal,
-) {
-  if (page.domain !== "system-design") return {};
-  const stored = Number.isInteger(page.completed_design_rounds)
-    ? { completed: page.completed_design_rounds }
-    : {};
-  const entries = [
-    ...(history ?? "").matchAll(
-      /^### (\d{4}-\d{2}-\d{2}) · (?:Round (\d+)|第 (\d+) 轮)\s*\n\*\*(independent|assisted|incomplete|completed|独立完成|提示后完成|未完成|已完成)\*\* · /gmu,
-    ),
-  ];
-  if (
-    entries.length !== page.review_count ||
-    entries.some((m, i) => Number(m[2] ?? m[3]) !== i + 1)
-  )
-    return stored;
-  const completed = entries.filter(
-    (m) => !["incomplete", "未完成"].includes(m[4]),
-  ).length;
-  if (
-    !entries.length ||
-    page.status !== "active" ||
-    entries.at(-1)[1] !== dateKey(page.last_review)
-  )
-    return { ...stored, completed };
-  let stage = 0,
-    nextReview = null,
-    finished = 0,
-    archived = false;
-  for (const [, day, , , outcome] of entries) {
-    if (archived) continue;
-    const complete = !["incomplete", "未完成"].includes(outcome);
-    if (!complete) {
-      nextReview = shiftDay(day, retryDays);
-      continue;
-    }
-    stage = Math.min(finished, intervals.length - 1);
-    finished += 1;
-    archived = finished >= 6;
-    nextReview = archived ? null : shiftDay(day, intervals[stage]);
-  }
-  return {
-    completed,
-    stage,
-    nextReview,
-    status: archived ? "archived" : "active",
-  };
+function criterionLabel(id) {
+  return String(id).replaceAll("_", " ");
 }
-function buildSnapshot(
-  pages,
-  today,
-  intervals,
-  histories = new Map(),
-  retryDays = 1,
-  archiveAfterFinal = false,
-) {
+function buildSnapshot(pages, today, intervals) {
   const items = [];
   for (const page of pages) {
     if (!["active", "archived"].includes(page.status)) continue;
-    const progress = designProgress(
-      page,
-      histories.get(page.file.path),
-      intervals,
-      retryDays,
-      archiveAfterFinal,
-    );
-    const status = progress.status ?? page.status;
+    const status = page.status;
     const issues = [];
     const id = typeof page.id === "string" ? page.id : page.file.name;
     if (page.id !== page.file.name) issues.push("ID must match the filename");
-    const rounds =
+    const attempts =
       Number.isInteger(page.review_count) && page.review_count >= 0
         ? page.review_count
         : null;
-    if (rounds === null) issues.push("Invalid recorded round count");
+    if (attempts === null) issues.push("Invalid recorded attempt count");
+    // Stage 0 has never passed; stage N waits intervals[N - 1] days.
     const stage =
       Number.isInteger(page.stage) &&
       page.stage >= 0 &&
-      page.stage < intervals.length
-        ? (progress.stage ?? page.stage)
+      page.stage <= intervals.length
+        ? page.stage
         : null;
     if (stage === null) issues.push("Invalid scheduling stage");
-    const nextReview = Object.hasOwn(progress, "nextReview")
-      ? progress.nextReview
-      : page.next_review == null
-        ? null
-        : dateKey(page.next_review);
+    const nextReview =
+      page.next_review == null ? null : dateKey(page.next_review);
     if (page.next_review != null && !dateKey(page.next_review))
       issues.push("Invalid next review date");
     const lastReview =
@@ -147,6 +76,10 @@ function buildSnapshot(
         ? page.domain
         : "unknown";
     if (domain === "unknown") issues.push("Missing domain");
+    const result = Object.hasOwn(RESULT_LABELS, page.last_result)
+      ? page.last_result
+      : null;
+    const unmet = Array.from(page.unmet_criteria ?? []).map(String);
     const bucket =
       status === "archived"
         ? "archived"
@@ -165,12 +98,12 @@ function buildSnapshot(
       domain,
       path: page.file.path,
       status,
-      rounds,
-      completed: progress.completed,
+      attempts,
       stage,
       nextReview,
       lastReview,
-      outcome: page.last_outcome,
+      result,
+      unmet,
       bucket,
       issues,
     });
@@ -182,7 +115,7 @@ function buildSnapshot(
       (k) => [k, items.filter((p) => p.bucket === k).length],
     ),
   );
-  counts.rounds = items.reduce((n, p) => n + (p.rounds ?? 0), 0);
+  counts.attempts = items.reduce((n, p) => n + (p.attempts ?? 0), 0);
   counts.active = active.length;
   counts.nextSeven = active.filter(
     (p) => p.bucket === "upcoming" && p.nextReview <= shiftDay(today, 7),
@@ -196,10 +129,11 @@ function buildSnapshot(
       ).length,
     };
   });
-  const stages = intervals.map((days, index) => ({
-    days,
+  const stages = [0, ...intervals].map((days, stage) => ({
+    stage,
+    days: stage ? days : null,
     count: active.filter(
-      (p) => p.stage === index && p.rounds > 0 && p.issues.length === 0,
+      (p) => p.stage === stage && p.attempts > 0 && p.issues.length === 0,
     ).length,
   }));
   return { items, counts, schedule, stages, today };
@@ -235,7 +169,6 @@ function renderDashboard(
     page = globalThis.document,
     window: win = globalThis.window,
     container,
-    histories,
   } = {},
 ) {
   const root = container
@@ -279,7 +212,7 @@ function renderDashboard(
     });
     return;
   }
-  const intervals = Array.from(config.interval_days ?? []);
+  const intervals = Array.from(config.schedule?.intervals ?? []);
   if (
     !intervals.length ||
     !intervals.every((n) => Number.isInteger(n) && n > 0)
@@ -294,9 +227,6 @@ function renderDashboard(
     Array.from(dv.pages('"Learning/Practice/Review/Items"')),
     today,
     intervals,
-    histories,
-    config.retry_days,
-    config.archive_after_final === true,
   );
   root.createEl("p", {
     cls: "pr-subtitle",
@@ -313,9 +243,9 @@ function renderDashboard(
       "Scheduled after today",
     ],
     [
-      "rounds",
-      snapshot.counts.rounds,
-      "Recorded rounds",
+      "attempts",
+      snapshot.counts.attempts,
+      "Recorded attempts",
       "Includes archived item history",
     ],
   ]) {
@@ -426,13 +356,22 @@ function renderDashboard(
   stagePanel.createEl("h2", { text: "Scheduling stages" });
   stagePanel.createEl("p", {
     cls: "pr-caption",
-    text: "Active, practiced items by configured interval.",
+    text: "Active, practiced items by stage. A pass moves up one stage; a fail steps back one.",
   });
   const stageMax = Math.max(1, ...snapshot.stages.map((p) => p.count));
   for (const stage of snapshot.stages) {
     const row = stagePanel.createEl("div", { cls: "pr-stage" });
     row.createEl("span", {
-      text: `${stage.days} day${stage.days === 1 ? "" : "s"}`,
+      text:
+        stage.days === null
+          ? "Stage 0"
+          : `Stage ${stage.stage} · ${stage.days}d`,
+      attr: {
+        title:
+          stage.days === null
+            ? "Not passed yet"
+            : `Waits ${stage.days} day${stage.days === 1 ? "" : "s"}`,
+      },
     });
     const rail = row.createEl("div", { cls: "pr-stage-rail" });
     rail.createEl("i", {
@@ -555,7 +494,7 @@ function renderDashboard(
             : state.status === "due"
               ? "No overdue or due-today reviews. Your upcoming schedule is shown above."
               : state.status === "unstarted"
-                ? "No active items are waiting for their first round."
+                ? "No active items are waiting for their first attempt."
                 : state.status === "archived"
                   ? "No archived items."
                   : "No review items yet. Use /practice-review-add to register one.",
@@ -564,23 +503,36 @@ function renderDashboard(
     }
     const table = list.createEl("table");
     const head = table.createEl("thead").createEl("tr");
-    for (const text of ["Item", "Next review", "Rounds", "Latest outcome"])
+    for (const text of ["Item", "Next review", "Stage", "Last result"])
       head.createEl("th", { text, attr: { scope: "col" } });
     const body = table.createEl("tbody");
-    for (const item of rows.slice(
+    // Group by module, keeping due order within each module.
+    const order = (item) => {
+      const index = domains.indexOf(item.domain);
+      return index < 0 ? domains.length : index;
+    };
+    const grouped = rows
+      .map((item, index) => ({ item, index }))
+      .sort((a, b) => order(a.item) - order(b.item) || a.index - b.index)
+      .map(({ item }) => item);
+    let group = null;
+    for (const item of grouped.slice(
       state.page * PAGE_SIZE,
       (state.page + 1) * PAGE_SIZE,
     )) {
+      if (item.domain !== group) {
+        group = item.domain;
+        body
+          .createEl("tr", { cls: "pr-group" })
+          .createEl("th", {
+            text: `${DOMAIN_LABELS[group] ?? group} · ${rows.filter((p) => p.domain === group).length}`,
+            attr: { scope: "colgroup", colspan: "4" },
+          });
+      }
       const row = body.createEl("tr");
       const identity = row.createEl("td");
       link(identity, item.path, item.title, "pr-item-link");
-      identity.createEl("small", {
-        text: `${item.id} · ${DOMAIN_LABELS[item.domain] ?? item.domain}`,
-      });
-      if (item.status === "active" && item.completed != null)
-        identity.createEl("small", {
-          text: `Round ${item.completed + 1} · ${item.completed < 2 ? "Guided learning" : item.completed === 2 ? "Mock interview (first independent review)" : item.completed === 5 ? "Final mock interview + summary and archive" : "Mock interview"}`,
-        });
+      identity.createEl("small", { text: item.id });
       const date = row.createEl("td");
       date.createEl("span", {
         text:
@@ -597,18 +549,28 @@ function renderDashboard(
           cls: "pr-issue",
           text: item.issues.join(" · "),
         });
-      row.createEl("td", {
-        text: item.rounds === null ? "Needs attention" : String(item.rounds),
-        cls: "pr-round-count",
+      const stageCell = row.createEl("td", { cls: "pr-stage-cell" });
+      stageCell.createEl("span", {
+        text:
+          item.stage === null
+            ? "Needs attention"
+            : `${item.stage} of ${intervals.length}`,
       });
-      const outcome = row.createEl("td");
-      outcome.createEl("span", {
-        cls:
-          "pr-outcome " +
-          (Object.hasOwn(OUTCOME_LABELS, item.outcome) ? item.outcome : ""),
-        text: OUTCOME_LABELS[item.outcome] ?? "No recorded outcome",
+      if (item.attempts !== null)
+        stageCell.createEl("small", {
+          text: `${item.attempts} attempt${item.attempts === 1 ? "" : "s"}`,
+        });
+      const result = row.createEl("td");
+      result.createEl("span", {
+        cls: "pr-result" + (item.result ? " " + item.result : ""),
+        text: item.result ? RESULT_LABELS[item.result] : "No recorded result",
       });
-      if (item.lastReview) outcome.createEl("small", { text: item.lastReview });
+      if (item.result === "failed" && item.unmet.length)
+        result.createEl("small", {
+          cls: "pr-unmet",
+          text: `Not met: ${item.unmet.map(criterionLabel).join(", ")}`,
+        });
+      if (item.lastReview) result.createEl("small", { text: item.lastReview });
     }
     if (rows.length > PAGE_SIZE) {
       const previous = pager.createEl("button", {
@@ -637,7 +599,7 @@ function renderDashboard(
   renderList();
   root.createEl("p", {
     cls: "pr-footnote",
-    text: "Opening an item or changing a filter does not record a round. Review dates and reflections are saved through the existing practice workflow.",
+    text: "Opening an item or changing a filter does not record an attempt. Review dates and reflections are saved through the existing practice workflow.",
   });
   let current = today,
     timer;
@@ -687,20 +649,9 @@ if (typeof dv === "undefined")
     renderDashboard,
   };
 else {
-  return (async () => {
-    try {
-      const histories = new Map();
-      for (const p of dv.pages('"Learning/Practice/Review/Items"')) {
-        if (
-          p.domain === "system-design" &&
-          p.status !== "archived" &&
-          p.review_count > 0
-        )
-          histories.set(p.file.path, await dv.io.load(p.file.path));
-      }
-      renderDashboard(dv, input.app, { container: input.container, histories });
-    } catch (error) {
-      dv.paragraph(`Practice Review could not load: ${error.message}`);
-    }
-  })();
+  try {
+    renderDashboard(dv, input.app, { container: input.container });
+  } catch (error) {
+    dv.paragraph(`Practice Review could not load: ${error.message}`);
+  }
 }

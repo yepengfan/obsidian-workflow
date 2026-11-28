@@ -18,6 +18,13 @@ folders: [Learning/Practice/System-Design/, Learning/Practice/System-Design/Solu
 config_files:
   - .agents/skills/sysd-solve/SKILL.md
   - Learning/Practice/System-Design/AGENTS.md
+pass_criteria:
+  - no_substantive_help
+  - within_time_limit
+  - id: all_steps_done
+    rule: All six steps were completed - requirements, estimation, core entities, API, high-level design and deep dives.
+  - id: core_blocks_partial
+    rule: Every core building block of the problem was answered at least partially, with none weak or uncovered. Until Blocks.md exists, the item's concept_ids are its core blocks.
 tags: [system/module]
 ---
 

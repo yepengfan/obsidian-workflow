@@ -23,7 +23,7 @@ updated: 2026-11-17
 
 > [!note] 2026-11-11 - Practice review overview
 > - Add a standalone Practice section before Learning with four counts and a link to the full review board.
-> - Unstarted, today and overdue counts use active review items. Cumulative rounds include recorded history from active and archived items.
+> - Unstarted, today and overdue counts use active review items. Cumulative attempts include recorded history from active and archived items.
 > - Use four columns on desktop and two on mobile. Open `Learning/Practice/Review/00_index.md` through the workspace link handler.
 
 > [!note] 2026-11-09 - Separate Journal entries

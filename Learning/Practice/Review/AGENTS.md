@@ -20,39 +20,42 @@ Use `algorithm` or `system-design` for the domain. The selected workflow owns pr
 
 `/practice` selects a domain, completes its due reviews, then starts a new problem. Use the client's choices when available and honor a domain already supplied in the request or current conversation. The entry has no practice/Review mode menu.
 
-Call `practice_reviews` for the selected domain and use its `overdue` and `today` items, ordered by next review date and stable ID. Show the review order and start the first item directly. Each review uses its domain’s attempt format followed by assessment, the learner's reflection and confirmed saving. After each saved round, refresh the queue and automatically start the next due item. Use the returned next review date for each ended round; pending reflection or a paused attempt stays on the current item. `upcoming` and `unstarted` items are outside this due-review sequence.
+Call `practice_reviews` for the selected domain and use its `overdue` and `today` items, ordered by next review date and stable ID. Show the review order and start the first item directly. Each review uses its domain’s attempt format followed by assessment, the learner's reflection and confirmed saving. After each saved attempt, refresh the queue and automatically start the next due item. Use the returned next review date for each ended attempt; pending reflection or a paused attempt stays on the current item. `upcoming` and `unstarted` items are outside this due-review sequence.
 
 Once no due items remain, including when the queue was empty initially, automatically enter the selected domain's workflow for a new problem. Keep any explicitly supplied new topic pending until this handoff. Without a topic, ask for a new problem or interview question through that workflow's topic-input step; do not reuse the last reviewed topic or automatically restore an unrelated WIP session. Honor an explicit request to continue, pause, stop or change direction. The domain workflow owns initialization, guidance, assessment and domain-specific saving. Capture a reflection at the end.
 
-Read the workflow that `practice` returns for the selected domain and execute any module guard it declares before a domain action. Practice uses the source's full workflow. Review starts with a neutral prompt and uses the mapped assessment. System Design follows the coaching mode in `.agents/skills/sysd-solve/SKILL.md`; other domains start independently. `consumers.<domain>.time_limit` supplies each module’s timing configuration. For System Design the value is the Mock continuation check-in. Guided rounds are self-paced. When practice has already produced an assessment, the shared closing procedure reuses that result.
+Read the workflow that `practice` returns for the selected domain and execute any module guard it declares before a domain action. Practice uses the source's full workflow. Review starts with a neutral prompt and is an independent attempt in every module. `consumers.<domain>.time_limit` supplies each module’s time limit, used as a one-time continuation check-in. When practice has already produced an assessment, the shared closing procedure reuses that result.
 
 Direct `/practice-review-today [id]` retains its queue listing or selected-item behavior; the automatic review sequence and transition to a new problem belong to `/practice`.
 
 ## Entries and records
 
 - `Items/<id>.md` is the private source of truth for a review object. Keep its `id` stable across attempts. The note stores its prompt, post-attempt focus, and the history of attempts and reflections. When the original submission already has a vault note, link to it instead of copying it.
-- Date fields use the vault machine's local calendar. `review_count` counts ended rounds, including rounds that need more practice. `stage` is the zero-based index into `interval_days`. `last_review` and `next_review` are null until the first round is recorded.
-- Use the MCP tools for writes to `review_count`, `stage`, `last_review`, `next_review`, `last_outcome`, `status`, and `archived_on`. Listing or opening a prompt leaves the dates alone. Archived items stay in history and are omitted from the queue.
-- For Algorithm, practice an archived item again by setting `status: active` and `next_review` to the desired due date in its note. It keeps its stage, so passing that review archives it again. System Design history determines completion and archive status; changing those two fields does not restart its six-round sequence.
-- Keep the approved submission and notes factual. Save the learner's reflection in their own words. A paused or ongoing session can resume in chat. Record the round after the learner provides a reflection.
+- Date fields use the vault machine's local calendar. `review_count` counts ended attempts, passed or failed. `stage` runs from 0, never passed, to the number of `schedule.intervals`. `last_review` and `next_review` are null until the first attempt is recorded. `last_result` (`passed` or `failed`) and `unmet_criteria` describe the latest attempt.
+- Use the MCP tools for writes to `review_count`, `stage`, `last_review`, `next_review`, `last_result`, `unmet_criteria`, `status`, and `archived_on`. Listing or opening a prompt leaves the dates alone. Archived items stay in history and are omitted from the queue.
+- Practice an archived item again by setting `status: active` and `next_review` to the desired due date in its note. It keeps its stage, so passing that review archives it again.
+- Keep the approved submission and notes factual. Save the learner's reflection in their own words. A paused or ongoing session can resume in chat. Record the attempt after the learner provides a reflection.
 
 ## Schedule
 
-`system/modules/practice-review/module.md` holds the configurable intervals. The defaults are 1, 3, 7, 14 and 60 days, calculated from the actual day each review ends. These intervals are a practical spaced review policy inspired by Ebbinghaus's forgetting curve.
+`schedule` in `system/modules/practice-review/module.md` is the one rule every module follows; modules cannot change it. Intervals count from the actual day each attempt ends. They are a practical spaced review policy inspired by Ebbinghaus's forgetting curve.
 
-Each System Design topic advances one completed round from the actual completion date, using `interval_days` in order: 1, 3, 7, 14, then 60 days. Rounds 1 and 2 are guided. Rounds 3 through 6 are mock interviews. Round 6 is the final mock and writes a summary that cites existing observations, then archives the topic. Assisted, independent, and omitted outcomes all count as a completed round. An incomplete attempt keeps the same round and uses `retry_days`. A pause is not recorded and leaves the schedule unchanged. Repeating an `attempt_id` does not add another round or another observation. Early and late completions both move one round forward from the day the round actually ended. Other modules keep the outcome schedule below.
-
-In the dashboard show the System Design topic, upcoming round, mode and date. A pause is a checkpoint. Resume the same session and attempt ID.
-
-| Round | Next review |
+| Result | Next review |
 | --- | --- |
-| First independent completion | Actual completion date plus the first interval |
-| Independent completion on or after the due date | Advance one stage and calculate from the actual completion date |
-| Independent completion on or after the due date at the final stage | With `archive_after_final: true`, set `status: archived`, `archived_on` to the actual completion date and `next_review` to null. With `false`, repeat the final interval |
-| Independent extra practice before the due date | Keep the scheduled date and stage |
-| Ended with help or incomplete | Actual completion date plus `retry_days`, keeping the current stage |
+| Pass | Move up one stage and wait that stage's interval: 1, 3, 7, 14, 30, then 60 days |
+| Pass at the top stage | With `archive_after_final: true`, set `status: archived`, `archived_on` to the completion date and `next_review` to null |
+| Fail | Step back `on_fail.step_back` stage (never below 0) and retry after `on_fail.retry_days` |
 
-An active item is overdue when its next date is earlier than today. An item is due today when its next date equals today. Items awaiting their first recorded round have a separate list.
+Early attempts count like on-time ones. A pause is not recorded and leaves the schedule unchanged; resume the same session and attempt ID. Repeating an `attempt_id` does not record it again.
+
+## Judging an attempt
+
+Every ended attempt is judged, including the first attempt at a new problem. Each module declares `pass_criteria` in its own `module.md`, referring to `shared_criteria` here by id or adding its own with a rule. Judge every criterion of the module, once each, with the evidence for the judgment. Do not decide pass or fail: the MCP server checks that every criterion was judged and passes the attempt only when all are met. Show the learner each judgment with its evidence before the confirmed save.
+
+- `no_substantive_help` means the same in every module: the learner proposed every mechanism, approach and answer direction. Neutral interviewer probes are not help; a hint, a named technique, a corrected approach or a revealed answer is.
+- `within_time_limit` uses the module's `time_limit`. Work may continue past it to finish, but the attempt does not pass.
+
+An active item is overdue when its next date is earlier than today. An item is due today when its next date equals today. Items awaiting their first recorded attempt have a separate list.
 
 ## MCP tools
 
@@ -60,7 +63,7 @@ The Obsidian workspace MCP server is the only implementation of scheduling, both
 
 | Tool | Use |
 | --- | --- |
-| `practice` | Check that a module can be reviewed and return its workflow, time limit and entry instructions. Without a domain it lists every module with the reason any is unavailable. |
+| `practice` | Check that a module can be reviewed and return the schedule rule, its workflow, time limit, pass criteria and entry instructions. `time_limits` and `pass_criteria` are keyed by domain, also for a single-domain call: `time_limits["system-design"]`, `pass_criteria.algorithm`. Without a domain it lists every module with the reason any is unavailable. |
 | `practice_reviews` | One domain's `overdue`, `today`, `unstarted`, and `upcoming` lists, already ordered by date and stable ID. |
 | `practice_review` | One item's prompt, source and scheduling metadata, without its history. Read the note after the attempt when comparing past evidence. |
 | `practice_add_review` | Register `id`, `domain`, `title`, and `prompt`, with optional `source`, `review_focus`, and `concept_ids`. An existing item is returned unchanged with `created: false`. |
@@ -68,9 +71,8 @@ The Obsidian workspace MCP server is the only implementation of scheduling, both
 | `practice_record_review` | Record one ended attempt on an existing item. |
 | `practice_design_outline` | System Design follow-ups for an item `id`, or for `concept_ids` before registration. |
 | `practice_rebuild_design_profile` | Rebuild `Learning/Practice/System-Design/Profile.md` from session assessments. |
-| `practice_recalculate_design_reviews` | Write System Design history corrections back to active items. |
 
-An attempt has `attempt_id`, `reflection`, and `completed_on`, the actual local day the round ended. `outcome` is required for every module except System Design, where it may be omitted. Optional fields are `submission`, `observations`, and System Design `concept_observations`. Outcomes are `independent`, `assisted`, and `incomplete`. Reuse the same `attempt_id` and `completed_on` when retrying a save; a repeated `attempt_id` is recorded only once.
+An attempt has `attempt_id`, `reflection`, `completed_on`, the actual local day the attempt ended, and `criteria`: one `{id, met, evidence}` per criterion the module declares. Optional fields are `submission`, `observations`, and System Design `concept_observations`. Reuse the same `attempt_id` and `completed_on` when retrying a save; a repeated `attempt_id` is recorded only once.
 
 `practice_finish_round` with a System Design `progress_path` stores `concept_observations` in a `practice-observations` YAML fence under the session's Assessment. Without that path it only registers the attempt and schedule.
 

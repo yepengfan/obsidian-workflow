@@ -21,7 +21,8 @@ function item(id, overrides = {}) {
     stage: 0,
     last_review: "2026-11-16",
     next_review: "2026-11-18",
-    last_outcome: "independent",
+    last_result: "passed",
+    unmet_criteria: [],
     file: { name: id, path: `Learning/Practice/Review/Items/${id}.md` },
     ...overrides,
   };
@@ -51,7 +52,7 @@ test("totals separate the live queue from archived history and future dates", ()
     unstarted: 1,
     archived: 1,
     attention: 0,
-    rounds: 13,
+    attempts: 13,
     active: 6,
     nextSeven: 2,
   });
@@ -73,7 +74,7 @@ test("invalid metadata remains visible without entering the scheduled queue", ()
   const snapshot = buildSnapshot(
     [
       item("date", { next_review: "2026-02-30" }),
-      item("rounds", { review_count: -1 }),
+      item("attempts", { review_count: -1 }),
       item("stage", { stage: 6 }),
       item("last", { last_review: "not-a-date" }),
       item("missing-id", { id: null }),
@@ -172,8 +173,11 @@ function fixture(
     events = [];
   const config = {
     enabled,
-    interval_days: intervals,
-    archive_after_final: archiveAfterFinal,
+    schedule: {
+      intervals,
+      on_fail: { step_back: 1, retry_days: 1 },
+      archive_after_final: archiveAfterFinal,
+    },
     consumers: {
       algorithm: { enabled: true, flow: "algo-solve" },
       "system-design": { enabled: true, flow: "sysd-solve" },
@@ -253,7 +257,7 @@ test("an empty due queue still shows upcoming items, with working calendar and s
     "Review b",
   );
 });
-test("the paged item list and navigation never write or record a practice round", async (t) => {
+test("the paged item list and navigation never write or record a practice attempt", async (t) => {
   const f = fixture(
     Array.from({ length: 23 }, (_, i) =>
       item("item-" + String(i).padStart(2, "0")),
@@ -311,233 +315,94 @@ test("the dashboard executes in the isolated Dataview scope without plugin impor
   );
 });
 
-test("shows Bitly's first independent review and a new topic's first learning round", () => {
-  const design = (id, count) => ({
-    id,
-    title: id,
-    domain: "system-design",
-    status: "active",
-    review_count: count,
-    stage: 0,
-    file: { name: id, path: id },
-    last_review: count ? "2026-11-22" : null,
-    next_review: count ? "2026-11-23" : null,
+const ATTEMPTS = JSON.parse(
+  fs.readFileSync(__dirname + "/fixtures/review-attempts.json", "utf8"),
+);
+test("each stored attempt shows its stage, date and unmet criteria as recorded", () => {
+  ATTEMPTS.attempts.forEach((step, index) => {
+    const snapshot = buildSnapshot(
+      [
+        item("design", {
+          domain: "system-design",
+          status: step.status,
+          review_count: index + 1,
+          stage: step.stage,
+          last_review: step.date,
+          next_review: step.next_review,
+          last_result: step.unmet.length ? "failed" : "passed",
+          unmet_criteria: step.unmet,
+        }),
+      ],
+      step.date,
+      ATTEMPTS.schedule.intervals,
+    );
+    const shown = snapshot.items[0];
+    assert.deepEqual(
+      [shown.stage, shown.nextReview, shown.status, shown.unmet, shown.issues],
+      [step.stage, step.next_review, step.status, step.unmet, []],
+    );
+    assert.equal(
+      shown.bucket,
+      step.status === "archived" ? "archived" : "upcoming",
+    );
   });
-  const history =
-    "### 2026-11-21 · Round 1\n\n**assisted** · Next review 2026-11-22\n\n### 2026-11-22 · Round 2\n\n**assisted** · Next review 2026-11-23";
-  const { items } = buildSnapshot(
-    [design("bitly", 2), design("dropbox", 0)],
-    "2026-11-23",
-    [1, 3, 7],
-    new Map([["bitly", history]]),
+  const top = buildSnapshot(
+    [item("top", { stage: 6 }), item("above", { stage: 7 })],
+    TODAY,
+    ATTEMPTS.schedule.intervals,
   );
-  assert.equal(items[0].completed, 2);
-  assert.equal(items[0].nextReview, "2026-11-25");
-  assert.equal(items[0].bucket, "upcoming");
-  assert.equal(items[1].completed, 0);
-});
-
-test("an assisted third system-design round is dated from its completion", () => {
-  const history = [
-    "### 2026-11-21 · Round 1",
-    "",
-    "**assisted** · Next review 2026-11-22",
-    "",
-    "### 2026-11-22 · Round 2",
-    "",
-    "**assisted** · Next review 2026-11-25",
-    "",
-    "### 2026-11-25 · Round 3",
-    "",
-    "**assisted** · Next review 2026-11-26",
-  ].join("\n");
-  const page = {
-    id: "bitly",
-    title: "bitly",
-    domain: "system-design",
-    status: "active",
-    review_count: 3,
-    stage: 1,
-    completed_design_rounds: 3,
-    file: { name: "bitly", path: "bitly" },
-    last_review: "2026-11-25",
-    next_review: "2026-11-26",
-  };
-  const { items } = buildSnapshot(
-    [page],
-    "2026-11-26",
-    [1, 3, 7, 14, 60],
-    new Map([["bitly", history]]),
+  assert.deepEqual(
+    top.items.map((p) => [p.id, p.stage]),
+    [
+      ["above", null],
+      ["top", 6],
+    ],
   );
-  assert.equal(items[0].completed, 3);
-  assert.equal(items[0].nextReview, "2026-12-02");
-  assert.equal(items[0].bucket, "upcoming");
+  assert.deepEqual(
+    top.stages.map((p) => [p.stage, p.days, p.count]),
+    [
+      [0, null, 0],
+      [1, 1, 0],
+      [2, 3, 0],
+      [3, 7, 0],
+      [4, 14, 0],
+      [5, 30, 0],
+      [6, 60, 1],
+    ],
+  );
 });
-
-test("the sixth round announces the final mock, summary and archive", async (t) => {
-  const f = fixture([
-    item("final", {
-      domain: "system-design",
-      completed_design_rounds: 5,
-      review_count: 5,
-      stage: 4,
-      next_review: "2027-01-19",
-    }),
-  ]);
+test("the item list groups modules and shows each failed item's unmet criteria", async (t) => {
+  const f = fixture(
+    [
+      item("design", {
+        domain: "system-design",
+        stage: 2,
+        next_review: TODAY,
+        last_result: "failed",
+        unmet_criteria: ["no_substantive_help", "within_time_limit"],
+      }),
+      item("algo", { next_review: "2026-11-16" }),
+      item("algo-2", { next_review: TODAY, last_result: undefined }),
+    ],
+    { intervals: ATTEMPTS.schedule.intervals },
+  );
   await mount(t, f);
-  assert.ok(
+  const groups = f
+    .elements()
+    .filter((p) => p.attributes.scope === "colgroup")
+    .map((p) => p.textContent);
+  assert.deepEqual(groups, ["Algorithm · 2", "System Design · 1"]);
+  assert.deepEqual(
     f
       .elements()
-      .some(
-        (p) =>
-          p.textContent ===
-          "Round 6 · Final mock interview + summary and archive",
-      ),
+      .filter((p) => p.cls === "pr-item-link")
+      .map((p) => p.textContent),
+    ["Review algo", "Review algo-2", "Review design"],
   );
-});
-
-test("an omitted System Design outcome renders as completed", async (t) => {
-  const f = fixture([
-    item("completed", { domain: "system-design", last_outcome: "completed" }),
-  ]);
-  await mount(t, f);
-  assert.ok(f.elements().some((p) => p.textContent === "Completed"));
-  assert.ok(!f.elements().some((p) => p.textContent === "No recorded outcome"));
-});
-
-const DESIGN_SAMPLE = JSON.parse(
-  fs.readFileSync(
-    __dirname + "/fixtures/design-rounds.json",
-    "utf8",
-  ),
-);
-function designHistory(steps) {
-  return steps
-    .map(
-      (step, i) =>
-        `### ${step.date} · Round ${i + 1}\n\n**${step.outcome}** · Next review legacy\n`,
-    )
-    .join("\n");
-}
-function legacyDesign(steps) {
-  return item("legacy", {
-    domain: "system-design",
-    review_count: steps.length,
-    stage: 0,
-    last_review: steps.at(-1).date,
-    next_review: "2027-01-20",
-  });
-}
-test("dashboard replay follows each shared sample step, including terminal archive", () => {
-  const steps = [];
-  for (const step of DESIGN_SAMPLE.rounds) {
-    steps.push(step);
-    const snapshot = buildSnapshot(
-      [legacyDesign(steps)],
-      step.date,
-      DESIGN_SAMPLE.intervals,
-      new Map([
-        ["Learning/Practice/Review/Items/legacy.md", designHistory(steps)],
-      ]),
-      DESIGN_SAMPLE.retry_days,
-      true,
-    );
-    assert.equal(snapshot.items[0].completed, step.completed_design_rounds);
-    assert.equal(snapshot.items[0].nextReview, step.next_review);
-    assert.equal(snapshot.items[0].status, step.status);
-    assert.equal(snapshot.counts.archived, step.status === "archived" ? 1 : 0);
-  }
-});
-test("terminal replay honors archive policy and leaves other domains active", () => {
-  const steps = DESIGN_SAMPLE.rounds;
-  const page = legacyDesign(steps);
-  const histories = new Map([[page.file.path, designHistory(steps)]]);
-  const snapshot = buildSnapshot(
-    [page],
-    "2027-01-20",
-    DESIGN_SAMPLE.intervals,
-    histories,
-    DESIGN_SAMPLE.retry_days,
-    false,
-  );
-  assert.equal(snapshot.counts.archived, 1);
-  assert.equal(snapshot.items[0].status, "archived");
-  assert.equal(snapshot.items[0].nextReview, null);
-  const algorithm = buildSnapshot(
-    [{ ...page, domain: "algorithm" }],
-    "2027-01-20",
-    DESIGN_SAMPLE.intervals,
-    histories,
-    1,
-    true,
-  );
-  assert.equal(algorithm.items[0].status, "active");
-  assert.equal(algorithm.items[0].nextReview, page.next_review);
-});
-test("system design closes at round six for shorter and longer intervals", () => {
-  for (const intervals of [
-    [1, 3, 7],
-    [1, 3, 7, 14, 60, 90],
-  ]) {
-    const steps = [];
-    let day = "2026-11-20";
-    for (let number = 0; number < 6; number += 1) {
-      steps.push({ date: day, outcome: "assisted" });
-      const page = legacyDesign(steps);
-      const snapshot = buildSnapshot(
-        [page],
-        day,
-        intervals,
-        new Map([[page.file.path, designHistory(steps)]]),
-        1,
-        false,
-      );
-      const shown = snapshot.items[0];
-      if (number < 5) {
-        const next = shiftDay(day, intervals[Math.min(number, intervals.length - 1)]);
-        assert.equal(shown.status, "active");
-        assert.equal(shown.nextReview, next);
-        day = next;
-      } else {
-        assert.equal(shown.status, "archived");
-        assert.equal(shown.nextReview, null);
-        assert.equal(shown.completed, 6);
-      }
-    }
-    const algorithm = buildSnapshot(
-      [item("algo", { review_count: 6, stage: 4, last_review: day, next_review: day })],
-      day,
-      intervals,
-      new Map([
-        [
-          "Learning/Practice/Review/Items/algo.md",
-          designHistory(steps),
-        ],
-      ]),
-      1,
-      false,
-    );
-    assert.equal(algorithm.items[0].status, "active");
-    assert.equal(algorithm.items[0].nextReview, day);
-  }
-});
-test("terminal legacy topics render in archived history without round seven", async (t) => {
-  const steps = DESIGN_SAMPLE.rounds;
-  const f = fixture([legacyDesign(steps)], {
-    intervals: DESIGN_SAMPLE.intervals,
-    archiveAfterFinal: true,
-  });
-  t.after(() => f.cleanup.forEach((fn) => fn()));
-  renderDashboard(f.dv, f.app, {
-    now: () => new Date(2027, 0, 20, 12),
-    histories: new Map([
-      ["Learning/Practice/Review/Items/legacy.md", designHistory(steps)],
-    ]),
-  });
-  assert.ok(f.elements().some((p) => p.textContent === "Archived 1"));
-  f.elements()
-    .find((p) => p.textContent === "Archived 1")
-    .listeners.click();
-  assert.equal(f.elements().filter((p) => p.cls === "pr-item-link").length, 1);
-  assert.ok(!f.elements().some((p) => p.textContent.startsWith("Round 7")));
+  const text = f.elements().map((p) => p.textContent);
+  assert.ok(text.includes("Not met: no substantive help, within time limit"));
+  assert.ok(text.includes("2 of 6"));
+  assert.ok(text.includes("No recorded result"));
+  assert.ok(text.includes("Passed"));
+  assert.ok(!text.some((p) => /Round|Guided|Mock/.test(p)));
 });
