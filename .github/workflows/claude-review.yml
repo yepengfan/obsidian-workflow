@@ -1,0 +1,17 @@
+name: Claude Review
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+# Matches the reusable workflow's review job; a called workflow cannot exceed these.
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    uses: yepengfan/.github-workflows/.github/workflows/claude-review.yml@main
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
