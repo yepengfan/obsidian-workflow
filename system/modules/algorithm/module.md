@@ -18,6 +18,10 @@ folders: [Learning/Practice/Algorithm/, Learning/Practice/Algorithm/Patterns/, L
 config_files:
   - .agents/skills/algo-solve/SKILL.md
   - Learning/Practice/Algorithm/AGENTS.md
+pass_criteria:
+  - no_substantive_help
+  - id: tests_pass
+    rule: The final LeetCode submission passed every test case.
 tags: [system/module]
 ---
 

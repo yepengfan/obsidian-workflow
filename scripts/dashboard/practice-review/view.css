@@ -240,7 +240,7 @@
 }
 .practice-review-dashboard .pr-stage {
   display: grid;
-  grid-template-columns: 50px minmax(0, 1fr) 22px;
+  grid-template-columns: 78px minmax(0, 1fr) 22px;
   align-items: center;
   gap: 8px;
   font-size: 11px;
@@ -352,14 +352,27 @@
 .practice-review-dashboard .pr-item-link {
   font-weight: 600;
 }
-.practice-review-dashboard .pr-round-count {
+.practice-review-dashboard .pr-stage-cell {
   font-variant-numeric: tabular-nums;
 }
-.practice-review-dashboard .pr-outcome {
+.practice-review-dashboard .pr-result {
   font-size: 10px;
 }
-.practice-review-dashboard .pr-outcome.independent {
+.practice-review-dashboard .pr-result.passed {
   color: #39795c;
+}
+.practice-review-dashboard .pr-result.failed,
+.practice-review-dashboard .pr-unmet {
+  color: var(--text-error);
+}
+.practice-review-dashboard tr.pr-group th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--background-secondary);
 }
 .practice-review-dashboard .pr-overdue,
 .practice-review-dashboard .pr-issue {

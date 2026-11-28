@@ -37,7 +37,7 @@ Use English for coaching, learner explanations and reflections, and newly author
 
 During private pre-interview discovery, open the matching breakdown in `Learning/Practice/System-Design/Question Breakdowns/`. Use the folder's `00_index.md` to resolve names such as URL Shortener to Bitly. In MCP clients, list that folder, follow pagination to find the indexed filename, then use `read_note` and its returned cursor to reach the relevant sections. Treat the article as reference material. If the topic has no clear match or the note cannot be read, review against the agreed requirements and say that the breakdown was unavailable.
 
-In Guided mode, compare the learner's attempt with the relevant section and offer one question or hint about a material gap. In Mock mode, keep the objectives private and share the comparison in the debrief. Assess functional paths during High-Level Design and the selected non-functional targets during Deep Dives. Credit alternative designs that meet those targets. In the debrief, cite the question note and section used, and explain what the learner's own design demonstrates. Extra topics in the article do not extend the interview.
+During new practice, compare the learner's attempt with the relevant section and offer one question or hint about a material gap; that hint is substantive help. During a review, keep the objectives private and share the comparison in the debrief. Assess functional paths during High-Level Design and the selected non-functional targets during Deep Dives. Credit alternative designs that meet those targets. In the debrief, cite the question note and section used, and explain what the learner's own design demonstrates. Extra topics in the article do not extend the interview.
 
 ## Pattern Card Rules
 
