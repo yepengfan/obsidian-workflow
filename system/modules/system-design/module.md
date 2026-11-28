@@ -22,7 +22,7 @@ pass_criteria:
   - no_substantive_help
   - within_time_limit
   - id: all_steps_done
-    rule: All six steps were completed - requirements, estimation, core entities, API, high-level design and deep dives.
+    rule: All six Delivery Framework steps were completed - Requirements (including estimates), Core Entities, API, Data Flow, High-Level Design and Deep Dives.
   - id: core_blocks_partial
     rule: Every core building block of the problem was answered at least partially, with none weak or uncovered. Until Blocks.md exists, the item's concept_ids are its core blocks.
 tags: [system/module]
