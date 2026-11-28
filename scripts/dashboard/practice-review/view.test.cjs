@@ -105,7 +105,7 @@ test("domain, status, search and selected calendar day compose without losing st
       item("b"),
       item("a"),
       item("c", { domain: "system-design", next_review: TODAY }),
-      item("d", { domain: "behavioral", status: "archived" }),
+      item("d", { domain: "system-design", status: "archived" }),
       item("e", { next_review: "2026-11-16" }),
     ],
     TODAY,
@@ -174,10 +174,9 @@ function fixture(
     enabled,
     interval_days: intervals,
     archive_after_final: archiveAfterFinal,
-    practice_flows: {
-      algorithm: "algo-solve",
-      "system-design": "sysd-solve",
-      behavioral: "behavioral",
+    consumers: {
+      algorithm: { enabled: true, flow: "algo-solve" },
+      "system-design": { enabled: true, flow: "sysd-solve" },
     },
   };
   const dv = {
@@ -408,7 +407,7 @@ test("an omitted System Design outcome renders as completed", async (t) => {
 
 const DESIGN_SAMPLE = JSON.parse(
   fs.readFileSync(
-    __dirname + "/../../practice-review/fixtures/design-rounds.json",
+    __dirname + "/fixtures/design-rounds.json",
     "utf8",
   ),
 );

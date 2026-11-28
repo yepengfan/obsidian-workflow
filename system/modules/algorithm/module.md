@@ -5,8 +5,8 @@ type: knowledge
 status: active
 enabled: true
 created: 2026-05-07
-updated: 2026-11-17
-depends_on: [dashboard]
+updated: 2026-11-28
+depends_on: [dashboard, practice-review]
 requires:
   cli: [claude]
   plugins: [dataview]
