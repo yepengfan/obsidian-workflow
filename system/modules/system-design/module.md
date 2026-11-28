@@ -24,7 +24,7 @@ pass_criteria:
   - id: all_steps_done
     rule: All six Delivery Framework steps were completed - Requirements (including estimates), Core Entities, API, Data Flow, High-Level Design and Deep Dives.
   - id: core_blocks_partial
-    rule: Every core building block of the problem was answered at least partially, with none weak or uncovered. Until Blocks.md exists, the item's concept_ids are its core blocks.
+    rule: Every core block of the problem in Blocks.md has a learner observation tagged with it, all mastered or partial. For a problem missing from Blocks.md, the item's concept_ids are its core blocks.
 tags: [system/module]
 ---
 

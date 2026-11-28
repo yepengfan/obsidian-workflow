@@ -69,6 +69,7 @@ Review records refer to block and point ids only, so the text of a point can cha
 - **Triage.** A block without a review item is triaged first. A block the learner does not know, or knows only vaguely, starts with a primer. A familiar block takes a placement review instead.
 - **Primer.** A guided walk through the block's points, ending with a short drawing check. Like every ended attempt it is judged; guidance usually fails `no_substantive_help`, so the item starts at stage 0 and is reviewed the next day.
 - **Placement.** An ordinary review recorded with `placement: true` on the item's first attempt. Passing it starts the item at the stage that waits `placement_interval` days (14), instead of stage 1. Failing it is an ordinary fail.
+- **System Design signals.** A System Design round that answers a block `partial` or `weak` brings the block's review forward to the next day, and reactivates it when it was archived. The item keeps its stage.
 - **Review.** A 20-minute scenario drawn on a fresh canvas, then one or two follow-up questions. Each review examines two or three points, preferring points never examined, then points last answered weakly, then the least recently examined.
 
 ## Quick Start
