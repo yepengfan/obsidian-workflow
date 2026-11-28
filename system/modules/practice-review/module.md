@@ -9,6 +9,7 @@ updated: 2026-11-28
 depends_on: [dashboard]
 requires:
   plugins: [dataview]
+  mcp: [practice]
 commands: [practice, practice-review-add, practice-review-today]
 templates: []
 scripts: [scripts/dashboard/practice-review/view.js, scripts/dashboard/practice-review/view.css]
@@ -48,6 +49,10 @@ Manage algorithm and system design practice through one spaced review queue. See
 - `consumers` registers each module that uses spaced review: whether it is enabled, its module, its authoritative workflow, and its review time limit. `Content/` defines each domain's review unit and post-attempt focus.
 - `Items/` stores problem prompts, review state, and attempt history through vault sync. `00_index.md` opens the read-only dashboard with totals, a seven-day schedule, scheduling-stage distribution, and a searchable queue.
 - The Practice Review card on `Home.md` shows high-level counts and links to the full review dashboard.
+
+## Setup
+
+Connect the Obsidian workspace MCP server to your agent client. It is deployed from `yepengfan/obsidian-workflow-infra`; see its `docs/practice.md`. `/module-toggle` will not enable this module until the session exposes its `practice` tool.
 
 ## Quick Start
 
