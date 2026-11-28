@@ -18,7 +18,7 @@ This is Ted's personal Obsidian vault for knowledge management, reading notes, w
 - **Zettelkasten/** — Permanent notes. Each note is one atomic idea in your own words, linked to other zettel via `Related::` field. Frontmatter includes `topics` (list of keywords for filtering).
 - **Learning/** — Organized into four categories:
   - `Plans/` - Phased learning projects with endpoints. Each plan lives in a subfolder named by its code (e.g. `Learning/Plans/AISA/`). Contains `00_plan.md` (goals, phases, timeline), `00_map.md` (concept map), `Weeks/` (weekly logs), `Courses/`, `Projects/`, and `Attachments/` (plan-specific media). The folder name is the plan identifier - used as shorthand in all commands (`/learning-log AISA`). Archived plans live under `Learning/Plans/_archive/<VERSIONED-CODE>/`. Current plans: SYSD, DARC, BEHV. Managed via `/learning-init`, `/learning-log`, `/learning-review`.
-  - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/AGENTS.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/AGENTS.md`). Managed via `/algo-solve`, `/sysd-solve`.
+  - `Practice/` — Ongoing skill practice, no endpoint. Contains `Algorithm/` (LeetCode pattern library — see `Learning/Practice/Algorithm/AGENTS.md`), `System-Design/` (system design practice — see `Learning/Practice/System-Design/AGENTS.md`; its building blocks are reviewed by the SD Blocks module from `System-Design/Blocks.md`). Managed via `/algo-solve`, `/sysd-solve`, `/sd-blocks`.
   - `Books/` — Book reading workflow (see `Learning/Books/AGENTS.md`).
   - `Resources/` — Loose learning materials and skill builder resources (e.g., system-design-sketchnote).
 - **Journal/** - Daily work/life reflection. Shared workflow: `Journal/Guide.md`; private data: `Daily/YYYY-MM-DD-timestamp.md` (Unix milliseconds, one topic per file) and rolling `Review.md`. Home today button creates a new entry and conversation; continue existing entries in their original chats. `/journal-review` follows the same fixed daily flow. Full dashboard: `Journal/Dashboard.md`. View/runtime: `scripts/journal/view.js` (compact on Home, full on the module page).
@@ -133,6 +133,7 @@ Naming is flat and hyphenated: `{module}-{command}` (e.g. `/work-daily`, `/algo-
 ├── task-board/                  # /task-board
 ├── task-add/                    # /task-add
 ├── sysd-solve/                  # /sysd-solve
+├── sd-blocks/                   # /sd-blocks
 ├── frnt-solve/                  # /frnt-solve
 ├── vault-ops-organize/          # /vault-ops-organize
 ├── vault-ops-tag-audit/         # /vault-ops-tag-audit

@@ -17,7 +17,7 @@ Apply the shared **English conversation and clarification** rules in `Learning/P
 
 ## Select module
 
-Use the client's available single-choice input, or numbered choices when that input is unavailable. A bare `/practice` offers `Algorithm` (`algorithm`) and `System Design` (`system-design`). Use a module already supplied in the request or current exchange; otherwise wait for the selection. Do not ask the learner to choose practice or Review.
+Use the client's available single-choice input, or numbered choices when that input is unavailable. A bare `/practice` offers `Algorithm` (`algorithm`), `System Design` (`system-design`) and `SD Blocks` (`sd-blocks`). Use a module already supplied in the request or current exchange; otherwise wait for the selection. Do not ask the learner to choose practice or Review.
 
 At a fresh practice entry, check enabled System Design practice for saved
 in-progress sessions before presenting the choices. Use the session catalog

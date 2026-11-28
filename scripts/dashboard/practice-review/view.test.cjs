@@ -181,6 +181,7 @@ function fixture(
     consumers: {
       algorithm: { enabled: true, flow: "algo-solve" },
       "system-design": { enabled: true, flow: "sysd-solve" },
+      "sd-blocks": { enabled: true, flow: "sd-blocks" },
     },
   };
   const dv = {
@@ -382,6 +383,11 @@ test("the item list groups modules and shows each failed item's unmet criteria",
         unmet_criteria: ["no_substantive_help", "within_time_limit"],
       }),
       item("algo", { next_review: "2026-11-16" }),
+      item("sdb-caching", {
+        domain: "sd-blocks",
+        stage: 4,
+        next_review: "2026-11-16",
+      }),
       item("algo-2", { next_review: TODAY, last_result: undefined }),
     ],
     { intervals: ATTEMPTS.schedule.intervals },
@@ -391,13 +397,17 @@ test("the item list groups modules and shows each failed item's unmet criteria",
     .elements()
     .filter((p) => p.attributes.scope === "colgroup")
     .map((p) => p.textContent);
-  assert.deepEqual(groups, ["Algorithm · 2", "System Design · 1"]);
+  assert.deepEqual(groups, [
+    "Algorithm · 2",
+    "System Design · 1",
+    "SD Blocks · 1",
+  ]);
   assert.deepEqual(
     f
       .elements()
       .filter((p) => p.cls === "pr-item-link")
       .map((p) => p.textContent),
-    ["Review algo", "Review algo-2", "Review design"],
+    ["Review algo", "Review algo-2", "Review design", "Review sdb-caching"],
   );
   const text = f.elements().map((p) => p.textContent);
   assert.ok(text.includes("Not met: no substantive help, within time limit"));
