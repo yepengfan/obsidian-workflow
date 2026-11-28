@@ -67,7 +67,7 @@ When `/practice` hands off to a new problem without a topic, suggest one as desc
 
 ### Choose a new problem
 
-`practice` with domain `system-design` returns `roadmap`, the learning plan's progress. When its `status` is `ready` and it has a `next` problem, suggest that problem by default: its title, phase and focus, and its gap count from `next.preflight` (see **Pre-problem check**). Say when the check is unavailable, with its `error`. Let the learner choose another problem instead. When the roadmap is complete (`next` is null), say so. When it is null or `unavailable`, give the returned `reason` if any. In those cases ask for a problem, for example `/sysd-solve Design YouTube`.
+`practice` with domain `system-design` returns `roadmap`, the learning plan's progress. When its `status` is `ready` and it has a `next` problem, suggest that problem by default: its title, phase and core gap count from `next.preflight` (see **Pre-problem check**). Do not show its `focus`, which names the technique the problem trains. Say when the check is unavailable, with its `error`. Let the learner choose another problem instead. When the roadmap is complete (`next` is null), say so. When it is null or `unavailable`, give the returned `reason` if any. In those cases ask for a problem, for example `/sysd-solve Design YouTube`.
 
 ### With arguments
 
@@ -114,12 +114,16 @@ New practice only: a scheduled review stays neutral, so it never names the probl
 
 `core_gaps` counts the core blocks with a gap.
 
-- **Two or more core gaps.** Before the problem, triage each core block whose gap is `not_enrolled`, one at a time, following **Triage** in `.agents/skills/sd-blocks/SKILL.md`, after loading SD Blocks with `practice` and domain `sd-blocks` for its points and pass criteria. That gives a primer for a block the learner does not know, or a placement review for one they know well. Then return to this problem. A core block that `last_failed`, and any supporting block with a gap, is not a prerequisite: plan a Deep Dives question on it. The learner may skip the triage and start the problem now.
-- **Fewer than two core gaps.** Start the problem. Name each gap and plan a Deep Dives question on it.
-- **`sd_blocks` is `unavailable`.** The blocks have no reviews. Say that the check could not see them, and start the problem.
-- **`problem` is null.** Blocks.md has no row for this breakdown. Draft one for the learner to confirm: an id from the breakdown's title in kebab-case, `[[Question Breakdowns/<title>]]`, and `core` and `uses` taken from the patterns and technologies the breakdown relies on, using only block ids from Blocks.md. A block may not be in both columns. The learner maintains Blocks.md, and the MCP server only reads it. In a session with file access, add the confirmed row to the Problems table. Otherwise, give it to the learner to add. The server sees the row once the vault syncs. Until then, the attempt has no `problem`, and `core_blocks_partial` is judged on `concept_ids`.
+A block's name names a technique, and naming a technique before or during the attempt is substantive help. So the result stays private unless the learner chooses triage: tell the learner only how many core gaps there are.
 
-Keep the result for the debrief. A weak answer about a tagged block brings its review forward (see **Phase 3**).
+- **Two or more core gaps.** Offer triage before the problem. Explain that triage names the blocks the problem needs, so this attempt will then not meet `no_substantive_help` and is reviewed the next day. Let the learner choose:
+  - **Triage.** Triage each core block whose gap is `not_enrolled`, one at a time, following **Triage** in `.agents/skills/sd-blocks/SKILL.md`, after loading SD Blocks with `practice` and domain `sd-blocks` for its points and pass criteria. That gives a primer for a block the learner does not know, or a placement review for one they know well. Then return to this problem, and judge `no_substantive_help` not met, citing the triage.
+  - **Start now.** Name no block, and continue as for fewer gaps.
+- **Fewer than two core gaps.** Start the problem without naming any block. Plan a neutral Deep Dives question for each gap, a core block that `last_failed` or a supporting block with a gap, that does not name its technique.
+- **`sd_blocks` is `unavailable`.** The blocks have no reviews. Say that the check could not see them, and start the problem.
+- **`problem` is null.** Blocks.md has no row for this breakdown. Start the problem. In the debrief, after the attempt ends, draft a row for the learner to confirm: an id from the breakdown's title in kebab-case, `[[Question Breakdowns/<title>]]`, and `core` and `uses` taken from the patterns and technologies the breakdown relies on, using only block ids from Blocks.md. A block may not be in both columns. The learner maintains Blocks.md, and the MCP server only reads it. In a session with file access, add the confirmed row to the Problems table. Otherwise, give it to the learner to add. The server sees the row once the vault syncs. This attempt has no `problem`, so `core_blocks_partial` is judged on `concept_ids`.
+
+Keep the result for the debrief, and show it there in full. A weak answer about a tagged block brings its review forward (see **Phase 3**).
 
 ### Pre-created roadmap problems
 
